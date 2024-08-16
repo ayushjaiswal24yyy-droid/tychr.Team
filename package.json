@@ -23,7 +23,13 @@
     "react-dom": "^18.0.0",
     "react-router-dom": "5.3.4",
     "styled-components": "5.3.3",
-    "uuid": "^10.0.0"
+    "uuid": "^10.0.0",
+    "@chartbrew/plugin-strapi": "^1.0.0",
+    "@creazy231/strapi-plugin-apollo-sandbox": "^0.0.13",
+    "@strapi/provider-upload-aws-s3": "^4.20.3",
+    "pg": "8.8.0",
+    "strapi-location-field-plugin": "^1.2.2",
+    "strapi-plugin-multi-select": "^1.2.3"
   },
   "author": {
     "name": "A Strapi developer"
