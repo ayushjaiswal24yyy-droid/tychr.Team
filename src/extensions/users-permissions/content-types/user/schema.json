@@ -68,9 +68,6 @@
     "fullName": {
       "type": "string"
     },
-    "isTutor": {
-      "type": "boolean"
-    },
     "phoneNumber": {
       "type": "biginteger",
       "unique": true
@@ -81,6 +78,29 @@
     },
     "otp": {
       "type": "biginteger"
+    },
+    "avatar": {
+      "type": "media",
+      "multiple": false,
+      "required": false,
+      "allowedTypes": [
+        "images",
+        "files",
+        "videos",
+        "audios"
+      ]
+    },
+    "courses": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::course.course",
+      "inversedBy": "tutors"
+    },
+    "enrollments": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::enrollment.enrollment",
+      "mappedBy": "users"
     }
   }
 }

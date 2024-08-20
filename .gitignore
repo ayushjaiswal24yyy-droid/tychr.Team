@@ -110,7 +110,6 @@ coverage
 .env.development.local
 .env.test.local
 .env.production.local
-.env.example
 license.txt
 exports
 .strapi

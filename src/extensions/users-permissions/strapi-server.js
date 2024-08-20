@@ -6,7 +6,7 @@ module.exports = (plugin) => {
         return sanitizedUser;
     };
     plugin.controllers.auth.register = async (ctx) => {
-        const { email, password, username, fullName, isTutor } = ctx.request.body;
+        const { email, password, username, fullName, role } = ctx.request.body;
 
         // Check if user already exists
         const userExists = await strapi.query('plugin::users-permissions.user').findOne({ where: { email } });
@@ -14,17 +14,31 @@ module.exports = (plugin) => {
             return ctx.badRequest('Email is already taken');
         }
 
+        // Validate role
+        if (role !== 'student' && role !== 'tutor') {
+            return ctx.badRequest('Invalid role. Must be either "student" or "tutor"');
+        }
+
         const hashedPassword = await bcrypt.hash(password, 10);
 
         // Generate OTP
         const otp = Math.floor(100000 + Math.random() * 900000).toString(); // 6-digit OTP
+
+        // Find the role ID based on the role name
+        const roleEntity = await strapi
+            .query('plugin::users-permissions.role')
+            .findOne({ where: { type: role } });
+
+        if (!roleEntity) {
+            return ctx.badRequest(`Role "${role}" not found`);
+        }
 
         // Create user
         const user = await strapi.query('plugin::users-permissions.user').create({
             data: {
                 fullName,
                 email,
-                isTutor,
+                role: roleEntity.id,
                 password: hashedPassword,
                 username,
                 uuid: ctx.request.body.uuid,
@@ -113,7 +127,7 @@ module.exports = (plugin) => {
     plugin.controllers.auth.verifyOTP = async (ctx) => {
         const { uuid, otp } = ctx.request.body;
 
-        const user = await strapi.query('plugin::users-permissions.user').findOne({ where: { uuid } });
+        const user = await strapi.query('plugin::users-permissions.user').findOne({ where: { uuid }, populate: ['role', 'avatar'] });
 
         if (!user) {
             return ctx.badRequest('User not found');
@@ -123,20 +137,11 @@ module.exports = (plugin) => {
             return ctx.badRequest('Invalid OTP');
         }
 
-        const authenticatedRole = await strapi
-            .query('plugin::users-permissions.role')
-            .findOne({ where: { type: 'authenticated' } });
-
-        if (!authenticatedRole) {
-            return ctx.serverError('Authenticated role not found');
-        }
-
         await strapi.query('plugin::users-permissions.user').update({
             where: { id: user.id },
             data: {
                 confirmed: true,
                 otp: null,
-                role: authenticatedRole.id
             },
         });
 

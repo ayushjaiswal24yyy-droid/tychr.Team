@@ -362,6 +362,141 @@ export interface AdminTransferTokenPermission extends Schema.CollectionType {
   };
 }
 
+export interface ApiCourseCourse extends Schema.CollectionType {
+  collectionName: 'courses';
+  info: {
+    singularName: 'course';
+    pluralName: 'courses';
+    displayName: 'Course';
+    description: '';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    title: Attribute.String;
+    price: Attribute.Integer;
+    image: Attribute.Media<'images'>;
+    duration: Attribute.Integer;
+    date: Attribute.Date;
+    enrollments: Attribute.Relation<
+      'api::course.course',
+      'oneToMany',
+      'api::enrollment.enrollment'
+    >;
+    desc: Attribute.Text;
+    tutors: Attribute.Relation<
+      'api::course.course',
+      'manyToMany',
+      'plugin::users-permissions.user'
+    >;
+    lectures: Attribute.Relation<
+      'api::course.course',
+      'oneToMany',
+      'api::lecture.lecture'
+    >;
+    isTrending: Attribute.Boolean & Attribute.DefaultTo<false>;
+    popular: Attribute.Integer;
+    createdAt: Attribute.DateTime;
+    updatedAt: Attribute.DateTime;
+    publishedAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<
+      'api::course.course',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+    updatedBy: Attribute.Relation<
+      'api::course.course',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+  };
+}
+
+export interface ApiEnrollmentEnrollment extends Schema.CollectionType {
+  collectionName: 'enrollments';
+  info: {
+    singularName: 'enrollment';
+    pluralName: 'enrollments';
+    displayName: 'Enrollment';
+    description: '';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    start_date: Attribute.Date;
+    course: Attribute.Relation<
+      'api::enrollment.enrollment',
+      'manyToOne',
+      'api::course.course'
+    >;
+    enrollment_status: Attribute.Enumeration<['active', 'dropped', 'inactive']>;
+    users: Attribute.Relation<
+      'api::enrollment.enrollment',
+      'manyToOne',
+      'plugin::users-permissions.user'
+    >;
+    createdAt: Attribute.DateTime;
+    updatedAt: Attribute.DateTime;
+    publishedAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<
+      'api::enrollment.enrollment',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+    updatedBy: Attribute.Relation<
+      'api::enrollment.enrollment',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+  };
+}
+
+export interface ApiLectureLecture extends Schema.CollectionType {
+  collectionName: 'lectures';
+  info: {
+    singularName: 'lecture';
+    pluralName: 'lectures';
+    displayName: 'Lecture';
+    description: '';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    title: Attribute.String;
+    description: Attribute.Text;
+    video: Attribute.Media<'videos'>;
+    duration: Attribute.Integer;
+    order: Attribute.Integer;
+    course: Attribute.Relation<
+      'api::lecture.lecture',
+      'manyToOne',
+      'api::course.course'
+    >;
+    createdAt: Attribute.DateTime;
+    updatedAt: Attribute.DateTime;
+    publishedAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<
+      'api::lecture.lecture',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+    updatedBy: Attribute.Relation<
+      'api::lecture.lecture',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+  };
+}
+
 export interface PluginUploadFile extends Schema.CollectionType {
   collectionName: 'files';
   info: {
@@ -724,10 +859,20 @@ export interface PluginUsersPermissionsUser extends Schema.CollectionType {
       'plugin::users-permissions.role'
     >;
     fullName: Attribute.String;
-    isTutor: Attribute.Boolean;
     phoneNumber: Attribute.BigInteger & Attribute.Unique;
     uuid: Attribute.String & Attribute.Unique;
     otp: Attribute.BigInteger;
+    avatar: Attribute.Media<'images' | 'files' | 'videos' | 'audios'>;
+    courses: Attribute.Relation<
+      'plugin::users-permissions.user',
+      'manyToMany',
+      'api::course.course'
+    >;
+    enrollments: Attribute.Relation<
+      'plugin::users-permissions.user',
+      'oneToMany',
+      'api::enrollment.enrollment'
+    >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     createdBy: Attribute.Relation<
@@ -792,6 +937,37 @@ export interface PluginI18NLocale extends Schema.CollectionType {
   };
 }
 
+export interface PluginChartbrewChartbrew extends Schema.SingleType {
+  collectionName: 'chartbrews';
+  info: {
+    singularName: 'chartbrew';
+    pluralName: 'chartbrews';
+    displayName: 'Chartbrew';
+  };
+  options: {
+    draftAndPublish: false;
+    comment: '';
+  };
+  attributes: {
+    host: Attribute.String & Attribute.Required;
+    token: Attribute.String & Attribute.Required;
+    createdAt: Attribute.DateTime;
+    updatedAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<
+      'plugin::chartbrew.chartbrew',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+    updatedBy: Attribute.Relation<
+      'plugin::chartbrew.chartbrew',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+  };
+}
+
 declare module '@strapi/types' {
   export module Shared {
     export interface ContentTypes {
@@ -802,6 +978,9 @@ declare module '@strapi/types' {
       'admin::api-token-permission': AdminApiTokenPermission;
       'admin::transfer-token': AdminTransferToken;
       'admin::transfer-token-permission': AdminTransferTokenPermission;
+      'api::course.course': ApiCourseCourse;
+      'api::enrollment.enrollment': ApiEnrollmentEnrollment;
+      'api::lecture.lecture': ApiLectureLecture;
       'plugin::upload.file': PluginUploadFile;
       'plugin::upload.folder': PluginUploadFolder;
       'plugin::content-releases.release': PluginContentReleasesRelease;
@@ -810,6 +989,7 @@ declare module '@strapi/types' {
       'plugin::users-permissions.role': PluginUsersPermissionsRole;
       'plugin::users-permissions.user': PluginUsersPermissionsUser;
       'plugin::i18n.locale': PluginI18NLocale;
+      'plugin::chartbrew.chartbrew': PluginChartbrewChartbrew;
     }
   }
 }
