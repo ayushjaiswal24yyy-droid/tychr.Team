@@ -1,16 +1,5 @@
-const nodemailer = require('nodemailer');
-
 module.exports = {
     sendOTPEmail: async (email, otp) => {
-        const transporter = nodemailer.createTransport({
-            host: process.env.SMTP_HOST,
-            port: process.env.SMTP_PORT,
-            secure: false,
-            auth: {
-                user: process.env.SMTP_USERNAME,
-                pass: process.env.SMTP_PASSWORD,
-            },
-        });
 
         const htmlContent = `
             <!DOCTYPE html>
@@ -73,14 +62,11 @@ module.exports = {
             </html>
         `;
 
-        const mailOptions = {
-            from: '"TyChr" <noreply@tychr.com>',
+        await strapi.plugins['email'].services.email.send({
             to: email,
-            subject: 'Your OTP for TyChr Verification',
-            text: `Greetings from TyChr! We're glad to have you here. Here's the OTP you requested: ${otp}`,
+            from: 'tychr@saralgroups.com',
+            subject: 'Your OTP from TyChr',
             html: htmlContent,
-        };
-
-        await transporter.sendMail(mailOptions);
+        });
     },
 };

@@ -725,6 +725,128 @@ export interface PluginContentReleasesReleaseAction
   };
 }
 
+export interface PluginStrapiGoogleAuthGoogleCredential
+  extends Schema.SingleType {
+  collectionName: 'strapi-google-auth_google-credential';
+  info: {
+    displayName: 'Google Credentials';
+    singularName: 'google-credential';
+    pluralName: 'google-credentials';
+    description: 'Stores google project credentials';
+    tableName: 'google_auth_creds';
+  };
+  options: {
+    privateAttributes: ['id', 'created_at'];
+    populateCreatorFields: true;
+    draftAndPublish: true;
+  };
+  pluginOptions: {
+    'content-manager': {
+      visible: false;
+    };
+    'content-type-builder': {
+      visible: false;
+    };
+  };
+  attributes: {
+    google_client_id: Attribute.String & Attribute.Required;
+    google_client_secret: Attribute.String & Attribute.Required;
+    google_redirect_url: Attribute.String & Attribute.Required;
+    google_scopes: Attribute.JSON & Attribute.Required;
+    createdAt: Attribute.DateTime;
+    updatedAt: Attribute.DateTime;
+    publishedAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<
+      'plugin::strapi-google-auth.google-credential',
+      'oneToOne',
+      'admin::user'
+    >;
+    updatedBy: Attribute.Relation<
+      'plugin::strapi-google-auth.google-credential',
+      'oneToOne',
+      'admin::user'
+    >;
+  };
+}
+
+export interface PluginChartbrewChartbrew extends Schema.SingleType {
+  collectionName: 'chartbrews';
+  info: {
+    singularName: 'chartbrew';
+    pluralName: 'chartbrews';
+    displayName: 'Chartbrew';
+  };
+  options: {
+    draftAndPublish: false;
+    comment: '';
+  };
+  attributes: {
+    host: Attribute.String & Attribute.Required;
+    token: Attribute.String & Attribute.Required;
+    createdAt: Attribute.DateTime;
+    updatedAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<
+      'plugin::chartbrew.chartbrew',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+    updatedBy: Attribute.Relation<
+      'plugin::chartbrew.chartbrew',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+  };
+}
+
+export interface PluginI18NLocale extends Schema.CollectionType {
+  collectionName: 'i18n_locale';
+  info: {
+    singularName: 'locale';
+    pluralName: 'locales';
+    collectionName: 'locales';
+    displayName: 'Locale';
+    description: '';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  pluginOptions: {
+    'content-manager': {
+      visible: false;
+    };
+    'content-type-builder': {
+      visible: false;
+    };
+  };
+  attributes: {
+    name: Attribute.String &
+      Attribute.SetMinMax<
+        {
+          min: 1;
+          max: 50;
+        },
+        number
+      >;
+    code: Attribute.String & Attribute.Unique;
+    createdAt: Attribute.DateTime;
+    updatedAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<
+      'plugin::i18n.locale',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+    updatedBy: Attribute.Relation<
+      'plugin::i18n.locale',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+  };
+}
+
 export interface PluginUsersPermissionsPermission
   extends Schema.CollectionType {
   collectionName: 'up_permissions';
@@ -890,84 +1012,6 @@ export interface PluginUsersPermissionsUser extends Schema.CollectionType {
   };
 }
 
-export interface PluginChartbrewChartbrew extends Schema.SingleType {
-  collectionName: 'chartbrews';
-  info: {
-    singularName: 'chartbrew';
-    pluralName: 'chartbrews';
-    displayName: 'Chartbrew';
-  };
-  options: {
-    draftAndPublish: false;
-    comment: '';
-  };
-  attributes: {
-    host: Attribute.String & Attribute.Required;
-    token: Attribute.String & Attribute.Required;
-    createdAt: Attribute.DateTime;
-    updatedAt: Attribute.DateTime;
-    createdBy: Attribute.Relation<
-      'plugin::chartbrew.chartbrew',
-      'oneToOne',
-      'admin::user'
-    > &
-      Attribute.Private;
-    updatedBy: Attribute.Relation<
-      'plugin::chartbrew.chartbrew',
-      'oneToOne',
-      'admin::user'
-    > &
-      Attribute.Private;
-  };
-}
-
-export interface PluginI18NLocale extends Schema.CollectionType {
-  collectionName: 'i18n_locale';
-  info: {
-    singularName: 'locale';
-    pluralName: 'locales';
-    collectionName: 'locales';
-    displayName: 'Locale';
-    description: '';
-  };
-  options: {
-    draftAndPublish: false;
-  };
-  pluginOptions: {
-    'content-manager': {
-      visible: false;
-    };
-    'content-type-builder': {
-      visible: false;
-    };
-  };
-  attributes: {
-    name: Attribute.String &
-      Attribute.SetMinMax<
-        {
-          min: 1;
-          max: 50;
-        },
-        number
-      >;
-    code: Attribute.String & Attribute.Unique;
-    createdAt: Attribute.DateTime;
-    updatedAt: Attribute.DateTime;
-    createdBy: Attribute.Relation<
-      'plugin::i18n.locale',
-      'oneToOne',
-      'admin::user'
-    > &
-      Attribute.Private;
-    updatedBy: Attribute.Relation<
-      'plugin::i18n.locale',
-      'oneToOne',
-      'admin::user'
-    > &
-      Attribute.Private;
-  };
-}
-
 declare module '@strapi/types' {
   export module Shared {
     export interface ContentTypes {
@@ -985,11 +1029,12 @@ declare module '@strapi/types' {
       'plugin::upload.folder': PluginUploadFolder;
       'plugin::content-releases.release': PluginContentReleasesRelease;
       'plugin::content-releases.release-action': PluginContentReleasesReleaseAction;
+      'plugin::strapi-google-auth.google-credential': PluginStrapiGoogleAuthGoogleCredential;
+      'plugin::chartbrew.chartbrew': PluginChartbrewChartbrew;
+      'plugin::i18n.locale': PluginI18NLocale;
       'plugin::users-permissions.permission': PluginUsersPermissionsPermission;
       'plugin::users-permissions.role': PluginUsersPermissionsRole;
       'plugin::users-permissions.user': PluginUsersPermissionsUser;
-      'plugin::chartbrew.chartbrew': PluginChartbrewChartbrew;
-      'plugin::i18n.locale': PluginI18NLocale;
     }
   }
 }

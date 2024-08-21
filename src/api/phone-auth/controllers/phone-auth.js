@@ -1,44 +1,35 @@
 'use strict';
 
+const AWS = require('aws-sdk');
 const crypto = require('crypto');
 const bcrypt = require('bcryptjs');
-const AWS = require('aws-sdk');
 
-const sanitizeUser = (user) => {
-    const { password, resetPasswordToken, confirmationToken, ...sanitizedUser } = user;
-    return sanitizedUser;
-};
-
+// Create an SNS client
 AWS.config.update({
     accessKeyId: process.env.AWS_ACCESS_KEY_ID,
     secretAccessKey: process.env.AWS_ACCESS_SECRET,
     region: process.env.AWS_REGION
 });
 
-const sns = new AWS.SNS();
-
-// const generateRandomPassword = () => {
-//     return crypto.randomBytes(20).toString('hex');
-// };
-
 const hashPassword = async (password) => {
     return await bcrypt.hash(password, 10);
 };
 
+const sns = new AWS.SNS();
+
 const sendSMS = async (phoneNumber, message) => {
     const params = {
         Message: message,
-        PhoneNumber: phoneNumber
+        PhoneNumber: `${+91}${phoneNumber}`
     };
-
-    try {
-        await sns.publish(params).promise();
-        console.log(`SMS sent to ${phoneNumber}`);
-    } catch (error) {
-        console.error('Error sending SMS:', error);
-        throw error;
-    }
-};
+    sns.publish(params, (err, data) => {
+        if (err) {
+            console.error("Error sending SMS: ", err);
+        } else {
+            console.log("SMS sent successfully: ", data);
+        }
+    });
+}
 
 module.exports = {
     async authenticateByPhone(ctx) {
@@ -63,7 +54,6 @@ module.exports = {
                 return ctx.badRequest(`Role "${role}" not found`);
             }
 
-            // const randomPassword = phone;
             const hashedPassword = await hashPassword(phone);
 
             const uuid = crypto.randomUUID();
@@ -93,7 +83,7 @@ module.exports = {
         }
 
         try {
-            await sendSMS(phone, `Your OTP is: ${otp}`);
+            await sendSMS(phone, `Hey there! Your TyChr OTP is: ${otp}`);
         } catch (error) {
             return ctx.badRequest('Failed to send OTP');
         }
