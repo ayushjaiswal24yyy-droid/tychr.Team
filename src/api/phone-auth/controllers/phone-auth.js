@@ -2,19 +2,42 @@
 
 const crypto = require('crypto');
 const bcrypt = require('bcryptjs');
+const AWS = require('aws-sdk');
 
 const sanitizeUser = (user) => {
     const { password, resetPasswordToken, confirmationToken, ...sanitizedUser } = user;
     return sanitizedUser;
 };
 
-const generateRandomPassword = () => {
-    return crypto.randomBytes(20).toString('hex');
-};
+AWS.config.update({
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+    secretAccessKey: process.env.AWS_ACCESS_SECRET,
+    region: process.env.AWS_REGION
+});
+
+const sns = new AWS.SNS();
+
+// const generateRandomPassword = () => {
+//     return crypto.randomBytes(20).toString('hex');
+// };
 
 const hashPassword = async (password) => {
-    const salt = await bcrypt.genSalt(10);
-    return await bcrypt.hash(password, salt);
+    return await bcrypt.hash(password, 10);
+};
+
+const sendSMS = async (phoneNumber, message) => {
+    const params = {
+        Message: message,
+        PhoneNumber: phoneNumber
+    };
+
+    try {
+        await sns.publish(params).promise();
+        console.log(`SMS sent to ${phoneNumber}`);
+    } catch (error) {
+        console.error('Error sending SMS:', error);
+        throw error;
+    }
 };
 
 module.exports = {
@@ -28,40 +51,56 @@ module.exports = {
         // Check if user exists
         let user = await strapi.query('plugin::users-permissions.user').findOne({ where: { username: phone } });
 
+        const otp = Math.floor(100000 + Math.random() * 900000).toString(); // 6-digit OTP
+
         if (!user) {
             // If user doesn't exist, create a new one
-            const userRole = await strapi.query('plugin::users-permissions.role').findOne({ where: { type: 'authenticated' } });
+            const roleEntity = await strapi
+                .query('plugin::users-permissions.role')
+                .findOne({ where: { type: role } });
 
-            const randomPassword = generateRandomPassword();
-            const hashedPassword = await hashPassword(randomPassword);
+            if (!roleEntity) {
+                return ctx.badRequest(`Role "${role}" not found`);
+            }
+
+            // const randomPassword = phone;
+            const hashedPassword = await hashPassword(phone);
 
             const uuid = crypto.randomUUID();
 
+
             user = await strapi.query('plugin::users-permissions.user').create({
                 data: {
+                    fullName: phone,
                     username: phone,
                     email: `${phone}@example.com`, // You might want to handle this differently
                     phoneNumber: phone,
                     password: hashedPassword,
-                    isTutor: role,
-                    provider: 'local',
-                    confirmed: true,
-                    role: userRole.id,
+                    confirmed: false,
+                    role: roleEntity.id,
                     uuid,
+                    otp,
                 }
             });
 
             console.log('New user created:', user);
+        } else {
+            // Login flow: Update the user's OTP
+            await strapi.query('plugin::users-permissions.user').update({
+                where: { id: user.id },
+                data: { otp: otp },
+            });
         }
 
-        // Generate JWT token
-        const jwt = strapi.plugins['users-permissions'].services.jwt.issue({
-            id: user.id,
-        });
+        try {
+            await sendSMS(phone, `Your OTP is: ${otp}`);
+        } catch (error) {
+            return ctx.badRequest('Failed to send OTP');
+        }
 
         return ctx.send({
-            jwt,
-            user: sanitizeUser(user),
+            message: 'OTP sent successfully',
+            uuid: user.uuid,
         });
     },
 };
