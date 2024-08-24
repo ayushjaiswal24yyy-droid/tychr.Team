@@ -1,9 +1,9 @@
 'use strict';
 
 /**
- * lecture router
+ * subject router
  */
 
 const { createCoreRouter } = require('@strapi/strapi').factories;
 
-module.exports = createCoreRouter('api::lecture.lecture');
+module.exports = createCoreRouter('api::subject.subject');

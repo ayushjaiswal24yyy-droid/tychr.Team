@@ -1,0 +1,59 @@
+{
+  "kind": "collectionType",
+  "collectionName": "live_lectures",
+  "info": {
+    "singularName": "live-lecture",
+    "pluralName": "live-lectures",
+    "displayName": "Live_Lecture",
+    "description": ""
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "title": {
+      "type": "string"
+    },
+    "description": {
+      "type": "text"
+    },
+    "zoom_url": {
+      "type": "string"
+    },
+    "schedule": {
+      "type": "datetime"
+    },
+    "subject": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::subject.subject",
+      "inversedBy": "live_lectures"
+    },
+    "isFree": {
+      "type": "boolean",
+      "default": false
+    },
+    "price": {
+      "type": "decimal"
+    },
+    "tutor": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "plugin::users-permissions.user",
+      "inversedBy": "live_lecture"
+    },
+    "course": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::course.course",
+      "inversedBy": "live_lectures"
+    },
+    "payments": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::payment.payment",
+      "mappedBy": "live_lecture"
+    }
+  }
+}

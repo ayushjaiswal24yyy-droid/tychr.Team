@@ -1,0 +1,22 @@
+{
+  "collectionName": "components_subtopic_headings",
+  "info": {
+    "displayName": "Heading",
+    "icon": "bulletList",
+    "description": ""
+  },
+  "options": {},
+  "attributes": {
+    "title": {
+      "type": "string"
+    },
+    "content": {
+      "type": "blocks"
+    },
+    "qna": {
+      "type": "component",
+      "repeatable": true,
+      "component": "subtopic.qn-a"
+    }
+  }
+}

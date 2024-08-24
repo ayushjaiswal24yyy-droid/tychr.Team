@@ -68,10 +68,6 @@
     "fullName": {
       "type": "string"
     },
-    "phoneNumber": {
-      "type": "biginteger",
-      "unique": true
-    },
     "uuid": {
       "type": "string",
       "unique": true
@@ -90,17 +86,57 @@
         "audios"
       ]
     },
-    "courses": {
+    "phoneNumber": {
+      "type": "string",
+      "unique": true
+    },
+    "ib_program": {
       "type": "relation",
-      "relation": "manyToMany",
+      "relation": "oneToOne",
+      "target": "api::ib-program.ib-program",
+      "inversedBy": "user"
+    },
+    "recorded_lecture": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::recorded-lecture.recorded-lecture",
+      "mappedBy": "tutor"
+    },
+    "live_lecture": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::live-lecture.live-lecture",
+      "mappedBy": "tutor"
+    },
+    "subjects_taught": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::subject.subject",
+      "mappedBy": "tutor"
+    },
+    "course": {
+      "type": "relation",
+      "relation": "oneToOne",
       "target": "api::course.course",
-      "inversedBy": "tutors"
+      "mappedBy": "tutor"
     },
     "enrollments": {
       "type": "relation",
       "relation": "oneToMany",
       "target": "api::enrollment.enrollment",
-      "mappedBy": "users"
+      "mappedBy": "student"
+    },
+    "payments": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::payment.payment",
+      "mappedBy": "user"
+    },
+    "class": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::class.class",
+      "inversedBy": "students"
     }
   }
 }

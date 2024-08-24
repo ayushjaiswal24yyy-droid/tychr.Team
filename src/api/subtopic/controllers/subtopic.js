@@ -1,9 +1,9 @@
 'use strict';
 
 /**
- * lecture controller
+ * subtopic controller
  */
 
 const { createCoreController } = require('@strapi/strapi').factories;
 
-module.exports = createCoreController('api::lecture.lecture');
+module.exports = createCoreController('api::subtopic.subtopic');

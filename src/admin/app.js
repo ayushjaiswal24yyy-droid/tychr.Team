@@ -58,6 +58,31 @@ const config = {
 
 const bootstrap = (app) => {
   console.log(app);
+
+  const strapiTheme = () => {
+    const LIGHT_THEME = "light";
+    const DARK_THEME = "dark";
+
+    const themeKey = 'STRAPI_THEME'
+    const forceSetKey = 'STRAPI_THEME_FORCE_CHANGE';
+    const defaultTheme = LIGHT_THEME;
+
+    const currentTheme = localStorage.getItem(themeKey);
+    const forceSet = localStorage.getItem(forceSetKey);
+
+    if (!currentTheme) {
+      localStorage.setItem(themeKey, defaultTheme);
+      return;
+    }
+
+    if (!forceSet && currentTheme === DARK_THEME) {
+      localStorage.setItem(themeKey, defaultTheme);
+      localStorage.setItem(forceSetKey, 'true');
+    }
+  }
+
+  strapiTheme();
+
 };
 
 export default {

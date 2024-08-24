@@ -1,0 +1,42 @@
+{
+  "kind": "collectionType",
+  "collectionName": "ib_programs",
+  "info": {
+    "singularName": "ib-program",
+    "pluralName": "ib-programs",
+    "displayName": "IB_program",
+    "description": ""
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "name": {
+      "type": "enumeration",
+      "enum": [
+        "PYP",
+        "MYP",
+        "DP"
+      ]
+    },
+    "grade_range": {
+      "type": "string"
+    },
+    "description": {
+      "type": "text"
+    },
+    "classes": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::class.class",
+      "mappedBy": "ib_program"
+    },
+    "user": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "plugin::users-permissions.user",
+      "mappedBy": "ib_program"
+    }
+  }
+}

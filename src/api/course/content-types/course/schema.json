@@ -4,8 +4,7 @@
   "info": {
     "singularName": "course",
     "pluralName": "courses",
-    "displayName": "Course",
-    "description": ""
+    "displayName": "Course"
   },
   "options": {
     "draftAndPublish": true
@@ -15,22 +14,39 @@
     "title": {
       "type": "string"
     },
+    "description": {
+      "type": "text"
+    },
+    "isFree": {
+      "type": "boolean",
+      "default": false
+    },
     "price": {
-      "type": "integer"
+      "type": "decimal"
     },
-    "image": {
-      "type": "media",
-      "multiple": false,
-      "required": false,
-      "allowedTypes": [
-        "images"
-      ]
+    "subject": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::subject.subject",
+      "inversedBy": "courses"
     },
-    "duration": {
-      "type": "integer"
+    "tutor": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "plugin::users-permissions.user",
+      "inversedBy": "course"
     },
-    "date": {
-      "type": "date"
+    "recorded_lectures": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::recorded-lecture.recorded-lecture",
+      "mappedBy": "course"
+    },
+    "live_lectures": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::live-lecture.live-lecture",
+      "mappedBy": "course"
     },
     "enrollments": {
       "type": "relation",
@@ -38,27 +54,11 @@
       "target": "api::enrollment.enrollment",
       "mappedBy": "course"
     },
-    "desc": {
-      "type": "text"
-    },
-    "tutors": {
-      "type": "relation",
-      "relation": "manyToMany",
-      "target": "plugin::users-permissions.user",
-      "mappedBy": "courses"
-    },
-    "lectures": {
+    "payments": {
       "type": "relation",
       "relation": "oneToMany",
-      "target": "api::lecture.lecture",
+      "target": "api::payment.payment",
       "mappedBy": "course"
-    },
-    "isTrending": {
-      "type": "boolean",
-      "default": false
-    },
-    "popular": {
-      "type": "integer"
     }
   }
 }

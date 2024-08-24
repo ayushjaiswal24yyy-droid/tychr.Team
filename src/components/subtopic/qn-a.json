@@ -1,0 +1,24 @@
+{
+  "collectionName": "components_subtopic_qn_as",
+  "info": {
+    "displayName": "QnA",
+    "icon": "quote",
+    "description": ""
+  },
+  "options": {},
+  "attributes": {
+    "question": {
+      "type": "string"
+    },
+    "answer": {
+      "type": "blocks"
+    },
+    "format": {
+      "type": "enumeration",
+      "enum": [
+        "one_line",
+        "md_file"
+      ]
+    }
+  }
+}

@@ -362,141 +362,6 @@ export interface AdminTransferTokenPermission extends Schema.CollectionType {
   };
 }
 
-export interface ApiCourseCourse extends Schema.CollectionType {
-  collectionName: 'courses';
-  info: {
-    singularName: 'course';
-    pluralName: 'courses';
-    displayName: 'Course';
-    description: '';
-  };
-  options: {
-    draftAndPublish: true;
-  };
-  attributes: {
-    title: Attribute.String;
-    price: Attribute.Integer;
-    image: Attribute.Media<'images'>;
-    duration: Attribute.Integer;
-    date: Attribute.Date;
-    enrollments: Attribute.Relation<
-      'api::course.course',
-      'oneToMany',
-      'api::enrollment.enrollment'
-    >;
-    desc: Attribute.Text;
-    tutors: Attribute.Relation<
-      'api::course.course',
-      'manyToMany',
-      'plugin::users-permissions.user'
-    >;
-    lectures: Attribute.Relation<
-      'api::course.course',
-      'oneToMany',
-      'api::lecture.lecture'
-    >;
-    isTrending: Attribute.Boolean & Attribute.DefaultTo<false>;
-    popular: Attribute.Integer;
-    createdAt: Attribute.DateTime;
-    updatedAt: Attribute.DateTime;
-    publishedAt: Attribute.DateTime;
-    createdBy: Attribute.Relation<
-      'api::course.course',
-      'oneToOne',
-      'admin::user'
-    > &
-      Attribute.Private;
-    updatedBy: Attribute.Relation<
-      'api::course.course',
-      'oneToOne',
-      'admin::user'
-    > &
-      Attribute.Private;
-  };
-}
-
-export interface ApiEnrollmentEnrollment extends Schema.CollectionType {
-  collectionName: 'enrollments';
-  info: {
-    singularName: 'enrollment';
-    pluralName: 'enrollments';
-    displayName: 'Enrollment';
-    description: '';
-  };
-  options: {
-    draftAndPublish: true;
-  };
-  attributes: {
-    start_date: Attribute.Date;
-    course: Attribute.Relation<
-      'api::enrollment.enrollment',
-      'manyToOne',
-      'api::course.course'
-    >;
-    enrollment_status: Attribute.Enumeration<['active', 'dropped', 'inactive']>;
-    users: Attribute.Relation<
-      'api::enrollment.enrollment',
-      'manyToOne',
-      'plugin::users-permissions.user'
-    >;
-    createdAt: Attribute.DateTime;
-    updatedAt: Attribute.DateTime;
-    publishedAt: Attribute.DateTime;
-    createdBy: Attribute.Relation<
-      'api::enrollment.enrollment',
-      'oneToOne',
-      'admin::user'
-    > &
-      Attribute.Private;
-    updatedBy: Attribute.Relation<
-      'api::enrollment.enrollment',
-      'oneToOne',
-      'admin::user'
-    > &
-      Attribute.Private;
-  };
-}
-
-export interface ApiLectureLecture extends Schema.CollectionType {
-  collectionName: 'lectures';
-  info: {
-    singularName: 'lecture';
-    pluralName: 'lectures';
-    displayName: 'Lecture';
-    description: '';
-  };
-  options: {
-    draftAndPublish: true;
-  };
-  attributes: {
-    title: Attribute.String;
-    description: Attribute.Text;
-    video: Attribute.Media<'videos'>;
-    duration: Attribute.Integer;
-    order: Attribute.Integer;
-    course: Attribute.Relation<
-      'api::lecture.lecture',
-      'manyToOne',
-      'api::course.course'
-    >;
-    createdAt: Attribute.DateTime;
-    updatedAt: Attribute.DateTime;
-    publishedAt: Attribute.DateTime;
-    createdBy: Attribute.Relation<
-      'api::lecture.lecture',
-      'oneToOne',
-      'admin::user'
-    > &
-      Attribute.Private;
-    updatedBy: Attribute.Relation<
-      'api::lecture.lecture',
-      'oneToOne',
-      'admin::user'
-    > &
-      Attribute.Private;
-  };
-}
-
 export interface PluginUploadFile extends Schema.CollectionType {
   collectionName: 'files';
   info: {
@@ -725,50 +590,6 @@ export interface PluginContentReleasesReleaseAction
   };
 }
 
-export interface PluginStrapiGoogleAuthGoogleCredential
-  extends Schema.SingleType {
-  collectionName: 'strapi-google-auth_google-credential';
-  info: {
-    displayName: 'Google Credentials';
-    singularName: 'google-credential';
-    pluralName: 'google-credentials';
-    description: 'Stores google project credentials';
-    tableName: 'google_auth_creds';
-  };
-  options: {
-    privateAttributes: ['id', 'created_at'];
-    populateCreatorFields: true;
-    draftAndPublish: true;
-  };
-  pluginOptions: {
-    'content-manager': {
-      visible: false;
-    };
-    'content-type-builder': {
-      visible: false;
-    };
-  };
-  attributes: {
-    google_client_id: Attribute.String & Attribute.Required;
-    google_client_secret: Attribute.String & Attribute.Required;
-    google_redirect_url: Attribute.String & Attribute.Required;
-    google_scopes: Attribute.JSON & Attribute.Required;
-    createdAt: Attribute.DateTime;
-    updatedAt: Attribute.DateTime;
-    publishedAt: Attribute.DateTime;
-    createdBy: Attribute.Relation<
-      'plugin::strapi-google-auth.google-credential',
-      'oneToOne',
-      'admin::user'
-    >;
-    updatedBy: Attribute.Relation<
-      'plugin::strapi-google-auth.google-credential',
-      'oneToOne',
-      'admin::user'
-    >;
-  };
-}
-
 export interface PluginChartbrewChartbrew extends Schema.SingleType {
   collectionName: 'chartbrews';
   info: {
@@ -981,19 +802,49 @@ export interface PluginUsersPermissionsUser extends Schema.CollectionType {
       'plugin::users-permissions.role'
     >;
     fullName: Attribute.String;
-    phoneNumber: Attribute.BigInteger & Attribute.Unique;
     uuid: Attribute.String & Attribute.Unique;
     otp: Attribute.BigInteger;
     avatar: Attribute.Media<'images' | 'files' | 'videos' | 'audios'>;
-    courses: Attribute.Relation<
+    phoneNumber: Attribute.String & Attribute.Unique;
+    ib_program: Attribute.Relation<
       'plugin::users-permissions.user',
-      'manyToMany',
+      'oneToOne',
+      'api::ib-program.ib-program'
+    >;
+    recorded_lecture: Attribute.Relation<
+      'plugin::users-permissions.user',
+      'oneToOne',
+      'api::recorded-lecture.recorded-lecture'
+    >;
+    live_lecture: Attribute.Relation<
+      'plugin::users-permissions.user',
+      'oneToOne',
+      'api::live-lecture.live-lecture'
+    >;
+    subjects_taught: Attribute.Relation<
+      'plugin::users-permissions.user',
+      'oneToMany',
+      'api::subject.subject'
+    >;
+    course: Attribute.Relation<
+      'plugin::users-permissions.user',
+      'oneToOne',
       'api::course.course'
     >;
     enrollments: Attribute.Relation<
       'plugin::users-permissions.user',
       'oneToMany',
       'api::enrollment.enrollment'
+    >;
+    payments: Attribute.Relation<
+      'plugin::users-permissions.user',
+      'oneToMany',
+      'api::payment.payment'
+    >;
+    class: Attribute.Relation<
+      'plugin::users-permissions.user',
+      'manyToOne',
+      'api::class.class'
     >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
@@ -1012,6 +863,505 @@ export interface PluginUsersPermissionsUser extends Schema.CollectionType {
   };
 }
 
+export interface ApiClassClass extends Schema.CollectionType {
+  collectionName: 'classes';
+  info: {
+    singularName: 'class';
+    pluralName: 'classes';
+    displayName: 'Class';
+    description: '';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    grade: Attribute.Integer;
+    ib_program: Attribute.Relation<
+      'api::class.class',
+      'manyToOne',
+      'api::ib-program.ib-program'
+    >;
+    subjects: Attribute.Relation<
+      'api::class.class',
+      'manyToMany',
+      'api::subject.subject'
+    >;
+    students: Attribute.Relation<
+      'api::class.class',
+      'oneToMany',
+      'plugin::users-permissions.user'
+    >;
+    createdAt: Attribute.DateTime;
+    updatedAt: Attribute.DateTime;
+    publishedAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<
+      'api::class.class',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+    updatedBy: Attribute.Relation<
+      'api::class.class',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+  };
+}
+
+export interface ApiCourseCourse extends Schema.CollectionType {
+  collectionName: 'courses';
+  info: {
+    singularName: 'course';
+    pluralName: 'courses';
+    displayName: 'Course';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    title: Attribute.String;
+    description: Attribute.Text;
+    isFree: Attribute.Boolean & Attribute.DefaultTo<false>;
+    price: Attribute.Decimal;
+    subject: Attribute.Relation<
+      'api::course.course',
+      'manyToOne',
+      'api::subject.subject'
+    >;
+    tutor: Attribute.Relation<
+      'api::course.course',
+      'oneToOne',
+      'plugin::users-permissions.user'
+    >;
+    recorded_lectures: Attribute.Relation<
+      'api::course.course',
+      'oneToMany',
+      'api::recorded-lecture.recorded-lecture'
+    >;
+    live_lectures: Attribute.Relation<
+      'api::course.course',
+      'oneToMany',
+      'api::live-lecture.live-lecture'
+    >;
+    enrollments: Attribute.Relation<
+      'api::course.course',
+      'oneToMany',
+      'api::enrollment.enrollment'
+    >;
+    payments: Attribute.Relation<
+      'api::course.course',
+      'oneToMany',
+      'api::payment.payment'
+    >;
+    createdAt: Attribute.DateTime;
+    updatedAt: Attribute.DateTime;
+    publishedAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<
+      'api::course.course',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+    updatedBy: Attribute.Relation<
+      'api::course.course',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+  };
+}
+
+export interface ApiEnrollmentEnrollment extends Schema.CollectionType {
+  collectionName: 'enrollments';
+  info: {
+    singularName: 'enrollment';
+    pluralName: 'enrollments';
+    displayName: 'Enrollment';
+    description: '';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    enrollment_date: Attribute.Date;
+    enrollment_status: Attribute.Enumeration<['active', 'dropped', 'inactive']>;
+    student: Attribute.Relation<
+      'api::enrollment.enrollment',
+      'manyToOne',
+      'plugin::users-permissions.user'
+    >;
+    course: Attribute.Relation<
+      'api::enrollment.enrollment',
+      'manyToOne',
+      'api::course.course'
+    >;
+    isPaid: Attribute.Boolean & Attribute.DefaultTo<true>;
+    payment_amount: Attribute.Decimal;
+    payment_date: Attribute.Date;
+    createdAt: Attribute.DateTime;
+    updatedAt: Attribute.DateTime;
+    publishedAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<
+      'api::enrollment.enrollment',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+    updatedBy: Attribute.Relation<
+      'api::enrollment.enrollment',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+  };
+}
+
+export interface ApiIbProgramIbProgram extends Schema.CollectionType {
+  collectionName: 'ib_programs';
+  info: {
+    singularName: 'ib-program';
+    pluralName: 'ib-programs';
+    displayName: 'IB_program';
+    description: '';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    name: Attribute.Enumeration<['PYP', 'MYP', 'DP']>;
+    grade_range: Attribute.String;
+    description: Attribute.Text;
+    classes: Attribute.Relation<
+      'api::ib-program.ib-program',
+      'oneToMany',
+      'api::class.class'
+    >;
+    user: Attribute.Relation<
+      'api::ib-program.ib-program',
+      'oneToOne',
+      'plugin::users-permissions.user'
+    >;
+    createdAt: Attribute.DateTime;
+    updatedAt: Attribute.DateTime;
+    publishedAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<
+      'api::ib-program.ib-program',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+    updatedBy: Attribute.Relation<
+      'api::ib-program.ib-program',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+  };
+}
+
+export interface ApiLiveLectureLiveLecture extends Schema.CollectionType {
+  collectionName: 'live_lectures';
+  info: {
+    singularName: 'live-lecture';
+    pluralName: 'live-lectures';
+    displayName: 'Live_Lecture';
+    description: '';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    title: Attribute.String;
+    description: Attribute.Text;
+    zoom_url: Attribute.String;
+    schedule: Attribute.DateTime;
+    subject: Attribute.Relation<
+      'api::live-lecture.live-lecture',
+      'manyToOne',
+      'api::subject.subject'
+    >;
+    isFree: Attribute.Boolean & Attribute.DefaultTo<false>;
+    price: Attribute.Decimal;
+    tutor: Attribute.Relation<
+      'api::live-lecture.live-lecture',
+      'oneToOne',
+      'plugin::users-permissions.user'
+    >;
+    course: Attribute.Relation<
+      'api::live-lecture.live-lecture',
+      'manyToOne',
+      'api::course.course'
+    >;
+    payments: Attribute.Relation<
+      'api::live-lecture.live-lecture',
+      'oneToMany',
+      'api::payment.payment'
+    >;
+    createdAt: Attribute.DateTime;
+    updatedAt: Attribute.DateTime;
+    publishedAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<
+      'api::live-lecture.live-lecture',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+    updatedBy: Attribute.Relation<
+      'api::live-lecture.live-lecture',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+  };
+}
+
+export interface ApiPaymentPayment extends Schema.CollectionType {
+  collectionName: 'payments';
+  info: {
+    singularName: 'payment';
+    pluralName: 'payments';
+    displayName: 'Payment';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    user: Attribute.Relation<
+      'api::payment.payment',
+      'manyToOne',
+      'plugin::users-permissions.user'
+    >;
+    amount: Attribute.Decimal;
+    course: Attribute.Relation<
+      'api::payment.payment',
+      'manyToOne',
+      'api::course.course'
+    >;
+    live_lecture: Attribute.Relation<
+      'api::payment.payment',
+      'manyToOne',
+      'api::live-lecture.live-lecture'
+    >;
+    recorded_lecture: Attribute.Relation<
+      'api::payment.payment',
+      'manyToOne',
+      'api::recorded-lecture.recorded-lecture'
+    >;
+    createdAt: Attribute.DateTime;
+    updatedAt: Attribute.DateTime;
+    publishedAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<
+      'api::payment.payment',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+    updatedBy: Attribute.Relation<
+      'api::payment.payment',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+  };
+}
+
+export interface ApiRecordedLectureRecordedLecture
+  extends Schema.CollectionType {
+  collectionName: 'recorded_lectures';
+  info: {
+    singularName: 'recorded-lecture';
+    pluralName: 'recorded-lectures';
+    displayName: 'Recorded_Lecture';
+    description: '';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    title: Attribute.String;
+    description: Attribute.Text;
+    subject: Attribute.Relation<
+      'api::recorded-lecture.recorded-lecture',
+      'manyToOne',
+      'api::subject.subject'
+    >;
+    video: Attribute.Media<'videos'>;
+    isFree: Attribute.Boolean & Attribute.DefaultTo<false>;
+    price: Attribute.Decimal;
+    tutor: Attribute.Relation<
+      'api::recorded-lecture.recorded-lecture',
+      'oneToOne',
+      'plugin::users-permissions.user'
+    >;
+    course: Attribute.Relation<
+      'api::recorded-lecture.recorded-lecture',
+      'manyToOne',
+      'api::course.course'
+    >;
+    payments: Attribute.Relation<
+      'api::recorded-lecture.recorded-lecture',
+      'oneToMany',
+      'api::payment.payment'
+    >;
+    createdAt: Attribute.DateTime;
+    updatedAt: Attribute.DateTime;
+    publishedAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<
+      'api::recorded-lecture.recorded-lecture',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+    updatedBy: Attribute.Relation<
+      'api::recorded-lecture.recorded-lecture',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+  };
+}
+
+export interface ApiSubjectSubject extends Schema.CollectionType {
+  collectionName: 'subjects';
+  info: {
+    singularName: 'subject';
+    pluralName: 'subjects';
+    displayName: 'Subject';
+    description: '';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    isRequired: Attribute.Boolean;
+    name: Attribute.String;
+    classes: Attribute.Relation<
+      'api::subject.subject',
+      'manyToMany',
+      'api::class.class'
+    >;
+    topics: Attribute.Relation<
+      'api::subject.subject',
+      'oneToMany',
+      'api::topic.topic'
+    >;
+    recorded_lectures: Attribute.Relation<
+      'api::subject.subject',
+      'oneToMany',
+      'api::recorded-lecture.recorded-lecture'
+    >;
+    live_lectures: Attribute.Relation<
+      'api::subject.subject',
+      'oneToMany',
+      'api::live-lecture.live-lecture'
+    >;
+    reference_books: Attribute.Component<'subject.refrence-books', true>;
+    tutor: Attribute.Relation<
+      'api::subject.subject',
+      'manyToOne',
+      'plugin::users-permissions.user'
+    >;
+    courses: Attribute.Relation<
+      'api::subject.subject',
+      'oneToMany',
+      'api::course.course'
+    >;
+    createdAt: Attribute.DateTime;
+    updatedAt: Attribute.DateTime;
+    publishedAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<
+      'api::subject.subject',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+    updatedBy: Attribute.Relation<
+      'api::subject.subject',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+  };
+}
+
+export interface ApiSubtopicSubtopic extends Schema.CollectionType {
+  collectionName: 'subtopics';
+  info: {
+    singularName: 'subtopic';
+    pluralName: 'subtopics';
+    displayName: 'Subtopic';
+    description: '';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    name: Attribute.String;
+    topic: Attribute.Relation<
+      'api::subtopic.subtopic',
+      'manyToOne',
+      'api::topic.topic'
+    >;
+    headings: Attribute.Component<'subtopic.heading', true>;
+    createdAt: Attribute.DateTime;
+    updatedAt: Attribute.DateTime;
+    publishedAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<
+      'api::subtopic.subtopic',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+    updatedBy: Attribute.Relation<
+      'api::subtopic.subtopic',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+  };
+}
+
+export interface ApiTopicTopic extends Schema.CollectionType {
+  collectionName: 'topics';
+  info: {
+    singularName: 'topic';
+    pluralName: 'topics';
+    displayName: 'Topic';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    name: Attribute.String;
+    subject: Attribute.Relation<
+      'api::topic.topic',
+      'manyToOne',
+      'api::subject.subject'
+    >;
+    subtopics: Attribute.Relation<
+      'api::topic.topic',
+      'oneToMany',
+      'api::subtopic.subtopic'
+    >;
+    createdAt: Attribute.DateTime;
+    updatedAt: Attribute.DateTime;
+    publishedAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<
+      'api::topic.topic',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+    updatedBy: Attribute.Relation<
+      'api::topic.topic',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+  };
+}
+
 declare module '@strapi/types' {
   export module Shared {
     export interface ContentTypes {
@@ -1022,19 +1372,25 @@ declare module '@strapi/types' {
       'admin::api-token-permission': AdminApiTokenPermission;
       'admin::transfer-token': AdminTransferToken;
       'admin::transfer-token-permission': AdminTransferTokenPermission;
-      'api::course.course': ApiCourseCourse;
-      'api::enrollment.enrollment': ApiEnrollmentEnrollment;
-      'api::lecture.lecture': ApiLectureLecture;
       'plugin::upload.file': PluginUploadFile;
       'plugin::upload.folder': PluginUploadFolder;
       'plugin::content-releases.release': PluginContentReleasesRelease;
       'plugin::content-releases.release-action': PluginContentReleasesReleaseAction;
-      'plugin::strapi-google-auth.google-credential': PluginStrapiGoogleAuthGoogleCredential;
       'plugin::chartbrew.chartbrew': PluginChartbrewChartbrew;
       'plugin::i18n.locale': PluginI18NLocale;
       'plugin::users-permissions.permission': PluginUsersPermissionsPermission;
       'plugin::users-permissions.role': PluginUsersPermissionsRole;
       'plugin::users-permissions.user': PluginUsersPermissionsUser;
+      'api::class.class': ApiClassClass;
+      'api::course.course': ApiCourseCourse;
+      'api::enrollment.enrollment': ApiEnrollmentEnrollment;
+      'api::ib-program.ib-program': ApiIbProgramIbProgram;
+      'api::live-lecture.live-lecture': ApiLiveLectureLiveLecture;
+      'api::payment.payment': ApiPaymentPayment;
+      'api::recorded-lecture.recorded-lecture': ApiRecordedLectureRecordedLecture;
+      'api::subject.subject': ApiSubjectSubject;
+      'api::subtopic.subtopic': ApiSubtopicSubtopic;
+      'api::topic.topic': ApiTopicTopic;
     }
   }
 }

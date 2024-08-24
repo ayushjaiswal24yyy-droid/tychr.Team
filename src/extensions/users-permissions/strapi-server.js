@@ -1,4 +1,6 @@
+const { default: axios } = require('axios');
 const bcrypt = require('bcryptjs');
+const crypto = require('crypto');
 
 module.exports = (plugin) => {
     const sanitizeUser = (user) => {
@@ -56,6 +58,9 @@ module.exports = (plugin) => {
     plugin.controllers.auth.callback = async (ctx) => {
         const provider = ctx.params.provider || 'local';
         const params = ctx.request.body;
+        console.log(ctx);
+
+        console.log(ctx.request.body);
 
         if (provider === 'local') {
             if (!params.identifier || !params.password) {
@@ -93,21 +98,82 @@ module.exports = (plugin) => {
             }
 
             // Generate OTP for login
-            const otp = Math.floor(100000 + Math.random() * 900000).toString(); // 6-digit OTP
+            // const otp = Math.floor(100000 + Math.random() * 900000).toString(); // 6-digit OTP
 
             // Save OTP to user
-            await strapi.query('plugin::users-permissions.user').update({
-                where: { id: user.id },
-                data: { otp },
-            });
+            // await strapi.query('plugin::users-permissions.user').update({
+            //     where: { id: user.id },
+            //     data: { otp },
+            // });
 
             // Send OTP email
-            await strapi.service('api::email.email').sendOTPEmail(user.email, otp);
+            // await strapi.service('api::email.email').sendOTPEmail(user.email, otp);
 
-            return ctx.send({
-                message: 'OTP sent to your email. Please verify to complete login.',
-                uuid: user.uuid
+            // return ctx.send({
+            //     message: 'OTP sent to your email. Please verify to complete login.',
+            //     uuid: user.uuid
+            // });
+            const jwt = strapi.plugins['users-permissions'].services.jwt.issue({
+                id: user.id,
             });
+            return ctx.send({
+                jwt,
+                message: 'Login successful!',
+                user: sanitizeUser(user),
+            });
+        }
+        if (provider === 'google') {
+            const { access_token } = ctx.query;
+
+            if (!access_token) {
+                return ctx.badRequest('No access token provided');
+            }
+
+            try {
+                // Verify the token and get user info from Google
+                const response = await axios.get(`https://www.googleapis.com/oauth2/v3/userinfo?access_token=${access_token}`);
+                console.log(response.data);
+                const { email, name, sub: googleId } = response.data;
+
+                // Check if the user exists
+                let user = await strapi.query('plugin::users-permissions.user').findOne({ where: { email } });
+
+                if (!user) {
+                    // If the user doesn't exist, create a new one
+                    const role = await strapi.query('plugin::users-permissions.role').findOne({ where: { type: 'authenticated' } });
+
+                    const uuid = crypto.randomUUID();
+
+                    user = await strapi.query('plugin::users-permissions.user').create({
+                        data: {
+                            username: email,
+                            email,
+                            fullName: email,
+                            provider: 'google',
+                            googleId,
+                            role: role.id,
+                            uuid,
+                            confirmed: true,
+                            avatar: {
+                                url: response.data.picture,
+                            }
+                        },
+                    });
+                }
+
+                // Generate JWT token
+                const jwt = strapi.plugins['users-permissions'].services.jwt.issue({
+                    id: user.id,
+                });
+
+                return ctx.send({
+                    jwt,
+                    user: sanitizeUser(user),
+                });
+            } catch (error) {
+                console.error('Google authentication error:', error);
+                return ctx.badRequest('Failed to authenticate with Google');
+            }
         }
 
         // Handle other providers here if needed

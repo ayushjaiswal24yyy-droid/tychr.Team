@@ -1,0 +1,19 @@
+{
+  "collectionName": "components_subject_refrence_books",
+  "info": {
+    "displayName": "Refrence Books",
+    "icon": "book"
+  },
+  "options": {},
+  "attributes": {
+    "title": {
+      "type": "string"
+    },
+    "author": {
+      "type": "string"
+    },
+    "publication_year": {
+      "type": "integer"
+    }
+  }
+}

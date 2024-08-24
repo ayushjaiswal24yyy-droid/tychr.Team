@@ -1,0 +1,63 @@
+{
+  "kind": "collectionType",
+  "collectionName": "subjects",
+  "info": {
+    "singularName": "subject",
+    "pluralName": "subjects",
+    "displayName": "Subject",
+    "description": ""
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "isRequired": {
+      "type": "boolean"
+    },
+    "name": {
+      "type": "string"
+    },
+    "classes": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::class.class",
+      "inversedBy": "subjects"
+    },
+    "topics": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::topic.topic",
+      "mappedBy": "subject"
+    },
+    "recorded_lectures": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::recorded-lecture.recorded-lecture",
+      "mappedBy": "subject"
+    },
+    "live_lectures": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::live-lecture.live-lecture",
+      "mappedBy": "subject"
+    },
+    "reference_books": {
+      "type": "component",
+      "repeatable": true,
+      "component": "subject.refrence-books"
+    },
+    "tutor": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "plugin::users-permissions.user",
+      "inversedBy": "subjects_taught"
+    },
+    "courses": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::course.course",
+      "mappedBy": "subject"
+    }
+  }
+}

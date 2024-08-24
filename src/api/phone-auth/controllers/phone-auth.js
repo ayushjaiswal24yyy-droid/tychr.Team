@@ -20,7 +20,7 @@ const sns = new AWS.SNS();
 const sendSMS = async (phoneNumber, message) => {
     const params = {
         Message: message,
-        PhoneNumber: `${+91}${phoneNumber}`
+        PhoneNumber: phoneNumber
     };
     sns.publish(params, (err, data) => {
         if (err) {
@@ -33,14 +33,14 @@ const sendSMS = async (phoneNumber, message) => {
 
 module.exports = {
     async authenticateByPhone(ctx) {
-        const { phone, role } = ctx.request.body;
+        const { phoneNumber, role } = ctx.request.body;
 
-        if (!phone) {
+        if (!phoneNumber) {
             return ctx.badRequest('Phone number is required');
         }
 
         // Check if user exists
-        let user = await strapi.query('plugin::users-permissions.user').findOne({ where: { username: phone } });
+        let user = await strapi.query('plugin::users-permissions.user').findOne({ where: { username: phoneNumber } });
 
         const otp = Math.floor(100000 + Math.random() * 900000).toString(); // 6-digit OTP
 
@@ -54,17 +54,17 @@ module.exports = {
                 return ctx.badRequest(`Role "${role}" not found`);
             }
 
-            const hashedPassword = await hashPassword(phone);
+            const hashedPassword = await hashPassword(phoneNumber);
 
             const uuid = crypto.randomUUID();
 
 
             user = await strapi.query('plugin::users-permissions.user').create({
                 data: {
-                    fullName: phone,
-                    username: phone,
-                    email: `${phone}@example.com`, // You might want to handle this differently
-                    phoneNumber: phone,
+                    fullName: phoneNumber,
+                    username: phoneNumber,
+                    email: `${phoneNumber}@example.com`, // You might want to handle this differently
+                    phoneNumber: phoneNumber,
                     password: hashedPassword,
                     confirmed: false,
                     role: roleEntity.id,
@@ -83,7 +83,7 @@ module.exports = {
         }
 
         try {
-            await sendSMS(phone, `Hey there! Your TyChr OTP is: ${otp}`);
+            await sendSMS(phoneNumber, `Hey there! Your TyChr OTP is: ${otp}`);
         } catch (error) {
             return ctx.badRequest('Failed to send OTP');
         }

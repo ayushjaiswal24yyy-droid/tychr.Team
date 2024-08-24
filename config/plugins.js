@@ -28,9 +28,6 @@ module.exports = ({ env }) => ({
             },
         },
     },
-    "strapi-google-auth": {
-        enabled: true,
-    },
     graphql: {
         config: {
             endpoint: '/graphql',
