@@ -4,7 +4,8 @@
   "info": {
     "singularName": "topic",
     "pluralName": "topics",
-    "displayName": "Topic"
+    "displayName": "Topic",
+    "description": ""
   },
   "options": {
     "draftAndPublish": true
@@ -24,6 +25,18 @@
       "type": "relation",
       "relation": "oneToMany",
       "target": "api::subtopic.subtopic",
+      "mappedBy": "topic"
+    },
+    "recorded_lectures": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::recorded-lecture.recorded-lecture",
+      "mappedBy": "topic"
+    },
+    "live_lectures": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::live-lecture.live-lecture",
       "mappedBy": "topic"
     }
   }

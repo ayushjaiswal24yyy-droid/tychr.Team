@@ -58,9 +58,6 @@ module.exports = (plugin) => {
     plugin.controllers.auth.callback = async (ctx) => {
         const provider = ctx.params.provider || 'local';
         const params = ctx.request.body;
-        console.log(ctx);
-
-        console.log(ctx.request.body);
 
         if (provider === 'local') {
             if (!params.identifier || !params.password) {

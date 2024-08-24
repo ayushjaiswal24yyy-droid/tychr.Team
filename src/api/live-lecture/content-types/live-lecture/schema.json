@@ -24,12 +24,6 @@
     "schedule": {
       "type": "datetime"
     },
-    "subject": {
-      "type": "relation",
-      "relation": "manyToOne",
-      "target": "api::subject.subject",
-      "inversedBy": "live_lectures"
-    },
     "isFree": {
       "type": "boolean",
       "default": false
@@ -54,6 +48,12 @@
       "relation": "oneToMany",
       "target": "api::payment.payment",
       "mappedBy": "live_lecture"
+    },
+    "topic": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::topic.topic",
+      "inversedBy": "live_lectures"
     }
   }
 }

@@ -18,12 +18,6 @@
     "description": {
       "type": "text"
     },
-    "subject": {
-      "type": "relation",
-      "relation": "manyToOne",
-      "target": "api::subject.subject",
-      "inversedBy": "recorded_lectures"
-    },
     "video": {
       "type": "media",
       "multiple": false,
@@ -56,6 +50,12 @@
       "relation": "oneToMany",
       "target": "api::payment.payment",
       "mappedBy": "recorded_lecture"
+    },
+    "topic": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::topic.topic",
+      "inversedBy": "recorded_lectures"
     }
   }
 }

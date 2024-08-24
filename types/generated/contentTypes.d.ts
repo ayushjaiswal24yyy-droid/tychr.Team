@@ -1076,11 +1076,6 @@ export interface ApiLiveLectureLiveLecture extends Schema.CollectionType {
     description: Attribute.Text;
     zoom_url: Attribute.String;
     schedule: Attribute.DateTime;
-    subject: Attribute.Relation<
-      'api::live-lecture.live-lecture',
-      'manyToOne',
-      'api::subject.subject'
-    >;
     isFree: Attribute.Boolean & Attribute.DefaultTo<false>;
     price: Attribute.Decimal;
     tutor: Attribute.Relation<
@@ -1097,6 +1092,11 @@ export interface ApiLiveLectureLiveLecture extends Schema.CollectionType {
       'api::live-lecture.live-lecture',
       'oneToMany',
       'api::payment.payment'
+    >;
+    topic: Attribute.Relation<
+      'api::live-lecture.live-lecture',
+      'manyToOne',
+      'api::topic.topic'
     >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
@@ -1181,11 +1181,6 @@ export interface ApiRecordedLectureRecordedLecture
   attributes: {
     title: Attribute.String;
     description: Attribute.Text;
-    subject: Attribute.Relation<
-      'api::recorded-lecture.recorded-lecture',
-      'manyToOne',
-      'api::subject.subject'
-    >;
     video: Attribute.Media<'videos'>;
     isFree: Attribute.Boolean & Attribute.DefaultTo<false>;
     price: Attribute.Decimal;
@@ -1203,6 +1198,11 @@ export interface ApiRecordedLectureRecordedLecture
       'api::recorded-lecture.recorded-lecture',
       'oneToMany',
       'api::payment.payment'
+    >;
+    topic: Attribute.Relation<
+      'api::recorded-lecture.recorded-lecture',
+      'manyToOne',
+      'api::topic.topic'
     >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
@@ -1245,16 +1245,6 @@ export interface ApiSubjectSubject extends Schema.CollectionType {
       'api::subject.subject',
       'oneToMany',
       'api::topic.topic'
-    >;
-    recorded_lectures: Attribute.Relation<
-      'api::subject.subject',
-      'oneToMany',
-      'api::recorded-lecture.recorded-lecture'
-    >;
-    live_lectures: Attribute.Relation<
-      'api::subject.subject',
-      'oneToMany',
-      'api::live-lecture.live-lecture'
     >;
     reference_books: Attribute.Component<'subject.refrence-books', true>;
     tutor: Attribute.Relation<
@@ -1328,6 +1318,7 @@ export interface ApiTopicTopic extends Schema.CollectionType {
     singularName: 'topic';
     pluralName: 'topics';
     displayName: 'Topic';
+    description: '';
   };
   options: {
     draftAndPublish: true;
@@ -1343,6 +1334,16 @@ export interface ApiTopicTopic extends Schema.CollectionType {
       'api::topic.topic',
       'oneToMany',
       'api::subtopic.subtopic'
+    >;
+    recorded_lectures: Attribute.Relation<
+      'api::topic.topic',
+      'oneToMany',
+      'api::recorded-lecture.recorded-lecture'
+    >;
+    live_lectures: Attribute.Relation<
+      'api::topic.topic',
+      'oneToMany',
+      'api::live-lecture.live-lecture'
     >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;

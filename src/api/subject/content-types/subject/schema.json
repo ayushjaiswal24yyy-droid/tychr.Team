@@ -30,18 +30,6 @@
       "target": "api::topic.topic",
       "mappedBy": "subject"
     },
-    "recorded_lectures": {
-      "type": "relation",
-      "relation": "oneToMany",
-      "target": "api::recorded-lecture.recorded-lecture",
-      "mappedBy": "subject"
-    },
-    "live_lectures": {
-      "type": "relation",
-      "relation": "oneToMany",
-      "target": "api::live-lecture.live-lecture",
-      "mappedBy": "subject"
-    },
     "reference_books": {
       "type": "component",
       "repeatable": true,
