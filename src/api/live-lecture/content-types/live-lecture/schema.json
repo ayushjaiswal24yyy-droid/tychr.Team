@@ -33,9 +33,9 @@
     },
     "tutor": {
       "type": "relation",
-      "relation": "oneToOne",
+      "relation": "manyToOne",
       "target": "plugin::users-permissions.user",
-      "inversedBy": "live_lecture"
+      "inversedBy": "live_lectures"
     },
     "course": {
       "type": "relation",

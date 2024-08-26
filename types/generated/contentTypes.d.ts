@@ -811,16 +811,6 @@ export interface PluginUsersPermissionsUser extends Schema.CollectionType {
       'oneToOne',
       'api::ib-program.ib-program'
     >;
-    recorded_lecture: Attribute.Relation<
-      'plugin::users-permissions.user',
-      'oneToOne',
-      'api::recorded-lecture.recorded-lecture'
-    >;
-    live_lecture: Attribute.Relation<
-      'plugin::users-permissions.user',
-      'oneToOne',
-      'api::live-lecture.live-lecture'
-    >;
     subjects_taught: Attribute.Relation<
       'plugin::users-permissions.user',
       'oneToMany',
@@ -845,6 +835,21 @@ export interface PluginUsersPermissionsUser extends Schema.CollectionType {
       'plugin::users-permissions.user',
       'manyToOne',
       'api::class.class'
+    >;
+    recorded_lectures: Attribute.Relation<
+      'plugin::users-permissions.user',
+      'oneToMany',
+      'api::recorded-lecture.recorded-lecture'
+    >;
+    live_lectures: Attribute.Relation<
+      'plugin::users-permissions.user',
+      'oneToMany',
+      'api::live-lecture.live-lecture'
+    >;
+    fav_topics: Attribute.Relation<
+      'plugin::users-permissions.user',
+      'manyToMany',
+      'api::topic.topic'
     >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
@@ -881,15 +886,15 @@ export interface ApiClassClass extends Schema.CollectionType {
       'manyToOne',
       'api::ib-program.ib-program'
     >;
-    subjects: Attribute.Relation<
-      'api::class.class',
-      'manyToMany',
-      'api::subject.subject'
-    >;
     students: Attribute.Relation<
       'api::class.class',
       'oneToMany',
       'plugin::users-permissions.user'
+    >;
+    subjects: Attribute.Relation<
+      'api::class.class',
+      'oneToMany',
+      'api::subject.subject'
     >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
@@ -1080,7 +1085,7 @@ export interface ApiLiveLectureLiveLecture extends Schema.CollectionType {
     price: Attribute.Decimal;
     tutor: Attribute.Relation<
       'api::live-lecture.live-lecture',
-      'oneToOne',
+      'manyToOne',
       'plugin::users-permissions.user'
     >;
     course: Attribute.Relation<
@@ -1186,7 +1191,7 @@ export interface ApiRecordedLectureRecordedLecture
     price: Attribute.Decimal;
     tutor: Attribute.Relation<
       'api::recorded-lecture.recorded-lecture',
-      'oneToOne',
+      'manyToOne',
       'plugin::users-permissions.user'
     >;
     course: Attribute.Relation<
@@ -1236,9 +1241,9 @@ export interface ApiSubjectSubject extends Schema.CollectionType {
   attributes: {
     isRequired: Attribute.Boolean;
     name: Attribute.String;
-    classes: Attribute.Relation<
+    class: Attribute.Relation<
       'api::subject.subject',
-      'manyToMany',
+      'manyToOne',
       'api::class.class'
     >;
     topics: Attribute.Relation<
@@ -1344,6 +1349,11 @@ export interface ApiTopicTopic extends Schema.CollectionType {
       'api::topic.topic',
       'oneToMany',
       'api::live-lecture.live-lecture'
+    >;
+    fav_users: Attribute.Relation<
+      'api::topic.topic',
+      'manyToMany',
+      'plugin::users-permissions.user'
     >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;

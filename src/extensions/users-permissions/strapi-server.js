@@ -4,7 +4,7 @@ const crypto = require('crypto');
 
 module.exports = (plugin) => {
     const sanitizeUser = (user) => {
-        const { password, resetPasswordToken, confirmationToken, ...sanitizedUser } = user;
+        const { password, resetPasswordToken, confirmationToken, otp, ...sanitizedUser } = user;
         return sanitizedUser;
     };
     plugin.controllers.auth.register = async (ctx) => {
@@ -74,6 +74,7 @@ module.exports = (plugin) => {
                         { username: identifier }
                     ],
                 },
+                populate: ['role','fav_topics','avatar'],
             });
 
             if (!user) {
@@ -190,7 +191,7 @@ module.exports = (plugin) => {
     plugin.controllers.auth.verifyOTP = async (ctx) => {
         const { uuid, otp } = ctx.request.body;
 
-        const user = await strapi.query('plugin::users-permissions.user').findOne({ where: { uuid }, populate: ['role', 'avatar'] });
+        const user = await strapi.query('plugin::users-permissions.user').findOne({ where: { uuid }, populate: ['role', 'avatar', 'fav_topics'] });
 
         if (!user) {
             return ctx.badRequest('User not found');

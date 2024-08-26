@@ -38,6 +38,12 @@
       "relation": "oneToMany",
       "target": "api::live-lecture.live-lecture",
       "mappedBy": "topic"
+    },
+    "fav_users": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "plugin::users-permissions.user",
+      "inversedBy": "fav_topics"
     }
   }
 }

@@ -18,9 +18,9 @@
     "name": {
       "type": "string"
     },
-    "classes": {
+    "class": {
       "type": "relation",
-      "relation": "manyToMany",
+      "relation": "manyToOne",
       "target": "api::class.class",
       "inversedBy": "subjects"
     },

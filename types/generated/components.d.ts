@@ -1,18 +1,5 @@
 import type { Schema, Attribute } from '@strapi/strapi';
 
-export interface SubjectRefrenceBooks extends Schema.Component {
-  collectionName: 'components_subject_refrence_books';
-  info: {
-    displayName: 'Refrence Books';
-    icon: 'book';
-  };
-  attributes: {
-    title: Attribute.String;
-    author: Attribute.String;
-    publication_year: Attribute.Integer;
-  };
-}
-
 export interface SubtopicQnA extends Schema.Component {
   collectionName: 'components_subtopic_qn_as';
   info: {
@@ -41,12 +28,25 @@ export interface SubtopicHeading extends Schema.Component {
   };
 }
 
+export interface SubjectRefrenceBooks extends Schema.Component {
+  collectionName: 'components_subject_refrence_books';
+  info: {
+    displayName: 'Refrence Books';
+    icon: 'book';
+  };
+  attributes: {
+    title: Attribute.String;
+    author: Attribute.String;
+    publication_year: Attribute.Integer;
+  };
+}
+
 declare module '@strapi/types' {
   export module Shared {
     export interface Components {
-      'subject.refrence-books': SubjectRefrenceBooks;
       'subtopic.qn-a': SubtopicQnA;
       'subtopic.heading': SubtopicHeading;
+      'subject.refrence-books': SubjectRefrenceBooks;
     }
   }
 }

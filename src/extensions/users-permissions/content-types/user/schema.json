@@ -96,18 +96,6 @@
       "target": "api::ib-program.ib-program",
       "inversedBy": "user"
     },
-    "recorded_lecture": {
-      "type": "relation",
-      "relation": "oneToOne",
-      "target": "api::recorded-lecture.recorded-lecture",
-      "mappedBy": "tutor"
-    },
-    "live_lecture": {
-      "type": "relation",
-      "relation": "oneToOne",
-      "target": "api::live-lecture.live-lecture",
-      "mappedBy": "tutor"
-    },
     "subjects_taught": {
       "type": "relation",
       "relation": "oneToMany",
@@ -137,6 +125,24 @@
       "relation": "manyToOne",
       "target": "api::class.class",
       "inversedBy": "students"
+    },
+    "recorded_lectures": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::recorded-lecture.recorded-lecture",
+      "mappedBy": "tutor"
+    },
+    "live_lectures": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::live-lecture.live-lecture",
+      "mappedBy": "tutor"
+    },
+    "fav_topics": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::topic.topic",
+      "mappedBy": "fav_users"
     }
   }
 }

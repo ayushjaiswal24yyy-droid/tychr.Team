@@ -21,16 +21,16 @@
       "target": "api::ib-program.ib-program",
       "inversedBy": "classes"
     },
-    "subjects": {
-      "type": "relation",
-      "relation": "manyToMany",
-      "target": "api::subject.subject",
-      "mappedBy": "classes"
-    },
     "students": {
       "type": "relation",
       "relation": "oneToMany",
       "target": "plugin::users-permissions.user",
+      "mappedBy": "class"
+    },
+    "subjects": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::subject.subject",
       "mappedBy": "class"
     }
   }
