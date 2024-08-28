@@ -137,6 +137,10 @@
       "relation": "manyToMany",
       "target": "api::grade-subject.grade-subject",
       "mappedBy": "students"
+    },
+    "onBoarded": {
+      "type": "boolean",
+      "default": false
     }
   }
 }
