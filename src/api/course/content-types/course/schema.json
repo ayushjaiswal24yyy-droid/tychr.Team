@@ -24,12 +24,6 @@
     "price": {
       "type": "decimal"
     },
-    "subject": {
-      "type": "relation",
-      "relation": "manyToOne",
-      "target": "api::subject.subject",
-      "inversedBy": "courses"
-    },
     "tutor": {
       "type": "relation",
       "relation": "oneToOne",

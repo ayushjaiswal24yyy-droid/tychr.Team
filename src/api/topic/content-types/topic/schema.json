@@ -15,12 +15,6 @@
     "name": {
       "type": "string"
     },
-    "subject": {
-      "type": "relation",
-      "relation": "manyToOne",
-      "target": "api::subject.subject",
-      "inversedBy": "topics"
-    },
     "subtopics": {
       "type": "relation",
       "relation": "oneToMany",
@@ -44,6 +38,12 @@
       "relation": "manyToMany",
       "target": "plugin::users-permissions.user",
       "inversedBy": "fav_topics"
+    },
+    "grade_subject": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::grade-subject.grade-subject",
+      "inversedBy": "topics"
     }
   }
 }

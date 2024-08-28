@@ -12,40 +12,17 @@
   },
   "pluginOptions": {},
   "attributes": {
-    "isRequired": {
-      "type": "boolean"
-    },
     "name": {
       "type": "string"
     },
-    "class": {
-      "type": "relation",
-      "relation": "manyToOne",
-      "target": "api::class.class",
-      "inversedBy": "subjects"
-    },
-    "topics": {
+    "grade_subjects": {
       "type": "relation",
       "relation": "oneToMany",
-      "target": "api::topic.topic",
+      "target": "api::grade-subject.grade-subject",
       "mappedBy": "subject"
     },
-    "reference_books": {
-      "type": "component",
-      "repeatable": true,
-      "component": "subject.refrence-books"
-    },
-    "tutor": {
-      "type": "relation",
-      "relation": "manyToOne",
-      "target": "plugin::users-permissions.user",
-      "inversedBy": "subjects_taught"
-    },
-    "courses": {
-      "type": "relation",
-      "relation": "oneToMany",
-      "target": "api::course.course",
-      "mappedBy": "subject"
+    "description": {
+      "type": "text"
     }
   }
 }

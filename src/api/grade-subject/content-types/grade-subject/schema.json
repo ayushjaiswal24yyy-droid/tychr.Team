@@ -1,0 +1,58 @@
+{
+  "kind": "collectionType",
+  "collectionName": "grade_subjects",
+  "info": {
+    "singularName": "grade-subject",
+    "pluralName": "grade-subjects",
+    "displayName": "Grade Subject",
+    "description": ""
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "isRequired": {
+      "type": "boolean",
+      "default": true
+    },
+    "topics": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::topic.topic",
+      "mappedBy": "grade_subject"
+    },
+    "reference_books": {
+      "type": "component",
+      "repeatable": true,
+      "component": "subject.refrence-books"
+    },
+    "subject": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::subject.subject",
+      "inversedBy": "grade_subjects"
+    },
+    "grade": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::class.class",
+      "inversedBy": "grade_subjects"
+    },
+    "name": {
+      "type": "string"
+    },
+    "students": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "plugin::users-permissions.user",
+      "inversedBy": "studying"
+    },
+    "tutor": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "plugin::users-permissions.user",
+      "mappedBy": "teaching"
+    }
+  }
+}

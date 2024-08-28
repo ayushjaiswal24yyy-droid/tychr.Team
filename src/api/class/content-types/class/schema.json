@@ -4,7 +4,7 @@
   "info": {
     "singularName": "class",
     "pluralName": "classes",
-    "displayName": "Class",
+    "displayName": "Grade",
     "description": ""
   },
   "options": {
@@ -15,23 +15,17 @@
     "grade": {
       "type": "integer"
     },
+    "grade_subjects": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::grade-subject.grade-subject",
+      "mappedBy": "grade"
+    },
     "ib_program": {
       "type": "relation",
       "relation": "manyToOne",
       "target": "api::ib-program.ib-program",
-      "inversedBy": "classes"
-    },
-    "students": {
-      "type": "relation",
-      "relation": "oneToMany",
-      "target": "plugin::users-permissions.user",
-      "mappedBy": "class"
-    },
-    "subjects": {
-      "type": "relation",
-      "relation": "oneToMany",
-      "target": "api::subject.subject",
-      "mappedBy": "class"
+      "inversedBy": "grades"
     }
   }
 }

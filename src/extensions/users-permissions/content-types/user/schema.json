@@ -90,18 +90,6 @@
       "type": "string",
       "unique": true
     },
-    "ib_program": {
-      "type": "relation",
-      "relation": "oneToOne",
-      "target": "api::ib-program.ib-program",
-      "inversedBy": "user"
-    },
-    "subjects_taught": {
-      "type": "relation",
-      "relation": "oneToMany",
-      "target": "api::subject.subject",
-      "mappedBy": "tutor"
-    },
     "course": {
       "type": "relation",
       "relation": "oneToOne",
@@ -120,12 +108,6 @@
       "target": "api::payment.payment",
       "mappedBy": "user"
     },
-    "class": {
-      "type": "relation",
-      "relation": "manyToOne",
-      "target": "api::class.class",
-      "inversedBy": "students"
-    },
     "recorded_lectures": {
       "type": "relation",
       "relation": "oneToMany",
@@ -143,6 +125,18 @@
       "relation": "manyToMany",
       "target": "api::topic.topic",
       "mappedBy": "fav_users"
+    },
+    "teaching": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::grade-subject.grade-subject",
+      "inversedBy": "tutor"
+    },
+    "studying": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::grade-subject.grade-subject",
+      "mappedBy": "students"
     }
   }
 }

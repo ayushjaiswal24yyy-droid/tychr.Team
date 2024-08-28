@@ -806,16 +806,6 @@ export interface PluginUsersPermissionsUser extends Schema.CollectionType {
     otp: Attribute.BigInteger;
     avatar: Attribute.Media<'images' | 'files' | 'videos' | 'audios'>;
     phoneNumber: Attribute.String & Attribute.Unique;
-    ib_program: Attribute.Relation<
-      'plugin::users-permissions.user',
-      'oneToOne',
-      'api::ib-program.ib-program'
-    >;
-    subjects_taught: Attribute.Relation<
-      'plugin::users-permissions.user',
-      'oneToMany',
-      'api::subject.subject'
-    >;
     course: Attribute.Relation<
       'plugin::users-permissions.user',
       'oneToOne',
@@ -831,11 +821,6 @@ export interface PluginUsersPermissionsUser extends Schema.CollectionType {
       'oneToMany',
       'api::payment.payment'
     >;
-    class: Attribute.Relation<
-      'plugin::users-permissions.user',
-      'manyToOne',
-      'api::class.class'
-    >;
     recorded_lectures: Attribute.Relation<
       'plugin::users-permissions.user',
       'oneToMany',
@@ -850,6 +835,16 @@ export interface PluginUsersPermissionsUser extends Schema.CollectionType {
       'plugin::users-permissions.user',
       'manyToMany',
       'api::topic.topic'
+    >;
+    teaching: Attribute.Relation<
+      'plugin::users-permissions.user',
+      'manyToMany',
+      'api::grade-subject.grade-subject'
+    >;
+    studying: Attribute.Relation<
+      'plugin::users-permissions.user',
+      'manyToMany',
+      'api::grade-subject.grade-subject'
     >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
@@ -873,7 +868,7 @@ export interface ApiClassClass extends Schema.CollectionType {
   info: {
     singularName: 'class';
     pluralName: 'classes';
-    displayName: 'Class';
+    displayName: 'Grade';
     description: '';
   };
   options: {
@@ -881,20 +876,15 @@ export interface ApiClassClass extends Schema.CollectionType {
   };
   attributes: {
     grade: Attribute.Integer;
+    grade_subjects: Attribute.Relation<
+      'api::class.class',
+      'oneToMany',
+      'api::grade-subject.grade-subject'
+    >;
     ib_program: Attribute.Relation<
       'api::class.class',
       'manyToOne',
       'api::ib-program.ib-program'
-    >;
-    students: Attribute.Relation<
-      'api::class.class',
-      'oneToMany',
-      'plugin::users-permissions.user'
-    >;
-    subjects: Attribute.Relation<
-      'api::class.class',
-      'oneToMany',
-      'api::subject.subject'
     >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
@@ -929,11 +919,6 @@ export interface ApiCourseCourse extends Schema.CollectionType {
     description: Attribute.Text;
     isFree: Attribute.Boolean & Attribute.DefaultTo<false>;
     price: Attribute.Decimal;
-    subject: Attribute.Relation<
-      'api::course.course',
-      'manyToOne',
-      'api::subject.subject'
-    >;
     tutor: Attribute.Relation<
       'api::course.course',
       'oneToOne',
@@ -1022,6 +1007,64 @@ export interface ApiEnrollmentEnrollment extends Schema.CollectionType {
   };
 }
 
+export interface ApiGradeSubjectGradeSubject extends Schema.CollectionType {
+  collectionName: 'grade_subjects';
+  info: {
+    singularName: 'grade-subject';
+    pluralName: 'grade-subjects';
+    displayName: 'Grade Subject';
+    description: '';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    isRequired: Attribute.Boolean & Attribute.DefaultTo<true>;
+    topics: Attribute.Relation<
+      'api::grade-subject.grade-subject',
+      'oneToMany',
+      'api::topic.topic'
+    >;
+    reference_books: Attribute.Component<'subject.refrence-books', true>;
+    subject: Attribute.Relation<
+      'api::grade-subject.grade-subject',
+      'manyToOne',
+      'api::subject.subject'
+    >;
+    grade: Attribute.Relation<
+      'api::grade-subject.grade-subject',
+      'manyToOne',
+      'api::class.class'
+    >;
+    name: Attribute.String;
+    students: Attribute.Relation<
+      'api::grade-subject.grade-subject',
+      'manyToMany',
+      'plugin::users-permissions.user'
+    >;
+    tutor: Attribute.Relation<
+      'api::grade-subject.grade-subject',
+      'manyToMany',
+      'plugin::users-permissions.user'
+    >;
+    createdAt: Attribute.DateTime;
+    updatedAt: Attribute.DateTime;
+    publishedAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<
+      'api::grade-subject.grade-subject',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+    updatedBy: Attribute.Relation<
+      'api::grade-subject.grade-subject',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+  };
+}
+
 export interface ApiIbProgramIbProgram extends Schema.CollectionType {
   collectionName: 'ib_programs';
   info: {
@@ -1037,15 +1080,10 @@ export interface ApiIbProgramIbProgram extends Schema.CollectionType {
     name: Attribute.Enumeration<['PYP', 'MYP', 'DP']>;
     grade_range: Attribute.String;
     description: Attribute.Text;
-    classes: Attribute.Relation<
+    grades: Attribute.Relation<
       'api::ib-program.ib-program',
       'oneToMany',
       'api::class.class'
-    >;
-    user: Attribute.Relation<
-      'api::ib-program.ib-program',
-      'oneToOne',
-      'plugin::users-permissions.user'
     >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
@@ -1239,29 +1277,13 @@ export interface ApiSubjectSubject extends Schema.CollectionType {
     draftAndPublish: true;
   };
   attributes: {
-    isRequired: Attribute.Boolean;
     name: Attribute.String;
-    class: Attribute.Relation<
-      'api::subject.subject',
-      'manyToOne',
-      'api::class.class'
-    >;
-    topics: Attribute.Relation<
+    grade_subjects: Attribute.Relation<
       'api::subject.subject',
       'oneToMany',
-      'api::topic.topic'
+      'api::grade-subject.grade-subject'
     >;
-    reference_books: Attribute.Component<'subject.refrence-books', true>;
-    tutor: Attribute.Relation<
-      'api::subject.subject',
-      'manyToOne',
-      'plugin::users-permissions.user'
-    >;
-    courses: Attribute.Relation<
-      'api::subject.subject',
-      'oneToMany',
-      'api::course.course'
-    >;
+    description: Attribute.Text;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
@@ -1330,11 +1352,6 @@ export interface ApiTopicTopic extends Schema.CollectionType {
   };
   attributes: {
     name: Attribute.String;
-    subject: Attribute.Relation<
-      'api::topic.topic',
-      'manyToOne',
-      'api::subject.subject'
-    >;
     subtopics: Attribute.Relation<
       'api::topic.topic',
       'oneToMany',
@@ -1354,6 +1371,11 @@ export interface ApiTopicTopic extends Schema.CollectionType {
       'api::topic.topic',
       'manyToMany',
       'plugin::users-permissions.user'
+    >;
+    grade_subject: Attribute.Relation<
+      'api::topic.topic',
+      'manyToOne',
+      'api::grade-subject.grade-subject'
     >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
@@ -1395,6 +1417,7 @@ declare module '@strapi/types' {
       'api::class.class': ApiClassClass;
       'api::course.course': ApiCourseCourse;
       'api::enrollment.enrollment': ApiEnrollmentEnrollment;
+      'api::grade-subject.grade-subject': ApiGradeSubjectGradeSubject;
       'api::ib-program.ib-program': ApiIbProgramIbProgram;
       'api::live-lecture.live-lecture': ApiLiveLectureLiveLecture;
       'api::payment.payment': ApiPaymentPayment;
