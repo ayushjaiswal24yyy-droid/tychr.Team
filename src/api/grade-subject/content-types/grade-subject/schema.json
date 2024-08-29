@@ -53,6 +53,13 @@
       "relation": "manyToMany",
       "target": "plugin::users-permissions.user",
       "mappedBy": "teaching"
+    },
+    "subject_group": {
+      "type": "enumeration",
+      "enum": [
+        "HL",
+        "SL"
+      ]
     }
   }
 }

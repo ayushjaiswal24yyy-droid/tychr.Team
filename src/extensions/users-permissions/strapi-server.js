@@ -74,7 +74,7 @@ module.exports = (plugin) => {
                         { username: identifier }
                     ],
                 },
-                populate: ['role','fav_topics','avatar'],
+                populate: ['role','fav_topics','avatar','onBoarded'],
             });
 
             if (!user) {

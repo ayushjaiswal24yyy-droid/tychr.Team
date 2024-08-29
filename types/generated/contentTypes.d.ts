@@ -1048,6 +1048,7 @@ export interface ApiGradeSubjectGradeSubject extends Schema.CollectionType {
       'manyToMany',
       'plugin::users-permissions.user'
     >;
+    subject_group: Attribute.Enumeration<['HL', 'SL']>;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
@@ -1285,6 +1286,7 @@ export interface ApiSubjectSubject extends Schema.CollectionType {
       'api::grade-subject.grade-subject'
     >;
     description: Attribute.Text;
+    image: Attribute.Media<'images', true>;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
