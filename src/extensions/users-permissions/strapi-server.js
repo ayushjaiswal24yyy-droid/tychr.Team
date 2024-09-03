@@ -74,7 +74,7 @@ module.exports = (plugin) => {
                         { username: identifier }
                     ],
                 },
-                populate: ['role','fav_topics','avatar','onBoarded'],
+                populate: ['role', 'fav_topics', 'avatar', 'onBoarded'],
             });
 
             if (!user) {
@@ -178,6 +178,7 @@ module.exports = (plugin) => {
         return ctx.badRequest('Invalid provider');
     };
 
+    // Verify OTP
     plugin.routes['content-api'].routes.push({
         method: 'POST',
         path: '/auth/verify-otp',
@@ -187,6 +188,37 @@ module.exports = (plugin) => {
             prefix: '',
         },
     });
+
+    plugin.controllers.user.me = async (ctx) => {
+        if (!ctx.state.user) {
+            return ctx.unauthorized();
+        }
+
+        const { query } = ctx;
+        let populateQuery = ['role'];
+
+        if (query.populate) {
+            if (query.populate === '*') {
+                populateQuery = ['role', 'fav_topics', 'avatar', 'studying', 'teaching']; // Populate all fields
+            } else if (Array.isArray(query.populate)) {
+                populateQuery = [...populateQuery, ...query.populate];
+            } else if (typeof query.populate === 'string') {
+                populateQuery.push(query.populate);
+            }
+        }
+
+        const user = await strapi.entityService.findOne('plugin::users-permissions.user', ctx.state.user.id, {
+            populate: populateQuery,
+        });
+
+        if (!user) {
+            return ctx.notFound('User not found');
+        }
+
+        return ctx.send({
+            user: sanitizeUser(user)
+        });
+    };
 
     plugin.controllers.auth.verifyOTP = async (ctx) => {
         const { uuid, otp } = ctx.request.body;

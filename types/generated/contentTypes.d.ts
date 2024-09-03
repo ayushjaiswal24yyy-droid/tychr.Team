@@ -1249,6 +1249,7 @@ export interface ApiRecordedLectureRecordedLecture
       'manyToOne',
       'api::topic.topic'
     >;
+    order: Attribute.Integer;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
