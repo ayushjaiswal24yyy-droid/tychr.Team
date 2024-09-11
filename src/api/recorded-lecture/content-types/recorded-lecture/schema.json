@@ -58,6 +58,9 @@
       "type": "component",
       "repeatable": true,
       "component": "subtopic.qn-a"
+    },
+    "content": {
+      "type": "blocks"
     }
   }
 }
