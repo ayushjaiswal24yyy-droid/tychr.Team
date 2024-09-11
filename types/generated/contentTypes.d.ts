@@ -806,11 +806,6 @@ export interface PluginUsersPermissionsUser extends Schema.CollectionType {
     otp: Attribute.BigInteger;
     avatar: Attribute.Media<'images' | 'files' | 'videos' | 'audios'>;
     phoneNumber: Attribute.String & Attribute.Unique;
-    course: Attribute.Relation<
-      'plugin::users-permissions.user',
-      'oneToOne',
-      'api::course.course'
-    >;
     enrollments: Attribute.Relation<
       'plugin::users-permissions.user',
       'oneToMany',
@@ -905,57 +900,42 @@ export interface ApiClassClass extends Schema.CollectionType {
   };
 }
 
-export interface ApiCourseCourse extends Schema.CollectionType {
-  collectionName: 'courses';
+export interface ApiCoursePlanCoursePlan extends Schema.CollectionType {
+  collectionName: 'course_plans';
   info: {
-    singularName: 'course';
-    pluralName: 'courses';
-    displayName: 'Course';
+    singularName: 'course-plan';
+    pluralName: 'course-plans';
+    displayName: 'Course Plan';
+    description: '';
   };
   options: {
     draftAndPublish: true;
   };
   attributes: {
-    title: Attribute.String;
-    description: Attribute.Text;
-    isFree: Attribute.Boolean & Attribute.DefaultTo<false>;
+    name: Attribute.String;
+    live_lectures: Attribute.Boolean &
+      Attribute.Required &
+      Attribute.DefaultTo<false>;
+    recorded_lectures: Attribute.Boolean & Attribute.DefaultTo<true>;
     price: Attribute.Decimal;
-    tutor: Attribute.Relation<
-      'api::course.course',
-      'oneToOne',
-      'plugin::users-permissions.user'
-    >;
-    recorded_lectures: Attribute.Relation<
-      'api::course.course',
-      'oneToMany',
-      'api::recorded-lecture.recorded-lecture'
-    >;
-    live_lectures: Attribute.Relation<
-      'api::course.course',
-      'oneToMany',
-      'api::live-lecture.live-lecture'
-    >;
-    enrollments: Attribute.Relation<
-      'api::course.course',
-      'oneToMany',
-      'api::enrollment.enrollment'
-    >;
-    payments: Attribute.Relation<
-      'api::course.course',
-      'oneToMany',
-      'api::payment.payment'
+    qna: Attribute.Boolean & Attribute.DefaultTo<true>;
+    currency: Attribute.Enumeration<['USD', 'INR']>;
+    grade_subjects: Attribute.Relation<
+      'api::course-plan.course-plan',
+      'manyToMany',
+      'api::grade-subject.grade-subject'
     >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
     createdBy: Attribute.Relation<
-      'api::course.course',
+      'api::course-plan.course-plan',
       'oneToOne',
       'admin::user'
     > &
       Attribute.Private;
     updatedBy: Attribute.Relation<
-      'api::course.course',
+      'api::course-plan.course-plan',
       'oneToOne',
       'admin::user'
     > &
@@ -981,11 +961,6 @@ export interface ApiEnrollmentEnrollment extends Schema.CollectionType {
       'api::enrollment.enrollment',
       'manyToOne',
       'plugin::users-permissions.user'
-    >;
-    course: Attribute.Relation<
-      'api::enrollment.enrollment',
-      'manyToOne',
-      'api::course.course'
     >;
     isPaid: Attribute.Boolean & Attribute.DefaultTo<true>;
     payment_amount: Attribute.Decimal;
@@ -1049,6 +1024,11 @@ export interface ApiGradeSubjectGradeSubject extends Schema.CollectionType {
       'plugin::users-permissions.user'
     >;
     subject_group: Attribute.Enumeration<['HL', 'SL']>;
+    course_plans: Attribute.Relation<
+      'api::grade-subject.grade-subject',
+      'manyToMany',
+      'api::course-plan.course-plan'
+    >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
@@ -1128,11 +1108,6 @@ export interface ApiLiveLectureLiveLecture extends Schema.CollectionType {
       'manyToOne',
       'plugin::users-permissions.user'
     >;
-    course: Attribute.Relation<
-      'api::live-lecture.live-lecture',
-      'manyToOne',
-      'api::course.course'
-    >;
     payments: Attribute.Relation<
       'api::live-lecture.live-lecture',
       'oneToMany',
@@ -1178,11 +1153,6 @@ export interface ApiPaymentPayment extends Schema.CollectionType {
       'plugin::users-permissions.user'
     >;
     amount: Attribute.Decimal;
-    course: Attribute.Relation<
-      'api::payment.payment',
-      'manyToOne',
-      'api::course.course'
-    >;
     live_lecture: Attribute.Relation<
       'api::payment.payment',
       'manyToOne',
@@ -1234,11 +1204,6 @@ export interface ApiRecordedLectureRecordedLecture
       'manyToOne',
       'plugin::users-permissions.user'
     >;
-    course: Attribute.Relation<
-      'api::recorded-lecture.recorded-lecture',
-      'manyToOne',
-      'api::course.course'
-    >;
     payments: Attribute.Relation<
       'api::recorded-lecture.recorded-lecture',
       'oneToMany',
@@ -1250,6 +1215,8 @@ export interface ApiRecordedLectureRecordedLecture
       'api::topic.topic'
     >;
     order: Attribute.Integer;
+    qna: Attribute.Component<'subtopic.qn-a', true>;
+    content: Attribute.RichText;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
@@ -1419,7 +1386,7 @@ declare module '@strapi/types' {
       'plugin::users-permissions.role': PluginUsersPermissionsRole;
       'plugin::users-permissions.user': PluginUsersPermissionsUser;
       'api::class.class': ApiClassClass;
-      'api::course.course': ApiCourseCourse;
+      'api::course-plan.course-plan': ApiCoursePlanCoursePlan;
       'api::enrollment.enrollment': ApiEnrollmentEnrollment;
       'api::grade-subject.grade-subject': ApiGradeSubjectGradeSubject;
       'api::ib-program.ib-program': ApiIbProgramIbProgram;

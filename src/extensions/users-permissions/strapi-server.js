@@ -201,7 +201,7 @@ module.exports = (plugin) => {
             if (query.populate === '*') {
                 populateQuery = ['role', 'fav_topics', 'avatar', 'studying', 'teaching']; // Populate all fields
             } else if (Array.isArray(query.populate)) {
-                populateQuery = [...populateQuery, ...query.populate];
+                populateQuery = [...populateQuery, ...query.populate];nv
             } else if (typeof query.populate === 'string') {
                 populateQuery.push(query.populate);
             }

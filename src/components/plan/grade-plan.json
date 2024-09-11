@@ -1,0 +1,36 @@
+{
+  "collectionName": "components_plan_grade_plans",
+  "info": {
+    "displayName": "Grade Plan",
+    "icon": "crown",
+    "description": ""
+  },
+  "options": {},
+  "attributes": {
+    "name": {
+      "type": "string"
+    },
+    "price": {
+      "type": "decimal"
+    },
+    "currency": {
+      "type": "enumeration",
+      "enum": [
+        "USD",
+        "INR"
+      ]
+    },
+    "recorded_lectures": {
+      "type": "boolean",
+      "default": true
+    },
+    "live_lectures": {
+      "type": "boolean",
+      "default": false
+    },
+    "qna": {
+      "type": "boolean",
+      "default": true
+    }
+  }
+}

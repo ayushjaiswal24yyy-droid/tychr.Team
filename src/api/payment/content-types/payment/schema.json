@@ -20,12 +20,6 @@
     "amount": {
       "type": "decimal"
     },
-    "course": {
-      "type": "relation",
-      "relation": "manyToOne",
-      "target": "api::course.course",
-      "inversedBy": "payments"
-    },
     "live_lecture": {
       "type": "relation",
       "relation": "manyToOne",

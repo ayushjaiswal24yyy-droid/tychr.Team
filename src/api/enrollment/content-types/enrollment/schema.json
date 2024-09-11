@@ -29,12 +29,6 @@
       "target": "plugin::users-permissions.user",
       "inversedBy": "enrollments"
     },
-    "course": {
-      "type": "relation",
-      "relation": "manyToOne",
-      "target": "api::course.course",
-      "inversedBy": "enrollments"
-    },
     "isPaid": {
       "type": "boolean",
       "default": true

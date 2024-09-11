@@ -39,12 +39,6 @@
       "target": "plugin::users-permissions.user",
       "inversedBy": "recorded_lectures"
     },
-    "course": {
-      "type": "relation",
-      "relation": "manyToOne",
-      "target": "api::course.course",
-      "inversedBy": "recorded_lectures"
-    },
     "payments": {
       "type": "relation",
       "relation": "oneToMany",
@@ -59,6 +53,14 @@
     },
     "order": {
       "type": "integer"
+    },
+    "qna": {
+      "type": "component",
+      "repeatable": true,
+      "component": "subtopic.qn-a"
+    },
+    "content": {
+      "type": "richtext"
     }
   }
 }

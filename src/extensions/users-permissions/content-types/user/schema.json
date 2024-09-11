@@ -90,12 +90,6 @@
       "type": "string",
       "unique": true
     },
-    "course": {
-      "type": "relation",
-      "relation": "oneToOne",
-      "target": "api::course.course",
-      "mappedBy": "tutor"
-    },
     "enrollments": {
       "type": "relation",
       "relation": "oneToMany",

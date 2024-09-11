@@ -37,12 +37,6 @@
       "target": "plugin::users-permissions.user",
       "inversedBy": "live_lectures"
     },
-    "course": {
-      "type": "relation",
-      "relation": "manyToOne",
-      "target": "api::course.course",
-      "inversedBy": "live_lectures"
-    },
     "payments": {
       "type": "relation",
       "relation": "oneToMany",

@@ -1,0 +1,48 @@
+{
+  "kind": "collectionType",
+  "collectionName": "course_plans",
+  "info": {
+    "singularName": "course-plan",
+    "pluralName": "course-plans",
+    "displayName": "Course Plan",
+    "description": ""
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "name": {
+      "type": "string"
+    },
+    "live_lectures": {
+      "type": "boolean",
+      "default": false,
+      "required": true
+    },
+    "recorded_lectures": {
+      "type": "boolean",
+      "default": true
+    },
+    "price": {
+      "type": "decimal"
+    },
+    "qna": {
+      "type": "boolean",
+      "default": true
+    },
+    "currency": {
+      "type": "enumeration",
+      "enum": [
+        "USD",
+        "INR"
+      ]
+    },
+    "grade_subjects": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::grade-subject.grade-subject",
+      "inversedBy": "course_plans"
+    }
+  }
+}
