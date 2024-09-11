@@ -1216,7 +1216,7 @@ export interface ApiRecordedLectureRecordedLecture
     >;
     order: Attribute.Integer;
     qna: Attribute.Component<'subtopic.qn-a', true>;
-    content: Attribute.RichText;
+    content: Attribute.Blocks;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;

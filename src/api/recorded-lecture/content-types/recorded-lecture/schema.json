@@ -60,7 +60,7 @@
       "component": "subtopic.qn-a"
     },
     "content": {
-      "type": "richtext"
+      "type": "blocks"
     }
   }
 }
