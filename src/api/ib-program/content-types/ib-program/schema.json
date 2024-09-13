@@ -31,6 +31,12 @@
       "relation": "oneToMany",
       "target": "api::class.class",
       "mappedBy": "ib_program"
+    },
+    "course_plans": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::course-plan.course-plan",
+      "mappedBy": "ib_programs"
     }
   }
 }

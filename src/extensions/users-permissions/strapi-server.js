@@ -74,7 +74,7 @@ module.exports = (plugin) => {
                         { username: identifier }
                     ],
                 },
-                populate: ['role', 'fav_topics', 'avatar', 'onBoarded'],
+                populate: ['role', 'fav_topics', 'avatar', 'onBoarded', 'enrollments.course_plan.ib_programs'],
             });
 
             if (!user) {
@@ -199,9 +199,9 @@ module.exports = (plugin) => {
 
         if (query.populate) {
             if (query.populate === '*') {
-                populateQuery = ['role', 'fav_topics', 'avatar', 'studying', 'teaching']; // Populate all fields
+                populateQuery = ['role', 'fav_topics', 'avatar', 'studying', 'teaching', 'enrollments']; // Populate all fields
             } else if (Array.isArray(query.populate)) {
-                populateQuery = [...populateQuery, ...query.populate];nv
+                populateQuery = [...populateQuery, ...query.populate];
             } else if (typeof query.populate === 'string') {
                 populateQuery.push(query.populate);
             }

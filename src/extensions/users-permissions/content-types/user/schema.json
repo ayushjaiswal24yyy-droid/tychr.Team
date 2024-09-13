@@ -90,18 +90,6 @@
       "type": "string",
       "unique": true
     },
-    "enrollments": {
-      "type": "relation",
-      "relation": "oneToMany",
-      "target": "api::enrollment.enrollment",
-      "mappedBy": "student"
-    },
-    "payments": {
-      "type": "relation",
-      "relation": "oneToMany",
-      "target": "api::payment.payment",
-      "mappedBy": "user"
-    },
     "recorded_lectures": {
       "type": "relation",
       "relation": "oneToMany",
@@ -135,6 +123,12 @@
     "onBoarded": {
       "type": "boolean",
       "default": false
+    },
+    "enrollments": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::enrollment.enrollment",
+      "mappedBy": "user"
     }
   }
 }

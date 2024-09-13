@@ -66,6 +66,13 @@
       "relation": "manyToMany",
       "target": "api::course-plan.course-plan",
       "mappedBy": "grade_subjects"
+    },
+    "level": {
+      "type": "enumeration",
+      "enum": [
+        "AA",
+        "AI"
+      ]
     }
   }
 }

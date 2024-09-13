@@ -806,16 +806,6 @@ export interface PluginUsersPermissionsUser extends Schema.CollectionType {
     otp: Attribute.BigInteger;
     avatar: Attribute.Media<'images' | 'files' | 'videos' | 'audios'>;
     phoneNumber: Attribute.String & Attribute.Unique;
-    enrollments: Attribute.Relation<
-      'plugin::users-permissions.user',
-      'oneToMany',
-      'api::enrollment.enrollment'
-    >;
-    payments: Attribute.Relation<
-      'plugin::users-permissions.user',
-      'oneToMany',
-      'api::payment.payment'
-    >;
     recorded_lectures: Attribute.Relation<
       'plugin::users-permissions.user',
       'oneToMany',
@@ -842,6 +832,11 @@ export interface PluginUsersPermissionsUser extends Schema.CollectionType {
       'api::grade-subject.grade-subject'
     >;
     onBoarded: Attribute.Boolean & Attribute.DefaultTo<false>;
+    enrollments: Attribute.Relation<
+      'plugin::users-permissions.user',
+      'oneToMany',
+      'api::enrollment.enrollment'
+    >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     createdBy: Attribute.Relation<
@@ -881,6 +876,11 @@ export interface ApiClassClass extends Schema.CollectionType {
       'api::class.class',
       'manyToOne',
       'api::ib-program.ib-program'
+    >;
+    course_plans: Attribute.Relation<
+      'api::class.class',
+      'manyToMany',
+      'api::course-plan.course-plan'
     >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
@@ -925,6 +925,22 @@ export interface ApiCoursePlanCoursePlan extends Schema.CollectionType {
       'manyToMany',
       'api::grade-subject.grade-subject'
     >;
+    enrollment: Attribute.Relation<
+      'api::course-plan.course-plan',
+      'oneToOne',
+      'api::enrollment.enrollment'
+    >;
+    description: Attribute.Text;
+    ib_programs: Attribute.Relation<
+      'api::course-plan.course-plan',
+      'manyToMany',
+      'api::ib-program.ib-program'
+    >;
+    grades: Attribute.Relation<
+      'api::course-plan.course-plan',
+      'manyToMany',
+      'api::class.class'
+    >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
@@ -956,15 +972,19 @@ export interface ApiEnrollmentEnrollment extends Schema.CollectionType {
   };
   attributes: {
     enrollment_date: Attribute.Date;
-    enrollment_status: Attribute.Enumeration<['active', 'dropped', 'inactive']>;
-    student: Attribute.Relation<
+    isPaid: Attribute.Boolean & Attribute.DefaultTo<true>;
+    payment_amount: Attribute.Decimal;
+    payment_date: Attribute.Date;
+    course_plan: Attribute.Relation<
+      'api::enrollment.enrollment',
+      'oneToOne',
+      'api::course-plan.course-plan'
+    >;
+    user: Attribute.Relation<
       'api::enrollment.enrollment',
       'manyToOne',
       'plugin::users-permissions.user'
     >;
-    isPaid: Attribute.Boolean & Attribute.DefaultTo<true>;
-    payment_amount: Attribute.Decimal;
-    payment_date: Attribute.Date;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
@@ -1029,6 +1049,7 @@ export interface ApiGradeSubjectGradeSubject extends Schema.CollectionType {
       'manyToMany',
       'api::course-plan.course-plan'
     >;
+    level: Attribute.Enumeration<['AA', 'AI']>;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
@@ -1066,6 +1087,11 @@ export interface ApiIbProgramIbProgram extends Schema.CollectionType {
       'api::ib-program.ib-program',
       'oneToMany',
       'api::class.class'
+    >;
+    course_plans: Attribute.Relation<
+      'api::ib-program.ib-program',
+      'manyToMany',
+      'api::course-plan.course-plan'
     >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
@@ -1147,11 +1173,6 @@ export interface ApiPaymentPayment extends Schema.CollectionType {
     draftAndPublish: true;
   };
   attributes: {
-    user: Attribute.Relation<
-      'api::payment.payment',
-      'manyToOne',
-      'plugin::users-permissions.user'
-    >;
     amount: Attribute.Decimal;
     live_lecture: Attribute.Relation<
       'api::payment.payment',

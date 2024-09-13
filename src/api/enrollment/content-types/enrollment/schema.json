@@ -15,20 +15,6 @@
     "enrollment_date": {
       "type": "date"
     },
-    "enrollment_status": {
-      "type": "enumeration",
-      "enum": [
-        "active",
-        "dropped",
-        "inactive"
-      ]
-    },
-    "student": {
-      "type": "relation",
-      "relation": "manyToOne",
-      "target": "plugin::users-permissions.user",
-      "inversedBy": "enrollments"
-    },
     "isPaid": {
       "type": "boolean",
       "default": true
@@ -38,6 +24,18 @@
     },
     "payment_date": {
       "type": "date"
+    },
+    "course_plan": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::course-plan.course-plan",
+      "inversedBy": "enrollment"
+    },
+    "user": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "plugin::users-permissions.user",
+      "inversedBy": "enrollments"
     }
   }
 }

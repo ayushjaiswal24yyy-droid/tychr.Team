@@ -43,6 +43,27 @@
       "relation": "manyToMany",
       "target": "api::grade-subject.grade-subject",
       "inversedBy": "course_plans"
+    },
+    "enrollment": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::enrollment.enrollment",
+      "mappedBy": "course_plan"
+    },
+    "description": {
+      "type": "text"
+    },
+    "ib_programs": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::ib-program.ib-program",
+      "inversedBy": "course_plans"
+    },
+    "grades": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::class.class",
+      "inversedBy": "course_plans"
     }
   }
 }

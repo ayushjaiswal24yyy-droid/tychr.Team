@@ -26,6 +26,12 @@
       "relation": "manyToOne",
       "target": "api::ib-program.ib-program",
       "inversedBy": "grades"
+    },
+    "course_plans": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::course-plan.course-plan",
+      "mappedBy": "grades"
     }
   }
 }
