@@ -837,6 +837,16 @@ export interface PluginUsersPermissionsUser extends Schema.CollectionType {
       'oneToMany',
       'api::enrollment.enrollment'
     >;
+    ib_program: Attribute.Relation<
+      'plugin::users-permissions.user',
+      'oneToOne',
+      'api::ib-program.ib-program'
+    >;
+    grade: Attribute.Relation<
+      'plugin::users-permissions.user',
+      'oneToOne',
+      'api::class.class'
+    >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     createdBy: Attribute.Relation<
@@ -872,15 +882,20 @@ export interface ApiClassClass extends Schema.CollectionType {
       'oneToMany',
       'api::grade-subject.grade-subject'
     >;
-    ib_program: Attribute.Relation<
+    ib_programs: Attribute.Relation<
       'api::class.class',
-      'manyToOne',
+      'manyToMany',
       'api::ib-program.ib-program'
     >;
     course_plans: Attribute.Relation<
       'api::class.class',
       'manyToMany',
       'api::course-plan.course-plan'
+    >;
+    user: Attribute.Relation<
+      'api::class.class',
+      'oneToOne',
+      'plugin::users-permissions.user'
     >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
@@ -1080,18 +1095,23 @@ export interface ApiIbProgramIbProgram extends Schema.CollectionType {
     draftAndPublish: true;
   };
   attributes: {
-    name: Attribute.Enumeration<['PYP', 'MYP', 'DP']>;
+    name: Attribute.Enumeration<['PYP', 'MYP', 'DP', 'consulting']>;
     grade_range: Attribute.String;
     description: Attribute.Text;
-    grades: Attribute.Relation<
-      'api::ib-program.ib-program',
-      'oneToMany',
-      'api::class.class'
-    >;
     course_plans: Attribute.Relation<
       'api::ib-program.ib-program',
       'manyToMany',
       'api::course-plan.course-plan'
+    >;
+    user: Attribute.Relation<
+      'api::ib-program.ib-program',
+      'oneToOne',
+      'plugin::users-permissions.user'
+    >;
+    grades: Attribute.Relation<
+      'api::ib-program.ib-program',
+      'manyToMany',
+      'api::class.class'
     >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
@@ -1238,6 +1258,7 @@ export interface ApiRecordedLectureRecordedLecture
     order: Attribute.Integer;
     qna: Attribute.Component<'subtopic.qn-a', true>;
     content: Attribute.Blocks;
+    thumbnail: Attribute.Media<'images'>;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;

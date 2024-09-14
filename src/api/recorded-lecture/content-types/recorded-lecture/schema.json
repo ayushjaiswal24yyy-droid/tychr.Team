@@ -61,6 +61,13 @@
     },
     "content": {
       "type": "blocks"
+    },
+    "thumbnail": {
+      "allowedTypes": [
+        "images"
+      ],
+      "type": "media",
+      "multiple": false
     }
   }
 }

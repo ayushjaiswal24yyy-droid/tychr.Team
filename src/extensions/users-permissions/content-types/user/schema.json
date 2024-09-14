@@ -129,6 +129,18 @@
       "relation": "oneToMany",
       "target": "api::enrollment.enrollment",
       "mappedBy": "user"
+    },
+    "ib_program": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::ib-program.ib-program",
+      "inversedBy": "user"
+    },
+    "grade": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::class.class",
+      "inversedBy": "user"
     }
   }
 }

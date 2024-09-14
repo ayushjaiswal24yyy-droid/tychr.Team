@@ -21,9 +21,9 @@
       "target": "api::grade-subject.grade-subject",
       "mappedBy": "grade"
     },
-    "ib_program": {
+    "ib_programs": {
       "type": "relation",
-      "relation": "manyToOne",
+      "relation": "manyToMany",
       "target": "api::ib-program.ib-program",
       "inversedBy": "grades"
     },
@@ -32,6 +32,12 @@
       "relation": "manyToMany",
       "target": "api::course-plan.course-plan",
       "mappedBy": "grades"
+    },
+    "user": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "plugin::users-permissions.user",
+      "mappedBy": "grade"
     }
   }
 }
