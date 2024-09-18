@@ -42,18 +42,6 @@
     "name": {
       "type": "string"
     },
-    "students": {
-      "type": "relation",
-      "relation": "manyToMany",
-      "target": "plugin::users-permissions.user",
-      "inversedBy": "studying"
-    },
-    "tutor": {
-      "type": "relation",
-      "relation": "manyToMany",
-      "target": "plugin::users-permissions.user",
-      "mappedBy": "teaching"
-    },
     "subject_group": {
       "type": "enumeration",
       "enum": [

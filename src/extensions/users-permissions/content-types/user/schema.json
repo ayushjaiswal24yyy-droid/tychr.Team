@@ -108,39 +108,27 @@
       "target": "api::topic.topic",
       "mappedBy": "fav_users"
     },
-    "teaching": {
-      "type": "relation",
-      "relation": "manyToMany",
-      "target": "api::grade-subject.grade-subject",
-      "inversedBy": "tutor"
-    },
-    "studying": {
-      "type": "relation",
-      "relation": "manyToMany",
-      "target": "api::grade-subject.grade-subject",
-      "mappedBy": "students"
-    },
     "onBoarded": {
       "type": "boolean",
       "default": false
-    },
-    "enrollments": {
-      "type": "relation",
-      "relation": "oneToMany",
-      "target": "api::enrollment.enrollment",
-      "mappedBy": "user"
-    },
-    "ib_program": {
-      "type": "relation",
-      "relation": "oneToOne",
-      "target": "api::ib-program.ib-program",
-      "inversedBy": "user"
     },
     "grade": {
       "type": "relation",
       "relation": "oneToOne",
       "target": "api::class.class",
       "inversedBy": "user"
+    },
+    "teaching": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::enrollment.enrollment",
+      "inversedBy": "tutors"
+    },
+    "studying": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::enrollment.enrollment",
+      "inversedBy": "students"
     }
   }
 }

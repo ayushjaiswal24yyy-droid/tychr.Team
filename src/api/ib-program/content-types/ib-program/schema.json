@@ -33,12 +33,6 @@
       "target": "api::course-plan.course-plan",
       "mappedBy": "ib_programs"
     },
-    "user": {
-      "type": "relation",
-      "relation": "oneToOne",
-      "target": "plugin::users-permissions.user",
-      "mappedBy": "ib_program"
-    },
     "grades": {
       "type": "relation",
       "relation": "manyToMany",

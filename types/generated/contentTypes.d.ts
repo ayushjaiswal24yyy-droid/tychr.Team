@@ -821,31 +821,21 @@ export interface PluginUsersPermissionsUser extends Schema.CollectionType {
       'manyToMany',
       'api::topic.topic'
     >;
-    teaching: Attribute.Relation<
-      'plugin::users-permissions.user',
-      'manyToMany',
-      'api::grade-subject.grade-subject'
-    >;
-    studying: Attribute.Relation<
-      'plugin::users-permissions.user',
-      'manyToMany',
-      'api::grade-subject.grade-subject'
-    >;
     onBoarded: Attribute.Boolean & Attribute.DefaultTo<false>;
-    enrollments: Attribute.Relation<
-      'plugin::users-permissions.user',
-      'oneToMany',
-      'api::enrollment.enrollment'
-    >;
-    ib_program: Attribute.Relation<
-      'plugin::users-permissions.user',
-      'oneToOne',
-      'api::ib-program.ib-program'
-    >;
     grade: Attribute.Relation<
       'plugin::users-permissions.user',
       'oneToOne',
       'api::class.class'
+    >;
+    teaching: Attribute.Relation<
+      'plugin::users-permissions.user',
+      'manyToMany',
+      'api::enrollment.enrollment'
+    >;
+    studying: Attribute.Relation<
+      'plugin::users-permissions.user',
+      'manyToMany',
+      'api::enrollment.enrollment'
     >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
@@ -940,7 +930,7 @@ export interface ApiCoursePlanCoursePlan extends Schema.CollectionType {
       'manyToMany',
       'api::grade-subject.grade-subject'
     >;
-    enrollment: Attribute.Relation<
+    classroom: Attribute.Relation<
       'api::course-plan.course-plan',
       'oneToOne',
       'api::enrollment.enrollment'
@@ -979,7 +969,7 @@ export interface ApiEnrollmentEnrollment extends Schema.CollectionType {
   info: {
     singularName: 'enrollment';
     pluralName: 'enrollments';
-    displayName: 'Enrollment';
+    displayName: 'Classroom';
     description: '';
   };
   options: {
@@ -990,15 +980,21 @@ export interface ApiEnrollmentEnrollment extends Schema.CollectionType {
     isPaid: Attribute.Boolean & Attribute.DefaultTo<true>;
     payment_amount: Attribute.Decimal;
     payment_date: Attribute.Date;
+    tutors: Attribute.Relation<
+      'api::enrollment.enrollment',
+      'manyToMany',
+      'plugin::users-permissions.user'
+    >;
+    students: Attribute.Relation<
+      'api::enrollment.enrollment',
+      'manyToMany',
+      'plugin::users-permissions.user'
+    >;
+    classroom_name: Attribute.String;
     course_plan: Attribute.Relation<
       'api::enrollment.enrollment',
       'oneToOne',
       'api::course-plan.course-plan'
-    >;
-    user: Attribute.Relation<
-      'api::enrollment.enrollment',
-      'manyToOne',
-      'plugin::users-permissions.user'
     >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
@@ -1048,16 +1044,6 @@ export interface ApiGradeSubjectGradeSubject extends Schema.CollectionType {
       'api::class.class'
     >;
     name: Attribute.String;
-    students: Attribute.Relation<
-      'api::grade-subject.grade-subject',
-      'manyToMany',
-      'plugin::users-permissions.user'
-    >;
-    tutor: Attribute.Relation<
-      'api::grade-subject.grade-subject',
-      'manyToMany',
-      'plugin::users-permissions.user'
-    >;
     subject_group: Attribute.Enumeration<['HL', 'SL']>;
     course_plans: Attribute.Relation<
       'api::grade-subject.grade-subject',
@@ -1102,11 +1088,6 @@ export interface ApiIbProgramIbProgram extends Schema.CollectionType {
       'api::ib-program.ib-program',
       'manyToMany',
       'api::course-plan.course-plan'
-    >;
-    user: Attribute.Relation<
-      'api::ib-program.ib-program',
-      'oneToOne',
-      'plugin::users-permissions.user'
     >;
     grades: Attribute.Relation<
       'api::ib-program.ib-program',

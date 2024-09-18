@@ -4,7 +4,7 @@
   "info": {
     "singularName": "enrollment",
     "pluralName": "enrollments",
-    "displayName": "Enrollment",
+    "displayName": "Classroom",
     "description": ""
   },
   "options": {
@@ -25,17 +25,26 @@
     "payment_date": {
       "type": "date"
     },
+    "tutors": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "plugin::users-permissions.user",
+      "mappedBy": "teaching"
+    },
+    "students": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "plugin::users-permissions.user",
+      "mappedBy": "studying"
+    },
+    "classroom_name": {
+      "type": "string"
+    },
     "course_plan": {
       "type": "relation",
       "relation": "oneToOne",
       "target": "api::course-plan.course-plan",
-      "inversedBy": "enrollment"
-    },
-    "user": {
-      "type": "relation",
-      "relation": "manyToOne",
-      "target": "plugin::users-permissions.user",
-      "inversedBy": "enrollments"
+      "mappedBy": "classroom"
     }
   }
 }
