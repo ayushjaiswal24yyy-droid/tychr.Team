@@ -41,6 +41,24 @@ export interface SubjectRefrenceBooks extends Schema.Component {
   };
 }
 
+export interface QuestionBankParts extends Schema.Component {
+  collectionName: 'components_question_bank_parts';
+  info: {
+    displayName: 'Parts';
+    icon: 'feather';
+  };
+  attributes: {
+    one_liner: Attribute.Blocks;
+    hints: Attribute.Blocks;
+    options: Attribute.Blocks;
+    correct_answer: Attribute.Blocks;
+    answer_type: Attribute.Enumeration<
+      ['Single Correct', 'Integer', 'Small Text', 'Large Text']
+    >;
+    marks: Attribute.Integer;
+  };
+}
+
 export interface PlanGradePlan extends Schema.Component {
   collectionName: 'components_plan_grade_plans';
   info: {
@@ -64,6 +82,7 @@ declare module '@strapi/types' {
       'subtopic.qn-a': SubtopicQnA;
       'subtopic.heading': SubtopicHeading;
       'subject.refrence-books': SubjectRefrenceBooks;
+      'question-bank.parts': QuestionBankParts;
       'plan.grade-plan': PlanGradePlan;
     }
   }

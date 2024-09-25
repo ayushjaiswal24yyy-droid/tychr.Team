@@ -44,12 +44,6 @@
       "target": "api::grade-subject.grade-subject",
       "inversedBy": "course_plans"
     },
-    "classroom": {
-      "type": "relation",
-      "relation": "oneToOne",
-      "target": "api::enrollment.enrollment",
-      "inversedBy": "course_plan"
-    },
     "description": {
       "type": "text"
     },
@@ -64,6 +58,12 @@
       "relation": "manyToMany",
       "target": "api::class.class",
       "inversedBy": "course_plans"
+    },
+    "classrooms": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::enrollment.enrollment",
+      "mappedBy": "course_plan"
     }
   }
 }

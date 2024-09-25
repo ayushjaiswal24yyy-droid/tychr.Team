@@ -129,6 +129,13 @@
       "relation": "manyToMany",
       "target": "api::enrollment.enrollment",
       "inversedBy": "students"
+    },
+    "title": {
+      "type": "enumeration",
+      "enum": [
+        "IB Facilitator",
+        "IB Examiner"
+      ]
     }
   }
 }

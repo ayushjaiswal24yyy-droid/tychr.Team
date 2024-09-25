@@ -837,6 +837,7 @@ export interface PluginUsersPermissionsUser extends Schema.CollectionType {
       'manyToMany',
       'api::enrollment.enrollment'
     >;
+    title: Attribute.Enumeration<['IB Facilitator', 'IB Examiner']>;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     createdBy: Attribute.Relation<
@@ -930,11 +931,6 @@ export interface ApiCoursePlanCoursePlan extends Schema.CollectionType {
       'manyToMany',
       'api::grade-subject.grade-subject'
     >;
-    classroom: Attribute.Relation<
-      'api::course-plan.course-plan',
-      'oneToOne',
-      'api::enrollment.enrollment'
-    >;
     description: Attribute.Text;
     ib_programs: Attribute.Relation<
       'api::course-plan.course-plan',
@@ -945,6 +941,11 @@ export interface ApiCoursePlanCoursePlan extends Schema.CollectionType {
       'api::course-plan.course-plan',
       'manyToMany',
       'api::class.class'
+    >;
+    classrooms: Attribute.Relation<
+      'api::course-plan.course-plan',
+      'oneToMany',
+      'api::enrollment.enrollment'
     >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
@@ -993,8 +994,13 @@ export interface ApiEnrollmentEnrollment extends Schema.CollectionType {
     classroom_name: Attribute.String;
     course_plan: Attribute.Relation<
       'api::enrollment.enrollment',
-      'oneToOne',
+      'manyToOne',
       'api::course-plan.course-plan'
+    >;
+    grade_subjects: Attribute.Relation<
+      'api::enrollment.enrollment',
+      'manyToMany',
+      'api::grade-subject.grade-subject'
     >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
@@ -1051,6 +1057,16 @@ export interface ApiGradeSubjectGradeSubject extends Schema.CollectionType {
       'api::course-plan.course-plan'
     >;
     level: Attribute.Enumeration<['AA', 'AI']>;
+    classrooms: Attribute.Relation<
+      'api::grade-subject.grade-subject',
+      'manyToMany',
+      'api::enrollment.enrollment'
+    >;
+    question_banks: Attribute.Relation<
+      'api::grade-subject.grade-subject',
+      'manyToMany',
+      'api::question-bank.question-bank'
+    >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
@@ -1203,6 +1219,49 @@ export interface ApiPaymentPayment extends Schema.CollectionType {
   };
 }
 
+export interface ApiQuestionBankQuestionBank extends Schema.CollectionType {
+  collectionName: 'question_banks';
+  info: {
+    singularName: 'question-bank';
+    pluralName: 'question-banks';
+    displayName: 'Question Bank';
+    description: '';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    question: Attribute.Blocks;
+    marks: Attribute.Integer;
+    subtopics: Attribute.Relation<
+      'api::question-bank.question-bank',
+      'manyToMany',
+      'api::subtopic.subtopic'
+    >;
+    grade_subjects: Attribute.Relation<
+      'api::question-bank.question-bank',
+      'manyToMany',
+      'api::grade-subject.grade-subject'
+    >;
+    parts: Attribute.Component<'question-bank.parts', true>;
+    createdAt: Attribute.DateTime;
+    updatedAt: Attribute.DateTime;
+    publishedAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<
+      'api::question-bank.question-bank',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+    updatedBy: Attribute.Relation<
+      'api::question-bank.question-bank',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+  };
+}
+
 export interface ApiRecordedLectureRecordedLecture
   extends Schema.CollectionType {
   collectionName: 'recorded_lectures';
@@ -1315,6 +1374,11 @@ export interface ApiSubtopicSubtopic extends Schema.CollectionType {
       'api::topic.topic'
     >;
     headings: Attribute.Component<'subtopic.heading', true>;
+    question_banks: Attribute.Relation<
+      'api::subtopic.subtopic',
+      'manyToMany',
+      'api::question-bank.question-bank'
+    >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
@@ -1415,6 +1479,7 @@ declare module '@strapi/types' {
       'api::ib-program.ib-program': ApiIbProgramIbProgram;
       'api::live-lecture.live-lecture': ApiLiveLectureLiveLecture;
       'api::payment.payment': ApiPaymentPayment;
+      'api::question-bank.question-bank': ApiQuestionBankQuestionBank;
       'api::recorded-lecture.recorded-lecture': ApiRecordedLectureRecordedLecture;
       'api::subject.subject': ApiSubjectSubject;
       'api::subtopic.subtopic': ApiSubtopicSubtopic;

@@ -42,9 +42,15 @@
     },
     "course_plan": {
       "type": "relation",
-      "relation": "oneToOne",
+      "relation": "manyToOne",
       "target": "api::course-plan.course-plan",
-      "mappedBy": "classroom"
+      "inversedBy": "classrooms"
+    },
+    "grade_subjects": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::grade-subject.grade-subject",
+      "inversedBy": "classrooms"
     }
   }
 }

@@ -1,0 +1,39 @@
+{
+  "kind": "collectionType",
+  "collectionName": "question_banks",
+  "info": {
+    "singularName": "question-bank",
+    "pluralName": "question-banks",
+    "displayName": "Question Bank",
+    "description": ""
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "question": {
+      "type": "blocks"
+    },
+    "marks": {
+      "type": "integer"
+    },
+    "subtopics": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::subtopic.subtopic",
+      "inversedBy": "question_banks"
+    },
+    "grade_subjects": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::grade-subject.grade-subject",
+      "inversedBy": "question_banks"
+    },
+    "parts": {
+      "type": "component",
+      "repeatable": true,
+      "component": "question-bank.parts"
+    }
+  }
+}

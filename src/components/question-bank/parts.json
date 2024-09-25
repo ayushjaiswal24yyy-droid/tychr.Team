@@ -1,0 +1,34 @@
+{
+  "collectionName": "components_question_bank_parts",
+  "info": {
+    "displayName": "Parts",
+    "icon": "feather"
+  },
+  "options": {},
+  "attributes": {
+    "one_liner": {
+      "type": "blocks"
+    },
+    "hints": {
+      "type": "blocks"
+    },
+    "options": {
+      "type": "blocks"
+    },
+    "correct_answer": {
+      "type": "blocks"
+    },
+    "answer_type": {
+      "type": "enumeration",
+      "enum": [
+        "Single Correct",
+        "Integer",
+        "Small Text",
+        "Large Text"
+      ]
+    },
+    "marks": {
+      "type": "integer"
+    }
+  }
+}
