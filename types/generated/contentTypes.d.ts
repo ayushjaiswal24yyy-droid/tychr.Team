@@ -838,6 +838,11 @@ export interface PluginUsersPermissionsUser extends Schema.CollectionType {
       'api::enrollment.enrollment'
     >;
     title: Attribute.Enumeration<['IB Facilitator', 'IB Examiner']>;
+    enrolled_in: Attribute.Relation<
+      'plugin::users-permissions.user',
+      'oneToOne',
+      'api::course-plan.course-plan'
+    >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     createdBy: Attribute.Relation<
@@ -946,6 +951,11 @@ export interface ApiCoursePlanCoursePlan extends Schema.CollectionType {
       'api::course-plan.course-plan',
       'oneToMany',
       'api::enrollment.enrollment'
+    >;
+    enrolled_by: Attribute.Relation<
+      'api::course-plan.course-plan',
+      'oneToOne',
+      'plugin::users-permissions.user'
     >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;

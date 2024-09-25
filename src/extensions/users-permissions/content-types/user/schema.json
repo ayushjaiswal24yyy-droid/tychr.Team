@@ -136,6 +136,12 @@
         "IB Facilitator",
         "IB Examiner"
       ]
+    },
+    "enrolled_in": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::course-plan.course-plan",
+      "inversedBy": "enrolled_by"
     }
   }
 }

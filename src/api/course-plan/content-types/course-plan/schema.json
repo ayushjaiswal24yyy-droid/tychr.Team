@@ -64,6 +64,12 @@
       "relation": "oneToMany",
       "target": "api::enrollment.enrollment",
       "mappedBy": "course_plan"
+    },
+    "enrolled_by": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "plugin::users-permissions.user",
+      "mappedBy": "enrolled_in"
     }
   }
 }
