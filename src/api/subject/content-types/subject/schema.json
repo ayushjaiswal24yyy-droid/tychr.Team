@@ -30,6 +30,12 @@
       ],
       "type": "media",
       "multiple": true
+    },
+    "users_fav_subject": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "plugin::users-permissions.user",
+      "mappedBy": "fav_subject"
     }
   }
 }

@@ -847,6 +847,12 @@ export interface PluginUsersPermissionsUser extends Schema.CollectionType {
     dream_profession: Attribute.String;
     dream_profession_secondary: Attribute.String;
     dream_university: Attribute.String;
+    fav_subject: Attribute.Relation<
+      'plugin::users-permissions.user',
+      'oneToOne',
+      'api::subject.subject'
+    >;
+    college_name: Attribute.String;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     createdBy: Attribute.Relation<
@@ -1351,6 +1357,11 @@ export interface ApiSubjectSubject extends Schema.CollectionType {
     >;
     description: Attribute.Text;
     image: Attribute.Media<'images', true>;
+    users_fav_subject: Attribute.Relation<
+      'api::subject.subject',
+      'oneToOne',
+      'plugin::users-permissions.user'
+    >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;

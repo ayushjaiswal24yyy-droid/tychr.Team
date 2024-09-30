@@ -154,6 +154,15 @@
     },
     "dream_university": {
       "type": "string"
+    },
+    "fav_subject": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::subject.subject",
+      "inversedBy": "users_fav_subject"
+    },
+    "college_name": {
+      "type": "string"
     }
   }
 }
