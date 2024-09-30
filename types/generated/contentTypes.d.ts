@@ -853,6 +853,11 @@ export interface PluginUsersPermissionsUser extends Schema.CollectionType {
       'api::subject.subject'
     >;
     college_name: Attribute.String;
+    tutor_plan: Attribute.Relation<
+      'plugin::users-permissions.user',
+      'manyToOne',
+      'api::tutor-plan.tutor-plan'
+    >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     createdBy: Attribute.Relation<
@@ -1022,6 +1027,11 @@ export interface ApiEnrollmentEnrollment extends Schema.CollectionType {
       'manyToMany',
       'api::grade-subject.grade-subject'
     >;
+    live_lectures: Attribute.Relation<
+      'api::enrollment.enrollment',
+      'manyToMany',
+      'api::live-lecture.live-lecture'
+    >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
@@ -1180,6 +1190,11 @@ export interface ApiLiveLectureLiveLecture extends Schema.CollectionType {
       'api::live-lecture.live-lecture',
       'manyToOne',
       'api::topic.topic'
+    >;
+    classrooms: Attribute.Relation<
+      'api::live-lecture.live-lecture',
+      'manyToMany',
+      'api::enrollment.enrollment'
     >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
@@ -1478,6 +1493,45 @@ export interface ApiTopicTopic extends Schema.CollectionType {
   };
 }
 
+export interface ApiTutorPlanTutorPlan extends Schema.CollectionType {
+  collectionName: 'tutor_plans';
+  info: {
+    singularName: 'tutor-plan';
+    pluralName: 'tutor-plans';
+    displayName: 'tutorPlan';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    recorded_lectures: Attribute.Integer;
+    live_lectures: Attribute.Integer;
+    classrooms: Attribute.Integer;
+    name: Attribute.String;
+    tier: Attribute.Enumeration<['gold', 'silver', 'bronze']>;
+    users: Attribute.Relation<
+      'api::tutor-plan.tutor-plan',
+      'oneToMany',
+      'plugin::users-permissions.user'
+    >;
+    createdAt: Attribute.DateTime;
+    updatedAt: Attribute.DateTime;
+    publishedAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<
+      'api::tutor-plan.tutor-plan',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+    updatedBy: Attribute.Relation<
+      'api::tutor-plan.tutor-plan',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+  };
+}
+
 declare module '@strapi/types' {
   export module Shared {
     export interface ContentTypes {
@@ -1509,6 +1563,7 @@ declare module '@strapi/types' {
       'api::subject.subject': ApiSubjectSubject;
       'api::subtopic.subtopic': ApiSubtopicSubtopic;
       'api::topic.topic': ApiTopicTopic;
+      'api::tutor-plan.tutor-plan': ApiTutorPlanTutorPlan;
     }
   }
 }

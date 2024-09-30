@@ -1,0 +1,41 @@
+{
+  "kind": "collectionType",
+  "collectionName": "tutor_plans",
+  "info": {
+    "singularName": "tutor-plan",
+    "pluralName": "tutor-plans",
+    "displayName": "tutorPlan"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "recorded_lectures": {
+      "type": "integer"
+    },
+    "live_lectures": {
+      "type": "integer"
+    },
+    "classrooms": {
+      "type": "integer"
+    },
+    "name": {
+      "type": "string"
+    },
+    "tier": {
+      "type": "enumeration",
+      "enum": [
+        "gold",
+        "silver",
+        "bronze"
+      ]
+    },
+    "users": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "plugin::users-permissions.user",
+      "mappedBy": "tutor_plan"
+    }
+  }
+}

@@ -51,6 +51,12 @@
       "relation": "manyToMany",
       "target": "api::grade-subject.grade-subject",
       "inversedBy": "classrooms"
+    },
+    "live_lectures": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::live-lecture.live-lecture",
+      "mappedBy": "classrooms"
     }
   }
 }

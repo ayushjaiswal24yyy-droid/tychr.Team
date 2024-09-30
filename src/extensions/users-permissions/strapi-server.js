@@ -74,7 +74,7 @@ module.exports = (plugin) => {
                         { username: identifier }
                     ],
                 },
-                populate: ['role', 'fav_topics', 'avatar', 'onBoarded', 'ib_program', 'grade', 'enrolled_in'],
+                populate: ['role', 'fav_topics', 'avatar', 'onBoarded', 'ib_program', 'grade', 'enrolled_in', 'tutor_plan'],
             });
 
             if (!user) {

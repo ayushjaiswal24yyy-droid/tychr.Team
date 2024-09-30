@@ -48,6 +48,12 @@
       "relation": "manyToOne",
       "target": "api::topic.topic",
       "inversedBy": "live_lectures"
+    },
+    "classrooms": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::enrollment.enrollment",
+      "inversedBy": "live_lectures"
     }
   }
 }

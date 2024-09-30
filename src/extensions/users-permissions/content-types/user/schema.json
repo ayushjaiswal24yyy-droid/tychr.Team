@@ -163,6 +163,12 @@
     },
     "college_name": {
       "type": "string"
+    },
+    "tutor_plan": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::tutor-plan.tutor-plan",
+      "inversedBy": "users"
     }
   }
 }
