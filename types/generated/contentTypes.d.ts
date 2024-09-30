@@ -843,6 +843,10 @@ export interface PluginUsersPermissionsUser extends Schema.CollectionType {
       'oneToOne',
       'api::course-plan.course-plan'
     >;
+    grade_score: Attribute.Integer;
+    dream_profession: Attribute.String;
+    dream_profession_secondary: Attribute.String;
+    dream_university: Attribute.String;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     createdBy: Attribute.Relation<
