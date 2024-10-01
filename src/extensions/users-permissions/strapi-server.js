@@ -223,7 +223,10 @@ module.exports = (plugin) => {
     plugin.controllers.auth.verifyOTP = async (ctx) => {
         const { uuid, otp } = ctx.request.body;
 
-        const user = await strapi.query('plugin::users-permissions.user').findOne({ where: { uuid }, populate: ['role', 'avatar', 'fav_topics'] });
+        const user = await strapi.query('plugin::users-permissions.user').findOne({
+            where: { uuid },
+            populate: ['role', 'fav_topics', 'avatar', 'onBoarded', 'ib_program', 'grade', 'enrolled_in', 'tutor_plan']
+        });
 
         if (!user) {
             return ctx.badRequest('User not found');
@@ -233,24 +236,125 @@ module.exports = (plugin) => {
             return ctx.badRequest('Invalid OTP');
         }
 
-        await strapi.query('plugin::users-permissions.user').update({
-            where: { id: user.id },
-            data: {
-                confirmed: true,
-                otp: null,
-            },
-        });
+        const isTutor = user.role.name === 'Tutor';
 
-        // Generate JWT token
-        const jwt = strapi.plugins['users-permissions'].services.jwt.issue({
-            id: user.id,
-        });
+        if (isTutor) {
+            const htmlEmail = `
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <style>
+                    body {
+                        font-family: Arial, sans-serif;
+                        line-height: 1.6;
+                        color: #333333;
+                    }
+                    .container {
+                        max-width: 600px;
+                        margin: 0 auto;
+                        padding: 20px;
+                    }
+                    .header {
+                        background-color: #f8f9fa;
+                        padding: 20px;
+                        text-align: center;
+                        border-radius: 5px;
+                    }
+                    .content {
+                        margin-top: 20px;
+                    }
+                    .details {
+                        background-color: #f8f9fa;
+                        padding: 15px;
+                        border-radius: 5px;
+                        margin-top: 20px;
+                    }
+                    .action-needed {
+                        color: #dc3545;
+                        font-weight: bold;
+                    }
+                    .footer {
+                        margin-top: 20px;
+                        font-size: 12px;
+                        color: #666666;
+                    }
+                </style>
+            </head>
+            <body>
+                <div class="container">
+                    <div class="header">
+                        <h2>New Tutor Registration - Action Required</h2>
+                    </div>
+                    <div class="content">
+                        <p style="font-weight: bold;text-align: center;">A new tutor has registered on the Tychr platform and requires approval.</p>
+                        
+                        <div class="details">
+                            <h3>Tutor Details:</h3>
+                            <ul>
+                                <li><strong>Name:</strong> ${user.fullName}</li>
+                                <li><strong>Email:</strong> ${user.email}</li>
+                                <li><strong>Registration Date:</strong> ${new Date().toLocaleDateString()}</li>
+                            </ul>
+                        </div>
+    
+                        <p class="action-needed">Action Needed:</p>
+                        <ul>
+                            <li>Review tutor's credentials and background</li>
+                            <li>Initiate the onboarding process</li>
+                            <li>Update tutor's status in the admin panel</li>
+                        </ul>
+    
+                        <p>Please begin the onboarding process as soon as possible to ensure a smooth experience for our new tutor.</p>
+                    </div>
+                    <div class="footer">
+                        <p>This is an automated message from the Tychr Registration System. If you have any questions, please contact the it@tychr.com or contact our support team.</p>
+                    </div>
+                </div>
+            </body>
+            </html>`;
 
-        return ctx.send({
-            message: 'Email verified successfully',
-            jwt,
-            user: sanitizeUser(user)
-        });
+            // For Tutors: Send email and return waiting message
+            await strapi.plugins['email'].services.email.send({
+                to: 'it@tychr.com',
+                cc: 'contact@tychr.com',
+                subject: 'New Tutor Registration',
+                text: `A new tutor (${user.fullName}, ${user.email}) has registered and needs approval. Please begin the onboarding process.`,
+                html: htmlEmail
+            });
+
+            // Update user to remove OTP but keep confirmed as false
+            await strapi.query('plugin::users-permissions.user').update({
+                where: { id: user.id },
+                data: {
+                    otp: null,
+                },
+            });
+
+            return ctx.send({
+                message: 'Your registration is being processed. Our team will review your application and contact you soon.',
+                // user: sanitizeUser(user)
+            });
+        } else {
+            // For Students: Confirm registration and issue JWT
+            await strapi.query('plugin::users-permissions.user').update({
+                where: { id: user.id },
+                data: {
+                    confirmed: true,
+                    otp: null,
+                },
+            });
+
+            // Generate JWT token
+            const jwt = strapi.plugins['users-permissions'].services.jwt.issue({
+                id: user.id,
+            });
+
+            return ctx.send({
+                message: 'Email verified successfully',
+                jwt,
+                user: sanitizeUser(user)
+            });
+        }
     };
 
     return plugin;

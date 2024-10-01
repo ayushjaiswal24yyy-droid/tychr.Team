@@ -23,8 +23,8 @@ module.exports = ({ env }) => ({
                 amazon: `https://email.${process.env.AWS_REGION}.amazonaws.com`,
             },
             settings: {
-                defaultFrom: 'no-reply@gulfin.com',
-                defaultReplyTo: 'contact@gulfin.com',
+                defaultFrom: 'tychr@saralgroups.com',
+                defaultReplyTo: 'tychr@saralgroups.com',
             },
         },
     },

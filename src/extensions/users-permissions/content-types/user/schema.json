@@ -172,6 +172,9 @@
     },
     "nationality": {
       "type": "string"
+    },
+    "lastUploaded": {
+      "type": "date"
     }
   }
 }

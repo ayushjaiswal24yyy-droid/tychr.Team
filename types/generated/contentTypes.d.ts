@@ -859,6 +859,7 @@ export interface PluginUsersPermissionsUser extends Schema.CollectionType {
       'api::tutor-plan.tutor-plan'
     >;
     nationality: Attribute.String;
+    lastUploaded: Attribute.Date;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     createdBy: Attribute.Relation<
