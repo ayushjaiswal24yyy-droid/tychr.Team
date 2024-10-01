@@ -1039,6 +1039,11 @@ export interface ApiEnrollmentEnrollment extends Schema.CollectionType {
       'manyToMany',
       'api::recorded-lecture.recorded-lecture'
     >;
+    topics: Attribute.Relation<
+      'api::enrollment.enrollment',
+      'manyToMany',
+      'api::topic.topic'
+    >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
@@ -1486,6 +1491,11 @@ export interface ApiTopicTopic extends Schema.CollectionType {
       'api::topic.topic',
       'manyToOne',
       'api::grade-subject.grade-subject'
+    >;
+    classrooms: Attribute.Relation<
+      'api::topic.topic',
+      'manyToMany',
+      'api::enrollment.enrollment'
     >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;

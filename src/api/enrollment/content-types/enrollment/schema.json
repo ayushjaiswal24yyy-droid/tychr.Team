@@ -68,6 +68,12 @@
       "relation": "manyToMany",
       "target": "api::recorded-lecture.recorded-lecture",
       "inversedBy": "classrooms"
+    },
+    "topics": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::topic.topic",
+      "inversedBy": "classrooms"
     }
   }
 }
