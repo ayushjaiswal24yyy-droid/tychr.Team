@@ -860,6 +860,8 @@ export interface PluginUsersPermissionsUser extends Schema.CollectionType {
     >;
     nationality: Attribute.String;
     lastUploaded: Attribute.Date;
+    experience: Attribute.Integer;
+    cv: Attribute.Media<'files'>;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     createdBy: Attribute.Relation<

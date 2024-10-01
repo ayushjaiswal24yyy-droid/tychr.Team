@@ -175,6 +175,16 @@
     },
     "lastUploaded": {
       "type": "date"
+    },
+    "experience": {
+      "type": "integer"
+    },
+    "cv": {
+      "allowedTypes": [
+        "files"
+      ],
+      "type": "media",
+      "multiple": false
     }
   }
 }
