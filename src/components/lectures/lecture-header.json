@@ -1,0 +1,25 @@
+{
+  "collectionName": "components_lectures_lecture_headers",
+  "info": {
+    "displayName": "Lecture Header",
+    "icon": "attachment"
+  },
+  "options": {},
+  "attributes": {
+    "label": {
+      "type": "enumeration",
+      "enum": [
+        "Content",
+        "Recordings",
+        "Live",
+        "QnA",
+        "Test",
+        "Doubt",
+        "Practice"
+      ]
+    },
+    "show": {
+      "type": "boolean"
+    }
+  }
+}

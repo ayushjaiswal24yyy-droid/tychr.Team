@@ -169,6 +169,9 @@
       "relation": "manyToOne",
       "target": "api::tutor-plan.tutor-plan",
       "inversedBy": "users"
+    },
+    "nationality": {
+      "type": "string"
     }
   }
 }

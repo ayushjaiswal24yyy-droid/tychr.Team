@@ -57,6 +57,17 @@
       "relation": "manyToMany",
       "target": "api::live-lecture.live-lecture",
       "mappedBy": "classrooms"
+    },
+    "tabs": {
+      "type": "component",
+      "repeatable": true,
+      "component": "lectures.lecture-header"
+    },
+    "recorded_lectures": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::recorded-lecture.recorded-lecture",
+      "inversedBy": "classrooms"
     }
   }
 }

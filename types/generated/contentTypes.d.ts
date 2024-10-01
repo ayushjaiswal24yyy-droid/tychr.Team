@@ -858,6 +858,7 @@ export interface PluginUsersPermissionsUser extends Schema.CollectionType {
       'manyToOne',
       'api::tutor-plan.tutor-plan'
     >;
+    nationality: Attribute.String;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     createdBy: Attribute.Relation<
@@ -1031,6 +1032,12 @@ export interface ApiEnrollmentEnrollment extends Schema.CollectionType {
       'api::enrollment.enrollment',
       'manyToMany',
       'api::live-lecture.live-lecture'
+    >;
+    tabs: Attribute.Component<'lectures.lecture-header', true>;
+    recorded_lectures: Attribute.Relation<
+      'api::enrollment.enrollment',
+      'manyToMany',
+      'api::recorded-lecture.recorded-lecture'
     >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
@@ -1334,6 +1341,11 @@ export interface ApiRecordedLectureRecordedLecture
     qna: Attribute.Component<'subtopic.qn-a', true>;
     content: Attribute.Blocks;
     thumbnail: Attribute.Media<'images'>;
+    classrooms: Attribute.Relation<
+      'api::recorded-lecture.recorded-lecture',
+      'manyToMany',
+      'api::enrollment.enrollment'
+    >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
