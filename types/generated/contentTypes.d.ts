@@ -1047,6 +1047,9 @@ export interface ApiEnrollmentEnrollment extends Schema.CollectionType {
       'manyToMany',
       'api::topic.topic'
     >;
+    startDate: Attribute.Date;
+    endDate: Attribute.Date;
+    days: Attribute.JSON;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;

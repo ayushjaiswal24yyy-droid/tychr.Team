@@ -28,6 +28,24 @@ export interface SubtopicHeading extends Schema.Component {
   };
 }
 
+export interface QuestionBankParts extends Schema.Component {
+  collectionName: 'components_question_bank_parts';
+  info: {
+    displayName: 'Parts';
+    icon: 'feather';
+  };
+  attributes: {
+    one_liner: Attribute.Blocks;
+    hints: Attribute.Blocks;
+    options: Attribute.Blocks;
+    correct_answer: Attribute.Blocks;
+    answer_type: Attribute.Enumeration<
+      ['Single Correct', 'Integer', 'Small Text', 'Large Text']
+    >;
+    marks: Attribute.Integer;
+  };
+}
+
 export interface SubjectRefrenceBooks extends Schema.Component {
   collectionName: 'components_subject_refrence_books';
   info: {
@@ -58,24 +76,6 @@ export interface PlanGradePlan extends Schema.Component {
   };
 }
 
-export interface QuestionBankParts extends Schema.Component {
-  collectionName: 'components_question_bank_parts';
-  info: {
-    displayName: 'Parts';
-    icon: 'feather';
-  };
-  attributes: {
-    one_liner: Attribute.Blocks;
-    hints: Attribute.Blocks;
-    options: Attribute.Blocks;
-    correct_answer: Attribute.Blocks;
-    answer_type: Attribute.Enumeration<
-      ['Single Correct', 'Integer', 'Small Text', 'Large Text']
-    >;
-    marks: Attribute.Integer;
-  };
-}
-
 export interface LecturesLectureHeader extends Schema.Component {
   collectionName: 'components_lectures_lecture_headers';
   info: {
@@ -95,9 +95,9 @@ declare module '@strapi/types' {
     export interface Components {
       'subtopic.qn-a': SubtopicQnA;
       'subtopic.heading': SubtopicHeading;
+      'question-bank.parts': QuestionBankParts;
       'subject.refrence-books': SubjectRefrenceBooks;
       'plan.grade-plan': PlanGradePlan;
-      'question-bank.parts': QuestionBankParts;
       'lectures.lecture-header': LecturesLectureHeader;
     }
   }

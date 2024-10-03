@@ -74,6 +74,15 @@
       "relation": "manyToMany",
       "target": "api::topic.topic",
       "inversedBy": "classrooms"
+    },
+    "startDate": {
+      "type": "date"
+    },
+    "endDate": {
+      "type": "date"
+    },
+    "days": {
+      "type": "json"
     }
   }
 }
