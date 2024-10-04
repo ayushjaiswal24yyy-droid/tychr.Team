@@ -83,6 +83,12 @@
     },
     "days": {
       "type": "json"
+    },
+    "startTime": {
+      "type": "time"
+    },
+    "duration": {
+      "type": "integer"
     }
   }
 }

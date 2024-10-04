@@ -1050,6 +1050,8 @@ export interface ApiEnrollmentEnrollment extends Schema.CollectionType {
     startDate: Attribute.Date;
     endDate: Attribute.Date;
     days: Attribute.JSON;
+    startTime: Attribute.Time;
+    duration: Attribute.Integer;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
