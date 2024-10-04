@@ -1299,6 +1299,7 @@ export interface ApiQuestionBankQuestionBank extends Schema.CollectionType {
       'api::grade-subject.grade-subject'
     >;
     parts: Attribute.Component<'question-bank.parts', true>;
+    title: Attribute.String;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
