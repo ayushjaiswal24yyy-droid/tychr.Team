@@ -28,19 +28,6 @@ export interface SubtopicHeading extends Schema.Component {
   };
 }
 
-export interface SubjectRefrenceBooks extends Schema.Component {
-  collectionName: 'components_subject_refrence_books';
-  info: {
-    displayName: 'Refrence Books';
-    icon: 'book';
-  };
-  attributes: {
-    title: Attribute.String;
-    author: Attribute.String;
-    publication_year: Attribute.Integer;
-  };
-}
-
 export interface QuestionBankParts extends Schema.Component {
   collectionName: 'components_question_bank_parts';
   info: {
@@ -76,6 +63,19 @@ export interface PlanGradePlan extends Schema.Component {
   };
 }
 
+export interface SubjectRefrenceBooks extends Schema.Component {
+  collectionName: 'components_subject_refrence_books';
+  info: {
+    displayName: 'Refrence Books';
+    icon: 'book';
+  };
+  attributes: {
+    title: Attribute.String;
+    author: Attribute.String;
+    publication_year: Attribute.Integer;
+  };
+}
+
 export interface LecturesLectureHeader extends Schema.Component {
   collectionName: 'components_lectures_lecture_headers';
   info: {
@@ -95,9 +95,9 @@ declare module '@strapi/types' {
     export interface Components {
       'subtopic.qn-a': SubtopicQnA;
       'subtopic.heading': SubtopicHeading;
-      'subject.refrence-books': SubjectRefrenceBooks;
       'question-bank.parts': QuestionBankParts;
       'plan.grade-plan': PlanGradePlan;
+      'subject.refrence-books': SubjectRefrenceBooks;
       'lectures.lecture-header': LecturesLectureHeader;
     }
   }

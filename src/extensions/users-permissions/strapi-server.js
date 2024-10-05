@@ -357,5 +357,94 @@ module.exports = (plugin) => {
         }
     };
 
+    plugin.controllers.user.updateMe = async (ctx) => {
+        if (!ctx.state.user) {
+            return ctx.unauthorized('You must be logged in to update your profile');
+        }
+
+        const { id } = ctx.state.user;
+        const updateData = ctx.request.body;
+
+        try {
+            const updatedUser = await strapi.entityService.update('plugin::users-permissions.user', id, {
+                data: updateData,
+                populate: ['role', 'fav_topics', 'avatar', 'onBoarded', 'ib_program', 'grade', 'enrolled_in', 'tutor_plan', 'cv'],
+            });
+
+            return ctx.send({
+                user: sanitizeUser(updatedUser)
+            });
+        } catch (error) {
+            return ctx.badRequest('Failed to update user', { error: error.message });
+        }
+    }
+
+    plugin.routes['content-api'].routes.push({
+        method: 'PUT',
+        path: '/user/me',
+        handler: 'user.updateMe',
+        config: {
+            policies: [],
+            prefix: '',
+        },
+    });
+
+    plugin.controllers.user.updateFiles = async (ctx) => {
+
+        if (!ctx.state.user) {
+            return ctx.unauthorized('You must be logged in to update your profile');
+        }
+
+        const { id } = ctx.state.user;
+        const { files } = ctx.request;
+
+        if (!files || ((!files.cv) || (!files.avatar))) {
+            return ctx.badRequest('No files found in the request');
+        }
+
+        try {
+            const updateData = {};
+
+            if (files.cv) {
+                const uploadedCV = await strapi.plugins.upload.services.upload.upload({
+                    data: {},
+                    files: files.cv,
+                })
+                updateData.cv = uploadedCV[0].id;
+            }
+
+            if (files.avatar) {
+                const uploadedAvatar = await strapi.plugins.upload.services.upload.upload({
+                    data: {},
+                    files: files.avatar,
+                });
+                updateData.avatar = uploadedAvatar[0].id;
+            }
+
+            const updatedUser = await strapi.entityService.update('plugin::users-permissions.user', id, {
+                data: updateData,
+                populate: ['role', 'fav_topics', 'avatar', 'onBoarded', 'ib_program', 'grade', 'enrolled_in', 'tutor_plan', 'cv'],
+            });
+
+            return ctx.send({
+                message: 'Files updated successfully',
+                user: sanitizeUser(updatedUser)
+            });
+        } catch (error) {
+            console.log(error);
+            return ctx.badRequest('Failed to update files', { error: error.message });
+        }
+    }
+
+    plugin.routes['content-api'].routes.push({
+        method: 'PUT',
+        path: '/user/me/files',
+        handler: 'user.updateFiles',
+        config: {
+            policies: [],
+            prefix: '',
+        },
+    });
+
     return plugin;
 };
