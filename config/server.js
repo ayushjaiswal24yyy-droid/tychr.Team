@@ -1,6 +1,22 @@
+const cron = require('node-cron');
+const cronTasks = require('./cron-tasks');
+
 module.exports = ({ env }) => ({
   host: env('HOST', '0.0.0.0'),
   port: env.int('PORT', 1337),
+  logger: {
+    updates: {
+      enabled: false,
+    },
+    startup: {
+      enabled: false,
+    },
+  },
+  cron: {
+    enabled: true,
+    driver: cron,
+    tasks: cronTasks,
+  },
   proxy: env.bool('IS_PROXIED', true),
   app: {
     keys: env.array('APP_KEYS'),

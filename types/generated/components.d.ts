@@ -28,21 +28,16 @@ export interface SubtopicHeading extends Schema.Component {
   };
 }
 
-export interface QuestionBankParts extends Schema.Component {
-  collectionName: 'components_question_bank_parts';
+export interface SubjectRefrenceBooks extends Schema.Component {
+  collectionName: 'components_subject_refrence_books';
   info: {
-    displayName: 'Parts';
-    icon: 'feather';
+    displayName: 'Refrence Books';
+    icon: 'book';
   };
   attributes: {
-    one_liner: Attribute.Blocks;
-    hints: Attribute.Blocks;
-    options: Attribute.Blocks;
-    correct_answer: Attribute.Blocks;
-    answer_type: Attribute.Enumeration<
-      ['Single Correct', 'Integer', 'Small Text', 'Large Text']
-    >;
-    marks: Attribute.Integer;
+    title: Attribute.String;
+    author: Attribute.String;
+    publication_year: Attribute.Integer;
   };
 }
 
@@ -63,16 +58,21 @@ export interface PlanGradePlan extends Schema.Component {
   };
 }
 
-export interface SubjectRefrenceBooks extends Schema.Component {
-  collectionName: 'components_subject_refrence_books';
+export interface QuestionBankParts extends Schema.Component {
+  collectionName: 'components_question_bank_parts';
   info: {
-    displayName: 'Refrence Books';
-    icon: 'book';
+    displayName: 'Parts';
+    icon: 'feather';
   };
   attributes: {
-    title: Attribute.String;
-    author: Attribute.String;
-    publication_year: Attribute.Integer;
+    one_liner: Attribute.Blocks;
+    hints: Attribute.Blocks;
+    options: Attribute.Blocks;
+    correct_answer: Attribute.Blocks;
+    answer_type: Attribute.Enumeration<
+      ['Single Correct', 'Integer', 'Small Text', 'Large Text']
+    >;
+    marks: Attribute.Integer;
   };
 }
 
@@ -95,9 +95,9 @@ declare module '@strapi/types' {
     export interface Components {
       'subtopic.qn-a': SubtopicQnA;
       'subtopic.heading': SubtopicHeading;
-      'question-bank.parts': QuestionBankParts;
-      'plan.grade-plan': PlanGradePlan;
       'subject.refrence-books': SubjectRefrenceBooks;
+      'plan.grade-plan': PlanGradePlan;
+      'question-bank.parts': QuestionBankParts;
       'lectures.lecture-header': LecturesLectureHeader;
     }
   }

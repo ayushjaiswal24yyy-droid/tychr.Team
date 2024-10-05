@@ -81,6 +81,10 @@ module.exports = (plugin) => {
                 return ctx.badRequest('Identifier or password invalid');
             }
 
+            if (user.blocked) {
+                return ctx.forbidden('Your account has been blocked. Please contact administrators for assistance.');
+            }
+
             if (!user.password) {
                 return ctx.badRequest('Invalid password');
             }
@@ -131,30 +135,69 @@ module.exports = (plugin) => {
                 // Verify the token and get user info from Google
                 const response = await axios.get(`https://www.googleapis.com/oauth2/v3/userinfo?access_token=${access_token}`);
                 console.log(response.data);
-                const { email, name, sub: googleId } = response.data;
+                const { email, name, given_name, family_name, sub: googleId, picture } = response.data;
 
                 // Check if the user exists
                 let user = await strapi.query('plugin::users-permissions.user').findOne({ where: { email } });
+
+                if (user && user.blocked) {
+                    return ctx.forbidden('Your account has been blocked. Please contact administrators for assistance.');
+                }
+
+                const uuid = crypto.randomUUID();
 
                 if (!user) {
                     // If the user doesn't exist, create a new one
                     const role = await strapi.query('plugin::users-permissions.role').findOne({ where: { type: 'authenticated' } });
 
-                    const uuid = crypto.randomUUID();
+                    const imageResponse = await axios.get(picture, { responseType: 'arraybuffer' });
+                    const buffer = Buffer.from(imageResponse.data, 'binary');
+
+                    const avatarFile = await strapi.plugins.upload.services.upload.upload({
+                        data: {},
+                        files: {
+                            path: buffer,
+                            name: `${uuid}_avatar.jpg`,
+                            type: 'image/jpeg',
+                            size: buffer.length,
+                        },
+                    });
 
                     user = await strapi.query('plugin::users-permissions.user').create({
                         data: {
                             username: email,
                             email,
-                            fullName: email,
+                            fullName: name || `${given_name} ${family_name}`.trim(),
                             provider: 'google',
                             googleId,
                             role: role.id,
                             uuid,
                             confirmed: true,
-                            avatar: {
-                                url: response.data.picture,
-                            }
+                            avatar: avatarFile[0].id,
+                        },
+                    });
+                } else {
+
+                    const imageResponse = await axios.get(picture, { responseType: 'arraybuffer' });
+                    const buffer = Buffer.from(imageResponse.data, 'binary');
+
+                    const avatarFile = await strapi.plugins.upload.services.upload.upload({
+                        data: {},
+                        files: {
+                            path: buffer,
+                            name: `${uuid}_avatar.jpg`,
+                            type: 'image/jpeg',
+                            size: buffer.length,
+                        },
+                    });
+
+                    user = await strapi.query('plugin::users-permissions.user').update({
+                        where: { id: user.id },
+                        data: {
+                            fullName: name || `${given_name} ${family_name}`.trim(),
+                            googleId,
+                            provider: 'google',
+                            avatar: avatarFile[0].id,
                         },
                     });
                 }
