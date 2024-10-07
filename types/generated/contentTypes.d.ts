@@ -1506,6 +1506,7 @@ export interface ApiTopicTopic extends Schema.CollectionType {
       'manyToMany',
       'api::enrollment.enrollment'
     >;
+    isPaid: Attribute.Boolean & Attribute.DefaultTo<true>;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;

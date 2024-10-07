@@ -50,6 +50,10 @@
       "relation": "manyToMany",
       "target": "api::enrollment.enrollment",
       "mappedBy": "topics"
+    },
+    "isPaid": {
+      "type": "boolean",
+      "default": true
     }
   }
 }
