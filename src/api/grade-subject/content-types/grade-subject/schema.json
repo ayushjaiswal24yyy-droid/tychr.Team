@@ -62,17 +62,17 @@
         "AI"
       ]
     },
-    "classrooms": {
-      "type": "relation",
-      "relation": "manyToMany",
-      "target": "api::enrollment.enrollment",
-      "mappedBy": "grade_subjects"
-    },
     "question_banks": {
       "type": "relation",
       "relation": "manyToMany",
       "target": "api::question-bank.question-bank",
       "mappedBy": "grade_subjects"
+    },
+    "classrooms": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::enrollment.enrollment",
+      "mappedBy": "grade_subject"
     }
   }
 }

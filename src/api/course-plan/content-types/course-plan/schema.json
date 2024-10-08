@@ -70,6 +70,14 @@
       "relation": "oneToOne",
       "target": "plugin::users-permissions.user",
       "mappedBy": "enrolled_in"
+    },
+    "tier": {
+      "type": "enumeration",
+      "enum": [
+        "gold",
+        "silver",
+        "bronze"
+      ]
     }
   }
 }

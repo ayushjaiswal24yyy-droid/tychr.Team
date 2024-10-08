@@ -976,6 +976,7 @@ export interface ApiCoursePlanCoursePlan extends Schema.CollectionType {
       'oneToOne',
       'plugin::users-permissions.user'
     >;
+    tier: Attribute.Enumeration<['gold', 'silver', 'bronze']>;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
@@ -1026,9 +1027,9 @@ export interface ApiEnrollmentEnrollment extends Schema.CollectionType {
       'manyToOne',
       'api::course-plan.course-plan'
     >;
-    grade_subjects: Attribute.Relation<
+    grade_subject: Attribute.Relation<
       'api::enrollment.enrollment',
-      'manyToMany',
+      'manyToOne',
       'api::grade-subject.grade-subject'
     >;
     live_lectures: Attribute.Relation<
@@ -1107,15 +1108,15 @@ export interface ApiGradeSubjectGradeSubject extends Schema.CollectionType {
       'api::course-plan.course-plan'
     >;
     level: Attribute.Enumeration<['AA', 'AI']>;
-    classrooms: Attribute.Relation<
-      'api::grade-subject.grade-subject',
-      'manyToMany',
-      'api::enrollment.enrollment'
-    >;
     question_banks: Attribute.Relation<
       'api::grade-subject.grade-subject',
       'manyToMany',
       'api::question-bank.question-bank'
+    >;
+    classrooms: Attribute.Relation<
+      'api::grade-subject.grade-subject',
+      'oneToMany',
+      'api::enrollment.enrollment'
     >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
