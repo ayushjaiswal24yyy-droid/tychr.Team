@@ -74,9 +74,9 @@
     "tier": {
       "type": "enumeration",
       "enum": [
-        "gold",
-        "silver",
-        "bronze"
+        "Basic",
+        "Premium",
+        "Advanced"
       ]
     }
   }

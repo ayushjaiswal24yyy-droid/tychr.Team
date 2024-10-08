@@ -976,7 +976,7 @@ export interface ApiCoursePlanCoursePlan extends Schema.CollectionType {
       'oneToOne',
       'plugin::users-permissions.user'
     >;
-    tier: Attribute.Enumeration<['gold', 'silver', 'bronze']>;
+    tier: Attribute.Enumeration<['Basic', 'Premium', 'Advanced']>;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
