@@ -89,6 +89,13 @@
     },
     "duration": {
       "type": "integer"
+    },
+    "classroom_type": {
+      "type": "enumeration",
+      "enum": [
+        "Group",
+        "Individual"
+      ]
     }
   }
 }
