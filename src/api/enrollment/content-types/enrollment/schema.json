@@ -90,12 +90,14 @@
     "duration": {
       "type": "integer"
     },
-    "classroom_type": {
-      "type": "enumeration",
-      "enum": [
-        "Group",
-        "Individual"
-      ]
+    "image": {
+      "allowedTypes": [
+        "images"
+      ],
+      "type": "media",
+      "multiple": true
     }
   }
 }
+
+
