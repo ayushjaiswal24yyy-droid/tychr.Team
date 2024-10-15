@@ -838,10 +838,10 @@ export interface PluginUsersPermissionsUser extends Schema.CollectionType {
       'api::enrollment.enrollment'
     >;
     title: Attribute.Enumeration<['IB Facilitator', 'IB Examiner']>;
-    enrolled_in: Attribute.Relation<
+    ib_program: Attribute.Relation<
       'plugin::users-permissions.user',
       'oneToOne',
-      'api::course-plan.course-plan'
+      'api::ib-program.ib-program'
     >;
     grade_score: Attribute.Integer;
     dream_profession: Attribute.String;
@@ -862,6 +862,13 @@ export interface PluginUsersPermissionsUser extends Schema.CollectionType {
     lastUploaded: Attribute.Date;
     experience: Attribute.Integer;
     cv: Attribute.Media<'images' | 'videos' | 'audios' | 'files'>;
+    biography: Attribute.Text;
+    student_plan: Attribute.Relation<
+      'plugin::users-permissions.user',
+      'oneToOne',
+      'api::course-plan.course-plan'
+    >;
+    tutor_video: Attribute.Media<'videos'>;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     createdBy: Attribute.Relation<
@@ -970,11 +977,6 @@ export interface ApiCoursePlanCoursePlan extends Schema.CollectionType {
       'api::course-plan.course-plan',
       'oneToMany',
       'api::enrollment.enrollment'
-    >;
-    enrolled_by: Attribute.Relation<
-      'api::course-plan.course-plan',
-      'oneToOne',
-      'plugin::users-permissions.user'
     >;
     tier: Attribute.Enumeration<['Basic', 'Premium', 'Advanced']>;
     createdAt: Attribute.DateTime;
@@ -1149,7 +1151,9 @@ export interface ApiIbProgramIbProgram extends Schema.CollectionType {
     draftAndPublish: true;
   };
   attributes: {
-    name: Attribute.Enumeration<['PYP', 'MYP', 'DP', 'consulting']>;
+    name: Attribute.Enumeration<
+      ['PYP', 'MYP', 'DP', 'consulting', 'IGCSE', 'AS/A Levels', 'SAT/ACT/AP']
+    >;
     grade_range: Attribute.String;
     description: Attribute.Text;
     course_plans: Attribute.Relation<
@@ -1161,6 +1165,11 @@ export interface ApiIbProgramIbProgram extends Schema.CollectionType {
       'api::ib-program.ib-program',
       'manyToMany',
       'api::class.class'
+    >;
+    user: Attribute.Relation<
+      'api::ib-program.ib-program',
+      'oneToOne',
+      'plugin::users-permissions.user'
     >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;

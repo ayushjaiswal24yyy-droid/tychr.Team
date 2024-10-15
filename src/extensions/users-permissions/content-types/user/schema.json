@@ -137,11 +137,11 @@
         "IB Examiner"
       ]
     },
-    "enrolled_in": {
+    "ib_program": {
       "type": "relation",
       "relation": "oneToOne",
-      "target": "api::course-plan.course-plan",
-      "inversedBy": "enrolled_by"
+      "target": "api::ib-program.ib-program",
+      "inversedBy": "user"
     },
     "grade_score": {
       "type": "integer"
@@ -189,6 +189,21 @@
         "audios",
         "files"
       ]
+    },
+    "biography": {
+      "type": "text"
+    },
+    "student_plan": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::course-plan.course-plan"
+    },
+    "tutor_video": {
+      "allowedTypes": [
+        "videos"
+      ],
+      "type": "media",
+      "multiple": false
     }
   }
 }

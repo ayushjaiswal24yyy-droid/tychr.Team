@@ -18,7 +18,10 @@
         "PYP",
         "MYP",
         "DP",
-        "consulting"
+        "consulting",
+        "IGCSE",
+        "AS/A Levels",
+        "SAT/ACT/AP"
       ]
     },
     "grade_range": {
@@ -38,6 +41,12 @@
       "relation": "manyToMany",
       "target": "api::class.class",
       "mappedBy": "ib_programs"
+    },
+    "user": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "plugin::users-permissions.user",
+      "mappedBy": "ib_program"
     }
   }
 }
