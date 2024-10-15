@@ -1055,7 +1055,7 @@ export interface ApiEnrollmentEnrollment extends Schema.CollectionType {
     days: Attribute.JSON;
     startTime: Attribute.Time;
     duration: Attribute.Integer;
-    classroom_type: Attribute.Enumeration<['Group', 'Individual']>;
+    image: Attribute.Media<'images', true>;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
