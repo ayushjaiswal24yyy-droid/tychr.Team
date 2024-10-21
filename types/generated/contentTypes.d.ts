@@ -992,45 +992,6 @@ export interface ApiCoursePlanCoursePlan extends Schema.CollectionType {
   };
 }
 
-export interface ApiDemoVideoDemoVideo extends Schema.CollectionType {
-  collectionName: 'demo_videos';
-  info: {
-    singularName: 'demo-video';
-    pluralName: 'demo-videos';
-    displayName: 'Demo_videos';
-    description: '';
-  };
-  options: {
-    draftAndPublish: true;
-  };
-  attributes: {
-    video: Attribute.Media<'images' | 'files' | 'videos' | 'audios', true>;
-    title: Attribute.String;
-    description: Attribute.Text;
-    thumbnail: Attribute.Media<'images' | 'files' | 'videos' | 'audios'>;
-    grade_subjects: Attribute.Relation<
-      'api::demo-video.demo-video',
-      'manyToMany',
-      'api::grade-subject.grade-subject'
-    >;
-    createdAt: Attribute.DateTime;
-    updatedAt: Attribute.DateTime;
-    publishedAt: Attribute.DateTime;
-    createdBy: Attribute.Relation<
-      'api::demo-video.demo-video',
-      'oneToOne',
-      'admin::user'
-    > &
-      Attribute.Private;
-    updatedBy: Attribute.Relation<
-      'api::demo-video.demo-video',
-      'oneToOne',
-      'admin::user'
-    > &
-      Attribute.Private;
-  };
-}
-
 export interface ApiEnrollmentEnrollment extends Schema.CollectionType {
   collectionName: 'enrollments';
   info: {
@@ -1143,8 +1104,8 @@ export interface ApiGradeSubjectGradeSubject extends Schema.CollectionType {
     >;
     demo_videos: Attribute.Relation<
       'api::grade-subject.grade-subject',
-      'manyToMany',
-      'api::demo-video.demo-video'
+      'oneToOne',
+      'api::recorded-lecture.recorded-lecture'
     >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
@@ -1640,7 +1601,6 @@ declare module '@strapi/types' {
       'plugin::users-permissions.user': PluginUsersPermissionsUser;
       'api::class.class': ApiClassClass;
       'api::course-plan.course-plan': ApiCoursePlanCoursePlan;
-      'api::demo-video.demo-video': ApiDemoVideoDemoVideo;
       'api::enrollment.enrollment': ApiEnrollmentEnrollment;
       'api::grade-subject.grade-subject': ApiGradeSubjectGradeSubject;
       'api::ib-program.ib-program': ApiIbProgramIbProgram;
