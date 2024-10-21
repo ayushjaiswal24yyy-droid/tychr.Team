@@ -74,6 +74,12 @@
       "relation": "manyToMany",
       "target": "api::enrollment.enrollment",
       "mappedBy": "recorded_lectures"
+    },
+    "grade_subjects": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::grade-subject.grade-subject",
+      "inversedBy": "demo_videos"
     }
   }
 }

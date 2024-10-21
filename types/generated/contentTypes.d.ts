@@ -1104,7 +1104,7 @@ export interface ApiGradeSubjectGradeSubject extends Schema.CollectionType {
     >;
     demo_videos: Attribute.Relation<
       'api::grade-subject.grade-subject',
-      'oneToOne',
+      'manyToMany',
       'api::recorded-lecture.recorded-lecture'
     >;
     createdAt: Attribute.DateTime;
@@ -1375,6 +1375,11 @@ export interface ApiRecordedLectureRecordedLecture
       'api::recorded-lecture.recorded-lecture',
       'manyToMany',
       'api::enrollment.enrollment'
+    >;
+    grade_subjects: Attribute.Relation<
+      'api::recorded-lecture.recorded-lecture',
+      'manyToMany',
+      'api::grade-subject.grade-subject'
     >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;

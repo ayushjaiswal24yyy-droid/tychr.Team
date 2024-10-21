@@ -63,8 +63,9 @@
     },
     "demo_videos": {
       "type": "relation",
-      "relation": "oneToOne",
-      "target": "api::recorded-lecture.recorded-lecture"
+      "relation": "manyToMany",
+      "target": "api::recorded-lecture.recorded-lecture",
+      "inversedBy": "grade_subjects"
     }
   }
 }
