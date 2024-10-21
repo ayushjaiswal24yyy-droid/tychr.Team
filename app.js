@@ -1,2 +1,2 @@
-const server = require('@strapi/strapi');
+const server = require("@strapi/strapi");
 server().start();

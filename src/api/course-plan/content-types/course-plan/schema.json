@@ -38,12 +38,6 @@
         "INR"
       ]
     },
-    "grade_subjects": {
-      "type": "relation",
-      "relation": "manyToMany",
-      "target": "api::grade-subject.grade-subject",
-      "inversedBy": "course_plans"
-    },
     "description": {
       "type": "text"
     },

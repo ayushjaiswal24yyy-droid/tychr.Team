@@ -1,0 +1,49 @@
+{
+  "kind": "collectionType",
+  "collectionName": "demo_videos",
+  "info": {
+    "singularName": "demo-video",
+    "pluralName": "demo-videos",
+    "displayName": "Demo_videos",
+    "description": ""
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "video": {
+      "type": "media",
+      "multiple": true,
+      "required": false,
+      "allowedTypes": [
+        "images",
+        "files",
+        "videos",
+        "audios"
+      ]
+    },
+    "title": {
+      "type": "string"
+    },
+    "description": {
+      "type": "text"
+    },
+    "thumbnail": {
+      "allowedTypes": [
+        "images",
+        "files",
+        "videos",
+        "audios"
+      ],
+      "type": "media",
+      "multiple": false
+    },
+    "grade_subjects": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::grade-subject.grade-subject",
+      "mappedBy": "demo_videos"
+    }
+  }
+}

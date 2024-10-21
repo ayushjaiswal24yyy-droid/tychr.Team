@@ -49,12 +49,6 @@
         "SL"
       ]
     },
-    "course_plans": {
-      "type": "relation",
-      "relation": "manyToMany",
-      "target": "api::course-plan.course-plan",
-      "mappedBy": "grade_subjects"
-    },
     "level": {
       "type": "enumeration",
       "enum": [
@@ -62,17 +56,16 @@
         "AI"
       ]
     },
-    "question_banks": {
+    "note": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::note.note"
+    },
+    "demo_videos": {
       "type": "relation",
       "relation": "manyToMany",
-      "target": "api::question-bank.question-bank",
-      "mappedBy": "grade_subjects"
-    },
-    "classrooms": {
-      "type": "relation",
-      "relation": "oneToMany",
-      "target": "api::enrollment.enrollment",
-      "mappedBy": "grade_subject"
+      "target": "api::demo-video.demo-video",
+      "inversedBy": "grade_subjects"
     }
   }
 }

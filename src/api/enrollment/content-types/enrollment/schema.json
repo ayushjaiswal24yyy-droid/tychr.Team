@@ -46,12 +46,6 @@
       "target": "api::course-plan.course-plan",
       "inversedBy": "classrooms"
     },
-    "grade_subject": {
-      "type": "relation",
-      "relation": "manyToOne",
-      "target": "api::grade-subject.grade-subject",
-      "inversedBy": "classrooms"
-    },
     "live_lectures": {
       "type": "relation",
       "relation": "manyToMany",
