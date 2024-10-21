@@ -1102,7 +1102,7 @@ export interface ApiGradeSubjectGradeSubject extends Schema.CollectionType {
       'oneToOne',
       'api::note.note'
     >;
-    demo_videos: Attribute.Relation<
+    demo_video: Attribute.Relation<
       'api::grade-subject.grade-subject',
       'manyToMany',
       'api::recorded-lecture.recorded-lecture'

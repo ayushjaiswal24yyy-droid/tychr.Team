@@ -61,7 +61,7 @@
       "relation": "oneToOne",
       "target": "api::note.note"
     },
-    "demo_videos": {
+    "demo_video": {
       "type": "relation",
       "relation": "manyToMany",
       "target": "api::recorded-lecture.recorded-lecture",
