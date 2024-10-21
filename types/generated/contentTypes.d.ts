@@ -1056,6 +1056,7 @@ export interface ApiEnrollmentEnrollment extends Schema.CollectionType {
     startTime: Attribute.Time;
     duration: Attribute.Integer;
     image: Attribute.Media<'images', true>;
+    status: Attribute.Enumeration<['Pending', 'Approved']>;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
