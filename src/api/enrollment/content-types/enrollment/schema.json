@@ -98,6 +98,12 @@
         "Pending",
         "Approved"
       ]
+    },
+    "grade_subject": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::grade-subject.grade-subject",
+      "inversedBy": "classroom"
     }
   }
 }

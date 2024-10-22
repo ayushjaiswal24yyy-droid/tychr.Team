@@ -66,6 +66,12 @@
       "relation": "manyToMany",
       "target": "api::recorded-lecture.recorded-lecture",
       "inversedBy": "grade_subjects"
+    },
+    "classroom": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::enrollment.enrollment",
+      "mappedBy": "grade_subject"
     }
   }
 }

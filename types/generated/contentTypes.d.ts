@@ -1047,6 +1047,11 @@ export interface ApiEnrollmentEnrollment extends Schema.CollectionType {
     duration: Attribute.Integer;
     image: Attribute.Media<'images', true>;
     status: Attribute.Enumeration<['Pending', 'Approved']>;
+    grade_subject: Attribute.Relation<
+      'api::enrollment.enrollment',
+      'oneToOne',
+      'api::grade-subject.grade-subject'
+    >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
@@ -1106,6 +1111,11 @@ export interface ApiGradeSubjectGradeSubject extends Schema.CollectionType {
       'api::grade-subject.grade-subject',
       'manyToMany',
       'api::recorded-lecture.recorded-lecture'
+    >;
+    classroom: Attribute.Relation<
+      'api::grade-subject.grade-subject',
+      'oneToOne',
+      'api::enrollment.enrollment'
     >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
