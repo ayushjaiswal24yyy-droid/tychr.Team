@@ -199,11 +199,15 @@
       "target": "api::course-plan.course-plan"
     },
     "tutor_video": {
+      "type": "media",
+      "multiple": false,
+      "required": false,
       "allowedTypes": [
         "videos"
-      ],
-      "type": "media",
-      "multiple": false
+      ]
+    },
+    "classroom_limit": {
+      "type": "integer"
     }
   }
 }

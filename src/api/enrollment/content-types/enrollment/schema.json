@@ -104,9 +104,6 @@
       "relation": "oneToOne",
       "target": "api::grade-subject.grade-subject",
       "inversedBy": "classroom"
-    },
-    "classroom_limit": {
-      "type": "integer"
     }
   }
 }

@@ -869,6 +869,7 @@ export interface PluginUsersPermissionsUser extends Schema.CollectionType {
       'api::course-plan.course-plan'
     >;
     tutor_video: Attribute.Media<'videos'>;
+    classroom_limit: Attribute.Integer;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     createdBy: Attribute.Relation<
@@ -1052,7 +1053,6 @@ export interface ApiEnrollmentEnrollment extends Schema.CollectionType {
       'oneToOne',
       'api::grade-subject.grade-subject'
     >;
-    classroom_limit: Attribute.Integer;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
