@@ -869,7 +869,7 @@ export interface PluginUsersPermissionsUser extends Schema.CollectionType {
       'api::course-plan.course-plan'
     >;
     tutor_video: Attribute.Media<'videos'>;
-    classroom_limit: Attribute.Integer;
+    classroom_limit: Attribute.Integer & Attribute.DefaultTo<5>;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     createdBy: Attribute.Relation<
