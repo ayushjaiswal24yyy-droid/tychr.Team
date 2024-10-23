@@ -1052,6 +1052,7 @@ export interface ApiEnrollmentEnrollment extends Schema.CollectionType {
       'oneToOne',
       'api::grade-subject.grade-subject'
     >;
+    classroom_limit: Attribute.Integer;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
