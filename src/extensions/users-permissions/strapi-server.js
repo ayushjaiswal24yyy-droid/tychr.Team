@@ -95,6 +95,7 @@ module.exports = (plugin) => {
             "avatar",
             "onBoarded",
             "ib_program",
+            "studying",
             "grade",
             "enrolled_in",
             "tutor_plan",

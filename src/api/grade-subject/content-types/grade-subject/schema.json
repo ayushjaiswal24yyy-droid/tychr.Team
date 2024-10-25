@@ -67,9 +67,9 @@
       "target": "api::recorded-lecture.recorded-lecture",
       "inversedBy": "grade_subjects"
     },
-    "classroom": {
+    "classrooms": {
       "type": "relation",
-      "relation": "oneToOne",
+      "relation": "oneToMany",
       "target": "api::enrollment.enrollment",
       "mappedBy": "grade_subject"
     }

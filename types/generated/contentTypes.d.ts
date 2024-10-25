@@ -1050,7 +1050,7 @@ export interface ApiEnrollmentEnrollment extends Schema.CollectionType {
     status: Attribute.Enumeration<['Pending', 'Approved']>;
     grade_subject: Attribute.Relation<
       'api::enrollment.enrollment',
-      'oneToOne',
+      'manyToOne',
       'api::grade-subject.grade-subject'
     >;
     createdAt: Attribute.DateTime;
@@ -1113,9 +1113,9 @@ export interface ApiGradeSubjectGradeSubject extends Schema.CollectionType {
       'manyToMany',
       'api::recorded-lecture.recorded-lecture'
     >;
-    classroom: Attribute.Relation<
+    classrooms: Attribute.Relation<
       'api::grade-subject.grade-subject',
-      'oneToOne',
+      'oneToMany',
       'api::enrollment.enrollment'
     >;
     createdAt: Attribute.DateTime;
