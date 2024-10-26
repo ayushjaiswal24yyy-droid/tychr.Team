@@ -24,12 +24,6 @@
       "target": "api::subtopic.subtopic",
       "inversedBy": "question_banks"
     },
-    "grade_subjects": {
-      "type": "relation",
-      "relation": "manyToMany",
-      "target": "api::grade-subject.grade-subject",
-      "inversedBy": "question_banks"
-    },
     "parts": {
       "type": "component",
       "repeatable": true,

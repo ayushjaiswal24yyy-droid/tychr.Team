@@ -869,6 +869,7 @@ export interface PluginUsersPermissionsUser extends Schema.CollectionType {
       'api::course-plan.course-plan'
     >;
     tutor_video: Attribute.Media<'videos'>;
+    classroom_limit: Attribute.Integer & Attribute.DefaultTo<5>;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     createdBy: Attribute.Relation<
@@ -957,11 +958,6 @@ export interface ApiCoursePlanCoursePlan extends Schema.CollectionType {
     price: Attribute.Decimal;
     qna: Attribute.Boolean & Attribute.DefaultTo<true>;
     currency: Attribute.Enumeration<['USD', 'INR']>;
-    grade_subjects: Attribute.Relation<
-      'api::course-plan.course-plan',
-      'manyToMany',
-      'api::grade-subject.grade-subject'
-    >;
     description: Attribute.Text;
     ib_programs: Attribute.Relation<
       'api::course-plan.course-plan',
@@ -1029,11 +1025,6 @@ export interface ApiEnrollmentEnrollment extends Schema.CollectionType {
       'manyToOne',
       'api::course-plan.course-plan'
     >;
-    grade_subject: Attribute.Relation<
-      'api::enrollment.enrollment',
-      'manyToOne',
-      'api::grade-subject.grade-subject'
-    >;
     live_lectures: Attribute.Relation<
       'api::enrollment.enrollment',
       'manyToMany',
@@ -1056,6 +1047,12 @@ export interface ApiEnrollmentEnrollment extends Schema.CollectionType {
     startTime: Attribute.Time;
     duration: Attribute.Integer;
     image: Attribute.Media<'images', true>;
+    status: Attribute.Enumeration<['Pending', 'Approved']>;
+    grade_subject: Attribute.Relation<
+      'api::enrollment.enrollment',
+      'manyToOne',
+      'api::grade-subject.grade-subject'
+    >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
@@ -1105,16 +1102,16 @@ export interface ApiGradeSubjectGradeSubject extends Schema.CollectionType {
     >;
     name: Attribute.String;
     subject_group: Attribute.Enumeration<['HL', 'SL']>;
-    course_plans: Attribute.Relation<
-      'api::grade-subject.grade-subject',
-      'manyToMany',
-      'api::course-plan.course-plan'
-    >;
     level: Attribute.Enumeration<['AA', 'AI']>;
-    question_banks: Attribute.Relation<
+    note: Attribute.Relation<
+      'api::grade-subject.grade-subject',
+      'oneToOne',
+      'api::note.note'
+    >;
+    demo_video: Attribute.Relation<
       'api::grade-subject.grade-subject',
       'manyToMany',
-      'api::question-bank.question-bank'
+      'api::recorded-lecture.recorded-lecture'
     >;
     classrooms: Attribute.Relation<
       'api::grade-subject.grade-subject',
@@ -1245,6 +1242,30 @@ export interface ApiLiveLectureLiveLecture extends Schema.CollectionType {
   };
 }
 
+export interface ApiNoteNote extends Schema.CollectionType {
+  collectionName: 'notes';
+  info: {
+    singularName: 'note';
+    pluralName: 'notes';
+    displayName: 'Notes';
+    description: '';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    note: Attribute.Blocks;
+    title: Attribute.String;
+    createdAt: Attribute.DateTime;
+    updatedAt: Attribute.DateTime;
+    publishedAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<'api::note.note', 'oneToOne', 'admin::user'> &
+      Attribute.Private;
+    updatedBy: Attribute.Relation<'api::note.note', 'oneToOne', 'admin::user'> &
+      Attribute.Private;
+  };
+}
+
 export interface ApiPaymentPayment extends Schema.CollectionType {
   collectionName: 'payments';
   info: {
@@ -1303,11 +1324,6 @@ export interface ApiQuestionBankQuestionBank extends Schema.CollectionType {
       'api::question-bank.question-bank',
       'manyToMany',
       'api::subtopic.subtopic'
-    >;
-    grade_subjects: Attribute.Relation<
-      'api::question-bank.question-bank',
-      'manyToMany',
-      'api::grade-subject.grade-subject'
     >;
     parts: Attribute.Component<'question-bank.parts', true>;
     title: Attribute.String;
@@ -1370,6 +1386,11 @@ export interface ApiRecordedLectureRecordedLecture
       'api::recorded-lecture.recorded-lecture',
       'manyToMany',
       'api::enrollment.enrollment'
+    >;
+    grade_subjects: Attribute.Relation<
+      'api::recorded-lecture.recorded-lecture',
+      'manyToMany',
+      'api::grade-subject.grade-subject'
     >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
@@ -1600,6 +1621,7 @@ declare module '@strapi/types' {
       'api::grade-subject.grade-subject': ApiGradeSubjectGradeSubject;
       'api::ib-program.ib-program': ApiIbProgramIbProgram;
       'api::live-lecture.live-lecture': ApiLiveLectureLiveLecture;
+      'api::note.note': ApiNoteNote;
       'api::payment.payment': ApiPaymentPayment;
       'api::question-bank.question-bank': ApiQuestionBankQuestionBank;
       'api::recorded-lecture.recorded-lecture': ApiRecordedLectureRecordedLecture;
