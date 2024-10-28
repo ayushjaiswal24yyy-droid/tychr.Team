@@ -4,7 +4,8 @@
   "info": {
     "singularName": "doubt-section",
     "pluralName": "doubt-sections",
-    "displayName": "Doubt_Section"
+    "displayName": "Doubt_Section",
+    "description": ""
   },
   "options": {
     "draftAndPublish": true
@@ -15,20 +16,26 @@
       "type": "text"
     },
     "attachment": {
+      "type": "media",
+      "multiple": false,
+      "required": false,
       "allowedTypes": [
         "images",
         "files",
         "videos",
         "audios"
-      ],
-      "type": "media",
-      "multiple": false
+      ]
     },
     "topic": {
       "type": "relation",
       "relation": "manyToOne",
       "target": "api::topic.topic",
       "inversedBy": "doubt_sections"
+    },
+    "student": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "plugin::users-permissions.user"
     }
   }
 }

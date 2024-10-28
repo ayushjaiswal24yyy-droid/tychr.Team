@@ -999,6 +999,7 @@ export interface ApiDoubtSectionDoubtSection extends Schema.CollectionType {
     singularName: 'doubt-section';
     pluralName: 'doubt-sections';
     displayName: 'Doubt_Section';
+    description: '';
   };
   options: {
     draftAndPublish: true;
@@ -1010,6 +1011,11 @@ export interface ApiDoubtSectionDoubtSection extends Schema.CollectionType {
       'api::doubt-section.doubt-section',
       'manyToOne',
       'api::topic.topic'
+    >;
+    student: Attribute.Relation<
+      'api::doubt-section.doubt-section',
+      'oneToOne',
+      'plugin::users-permissions.user'
     >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
