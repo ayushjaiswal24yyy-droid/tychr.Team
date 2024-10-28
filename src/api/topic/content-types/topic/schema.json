@@ -54,6 +54,12 @@
     "isPaid": {
       "type": "boolean",
       "default": true
+    },
+    "doubt_sections": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::doubt-section.doubt-section",
+      "mappedBy": "topic"
     }
   }
 }
