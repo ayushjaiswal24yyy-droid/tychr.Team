@@ -993,6 +993,42 @@ export interface ApiCoursePlanCoursePlan extends Schema.CollectionType {
   };
 }
 
+export interface ApiDoubtSectionDoubtSection extends Schema.CollectionType {
+  collectionName: 'doubt_sections';
+  info: {
+    singularName: 'doubt-section';
+    pluralName: 'doubt-sections';
+    displayName: 'Doubt_Section';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    question: Attribute.Text;
+    attachment: Attribute.Media<'images' | 'files' | 'videos' | 'audios'>;
+    topic: Attribute.Relation<
+      'api::doubt-section.doubt-section',
+      'manyToOne',
+      'api::topic.topic'
+    >;
+    createdAt: Attribute.DateTime;
+    updatedAt: Attribute.DateTime;
+    publishedAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<
+      'api::doubt-section.doubt-section',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+    updatedBy: Attribute.Relation<
+      'api::doubt-section.doubt-section',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+  };
+}
+
 export interface ApiEnrollmentEnrollment extends Schema.CollectionType {
   collectionName: 'enrollments';
   info: {
@@ -1539,6 +1575,11 @@ export interface ApiTopicTopic extends Schema.CollectionType {
       'api::enrollment.enrollment'
     >;
     isPaid: Attribute.Boolean & Attribute.DefaultTo<true>;
+    doubt_sections: Attribute.Relation<
+      'api::topic.topic',
+      'oneToMany',
+      'api::doubt-section.doubt-section'
+    >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
@@ -1617,6 +1658,7 @@ declare module '@strapi/types' {
       'plugin::users-permissions.user': PluginUsersPermissionsUser;
       'api::class.class': ApiClassClass;
       'api::course-plan.course-plan': ApiCoursePlanCoursePlan;
+      'api::doubt-section.doubt-section': ApiDoubtSectionDoubtSection;
       'api::enrollment.enrollment': ApiEnrollmentEnrollment;
       'api::grade-subject.grade-subject': ApiGradeSubjectGradeSubject;
       'api::ib-program.ib-program': ApiIbProgramIbProgram;
