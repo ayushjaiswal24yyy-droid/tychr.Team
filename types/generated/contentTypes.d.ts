@@ -870,6 +870,11 @@ export interface PluginUsersPermissionsUser extends Schema.CollectionType {
     >;
     tutor_video: Attribute.Media<'videos'>;
     classroom_limit: Attribute.Integer & Attribute.DefaultTo<5>;
+    communities: Attribute.Relation<
+      'plugin::users-permissions.user',
+      'manyToMany',
+      'api::community.community'
+    >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     createdBy: Attribute.Relation<
@@ -931,6 +936,86 @@ export interface ApiClassClass extends Schema.CollectionType {
       Attribute.Private;
     updatedBy: Attribute.Relation<
       'api::class.class',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+  };
+}
+
+export interface ApiCommentComment extends Schema.CollectionType {
+  collectionName: 'comments';
+  info: {
+    singularName: 'comment';
+    pluralName: 'comments';
+    displayName: 'Comments';
+    description: '';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    comment: Attribute.Text;
+    author: Attribute.Relation<
+      'api::comment.comment',
+      'oneToOne',
+      'plugin::users-permissions.user'
+    >;
+    attachment: Attribute.Media<'images' | 'files' | 'videos' | 'audios'>;
+    post: Attribute.Relation<
+      'api::comment.comment',
+      'manyToOne',
+      'api::post.post'
+    >;
+    createdAt: Attribute.DateTime;
+    updatedAt: Attribute.DateTime;
+    publishedAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<
+      'api::comment.comment',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+    updatedBy: Attribute.Relation<
+      'api::comment.comment',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+  };
+}
+
+export interface ApiCommunityCommunity extends Schema.CollectionType {
+  collectionName: 'communities';
+  info: {
+    singularName: 'community';
+    pluralName: 'communities';
+    displayName: 'Communities';
+    description: '';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    Name: Attribute.String;
+    description: Attribute.Text;
+    image: Attribute.Media<'images' | 'files' | 'videos' | 'audios'>;
+    members: Attribute.Relation<
+      'api::community.community',
+      'manyToMany',
+      'plugin::users-permissions.user'
+    >;
+    createdAt: Attribute.DateTime;
+    updatedAt: Attribute.DateTime;
+    publishedAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<
+      'api::community.community',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+    updatedBy: Attribute.Relation<
+      'api::community.community',
       'oneToOne',
       'admin::user'
     > &
@@ -1348,6 +1433,44 @@ export interface ApiPaymentPayment extends Schema.CollectionType {
   };
 }
 
+export interface ApiPostPost extends Schema.CollectionType {
+  collectionName: 'posts';
+  info: {
+    singularName: 'post';
+    pluralName: 'posts';
+    displayName: 'Posts';
+    description: '';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    post: Attribute.Text;
+    author: Attribute.Relation<
+      'api::post.post',
+      'oneToOne',
+      'plugin::users-permissions.user'
+    >;
+    community: Attribute.Relation<
+      'api::post.post',
+      'oneToOne',
+      'api::community.community'
+    >;
+    comments: Attribute.Relation<
+      'api::post.post',
+      'oneToMany',
+      'api::comment.comment'
+    >;
+    createdAt: Attribute.DateTime;
+    updatedAt: Attribute.DateTime;
+    publishedAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<'api::post.post', 'oneToOne', 'admin::user'> &
+      Attribute.Private;
+    updatedBy: Attribute.Relation<'api::post.post', 'oneToOne', 'admin::user'> &
+      Attribute.Private;
+  };
+}
+
 export interface ApiQuestionBankQuestionBank extends Schema.CollectionType {
   collectionName: 'question_banks';
   info: {
@@ -1663,6 +1786,8 @@ declare module '@strapi/types' {
       'plugin::users-permissions.role': PluginUsersPermissionsRole;
       'plugin::users-permissions.user': PluginUsersPermissionsUser;
       'api::class.class': ApiClassClass;
+      'api::comment.comment': ApiCommentComment;
+      'api::community.community': ApiCommunityCommunity;
       'api::course-plan.course-plan': ApiCoursePlanCoursePlan;
       'api::doubt-section.doubt-section': ApiDoubtSectionDoubtSection;
       'api::enrollment.enrollment': ApiEnrollmentEnrollment;
@@ -1671,6 +1796,7 @@ declare module '@strapi/types' {
       'api::live-lecture.live-lecture': ApiLiveLectureLiveLecture;
       'api::note.note': ApiNoteNote;
       'api::payment.payment': ApiPaymentPayment;
+      'api::post.post': ApiPostPost;
       'api::question-bank.question-bank': ApiQuestionBankQuestionBank;
       'api::recorded-lecture.recorded-lecture': ApiRecordedLectureRecordedLecture;
       'api::subject.subject': ApiSubjectSubject;

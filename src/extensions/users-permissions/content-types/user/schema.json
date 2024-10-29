@@ -209,6 +209,12 @@
     "classroom_limit": {
       "type": "integer",
       "default": 5
+    },
+    "communities": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::community.community",
+      "inversedBy": "members"
     }
   }
 }
