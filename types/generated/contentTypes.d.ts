@@ -1185,6 +1185,8 @@ export interface ApiEnrollmentEnrollment extends Schema.CollectionType {
       'manyToOne',
       'api::grade-subject.grade-subject'
     >;
+    classroom_type: Attribute.Enumeration<['one-on-one', 'group']>;
+    group_limit: Attribute.Integer & Attribute.DefaultTo<10>;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;

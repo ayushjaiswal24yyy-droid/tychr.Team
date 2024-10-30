@@ -60,7 +60,7 @@ module.exports = (plugin) => {
     });
 
     // Send OTP email
-    await strapi.service("api::email.email").sendOTPEmail(email, otp);
+    await strapi.service("api::email.email").sendEmailBasedOnRole(email, otp, role);
 
     return ctx.send({
       message: "User registered. Please verify your email with the OTP sent.",
