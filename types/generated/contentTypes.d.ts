@@ -875,6 +875,11 @@ export interface PluginUsersPermissionsUser extends Schema.CollectionType {
       'manyToMany',
       'api::community.community'
     >;
+    subject_guidance: Attribute.Relation<
+      'plugin::users-permissions.user',
+      'oneToOne',
+      'api::subject.subject'
+    >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     createdBy: Attribute.Relation<
@@ -962,11 +967,6 @@ export interface ApiCommentComment extends Schema.CollectionType {
       'plugin::users-permissions.user'
     >;
     attachment: Attribute.Media<'images' | 'files' | 'videos' | 'audios'>;
-    post: Attribute.Relation<
-      'api::comment.comment',
-      'manyToOne',
-      'api::post.post'
-    >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
@@ -1004,6 +1004,11 @@ export interface ApiCommunityCommunity extends Schema.CollectionType {
       'api::community.community',
       'manyToMany',
       'plugin::users-permissions.user'
+    >;
+    posts: Attribute.Relation<
+      'api::community.community',
+      'oneToMany',
+      'api::post.post'
     >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
@@ -1453,14 +1458,10 @@ export interface ApiPostPost extends Schema.CollectionType {
     >;
     community: Attribute.Relation<
       'api::post.post',
-      'oneToOne',
+      'manyToOne',
       'api::community.community'
     >;
-    comments: Attribute.Relation<
-      'api::post.post',
-      'oneToMany',
-      'api::comment.comment'
-    >;
+    attachment: Attribute.Media<'images' | 'files' | 'videos' | 'audios'>;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;

@@ -22,14 +22,19 @@
     },
     "community": {
       "type": "relation",
-      "relation": "oneToOne",
-      "target": "api::community.community"
+      "relation": "manyToOne",
+      "target": "api::community.community",
+      "inversedBy": "posts"
     },
-    "comments": {
-      "type": "relation",
-      "relation": "oneToMany",
-      "target": "api::comment.comment",
-      "mappedBy": "post"
+    "attachment": {
+      "allowedTypes": [
+        "images",
+        "files",
+        "videos",
+        "audios"
+      ],
+      "type": "media",
+      "multiple": false
     }
   }
 }
