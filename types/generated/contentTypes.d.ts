@@ -869,6 +869,12 @@ export interface PluginUsersPermissionsUser extends Schema.CollectionType {
       'api::course-plan.course-plan'
     >;
     tutor_video: Attribute.Media<'videos'>;
+    classroom_limit: Attribute.Integer & Attribute.DefaultTo<5>;
+    communities: Attribute.Relation<
+      'plugin::users-permissions.user',
+      'manyToMany',
+      'api::community.community'
+    >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     createdBy: Attribute.Relation<
@@ -937,6 +943,86 @@ export interface ApiClassClass extends Schema.CollectionType {
   };
 }
 
+export interface ApiCommentComment extends Schema.CollectionType {
+  collectionName: 'comments';
+  info: {
+    singularName: 'comment';
+    pluralName: 'comments';
+    displayName: 'Comments';
+    description: '';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    comment: Attribute.Text;
+    author: Attribute.Relation<
+      'api::comment.comment',
+      'oneToOne',
+      'plugin::users-permissions.user'
+    >;
+    attachment: Attribute.Media<'images' | 'files' | 'videos' | 'audios'>;
+    post: Attribute.Relation<
+      'api::comment.comment',
+      'manyToOne',
+      'api::post.post'
+    >;
+    createdAt: Attribute.DateTime;
+    updatedAt: Attribute.DateTime;
+    publishedAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<
+      'api::comment.comment',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+    updatedBy: Attribute.Relation<
+      'api::comment.comment',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+  };
+}
+
+export interface ApiCommunityCommunity extends Schema.CollectionType {
+  collectionName: 'communities';
+  info: {
+    singularName: 'community';
+    pluralName: 'communities';
+    displayName: 'Communities';
+    description: '';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    Name: Attribute.String;
+    description: Attribute.Text;
+    image: Attribute.Media<'images' | 'files' | 'videos' | 'audios'>;
+    members: Attribute.Relation<
+      'api::community.community',
+      'manyToMany',
+      'plugin::users-permissions.user'
+    >;
+    createdAt: Attribute.DateTime;
+    updatedAt: Attribute.DateTime;
+    publishedAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<
+      'api::community.community',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+    updatedBy: Attribute.Relation<
+      'api::community.community',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+  };
+}
+
 export interface ApiCoursePlanCoursePlan extends Schema.CollectionType {
   collectionName: 'course_plans';
   info: {
@@ -957,11 +1043,6 @@ export interface ApiCoursePlanCoursePlan extends Schema.CollectionType {
     price: Attribute.Decimal;
     qna: Attribute.Boolean & Attribute.DefaultTo<true>;
     currency: Attribute.Enumeration<['USD', 'INR']>;
-    grade_subjects: Attribute.Relation<
-      'api::course-plan.course-plan',
-      'manyToMany',
-      'api::grade-subject.grade-subject'
-    >;
     description: Attribute.Text;
     ib_programs: Attribute.Relation<
       'api::course-plan.course-plan',
@@ -990,6 +1071,48 @@ export interface ApiCoursePlanCoursePlan extends Schema.CollectionType {
       Attribute.Private;
     updatedBy: Attribute.Relation<
       'api::course-plan.course-plan',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+  };
+}
+
+export interface ApiDoubtSectionDoubtSection extends Schema.CollectionType {
+  collectionName: 'doubt_sections';
+  info: {
+    singularName: 'doubt-section';
+    pluralName: 'doubt-sections';
+    displayName: 'Doubt_Section';
+    description: '';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    question: Attribute.Text;
+    attachment: Attribute.Media<'images' | 'files' | 'videos' | 'audios'>;
+    topic: Attribute.Relation<
+      'api::doubt-section.doubt-section',
+      'manyToOne',
+      'api::topic.topic'
+    >;
+    student: Attribute.Relation<
+      'api::doubt-section.doubt-section',
+      'oneToOne',
+      'plugin::users-permissions.user'
+    >;
+    createdAt: Attribute.DateTime;
+    updatedAt: Attribute.DateTime;
+    publishedAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<
+      'api::doubt-section.doubt-section',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+    updatedBy: Attribute.Relation<
+      'api::doubt-section.doubt-section',
       'oneToOne',
       'admin::user'
     > &
@@ -1029,11 +1152,6 @@ export interface ApiEnrollmentEnrollment extends Schema.CollectionType {
       'manyToOne',
       'api::course-plan.course-plan'
     >;
-    grade_subject: Attribute.Relation<
-      'api::enrollment.enrollment',
-      'manyToOne',
-      'api::grade-subject.grade-subject'
-    >;
     live_lectures: Attribute.Relation<
       'api::enrollment.enrollment',
       'manyToMany',
@@ -1056,6 +1174,12 @@ export interface ApiEnrollmentEnrollment extends Schema.CollectionType {
     startTime: Attribute.Time;
     duration: Attribute.Integer;
     image: Attribute.Media<'images', true>;
+    status: Attribute.Enumeration<['Pending', 'Approved']>;
+    grade_subject: Attribute.Relation<
+      'api::enrollment.enrollment',
+      'manyToOne',
+      'api::grade-subject.grade-subject'
+    >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
@@ -1105,16 +1229,16 @@ export interface ApiGradeSubjectGradeSubject extends Schema.CollectionType {
     >;
     name: Attribute.String;
     subject_group: Attribute.Enumeration<['HL', 'SL']>;
-    course_plans: Attribute.Relation<
-      'api::grade-subject.grade-subject',
-      'manyToMany',
-      'api::course-plan.course-plan'
-    >;
     level: Attribute.Enumeration<['AA', 'AI']>;
-    question_banks: Attribute.Relation<
+    note: Attribute.Relation<
+      'api::grade-subject.grade-subject',
+      'oneToOne',
+      'api::note.note'
+    >;
+    demo_video: Attribute.Relation<
       'api::grade-subject.grade-subject',
       'manyToMany',
-      'api::question-bank.question-bank'
+      'api::recorded-lecture.recorded-lecture'
     >;
     classrooms: Attribute.Relation<
       'api::grade-subject.grade-subject',
@@ -1245,6 +1369,30 @@ export interface ApiLiveLectureLiveLecture extends Schema.CollectionType {
   };
 }
 
+export interface ApiNoteNote extends Schema.CollectionType {
+  collectionName: 'notes';
+  info: {
+    singularName: 'note';
+    pluralName: 'notes';
+    displayName: 'Notes';
+    description: '';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    note: Attribute.Blocks;
+    title: Attribute.String;
+    createdAt: Attribute.DateTime;
+    updatedAt: Attribute.DateTime;
+    publishedAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<'api::note.note', 'oneToOne', 'admin::user'> &
+      Attribute.Private;
+    updatedBy: Attribute.Relation<'api::note.note', 'oneToOne', 'admin::user'> &
+      Attribute.Private;
+  };
+}
+
 export interface ApiPaymentPayment extends Schema.CollectionType {
   collectionName: 'payments';
   info: {
@@ -1285,6 +1433,44 @@ export interface ApiPaymentPayment extends Schema.CollectionType {
   };
 }
 
+export interface ApiPostPost extends Schema.CollectionType {
+  collectionName: 'posts';
+  info: {
+    singularName: 'post';
+    pluralName: 'posts';
+    displayName: 'Posts';
+    description: '';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    post: Attribute.Text;
+    author: Attribute.Relation<
+      'api::post.post',
+      'oneToOne',
+      'plugin::users-permissions.user'
+    >;
+    community: Attribute.Relation<
+      'api::post.post',
+      'oneToOne',
+      'api::community.community'
+    >;
+    comments: Attribute.Relation<
+      'api::post.post',
+      'oneToMany',
+      'api::comment.comment'
+    >;
+    createdAt: Attribute.DateTime;
+    updatedAt: Attribute.DateTime;
+    publishedAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<'api::post.post', 'oneToOne', 'admin::user'> &
+      Attribute.Private;
+    updatedBy: Attribute.Relation<'api::post.post', 'oneToOne', 'admin::user'> &
+      Attribute.Private;
+  };
+}
+
 export interface ApiQuestionBankQuestionBank extends Schema.CollectionType {
   collectionName: 'question_banks';
   info: {
@@ -1303,11 +1489,6 @@ export interface ApiQuestionBankQuestionBank extends Schema.CollectionType {
       'api::question-bank.question-bank',
       'manyToMany',
       'api::subtopic.subtopic'
-    >;
-    grade_subjects: Attribute.Relation<
-      'api::question-bank.question-bank',
-      'manyToMany',
-      'api::grade-subject.grade-subject'
     >;
     parts: Attribute.Component<'question-bank.parts', true>;
     title: Attribute.String;
@@ -1370,6 +1551,11 @@ export interface ApiRecordedLectureRecordedLecture
       'api::recorded-lecture.recorded-lecture',
       'manyToMany',
       'api::enrollment.enrollment'
+    >;
+    grade_subjects: Attribute.Relation<
+      'api::recorded-lecture.recorded-lecture',
+      'manyToMany',
+      'api::grade-subject.grade-subject'
     >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
@@ -1518,6 +1704,11 @@ export interface ApiTopicTopic extends Schema.CollectionType {
       'api::enrollment.enrollment'
     >;
     isPaid: Attribute.Boolean & Attribute.DefaultTo<true>;
+    doubt_sections: Attribute.Relation<
+      'api::topic.topic',
+      'oneToMany',
+      'api::doubt-section.doubt-section'
+    >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
@@ -1595,12 +1786,17 @@ declare module '@strapi/types' {
       'plugin::users-permissions.role': PluginUsersPermissionsRole;
       'plugin::users-permissions.user': PluginUsersPermissionsUser;
       'api::class.class': ApiClassClass;
+      'api::comment.comment': ApiCommentComment;
+      'api::community.community': ApiCommunityCommunity;
       'api::course-plan.course-plan': ApiCoursePlanCoursePlan;
+      'api::doubt-section.doubt-section': ApiDoubtSectionDoubtSection;
       'api::enrollment.enrollment': ApiEnrollmentEnrollment;
       'api::grade-subject.grade-subject': ApiGradeSubjectGradeSubject;
       'api::ib-program.ib-program': ApiIbProgramIbProgram;
       'api::live-lecture.live-lecture': ApiLiveLectureLiveLecture;
+      'api::note.note': ApiNoteNote;
       'api::payment.payment': ApiPaymentPayment;
+      'api::post.post': ApiPostPost;
       'api::question-bank.question-bank': ApiQuestionBankQuestionBank;
       'api::recorded-lecture.recorded-lecture': ApiRecordedLectureRecordedLecture;
       'api::subject.subject': ApiSubjectSubject;
