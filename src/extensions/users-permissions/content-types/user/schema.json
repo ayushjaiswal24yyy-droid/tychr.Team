@@ -220,6 +220,20 @@
       "type": "relation",
       "relation": "oneToOne",
       "target": "api::subject.subject"
+    },
+    "highest_educational_qualification": {
+      "type": "string"
+    },
+    "teaching_certifications": {
+      "type": "string"
+    },
+    "graduated_from": {
+      "type": "string"
+    },
+    "field_of_study": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::subject.subject"
     }
   }
 }
