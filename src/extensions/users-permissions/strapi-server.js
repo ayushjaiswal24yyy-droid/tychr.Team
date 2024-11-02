@@ -534,7 +534,6 @@ module.exports = (plugin) => {
 
     const { id } = ctx.state.user;
     const { files } = ctx.request;
-    console.log(files.cv);
     if (!files && !files.cv && !files.avatar) {
       return ctx.badRequest("No files found in the request");
     }
