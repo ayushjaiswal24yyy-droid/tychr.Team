@@ -869,6 +869,17 @@ export interface PluginUsersPermissionsUser extends Schema.CollectionType {
       'api::course-plan.course-plan'
     >;
     tutor_video: Attribute.Media<'videos'>;
+    classroom_limit: Attribute.Integer & Attribute.DefaultTo<5>;
+    communities: Attribute.Relation<
+      'plugin::users-permissions.user',
+      'manyToMany',
+      'api::community.community'
+    >;
+    subject_guidance: Attribute.Relation<
+      'plugin::users-permissions.user',
+      'oneToOne',
+      'api::subject.subject'
+    >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     createdBy: Attribute.Relation<
@@ -930,6 +941,86 @@ export interface ApiClassClass extends Schema.CollectionType {
       Attribute.Private;
     updatedBy: Attribute.Relation<
       'api::class.class',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+  };
+}
+
+export interface ApiCommentComment extends Schema.CollectionType {
+  collectionName: 'comments';
+  info: {
+    singularName: 'comment';
+    pluralName: 'comments';
+    displayName: 'Comments';
+    description: '';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    comment: Attribute.Text;
+    author: Attribute.Relation<
+      'api::comment.comment',
+      'oneToOne',
+      'plugin::users-permissions.user'
+    >;
+    attachment: Attribute.Media<'images' | 'files' | 'videos' | 'audios'>;
+    createdAt: Attribute.DateTime;
+    updatedAt: Attribute.DateTime;
+    publishedAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<
+      'api::comment.comment',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+    updatedBy: Attribute.Relation<
+      'api::comment.comment',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+  };
+}
+
+export interface ApiCommunityCommunity extends Schema.CollectionType {
+  collectionName: 'communities';
+  info: {
+    singularName: 'community';
+    pluralName: 'communities';
+    displayName: 'Communities';
+    description: '';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    Name: Attribute.String;
+    description: Attribute.Text;
+    image: Attribute.Media<'images' | 'files' | 'videos' | 'audios'>;
+    members: Attribute.Relation<
+      'api::community.community',
+      'manyToMany',
+      'plugin::users-permissions.user'
+    >;
+    posts: Attribute.Relation<
+      'api::community.community',
+      'oneToMany',
+      'api::post.post'
+    >;
+    createdAt: Attribute.DateTime;
+    updatedAt: Attribute.DateTime;
+    publishedAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<
+      'api::community.community',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+    updatedBy: Attribute.Relation<
+      'api::community.community',
       'oneToOne',
       'admin::user'
     > &
@@ -1088,6 +1179,14 @@ export interface ApiEnrollmentEnrollment extends Schema.CollectionType {
     startTime: Attribute.Time;
     duration: Attribute.Integer;
     image: Attribute.Media<'images', true>;
+    status: Attribute.Enumeration<['Pending', 'Approved']>;
+    grade_subject: Attribute.Relation<
+      'api::enrollment.enrollment',
+      'manyToOne',
+      'api::grade-subject.grade-subject'
+    >;
+    classroom_type: Attribute.Enumeration<['one-on-one', 'group']>;
+    group_limit: Attribute.Integer & Attribute.DefaultTo<10>;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
@@ -1337,6 +1436,40 @@ export interface ApiPaymentPayment extends Schema.CollectionType {
       'oneToOne',
       'admin::user'
     > &
+      Attribute.Private;
+  };
+}
+
+export interface ApiPostPost extends Schema.CollectionType {
+  collectionName: 'posts';
+  info: {
+    singularName: 'post';
+    pluralName: 'posts';
+    displayName: 'Posts';
+    description: '';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    post: Attribute.Text;
+    author: Attribute.Relation<
+      'api::post.post',
+      'oneToOne',
+      'plugin::users-permissions.user'
+    >;
+    community: Attribute.Relation<
+      'api::post.post',
+      'manyToOne',
+      'api::community.community'
+    >;
+    attachment: Attribute.Media<'images' | 'files' | 'videos' | 'audios'>;
+    createdAt: Attribute.DateTime;
+    updatedAt: Attribute.DateTime;
+    publishedAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<'api::post.post', 'oneToOne', 'admin::user'> &
+      Attribute.Private;
+    updatedBy: Attribute.Relation<'api::post.post', 'oneToOne', 'admin::user'> &
       Attribute.Private;
   };
 }
