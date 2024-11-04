@@ -59,12 +59,16 @@ module.exports = (plugin) => {
       },
     });
 
-    // Send OTP email
-    await strapi.service("api::email.email").sendEmailBasedOnRole(email, otp, role);
-
+    await strapi
+      .service("api::email.email")
+      .sendEmailBasedOnRole(email, otp, role);
+    const jwt = strapi.plugins["users-permissions"].services.jwt.issue({
+      id: user.id,
+    });
     return ctx.send({
       message: "User registered. Please verify your email with the OTP sent.",
       uuid: user.uuid,
+      jwt,
       user: sanitizeUser(user),
     });
   };
@@ -530,8 +534,7 @@ module.exports = (plugin) => {
 
     const { id } = ctx.state.user;
     const { files } = ctx.request;
-
-    if (!files || !files.cv || !files.avatar) {
+    if (!files && !files.cv && !files.avatar) {
       return ctx.badRequest("No files found in the request");
     }
 

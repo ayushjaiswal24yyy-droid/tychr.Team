@@ -880,6 +880,14 @@ export interface PluginUsersPermissionsUser extends Schema.CollectionType {
       'oneToOne',
       'api::subject.subject'
     >;
+    highest_educational_qualification: Attribute.String;
+    teaching_certifications: Attribute.String;
+    graduated_from: Attribute.String;
+    field_of_study: Attribute.Relation<
+      'plugin::users-permissions.user',
+      'oneToOne',
+      'api::subject.subject'
+    >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     createdBy: Attribute.Relation<
