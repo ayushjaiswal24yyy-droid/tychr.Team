@@ -1393,6 +1393,11 @@ export interface ApiNoteNote extends Schema.CollectionType {
   attributes: {
     note: Attribute.Blocks;
     title: Attribute.String;
+    topic: Attribute.Relation<
+      'api::note.note',
+      'oneToOne',
+      'api::subtopic.subtopic'
+    >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
@@ -1648,11 +1653,6 @@ export interface ApiSubtopicSubtopic extends Schema.CollectionType {
       'api::subtopic.subtopic',
       'manyToMany',
       'api::question-bank.question-bank'
-    >;
-    note: Attribute.Relation<
-      'api::subtopic.subtopic',
-      'oneToOne',
-      'api::note.note'
     >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;

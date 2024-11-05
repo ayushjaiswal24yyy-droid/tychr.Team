@@ -17,6 +17,11 @@
     },
     "title": {
       "type": "string"
+    },
+    "topic": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::subtopic.subtopic"
     }
   }
 }

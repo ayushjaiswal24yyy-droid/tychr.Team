@@ -31,11 +31,6 @@
       "relation": "manyToMany",
       "target": "api::question-bank.question-bank",
       "mappedBy": "subtopics"
-    },
-    "note": {
-      "type": "relation",
-      "relation": "oneToOne",
-      "target": "api::note.note"
     }
   }
 }
