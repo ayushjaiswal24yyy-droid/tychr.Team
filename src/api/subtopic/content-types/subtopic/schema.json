@@ -4,7 +4,7 @@
   "info": {
     "singularName": "subtopic",
     "pluralName": "subtopics",
-    "displayName": "Subtopic",
+    "displayName": "Topics",
     "description": ""
   },
   "options": {
@@ -31,6 +31,11 @@
       "relation": "manyToMany",
       "target": "api::question-bank.question-bank",
       "mappedBy": "subtopics"
+    },
+    "note": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::note.note"
     }
   }
 }

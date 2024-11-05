@@ -1245,11 +1245,6 @@ export interface ApiGradeSubjectGradeSubject extends Schema.CollectionType {
     name: Attribute.String;
     subject_group: Attribute.Enumeration<['HL', 'SL']>;
     level: Attribute.Enumeration<['AA', 'AI']>;
-    note: Attribute.Relation<
-      'api::grade-subject.grade-subject',
-      'oneToOne',
-      'api::note.note'
-    >;
     demo_video: Attribute.Relation<
       'api::grade-subject.grade-subject',
       'manyToMany',
@@ -1611,6 +1606,7 @@ export interface ApiSubjectSubject extends Schema.CollectionType {
       'oneToOne',
       'plugin::users-permissions.user'
     >;
+    subject_group: Attribute.String;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
@@ -1634,7 +1630,7 @@ export interface ApiSubtopicSubtopic extends Schema.CollectionType {
   info: {
     singularName: 'subtopic';
     pluralName: 'subtopics';
-    displayName: 'Subtopic';
+    displayName: 'Topics';
     description: '';
   };
   options: {
@@ -1652,6 +1648,11 @@ export interface ApiSubtopicSubtopic extends Schema.CollectionType {
       'api::subtopic.subtopic',
       'manyToMany',
       'api::question-bank.question-bank'
+    >;
+    note: Attribute.Relation<
+      'api::subtopic.subtopic',
+      'oneToOne',
+      'api::note.note'
     >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
@@ -1676,7 +1677,7 @@ export interface ApiTopicTopic extends Schema.CollectionType {
   info: {
     singularName: 'topic';
     pluralName: 'topics';
-    displayName: 'Topic';
+    displayName: 'Units';
     description: '';
   };
   options: {
