@@ -1654,6 +1654,11 @@ export interface ApiSubtopicSubtopic extends Schema.CollectionType {
       'manyToMany',
       'api::question-bank.question-bank'
     >;
+    note: Attribute.Relation<
+      'api::subtopic.subtopic',
+      'oneToOne',
+      'api::note.note'
+    >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
