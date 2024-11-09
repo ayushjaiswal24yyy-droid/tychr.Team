@@ -113,11 +113,11 @@ module.exports = {
                     </html>
                 `;
 
-                await strapi.plugins['email'].services.email.send({
-                    to: 'it@tutor.com', 
-                    from: 'tychr@saralgroups.com',
-                    subject: 'New Tutor Application Notification',
-                    html: adminHtmlContent,
+                await strapi.plugins["email"].services.email.send({
+                  to: "it@tychr.com",
+                  from: "tychr@saralgroups.com",
+                  subject: "New Tutor Application Notification",
+                  html: adminHtmlContent,
                 });
             } else {
                 const htmlContent = `
