@@ -806,16 +806,6 @@ export interface PluginUsersPermissionsUser extends Schema.CollectionType {
     otp: Attribute.BigInteger;
     avatar: Attribute.Media<'images' | 'files' | 'videos' | 'audios'>;
     phoneNumber: Attribute.String & Attribute.Unique;
-    recorded_lectures: Attribute.Relation<
-      'plugin::users-permissions.user',
-      'oneToMany',
-      'api::recorded-lecture.recorded-lecture'
-    >;
-    live_lectures: Attribute.Relation<
-      'plugin::users-permissions.user',
-      'oneToMany',
-      'api::live-lecture.live-lecture'
-    >;
     fav_topics: Attribute.Relation<
       'plugin::users-permissions.user',
       'manyToMany',
@@ -884,6 +874,12 @@ export interface PluginUsersPermissionsUser extends Schema.CollectionType {
     teaching_certifications: Attribute.String;
     graduated_from: Attribute.String;
     field_of_study: Attribute.Relation<
+      'plugin::users-permissions.user',
+      'oneToOne',
+      'api::subject.subject'
+    >;
+    linkedIn_url: Attribute.String;
+    subject_of_expertise: Attribute.Relation<
       'plugin::users-permissions.user',
       'oneToOne',
       'api::subject.subject'
@@ -1341,11 +1337,6 @@ export interface ApiLiveLectureLiveLecture extends Schema.CollectionType {
     schedule: Attribute.DateTime;
     isFree: Attribute.Boolean & Attribute.DefaultTo<false>;
     price: Attribute.Decimal;
-    tutor: Attribute.Relation<
-      'api::live-lecture.live-lecture',
-      'manyToOne',
-      'plugin::users-permissions.user'
-    >;
     payments: Attribute.Relation<
       'api::live-lecture.live-lecture',
       'oneToMany',
@@ -1539,11 +1530,6 @@ export interface ApiRecordedLectureRecordedLecture
     video: Attribute.Media<'videos'>;
     isFree: Attribute.Boolean & Attribute.DefaultTo<false>;
     price: Attribute.Decimal;
-    tutor: Attribute.Relation<
-      'api::recorded-lecture.recorded-lecture',
-      'manyToOne',
-      'plugin::users-permissions.user'
-    >;
     payments: Attribute.Relation<
       'api::recorded-lecture.recorded-lecture',
       'oneToMany',

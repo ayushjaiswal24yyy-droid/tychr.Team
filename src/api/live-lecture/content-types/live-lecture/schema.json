@@ -31,12 +31,6 @@
     "price": {
       "type": "decimal"
     },
-    "tutor": {
-      "type": "relation",
-      "relation": "manyToOne",
-      "target": "plugin::users-permissions.user",
-      "inversedBy": "live_lectures"
-    },
     "payments": {
       "type": "relation",
       "relation": "oneToMany",

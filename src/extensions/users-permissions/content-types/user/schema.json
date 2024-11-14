@@ -90,18 +90,6 @@
       "type": "string",
       "unique": true
     },
-    "recorded_lectures": {
-      "type": "relation",
-      "relation": "oneToMany",
-      "target": "api::recorded-lecture.recorded-lecture",
-      "mappedBy": "tutor"
-    },
-    "live_lectures": {
-      "type": "relation",
-      "relation": "oneToMany",
-      "target": "api::live-lecture.live-lecture",
-      "mappedBy": "tutor"
-    },
     "fav_topics": {
       "type": "relation",
       "relation": "manyToMany",
@@ -231,6 +219,14 @@
       "type": "string"
     },
     "field_of_study": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::subject.subject"
+    },
+    "linkedIn_url": {
+      "type": "string"
+    },
+    "subject_of_expertise": {
       "type": "relation",
       "relation": "oneToOne",
       "target": "api::subject.subject"

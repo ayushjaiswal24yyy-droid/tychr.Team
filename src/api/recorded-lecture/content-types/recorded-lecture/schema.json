@@ -33,12 +33,6 @@
     "price": {
       "type": "decimal"
     },
-    "tutor": {
-      "type": "relation",
-      "relation": "manyToOne",
-      "target": "plugin::users-permissions.user",
-      "inversedBy": "recorded_lectures"
-    },
     "payments": {
       "type": "relation",
       "relation": "oneToMany",
