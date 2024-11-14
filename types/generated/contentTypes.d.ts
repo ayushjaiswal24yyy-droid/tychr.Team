@@ -1677,6 +1677,36 @@ export interface ApiSubtopicSubtopic extends Schema.CollectionType {
   };
 }
 
+export interface ApiTestCollectionTestCollection extends Schema.CollectionType {
+  collectionName: 'test_collections';
+  info: {
+    singularName: 'test-collection';
+    pluralName: 'test-collections';
+    displayName: 'Test_Collection';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    title: Attribute.String;
+    createdAt: Attribute.DateTime;
+    updatedAt: Attribute.DateTime;
+    publishedAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<
+      'api::test-collection.test-collection',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+    updatedBy: Attribute.Relation<
+      'api::test-collection.test-collection',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+  };
+}
+
 export interface ApiTopicTopic extends Schema.CollectionType {
   collectionName: 'topics';
   info: {
@@ -1818,6 +1848,7 @@ declare module '@strapi/types' {
       'api::recorded-lecture.recorded-lecture': ApiRecordedLectureRecordedLecture;
       'api::subject.subject': ApiSubjectSubject;
       'api::subtopic.subtopic': ApiSubtopicSubtopic;
+      'api::test-collection.test-collection': ApiTestCollectionTestCollection;
       'api::topic.topic': ApiTopicTopic;
       'api::tutor-plan.tutor-plan': ApiTutorPlanTutorPlan;
     }
