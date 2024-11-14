@@ -97,7 +97,6 @@ module.exports = (plugin) => {
             "role",
             "fav_topics",
             "avatar",
-            "onBoarded",
             "ib_program",
             "studying",
             "grade",
