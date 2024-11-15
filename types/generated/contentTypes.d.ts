@@ -1387,6 +1387,11 @@ export interface ApiNoteNote extends Schema.CollectionType {
     prompt_status: Attribute.Enumeration<
       ['pending ', 'under_progress', 'generated']
     >;
+    topic: Attribute.Relation<
+      'api::note.note',
+      'oneToOne',
+      'api::subtopic.subtopic'
+    >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;

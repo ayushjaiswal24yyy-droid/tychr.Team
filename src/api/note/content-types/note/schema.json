@@ -25,6 +25,11 @@
         "under_progress",
         "generated"
       ]
+    },
+    "topic": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::subtopic.subtopic"
     }
   }
 }
