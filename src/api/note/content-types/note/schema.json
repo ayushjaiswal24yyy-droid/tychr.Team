@@ -18,11 +18,13 @@
     "title": {
       "type": "string"
     },
-    "topic": {
-      "type": "relation",
-      "relation": "oneToOne",
-      "target": "api::subtopic.subtopic",
-      "inversedBy": "note"
+    "prompt_status": {
+      "type": "enumeration",
+      "enum": [
+        "pending ",
+        "under_progress",
+        "generated"
+      ]
     }
   }
 }
