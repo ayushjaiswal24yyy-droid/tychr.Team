@@ -29,7 +29,8 @@
     "topic": {
       "type": "relation",
       "relation": "oneToOne",
-      "target": "api::subtopic.subtopic"
+      "target": "api::subtopic.subtopic",
+      "inversedBy": "note"
     }
   }
 }

@@ -234,6 +234,12 @@
     "confirmTutor": {
       "type": "boolean",
       "default": false
+    },
+    "tutor_hourly_fee": {
+      "type": "integer"
+    },
+    "student_hourly_fee": {
+      "type": "integer"
     }
   }
 }

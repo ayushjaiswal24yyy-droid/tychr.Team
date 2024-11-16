@@ -885,6 +885,8 @@ export interface PluginUsersPermissionsUser extends Schema.CollectionType {
       'api::subject.subject'
     >;
     confirmTutor: Attribute.Boolean & Attribute.DefaultTo<false>;
+    tutor_hourly_fee: Attribute.Integer;
+    student_hourly_fee: Attribute.Integer;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     createdBy: Attribute.Relation<
@@ -1643,6 +1645,11 @@ export interface ApiSubtopicSubtopic extends Schema.CollectionType {
       'api::subtopic.subtopic',
       'manyToMany',
       'api::question-bank.question-bank'
+    >;
+    note: Attribute.Relation<
+      'api::subtopic.subtopic',
+      'oneToOne',
+      'api::note.note'
     >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
