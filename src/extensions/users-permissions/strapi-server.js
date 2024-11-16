@@ -59,9 +59,7 @@ module.exports = (plugin) => {
       },
     });
 
-    await strapi
-      .service("api::email.email")
-      .sendEmailBasedOnRole(email, otp, role);
+    await strapi.service("api::email.email").sendEmailBasedOnRole(email, otp);
     const jwt = strapi.plugins["users-permissions"].services.jwt.issue({
       id: user.id,
     });
@@ -547,13 +545,14 @@ module.exports = (plugin) => {
         });
         updateData.cv = uploadedCV[0].id;
       }
-       if (files.tutor_video) {
-         const uploadedtutor_video = await strapi.plugins.upload.services.upload.upload({
-           data: {},
-           files: files.tutor_video,
-         });
-         updateData.tutor_video = uploadedtutor_video[0].id;
-       }
+      if (files.tutor_video) {
+        const uploadedtutor_video =
+          await strapi.plugins.upload.services.upload.upload({
+            data: {},
+            files: files.tutor_video,
+          });
+        updateData.tutor_video = uploadedtutor_video[0].id;
+      }
 
       if (files.avatar) {
         const uploadedAvatar =

@@ -230,6 +230,9 @@
       "type": "relation",
       "relation": "oneToOne",
       "target": "api::subject.subject"
+    },
+    "confirmTutor": {
+      "type": "boolean"
     }
   }
 }
