@@ -168,7 +168,6 @@ module.exports = (plugin) => {
         const response = await axios.get(
           `https://www.googleapis.com/oauth2/v3/userinfo?access_token=${access_token}`
         );
-        console.log(response.data);
         const {
           email,
           name,
@@ -356,126 +355,23 @@ module.exports = (plugin) => {
       return ctx.badRequest("Invalid OTP");
     }
 
-    const isTutor = user.role.name === "Tutor";
+    await strapi.query("plugin::users-permissions.user").update({
+      where: { id: user.id },
+      data: {
+        confirmed: true,
+        otp: null,
+      },
+    });
 
-    if (isTutor) {
-      const htmlEmail = `
-            <!DOCTYPE html>
-            <html>
-            <head>
-                <style>
-                    body {
-                        font-family: Arial, sans-serif;
-                        line-height: 1.6;
-                        color: #333333;
-                    }
-                    .container {
-                        max-width: 600px;
-                        margin: 0 auto;
-                        padding: 20px;
-                    }
-                    .header {
-                        background-color: #f8f9fa;
-                        padding: 20px;
-                        text-align: center;
-                        border-radius: 5px;
-                    }
-                    .content {
-                        margin-top: 20px;
-                    }
-                    .details {
-                        background-color: #f8f9fa;
-                        padding: 15px;
-                        border-radius: 5px;
-                        margin-top: 20px;
-                    }
-                    .action-needed {
-                        color: #dc3545;
-                        font-weight: bold;
-                    }
-                    .footer {
-                        margin-top: 20px;
-                        font-size: 12px;
-                        color: #666666;
-                    }
-                </style>
-            </head>
-            <body>
-                <div class="container">
-                    <div class="header">
-                        <h2>New Tutor Registration - Action Required</h2>
-                    </div>
-                    <div class="content">
-                        <p style="font-weight: bold;text-align: center;">A new tutor has registered on the Tychr platform and requires approval.</p>
-                        
-                        <div class="details">
-                            <h3>Tutor Details:</h3>
-                            <ul>
-                                <li><strong>Name:</strong> ${user.fullName}</li>
-                                <li><strong>Email:</strong> ${user.email}</li>
-                                <li><strong>Registration Date:</strong> ${new Date().toLocaleDateString()}</li>
-                            </ul>
-                        </div>
-    
-                        <p class="action-needed">Action Needed:</p>
-                        <ul>
-                            <li>Review tutor's credentials and background</li>
-                            <li>Initiate the onboarding process</li>
-                            <li>Update tutor's status in the admin panel</li>
-                        </ul>
-    
-                        <p>Please begin the onboarding process as soon as possible to ensure a smooth experience for our new tutor.</p>
-                    </div>
-                    <div class="footer">
-                        <p>This is an automated message from the Tychr Registration System. If you have any questions, please contact the it@tychr.com or contact our support team.</p>
-                    </div>
-                </div>
-            </body>
-            </html>`;
+    const jwt = strapi.plugins["users-permissions"].services.jwt.issue({
+      id: user.id,
+    });
 
-      // For Tutors: Send email and return waiting message
-      await strapi.plugins["email"].services.email.send({
-        to: "it@tychr.com",
-        cc: "contact@tychr.com",
-        subject: "New Tutor Registration",
-        text: `A new tutor (${user.fullName}, ${user.email}) has registered and needs approval. Please begin the onboarding process.`,
-        html: htmlEmail,
-      });
-
-      // Update user to remove OTP but keep confirmed as false
-      await strapi.query("plugin::users-permissions.user").update({
-        where: { id: user.id },
-        data: {
-          otp: null,
-        },
-      });
-
-      return ctx.send({
-        message:
-          "Your registration is being processed. Our team will review your application and contact you soon.",
-        // user: sanitizeUser(user)
-      });
-    } else {
-      // For Students: Confirm registration and issue JWT
-      await strapi.query("plugin::users-permissions.user").update({
-        where: { id: user.id },
-        data: {
-          confirmed: true,
-          otp: null,
-        },
-      });
-
-      // Generate JWT token
-      const jwt = strapi.plugins["users-permissions"].services.jwt.issue({
-        id: user.id,
-      });
-
-      return ctx.send({
-        message: "Email verified successfully",
-        jwt,
-        user: sanitizeUser(user),
-      });
-    }
+    return ctx.send({
+      message: "Email verified successfully",
+      jwt,
+      user: sanitizeUser(user),
+    });
   };
 
   plugin.controllers.user.updateMe = async (ctx) => {
@@ -592,6 +488,152 @@ module.exports = (plugin) => {
       return ctx.badRequest("Failed to update files", { error: error.message });
     }
   };
+  plugin.controllers.user.sendTutorEmail = async (ctx) => {
+    const { email } = ctx.request.body;
+    try {
+      const tutorHtmlContent = `
+                    <!DOCTYPE html>
+                    <html lang="en">
+                    <head>
+                        <meta charset="UTF-8">
+                        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                        <title>Tutor Application Notification from TyChr</title>
+                        <style>
+                            body {
+                                font-family: 'Arial', sans-serif;
+                                line-height: 1.6;
+                                color: #333;
+                                max-width: 600px;
+                                margin: 0 auto;
+                                padding: 20px;
+                            }
+                            .container {
+                                background-color: #f9f9f9;
+                                border-radius: 5px;
+                                padding: 30px;
+                                box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+                            }
+                            h1 {
+                                color: #2c3e50;
+                                font-size: 24px;
+                                margin-bottom: 20px;
+                            }
+                            p {
+                                margin-bottom: 15px;
+                            }
+                            .footer {
+                                margin-top: 30px;
+                                font-size: 12px;
+                                color: #7f8c8d;
+                            }
+                        </style>
+                    </head>
+                    <body>
+                        <div class="container">
+                            <h1>Application Received!</h1>
+                            <p>Hello,</p>
+                            <p>Thank you for applying to be a tutor with TyChr. We are currently reviewing your application and will notify you once it has been approved.</p>
+                            <p>If you have any questions, please feel free to reach out to us.</p>
+                            <div class="footer">
+                                <p>This is an automated message, please do not reply to this email.</p>
+                                <p>&copy; 2024 TyChr. All rights reserved.</p>
+                            </div>
+                        </div>
+                    </body>
+                    </html>
+                `;
+
+      await strapi.plugins["email"].services.email.send({
+        to: email,
+        from: "tychr@saralgroups.com",
+        subject: "Tutor Application Status from TyChr",
+        html: tutorHtmlContent,
+      });
+
+      const adminHtmlContent = `
+                    <!DOCTYPE html>
+                    <html lang="en">
+                    <head>
+                        <meta charset="UTF-8">
+                        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                        <title>New Tutor Application Notification</title>
+                        <style>
+                            body {
+                                font-family: 'Arial', sans-serif;
+                                line-height: 1.6;
+                                color: #333;
+                                max-width: 600px;
+                                margin: 0 auto;
+                                padding: 20px;
+                            }
+                            .container {
+                                background-color: #f9f9f9;
+                                border-radius: 5px;
+                                padding: 30px;
+                                box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+                            }
+                            h1 {
+                                color: #2c3e50;
+                                font-size: 24px;
+                                margin-bottom: 20px;
+                            }
+                            p {
+                                margin-bottom: 15px;
+                            }
+                            .footer {
+                                margin-top: 30px;
+                                font-size: 12px;
+                                color: #7f8c8d;
+                            }
+                        </style>
+                    </head>
+                    <body>
+                        <div class="container">
+                            <h1>New Tutor Application Received!</h1>
+                            <p>Hello Admin,</p>
+                            <p>A new tutor has applied to join TyChr. Please review their application at your earliest convenience.</p>
+                            <ul>
+                                <li><strong>Email:</strong> ${email}</li>
+                                <li><strong>Registration Date:</strong> ${new Date().toLocaleDateString()}</li>
+                            </ul>        
+                             <p class="action-needed">Action Needed:</p>
+                        <ul>
+                            <li>Review tutor's credentials and background</li>
+                            <li>Update tutor's status in the admin panel</li>
+                        </ul>                   
+                             <div class="footer">
+                                <p>This is an automated message, please do not reply to this email.</p>
+                                <p>&copy; 2024 TyChr. All rights reserved.</p>
+                            </div>
+                        </div>
+                    </body>
+                    </html>
+                `;
+
+      await strapi.plugins["email"].services.email.send({
+        to: "it@tychr.com",
+        from: "tychr@saralgroups.com",
+        subject: "New Tutor Application Notification",
+        html: adminHtmlContent,
+      });
+      return ctx.send({
+        message: "email sent successfully",
+      });
+    } catch (error) {
+      console.log(error);
+      return ctx.badRequest("Failed to send email", { error: error.message });
+    }
+  };
+
+  plugin.routes["content-api"].routes.push({
+    method: "POST",
+    path: "/user/me/sendmail",
+    handler: "user.sendTutorEmail",
+    config: {
+      policies: [],
+      prefix: "",
+    },
+  });
 
   plugin.routes["content-api"].routes.push({
     method: "PUT",
