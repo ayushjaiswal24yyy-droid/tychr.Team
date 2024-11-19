@@ -1242,7 +1242,6 @@ export interface ApiGradeSubjectGradeSubject extends Schema.CollectionType {
       'api::class.class'
     >;
     name: Attribute.String;
-    subject_group: Attribute.Enumeration<['HL', 'SL']>;
     level: Attribute.Enumeration<['AA', 'AI']>;
     demo_video: Attribute.Relation<
       'api::grade-subject.grade-subject',
@@ -1254,6 +1253,7 @@ export interface ApiGradeSubjectGradeSubject extends Schema.CollectionType {
       'oneToMany',
       'api::enrollment.enrollment'
     >;
+    subject_group: Attribute.String;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;

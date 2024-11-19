@@ -42,13 +42,6 @@
     "name": {
       "type": "string"
     },
-    "subject_group": {
-      "type": "enumeration",
-      "enum": [
-        "HL",
-        "SL"
-      ]
-    },
     "level": {
       "type": "enumeration",
       "enum": [
@@ -67,6 +60,9 @@
       "relation": "oneToMany",
       "target": "api::enrollment.enrollment",
       "mappedBy": "grade_subject"
+    },
+    "subject_group": {
+      "type": "string"
     }
   }
 }

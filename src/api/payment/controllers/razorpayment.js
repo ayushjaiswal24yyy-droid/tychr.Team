@@ -9,11 +9,11 @@ module.exports = {
   async createOrder(ctx) {
     try {
       const { amount } = ctx.request.body;
+      console.log("amount", amount);
 
       if (!amount) {
         return ctx.badRequest("Amount is required");
       }
-      console.log(amount);
       const order = await razorpay.orders.create({
         amount,
         currency: "INR",
