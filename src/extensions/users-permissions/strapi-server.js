@@ -85,24 +85,27 @@ module.exports = (plugin) => {
       // Use lowercase for email comparison
       const identifier = params.identifier.toLowerCase();
 
-      const user = await strapi
-        .query("plugin::users-permissions.user")
-        .findOne({
-          where: {
-            $or: [{ email: identifier }, { username: identifier }],
+    const user = await strapi.query("plugin::users-permissions.user").findOne({
+      where: {
+        $or: [{ email: identifier }, { username: identifier }],
+      },
+      populate: {
+        role: true,
+        fav_topics: true,
+        avatar: true,
+        ib_program: true,
+        studying: true,
+        grade: {
+          populate: {
+            ib_programs: true, 
           },
-          populate: [
-            "role",
-            "fav_topics",
-            "avatar",
-            "ib_program",
-            "studying",
-            "grade",
-            "enrolled_in",
-            "tutor_plan",
-            "student_plan",
-          ],
-        });
+        },
+        enrolled_in: true,
+        tutor_plan: true,
+        student_plan: true,
+      },
+    });
+
 
       if (!user) {
         return ctx.badRequest("Identifier or password invalid");
