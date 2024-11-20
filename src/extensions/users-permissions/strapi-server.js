@@ -85,27 +85,28 @@ module.exports = (plugin) => {
       // Use lowercase for email comparison
       const identifier = params.identifier.toLowerCase();
 
-    const user = await strapi.query("plugin::users-permissions.user").findOne({
-      where: {
-        $or: [{ email: identifier }, { username: identifier }],
-      },
-      populate: {
-        role: true,
-        fav_topics: true,
-        avatar: true,
-        ib_program: true,
-        studying: true,
-        grade: {
-          populate: {
-            ib_programs: true, 
+      const user = await strapi
+        .query("plugin::users-permissions.user")
+        .findOne({
+          where: {
+            $or: [{ email: identifier }, { username: identifier }],
           },
-        },
-        enrolled_in: true,
-        tutor_plan: true,
-        student_plan: true,
-      },
-    });
-
+          populate: {
+            role: true,
+            fav_topics: true,
+            avatar: true,
+            ib_program: true,
+            studying: true,
+            grade: {
+              populate: {
+                ib_programs: true,
+              },
+            },
+            enrolled_in: true,
+            tutor_plan: true,
+            student_plan: true,
+          },
+        });
 
       if (!user) {
         return ctx.badRequest("Identifier or password invalid");
@@ -338,16 +339,21 @@ module.exports = (plugin) => {
 
     const user = await strapi.query("plugin::users-permissions.user").findOne({
       where: { uuid },
-      populate: [
-        "role",
-        "fav_topics",
-        "avatar",
-        "onBoarded",
-        "ib_program",
-        "grade",
-        "enrolled_in",
-        "tutor_plan",
-      ],
+      populate: {
+        role: true,
+        fav_topics: true,
+        avatar: true,
+        ib_program: true,
+        studying: true,
+        grade: {
+          populate: {
+            ib_programs: true,
+          },
+        },
+        enrolled_in: true,
+        tutor_plan: true,
+        student_plan: true,
+      },
     });
 
     if (!user) {
