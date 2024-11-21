@@ -885,8 +885,15 @@ export interface PluginUsersPermissionsUser extends Schema.CollectionType {
       'api::subject.subject'
     >;
     confirmTutor: Attribute.Boolean & Attribute.DefaultTo<false>;
-    tutor_hourly_fee: Attribute.Integer;
-    student_hourly_fee: Attribute.Integer;
+    tutor_o2o_cost_inr: Attribute.Decimal;
+    tutor_o2o_cost_usd: Attribute.Decimal;
+    tutor_group_cost_inr: Attribute.Decimal;
+    tutor_group_cost_usd: Attribute.Decimal;
+    messages: Attribute.Relation<
+      'plugin::users-permissions.user',
+      'oneToMany',
+      'api::message.message'
+    >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     createdBy: Attribute.Relation<
@@ -1373,6 +1380,48 @@ export interface ApiLiveLectureLiveLecture extends Schema.CollectionType {
   };
 }
 
+export interface ApiMessageMessage extends Schema.CollectionType {
+  collectionName: 'messages';
+  info: {
+    singularName: 'message';
+    pluralName: 'messages';
+    displayName: 'Messages';
+    description: '';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    sender: Attribute.Relation<
+      'api::message.message',
+      'manyToOne',
+      'plugin::users-permissions.user'
+    >;
+    receiver: Attribute.Relation<
+      'api::message.message',
+      'manyToOne',
+      'plugin::users-permissions.user'
+    >;
+    attachment: Attribute.Media<'images' | 'files' | 'videos' | 'audios'>;
+    message: Attribute.Text;
+    createdAt: Attribute.DateTime;
+    updatedAt: Attribute.DateTime;
+    publishedAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<
+      'api::message.message',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+    updatedBy: Attribute.Relation<
+      'api::message.message',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+  };
+}
+
 export interface ApiNoteNote extends Schema.CollectionType {
   collectionName: 'notes';
   info: {
@@ -1803,6 +1852,7 @@ declare module '@strapi/types' {
       'api::grade-subject.grade-subject': ApiGradeSubjectGradeSubject;
       'api::ib-program.ib-program': ApiIbProgramIbProgram;
       'api::live-lecture.live-lecture': ApiLiveLectureLiveLecture;
+      'api::message.message': ApiMessageMessage;
       'api::note.note': ApiNoteNote;
       'api::payment.payment': ApiPaymentPayment;
       'api::post.post': ApiPostPost;

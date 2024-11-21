@@ -246,6 +246,12 @@
     },
     "tutor_group_cost_usd": {
       "type": "decimal"
+    },
+    "messages": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::message.message",
+      "mappedBy": "receiver"
     }
   }
 }
