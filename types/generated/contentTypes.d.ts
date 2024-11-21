@@ -894,6 +894,11 @@ export interface PluginUsersPermissionsUser extends Schema.CollectionType {
       'oneToMany',
       'api::message.message'
     >;
+    enquired_classrooms: Attribute.Relation<
+      'plugin::users-permissions.user',
+      'oneToMany',
+      'api::enrollment.enrollment'
+    >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     createdBy: Attribute.Relation<
@@ -1201,6 +1206,11 @@ export interface ApiEnrollmentEnrollment extends Schema.CollectionType {
     >;
     classroom_type: Attribute.Enumeration<['one-on-one', 'group']>;
     group_limit: Attribute.Integer & Attribute.DefaultTo<10>;
+    user: Attribute.Relation<
+      'api::enrollment.enrollment',
+      'manyToOne',
+      'plugin::users-permissions.user'
+    >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;

@@ -115,6 +115,12 @@
     "group_limit": {
       "type": "integer",
       "default": 10
+    },
+    "user": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "plugin::users-permissions.user",
+      "inversedBy": "enquired_classrooms"
     }
   }
 }

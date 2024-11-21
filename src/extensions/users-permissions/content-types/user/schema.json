@@ -252,6 +252,12 @@
       "relation": "oneToMany",
       "target": "api::message.message",
       "mappedBy": "receiver"
+    },
+    "enquired_classrooms": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::enrollment.enrollment",
+      "mappedBy": "user"
     }
   }
 }
