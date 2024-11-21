@@ -235,11 +235,17 @@
       "type": "boolean",
       "default": false
     },
-    "tutor_hourly_fee": {
-      "type": "integer"
+    "tutor_o2o_cost_inr": {
+      "type": "decimal"
     },
-    "student_hourly_fee": {
-      "type": "integer"
+    "tutor_o2o_cost_usd": {
+      "type": "decimal"
+    },
+    "tutor_group_cost_inr": {
+      "type": "decimal"
+    },
+    "tutor_group_cost_usd": {
+      "type": "decimal"
     }
   }
 }
