@@ -1464,6 +1464,49 @@ export interface ApiNoteNote extends Schema.CollectionType {
   };
 }
 
+export interface ApiNotificationNotification extends Schema.CollectionType {
+  collectionName: 'notifications';
+  info: {
+    singularName: 'notification';
+    pluralName: 'notifications';
+    displayName: 'Notification';
+    description: '';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    user: Attribute.Relation<
+      'api::notification.notification',
+      'oneToOne',
+      'plugin::users-permissions.user'
+    >;
+    classroom: Attribute.Relation<
+      'api::notification.notification',
+      'oneToOne',
+      'api::enrollment.enrollment'
+    >;
+    notification_type: Attribute.Enumeration<
+      ['Tutor Approval', 'Classroom Approval']
+    >;
+    createdAt: Attribute.DateTime;
+    updatedAt: Attribute.DateTime;
+    publishedAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<
+      'api::notification.notification',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+    updatedBy: Attribute.Relation<
+      'api::notification.notification',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+  };
+}
+
 export interface ApiPaymentPayment extends Schema.CollectionType {
   collectionName: 'payments';
   info: {
@@ -1864,6 +1907,7 @@ declare module '@strapi/types' {
       'api::live-lecture.live-lecture': ApiLiveLectureLiveLecture;
       'api::message.message': ApiMessageMessage;
       'api::note.note': ApiNoteNote;
+      'api::notification.notification': ApiNotificationNotification;
       'api::payment.payment': ApiPaymentPayment;
       'api::post.post': ApiPostPost;
       'api::question-bank.question-bank': ApiQuestionBankQuestionBank;
