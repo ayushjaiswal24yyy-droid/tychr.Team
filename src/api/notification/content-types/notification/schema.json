@@ -15,12 +15,14 @@
     "user": {
       "type": "relation",
       "relation": "oneToOne",
-      "target": "plugin::users-permissions.user"
+      "target": "plugin::users-permissions.user",
+      "mappedBy": "notification"
     },
     "classroom": {
       "type": "relation",
       "relation": "oneToOne",
-      "target": "api::enrollment.enrollment"
+      "target": "api::enrollment.enrollment",
+      "inversedBy": "notification"
     },
     "notification_type": {
       "type": "enumeration",

@@ -12,9 +12,6 @@
   },
   "pluginOptions": {},
   "attributes": {
-    "question": {
-      "type": "blocks"
-    },
     "marks": {
       "type": "integer"
     },
@@ -31,6 +28,9 @@
     },
     "title": {
       "type": "string"
+    },
+    "question": {
+      "type": "richtext"
     }
   }
 }

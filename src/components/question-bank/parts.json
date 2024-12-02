@@ -2,22 +2,11 @@
   "collectionName": "components_question_bank_parts",
   "info": {
     "displayName": "Parts",
-    "icon": "feather"
+    "icon": "feather",
+    "description": ""
   },
   "options": {},
   "attributes": {
-    "one_liner": {
-      "type": "blocks"
-    },
-    "hints": {
-      "type": "blocks"
-    },
-    "options": {
-      "type": "blocks"
-    },
-    "correct_answer": {
-      "type": "blocks"
-    },
     "answer_type": {
       "type": "enumeration",
       "enum": [
@@ -29,6 +18,18 @@
     },
     "marks": {
       "type": "integer"
+    },
+    "one_liner": {
+      "type": "richtext"
+    },
+    "hints": {
+      "type": "richtext"
+    },
+    "options": {
+      "type": "richtext"
+    },
+    "correct_answer": {
+      "type": "richtext"
     }
   }
 }

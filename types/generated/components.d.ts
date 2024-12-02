@@ -46,16 +46,17 @@ export interface QuestionBankParts extends Schema.Component {
   info: {
     displayName: 'Parts';
     icon: 'feather';
+    description: '';
   };
   attributes: {
-    one_liner: Attribute.Blocks;
-    hints: Attribute.Blocks;
-    options: Attribute.Blocks;
-    correct_answer: Attribute.Blocks;
     answer_type: Attribute.Enumeration<
       ['Single Correct', 'Integer', 'Small Text', 'Large Text']
     >;
     marks: Attribute.Integer;
+    one_liner: Attribute.RichText;
+    hints: Attribute.RichText;
+    options: Attribute.RichText;
+    correct_answer: Attribute.RichText;
   };
 }
 

@@ -801,7 +801,7 @@ export interface PluginUsersPermissionsUser extends Schema.CollectionType {
       'manyToOne',
       'plugin::users-permissions.role'
     >;
-    fullName: Attribute.String;
+    fullName: Attribute.String & Attribute.Unique;
     uuid: Attribute.String & Attribute.Unique;
     otp: Attribute.BigInteger;
     avatar: Attribute.Media<'images' | 'files' | 'videos' | 'audios'>;
@@ -894,10 +894,10 @@ export interface PluginUsersPermissionsUser extends Schema.CollectionType {
       'oneToMany',
       'api::message.message'
     >;
-    enquired_classrooms: Attribute.Relation<
+    notification: Attribute.Relation<
       'plugin::users-permissions.user',
-      'oneToMany',
-      'api::enrollment.enrollment'
+      'oneToOne',
+      'api::notification.notification'
     >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
@@ -1206,10 +1206,10 @@ export interface ApiEnrollmentEnrollment extends Schema.CollectionType {
     >;
     classroom_type: Attribute.Enumeration<['one-on-one', 'group']>;
     group_limit: Attribute.Integer & Attribute.DefaultTo<10>;
-    user: Attribute.Relation<
+    notification: Attribute.Relation<
       'api::enrollment.enrollment',
-      'manyToOne',
-      'plugin::users-permissions.user'
+      'oneToOne',
+      'api::notification.notification'
     >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
@@ -1593,7 +1593,6 @@ export interface ApiQuestionBankQuestionBank extends Schema.CollectionType {
     draftAndPublish: true;
   };
   attributes: {
-    question: Attribute.Blocks;
     marks: Attribute.Integer;
     subtopics: Attribute.Relation<
       'api::question-bank.question-bank',
@@ -1602,6 +1601,7 @@ export interface ApiQuestionBankQuestionBank extends Schema.CollectionType {
     >;
     parts: Attribute.Component<'question-bank.parts', true>;
     title: Attribute.String;
+    question: Attribute.RichText;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;

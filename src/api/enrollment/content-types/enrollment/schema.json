@@ -116,11 +116,11 @@
       "type": "integer",
       "default": 10
     },
-    "user": {
+    "notification": {
       "type": "relation",
-      "relation": "manyToOne",
-      "target": "plugin::users-permissions.user",
-      "inversedBy": "enquired_classrooms"
+      "relation": "oneToOne",
+      "target": "api::notification.notification",
+      "inversedBy": "classroom"
     }
   }
 }

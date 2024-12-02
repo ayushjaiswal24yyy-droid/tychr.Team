@@ -66,7 +66,8 @@
       "configurable": false
     },
     "fullName": {
-      "type": "string"
+      "type": "string",
+      "unique": true
     },
     "uuid": {
       "type": "string",
@@ -253,11 +254,11 @@
       "target": "api::message.message",
       "mappedBy": "receiver"
     },
-    "enquired_classrooms": {
+    "notification": {
       "type": "relation",
-      "relation": "oneToMany",
-      "target": "api::enrollment.enrollment",
-      "mappedBy": "user"
+      "relation": "oneToOne",
+      "target": "api::notification.notification",
+      "inversedBy": "user"
     }
   }
 }

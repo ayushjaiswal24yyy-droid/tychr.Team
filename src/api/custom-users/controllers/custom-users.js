@@ -13,7 +13,14 @@ module.exports = {
             name: "Tutor",
           },
         },
-        populate: ["role", "cv", "subject_of_expertise", "tutor_video"],
+        populate: [
+          "role",
+          "cv",
+          "subject_of_expertise",
+          "tutor_video",
+          "teaching",
+          "notification"
+        ],
         offset: start,
         limit: pageSize,
       });
