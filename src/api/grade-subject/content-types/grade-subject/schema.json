@@ -45,8 +45,8 @@
     "level": {
       "type": "enumeration",
       "enum": [
-        "AA",
-        "AI"
+        "SL",
+        "HL"
       ]
     },
     "demo_video": {

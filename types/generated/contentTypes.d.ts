@@ -1259,7 +1259,7 @@ export interface ApiGradeSubjectGradeSubject extends Schema.CollectionType {
       'api::class.class'
     >;
     name: Attribute.String;
-    level: Attribute.Enumeration<['AA', 'AI']>;
+    level: Attribute.Enumeration<['SL', 'HL']>;
     demo_video: Attribute.Relation<
       'api::grade-subject.grade-subject',
       'manyToMany',
