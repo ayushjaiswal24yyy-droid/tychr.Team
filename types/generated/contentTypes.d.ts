@@ -1446,7 +1446,6 @@ export interface ApiNoteNote extends Schema.CollectionType {
     draftAndPublish: true;
   };
   attributes: {
-    note: Attribute.Blocks;
     title: Attribute.String;
     prompt_status: Attribute.Enumeration<
       ['pending ', 'under_progress', 'generated']
@@ -1461,6 +1460,7 @@ export interface ApiNoteNote extends Schema.CollectionType {
       'oneToMany',
       'api::question-bank.question-bank'
     >;
+    note: Attribute.RichText;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;

@@ -12,9 +12,6 @@
   },
   "pluginOptions": {},
   "attributes": {
-    "note": {
-      "type": "blocks"
-    },
     "title": {
       "type": "string"
     },
@@ -37,6 +34,9 @@
       "relation": "oneToMany",
       "target": "api::question-bank.question-bank",
       "mappedBy": "note"
+    },
+    "note": {
+      "type": "richtext"
     }
   }
 }
