@@ -15,12 +15,6 @@
     "marks": {
       "type": "integer"
     },
-    "subtopics": {
-      "type": "relation",
-      "relation": "manyToMany",
-      "target": "api::subtopic.subtopic",
-      "inversedBy": "question_banks"
-    },
     "parts": {
       "type": "component",
       "repeatable": true,
@@ -31,6 +25,12 @@
     },
     "question": {
       "type": "richtext"
+    },
+    "note": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::note.note",
+      "inversedBy": "question_banks"
     }
   }
 }

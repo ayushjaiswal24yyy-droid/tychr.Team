@@ -1453,8 +1453,13 @@ export interface ApiNoteNote extends Schema.CollectionType {
     >;
     topic: Attribute.Relation<
       'api::note.note',
-      'oneToOne',
+      'manyToOne',
       'api::subtopic.subtopic'
+    >;
+    question_banks: Attribute.Relation<
+      'api::note.note',
+      'oneToMany',
+      'api::question-bank.question-bank'
     >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
@@ -1598,14 +1603,14 @@ export interface ApiQuestionBankQuestionBank extends Schema.CollectionType {
   };
   attributes: {
     marks: Attribute.Integer;
-    subtopics: Attribute.Relation<
-      'api::question-bank.question-bank',
-      'manyToMany',
-      'api::subtopic.subtopic'
-    >;
     parts: Attribute.Component<'question-bank.parts', true>;
     title: Attribute.String;
     question: Attribute.RichText;
+    note: Attribute.Relation<
+      'api::question-bank.question-bank',
+      'manyToOne',
+      'api::note.note'
+    >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
@@ -1747,14 +1752,9 @@ export interface ApiSubtopicSubtopic extends Schema.CollectionType {
       'api::topic.topic'
     >;
     headings: Attribute.Component<'subtopic.heading', true>;
-    question_banks: Attribute.Relation<
+    notes: Attribute.Relation<
       'api::subtopic.subtopic',
-      'manyToMany',
-      'api::question-bank.question-bank'
-    >;
-    note: Attribute.Relation<
-      'api::subtopic.subtopic',
-      'oneToOne',
+      'oneToMany',
       'api::note.note'
     >;
     createdAt: Attribute.DateTime;

@@ -28,9 +28,15 @@
     },
     "topic": {
       "type": "relation",
-      "relation": "oneToOne",
+      "relation": "manyToOne",
       "target": "api::subtopic.subtopic",
-      "inversedBy": "note"
+      "inversedBy": "notes"
+    },
+    "question_banks": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::question-bank.question-bank",
+      "mappedBy": "note"
     }
   }
 }

@@ -26,17 +26,11 @@
       "repeatable": true,
       "component": "subtopic.heading"
     },
-    "question_banks": {
+    "notes": {
       "type": "relation",
-      "relation": "manyToMany",
-      "target": "api::question-bank.question-bank",
-      "mappedBy": "subtopics"
-    },
-    "note": {
-      "type": "relation",
-      "relation": "oneToOne",
+      "relation": "oneToMany",
       "target": "api::note.note",
-      "inversedBy": "topic"
+      "mappedBy": "topic"
     }
   }
 }
