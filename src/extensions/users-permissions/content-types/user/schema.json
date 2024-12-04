@@ -259,6 +259,22 @@
       "relation": "oneToOne",
       "target": "api::notification.notification",
       "inversedBy": "user"
+    },
+    "tutor_status": {
+      "type": "enumeration",
+      "enum": [
+        "Pending",
+        "Rejected",
+        "Approved"
+      ]
+    },
+    "tutor_type": {
+      "type": "enumeration",
+      "enum": [
+        "Counsellors",
+        "Trainer",
+        "Faculty"
+      ]
     }
   }
 }

@@ -899,6 +899,8 @@ export interface PluginUsersPermissionsUser extends Schema.CollectionType {
       'oneToOne',
       'api::notification.notification'
     >;
+    tutor_status: Attribute.Enumeration<['Pending', 'Rejected', 'Approved']>;
+    tutor_type: Attribute.Enumeration<['Counsellors', 'Trainer', 'Faculty']>;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     createdBy: Attribute.Relation<
@@ -1489,6 +1491,8 @@ export interface ApiNotificationNotification extends Schema.CollectionType {
     notification_type: Attribute.Enumeration<
       ['Tutor Approval', 'Classroom Approval']
     >;
+    status: Attribute.Enumeration<['Pending', 'Converted', 'Rejected']> &
+      Attribute.DefaultTo<'Pending'>;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;

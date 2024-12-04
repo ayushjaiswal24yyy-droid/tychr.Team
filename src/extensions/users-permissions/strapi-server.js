@@ -25,7 +25,7 @@ module.exports = (plugin) => {
     }
 
     // Validate role
-    if (role !== "student" && role !== "tutor") {
+    if (role !== "student" && role !== "tutor" && role !== "assistant") {
       return ctx.badRequest(
         'Invalid role. Must be either "student" or "tutor"'
       );
@@ -58,6 +58,20 @@ module.exports = (plugin) => {
         confirmed: false,
       },
     });
+    if (role === "assistant") {
+      await strapi
+        .plugin("email")
+        .service("email")
+        .send({
+          to: email,
+          from: "tychr@saralgroups.com",
+          subject: "Your Assistant Account Information",
+          text: `Your account has been created. Here are your login details:\n\nEmail: ${email}\nPassword: ${password}\n\nPlease make sure to change your password after logging in.`,
+        });
+    } else {
+      // If role is not assistant, send OTP email for verification
+      await strapi.service("api::email.email").sendEmailBasedOnRole(email, otp);
+    }
 
     await strapi.service("api::email.email").sendEmailBasedOnRole(email, otp);
     const jwt = strapi.plugins["users-permissions"].services.jwt.issue({
@@ -497,6 +511,76 @@ module.exports = (plugin) => {
       return ctx.badRequest("Failed to update files", { error: error.message });
     }
   };
+
+  plugin.controllers.user.updateFilesAdmin = async (ctx) => {
+    const { id } = ctx.params;
+
+    if (!ctx.state.user) {
+      return ctx.unauthorized("You must be logged in to update the profile");
+    }
+
+    const { files } = ctx.request;
+    if (!files || (!files.cv && !files.avatar && !files.tutor_video)) {
+      return ctx.badRequest("No files found in the request");
+    }
+
+    try {
+      const updateData = {};
+
+      if (files.cv) {
+        const uploadedCV = await strapi.plugins.upload.services.upload.upload({
+          data: {},
+          files: files.cv,
+        });
+        updateData.cv = uploadedCV[0].id;
+      }
+      if (files.tutor_video) {
+        const uploadedTutorVideo =
+          await strapi.plugins.upload.services.upload.upload({
+            data: {},
+            files: files.tutor_video,
+          });
+        updateData.tutor_video = uploadedTutorVideo[0].id;
+      }
+      if (files.avatar) {
+        const uploadedAvatar =
+          await strapi.plugins.upload.services.upload.upload({
+            data: {},
+            files: files.avatar,
+          });
+        updateData.avatar = uploadedAvatar[0].id;
+      }
+
+      const updatedUser = await strapi.entityService.update(
+        "plugin::users-permissions.user",
+        id,
+        {
+          data: updateData,
+          populate: [
+            "role",
+            "fav_topics",
+            "avatar",
+            "onBoarded",
+            "ib_program",
+            "grade",
+            "enrolled_in",
+            "tutor_plan",
+            "tutor_video",
+            "cv",
+          ],
+        }
+      );
+
+      return ctx.send({
+        message: "Files updated successfully",
+        user: sanitizeUser(updatedUser),
+      });
+    } catch (error) {
+      console.log(error);
+      return ctx.badRequest("Failed to update files", { error: error.message });
+    }
+  };
+
   plugin.controllers.user.sendTutorEmail = async (ctx) => {
     const { email } = ctx.request.body;
     try {
@@ -648,6 +732,15 @@ module.exports = (plugin) => {
     method: "PUT",
     path: "/user/me/files",
     handler: "user.updateFiles",
+    config: {
+      policies: [],
+      prefix: "",
+    },
+  });
+  plugin.routes["content-api"].routes.push({
+    method: "PUT",
+    path: "/user/:id/files",
+    handler: "user.updateFilesAdmin",
     config: {
       policies: [],
       prefix: "",

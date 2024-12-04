@@ -30,6 +30,15 @@
         "Tutor Approval",
         "Classroom Approval"
       ]
+    },
+    "status": {
+      "type": "enumeration",
+      "enum": [
+        "Pending",
+        "Converted",
+        "Rejected"
+      ],
+      "default": "Pending"
     }
   }
 }
