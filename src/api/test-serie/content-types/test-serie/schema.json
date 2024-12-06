@@ -1,0 +1,28 @@
+{
+  "kind": "collectionType",
+  "collectionName": "test_series",
+  "info": {
+    "singularName": "test-serie",
+    "pluralName": "test-series",
+    "displayName": "Test_Serie",
+    "description": ""
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "question_banks": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::question-bank.question-bank",
+      "mappedBy": "test_serie"
+    },
+    "grade_subject": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::grade-subject.grade-subject",
+      "inversedBy": "test_serie"
+    }
+  }
+}

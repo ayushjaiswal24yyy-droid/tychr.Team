@@ -23,9 +23,9 @@
         "generated"
       ]
     },
-    "topic": {
+    "topics": {
       "type": "relation",
-      "relation": "manyToOne",
+      "relation": "manyToMany",
       "target": "api::subtopic.subtopic",
       "inversedBy": "notes"
     },

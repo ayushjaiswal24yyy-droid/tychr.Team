@@ -28,9 +28,9 @@
     },
     "notes": {
       "type": "relation",
-      "relation": "oneToMany",
+      "relation": "manyToMany",
       "target": "api::note.note",
-      "mappedBy": "topic"
+      "mappedBy": "topics"
     }
   }
 }

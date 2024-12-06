@@ -31,6 +31,12 @@
       "relation": "manyToOne",
       "target": "api::note.note",
       "inversedBy": "question_banks"
+    },
+    "test_serie": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::test-serie.test-serie",
+      "inversedBy": "question_banks"
     }
   }
 }

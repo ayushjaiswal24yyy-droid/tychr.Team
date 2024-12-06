@@ -63,6 +63,12 @@
     },
     "subject_group": {
       "type": "string"
+    },
+    "test_serie": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::test-serie.test-serie",
+      "inversedBy": "grade_subject"
     }
   }
 }

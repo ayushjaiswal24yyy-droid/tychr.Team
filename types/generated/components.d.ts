@@ -54,9 +54,22 @@ export interface QuestionBankParts extends Schema.Component {
     >;
     marks: Attribute.Integer;
     one_liner: Attribute.RichText;
-    hints: Attribute.RichText;
     options: Attribute.RichText;
     correct_answer: Attribute.RichText;
+    hints: Attribute.Component<'question-bank.hints', true>;
+  };
+}
+
+export interface QuestionBankHints extends Schema.Component {
+  collectionName: 'components_question_bank_hints';
+  info: {
+    displayName: 'hints';
+    description: '';
+  };
+  attributes: {
+    type: Attribute.Enumeration<['text', 'media']>;
+    media: Attribute.Media<'images' | 'files' | 'videos' | 'audios', true>;
+    content: Attribute.Text;
   };
 }
 
@@ -98,6 +111,7 @@ declare module '@strapi/types' {
       'subtopic.heading': SubtopicHeading;
       'subject.refrence-books': SubjectRefrenceBooks;
       'question-bank.parts': QuestionBankParts;
+      'question-bank.hints': QuestionBankHints;
       'plan.grade-plan': PlanGradePlan;
       'lectures.lecture-header': LecturesLectureHeader;
     }

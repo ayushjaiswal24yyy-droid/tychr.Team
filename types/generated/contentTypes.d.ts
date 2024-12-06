@@ -1273,6 +1273,11 @@ export interface ApiGradeSubjectGradeSubject extends Schema.CollectionType {
       'api::enrollment.enrollment'
     >;
     subject_group: Attribute.String;
+    test_serie: Attribute.Relation<
+      'api::grade-subject.grade-subject',
+      'oneToOne',
+      'api::test-serie.test-serie'
+    >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
@@ -1450,9 +1455,9 @@ export interface ApiNoteNote extends Schema.CollectionType {
     prompt_status: Attribute.Enumeration<
       ['pending ', 'under_progress', 'generated']
     >;
-    topic: Attribute.Relation<
+    topics: Attribute.Relation<
       'api::note.note',
-      'manyToOne',
+      'manyToMany',
       'api::subtopic.subtopic'
     >;
     question_banks: Attribute.Relation<
@@ -1611,6 +1616,11 @@ export interface ApiQuestionBankQuestionBank extends Schema.CollectionType {
       'manyToOne',
       'api::note.note'
     >;
+    test_serie: Attribute.Relation<
+      'api::question-bank.question-bank',
+      'manyToOne',
+      'api::test-serie.test-serie'
+    >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
@@ -1754,7 +1764,7 @@ export interface ApiSubtopicSubtopic extends Schema.CollectionType {
     headings: Attribute.Component<'subtopic.heading', true>;
     notes: Attribute.Relation<
       'api::subtopic.subtopic',
-      'oneToMany',
+      'manyToMany',
       'api::note.note'
     >;
     createdAt: Attribute.DateTime;
@@ -1768,6 +1778,46 @@ export interface ApiSubtopicSubtopic extends Schema.CollectionType {
       Attribute.Private;
     updatedBy: Attribute.Relation<
       'api::subtopic.subtopic',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+  };
+}
+
+export interface ApiTestSerieTestSerie extends Schema.CollectionType {
+  collectionName: 'test_series';
+  info: {
+    singularName: 'test-serie';
+    pluralName: 'test-series';
+    displayName: 'Test_Serie';
+    description: '';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    question_banks: Attribute.Relation<
+      'api::test-serie.test-serie',
+      'oneToMany',
+      'api::question-bank.question-bank'
+    >;
+    grade_subject: Attribute.Relation<
+      'api::test-serie.test-serie',
+      'oneToOne',
+      'api::grade-subject.grade-subject'
+    >;
+    createdAt: Attribute.DateTime;
+    updatedAt: Attribute.DateTime;
+    publishedAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<
+      'api::test-serie.test-serie',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+    updatedBy: Attribute.Relation<
+      'api::test-serie.test-serie',
       'oneToOne',
       'admin::user'
     > &
@@ -1918,6 +1968,7 @@ declare module '@strapi/types' {
       'api::recorded-lecture.recorded-lecture': ApiRecordedLectureRecordedLecture;
       'api::subject.subject': ApiSubjectSubject;
       'api::subtopic.subtopic': ApiSubtopicSubtopic;
+      'api::test-serie.test-serie': ApiTestSerieTestSerie;
       'api::topic.topic': ApiTopicTopic;
       'api::tutor-plan.tutor-plan': ApiTutorPlanTutorPlan;
     }

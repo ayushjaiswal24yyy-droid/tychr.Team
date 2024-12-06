@@ -22,14 +22,17 @@
     "one_liner": {
       "type": "richtext"
     },
-    "hints": {
-      "type": "richtext"
-    },
     "options": {
       "type": "richtext"
     },
     "correct_answer": {
       "type": "richtext"
+    },
+    "hints": {
+      "displayName": "hints",
+      "type": "component",
+      "repeatable": true,
+      "component": "question-bank.hints"
     }
   }
 }
