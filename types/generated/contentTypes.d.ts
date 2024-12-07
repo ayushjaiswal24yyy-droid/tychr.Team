@@ -1196,8 +1196,6 @@ export interface ApiEnrollmentEnrollment extends Schema.CollectionType {
     >;
     startDate: Attribute.Date;
     endDate: Attribute.Date;
-    days: Attribute.JSON;
-    startTime: Attribute.Time;
     duration: Attribute.Integer;
     image: Attribute.Media<'images', true>;
     status: Attribute.Enumeration<['Pending', 'Approved']>;
@@ -1213,6 +1211,7 @@ export interface ApiEnrollmentEnrollment extends Schema.CollectionType {
       'oneToOne',
       'api::notification.notification'
     >;
+    days: Attribute.Component<'classroom.days', true>;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;

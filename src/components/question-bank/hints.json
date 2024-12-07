@@ -1,31 +1,12 @@
 {
   "collectionName": "components_question_bank_hints",
   "info": {
-    "displayName": "hints",
-    "description": ""
+    "displayName": "hints"
   },
   "options": {},
   "attributes": {
-    "type": {
-      "type": "enumeration",
-      "enum": [
-        "text",
-        "media"
-      ]
-    },
-    "media": {
-      "type": "media",
-      "multiple": true,
-      "required": false,
-      "allowedTypes": [
-        "images",
-        "files",
-        "videos",
-        "audios"
-      ]
-    },
-    "content": {
-      "type": "text"
+    "hint": {
+      "type": "richtext"
     }
   }
 }

@@ -64,12 +64,9 @@ export interface QuestionBankHints extends Schema.Component {
   collectionName: 'components_question_bank_hints';
   info: {
     displayName: 'hints';
-    description: '';
   };
   attributes: {
-    type: Attribute.Enumeration<['text', 'media']>;
-    media: Attribute.Media<'images' | 'files' | 'videos' | 'audios', true>;
-    content: Attribute.Text;
+    hint: Attribute.RichText;
   };
 }
 
@@ -104,6 +101,19 @@ export interface LecturesLectureHeader extends Schema.Component {
   };
 }
 
+export interface ClassroomDays extends Schema.Component {
+  collectionName: 'components_classroom_days';
+  info: {
+    displayName: 'days';
+  };
+  attributes: {
+    days: Attribute.Enumeration<
+      ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday']
+    >;
+    startTime: Attribute.Time;
+  };
+}
+
 declare module '@strapi/types' {
   export module Shared {
     export interface Components {
@@ -114,6 +124,7 @@ declare module '@strapi/types' {
       'question-bank.hints': QuestionBankHints;
       'plan.grade-plan': PlanGradePlan;
       'lectures.lecture-header': LecturesLectureHeader;
+      'classroom.days': ClassroomDays;
     }
   }
 }

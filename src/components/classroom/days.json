@@ -1,0 +1,22 @@
+{
+  "collectionName": "components_classroom_days",
+  "info": {
+    "displayName": "days"
+  },
+  "options": {},
+  "attributes": {
+    "days": {
+      "type": "enumeration",
+      "enum": [
+        "Monday",
+        "Tuesday",
+        "Wednesday",
+        "Thursday",
+        "Friday"
+      ]
+    },
+    "startTime": {
+      "type": "time"
+    }
+  }
+}
