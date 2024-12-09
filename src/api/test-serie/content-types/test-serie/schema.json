@@ -12,17 +12,47 @@
   },
   "pluginOptions": {},
   "attributes": {
-    "question_banks": {
-      "type": "relation",
-      "relation": "oneToMany",
-      "target": "api::question-bank.question-bank",
-      "mappedBy": "test_serie"
-    },
     "grade_subject": {
       "type": "relation",
-      "relation": "oneToOne",
+      "relation": "manyToOne",
       "target": "api::grade-subject.grade-subject",
-      "inversedBy": "test_serie"
+      "inversedBy": "test_series"
+    },
+    "title": {
+      "type": "string"
+    },
+    "test_duration": {
+      "type": "integer"
+    },
+    "pass_mark": {
+      "type": "integer"
+    },
+    "question_banks": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::question-bank.question-bank",
+      "inversedBy": "test_series"
+    },
+    "test_type": {
+      "type": "enumeration",
+      "enum": [
+        "Practice Test",
+        "Test Series"
+      ]
+    },
+    "image": {
+      "type": "media",
+      "multiple": false,
+      "required": false,
+      "allowedTypes": [
+        "images",
+        "files",
+        "videos",
+        "audios"
+      ]
+    },
+    "year": {
+      "type": "integer"
     }
   }
 }

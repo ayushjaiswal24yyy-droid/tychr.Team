@@ -1272,9 +1272,9 @@ export interface ApiGradeSubjectGradeSubject extends Schema.CollectionType {
       'api::enrollment.enrollment'
     >;
     subject_group: Attribute.String;
-    test_serie: Attribute.Relation<
+    test_series: Attribute.Relation<
       'api::grade-subject.grade-subject',
-      'oneToOne',
+      'oneToMany',
       'api::test-serie.test-serie'
     >;
     createdAt: Attribute.DateTime;
@@ -1615,9 +1615,9 @@ export interface ApiQuestionBankQuestionBank extends Schema.CollectionType {
       'manyToOne',
       'api::note.note'
     >;
-    test_serie: Attribute.Relation<
+    test_series: Attribute.Relation<
       'api::question-bank.question-bank',
-      'manyToOne',
+      'manyToMany',
       'api::test-serie.test-serie'
     >;
     createdAt: Attribute.DateTime;
@@ -1796,16 +1796,22 @@ export interface ApiTestSerieTestSerie extends Schema.CollectionType {
     draftAndPublish: true;
   };
   attributes: {
-    question_banks: Attribute.Relation<
-      'api::test-serie.test-serie',
-      'oneToMany',
-      'api::question-bank.question-bank'
-    >;
     grade_subject: Attribute.Relation<
       'api::test-serie.test-serie',
-      'oneToOne',
+      'manyToOne',
       'api::grade-subject.grade-subject'
     >;
+    title: Attribute.String;
+    test_duration: Attribute.Integer;
+    pass_mark: Attribute.Integer;
+    question_banks: Attribute.Relation<
+      'api::test-serie.test-serie',
+      'manyToMany',
+      'api::question-bank.question-bank'
+    >;
+    test_type: Attribute.Enumeration<['Practice Test', 'Test Series']>;
+    image: Attribute.Media<'images' | 'files' | 'videos' | 'audios'>;
+    year: Attribute.Integer;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;

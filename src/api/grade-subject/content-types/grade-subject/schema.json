@@ -64,11 +64,11 @@
     "subject_group": {
       "type": "string"
     },
-    "test_serie": {
+    "test_series": {
       "type": "relation",
-      "relation": "oneToOne",
+      "relation": "oneToMany",
       "target": "api::test-serie.test-serie",
-      "inversedBy": "grade_subject"
+      "mappedBy": "grade_subject"
     }
   }
 }

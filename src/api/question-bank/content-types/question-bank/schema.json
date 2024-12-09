@@ -32,11 +32,11 @@
       "target": "api::note.note",
       "inversedBy": "question_banks"
     },
-    "test_serie": {
+    "test_series": {
       "type": "relation",
-      "relation": "manyToOne",
+      "relation": "manyToMany",
       "target": "api::test-serie.test-serie",
-      "inversedBy": "question_banks"
+      "mappedBy": "question_banks"
     }
   }
 }
