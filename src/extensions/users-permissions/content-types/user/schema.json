@@ -205,10 +205,11 @@
       "target": "api::community.community",
       "mappedBy": "members"
     },
-    "subject_guidance": {
+    "subject_guidances": {
       "type": "relation",
-      "relation": "oneToOne",
-      "target": "api::subject.subject"
+      "relation": "oneToMany",
+      "target": "api::subject.subject",
+      "mappedBy": "user"
     },
     "highest_educational_qualification": {
       "type": "string"

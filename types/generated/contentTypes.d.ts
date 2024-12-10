@@ -865,9 +865,9 @@ export interface PluginUsersPermissionsUser extends Schema.CollectionType {
       'manyToMany',
       'api::community.community'
     >;
-    subject_guidance: Attribute.Relation<
+    subject_guidances: Attribute.Relation<
       'plugin::users-permissions.user',
-      'oneToOne',
+      'oneToMany',
       'api::subject.subject'
     >;
     highest_educational_qualification: Attribute.String;
@@ -1724,6 +1724,11 @@ export interface ApiSubjectSubject extends Schema.CollectionType {
       'plugin::users-permissions.user'
     >;
     subject_group: Attribute.String;
+    user: Attribute.Relation<
+      'api::subject.subject',
+      'manyToOne',
+      'plugin::users-permissions.user'
+    >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
