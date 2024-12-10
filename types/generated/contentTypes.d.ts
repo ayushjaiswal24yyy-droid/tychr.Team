@@ -918,6 +918,47 @@ export interface PluginUsersPermissionsUser extends Schema.CollectionType {
   };
 }
 
+export interface ApiAnswerAnswer extends Schema.CollectionType {
+  collectionName: 'answers';
+  info: {
+    singularName: 'answer';
+    pluralName: 'answers';
+    displayName: 'Answer';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    student: Attribute.Relation<
+      'api::answer.answer',
+      'oneToOne',
+      'plugin::users-permissions.user'
+    >;
+    test_series: Attribute.Relation<
+      'api::answer.answer',
+      'oneToOne',
+      'api::test-serie.test-serie'
+    >;
+    answer: Attribute.JSON;
+    marks: Attribute.Integer;
+    createdAt: Attribute.DateTime;
+    updatedAt: Attribute.DateTime;
+    publishedAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<
+      'api::answer.answer',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+    updatedBy: Attribute.Relation<
+      'api::answer.answer',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+  };
+}
+
 export interface ApiClassClass extends Schema.CollectionType {
   collectionName: 'classes';
   info: {
@@ -1960,6 +2001,7 @@ declare module '@strapi/types' {
       'plugin::users-permissions.permission': PluginUsersPermissionsPermission;
       'plugin::users-permissions.role': PluginUsersPermissionsRole;
       'plugin::users-permissions.user': PluginUsersPermissionsUser;
+      'api::answer.answer': ApiAnswerAnswer;
       'api::class.class': ApiClassClass;
       'api::comment.comment': ApiCommentComment;
       'api::community.community': ApiCommunityCommunity;
