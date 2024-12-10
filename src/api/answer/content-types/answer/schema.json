@@ -1,0 +1,31 @@
+{
+  "kind": "collectionType",
+  "collectionName": "answers",
+  "info": {
+    "singularName": "answer",
+    "pluralName": "answers",
+    "displayName": "Answer"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "student": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "plugin::users-permissions.user"
+    },
+    "test_series": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::test-serie.test-serie"
+    },
+    "answer": {
+      "type": "json"
+    },
+    "marks": {
+      "type": "integer"
+    }
+  }
+}

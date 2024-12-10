@@ -865,9 +865,9 @@ export interface PluginUsersPermissionsUser extends Schema.CollectionType {
       'manyToMany',
       'api::community.community'
     >;
-    subject_guidance: Attribute.Relation<
+    subject_guidances: Attribute.Relation<
       'plugin::users-permissions.user',
-      'oneToOne',
+      'oneToMany',
       'api::subject.subject'
     >;
     highest_educational_qualification: Attribute.String;
@@ -911,6 +911,47 @@ export interface PluginUsersPermissionsUser extends Schema.CollectionType {
       Attribute.Private;
     updatedBy: Attribute.Relation<
       'plugin::users-permissions.user',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+  };
+}
+
+export interface ApiAnswerAnswer extends Schema.CollectionType {
+  collectionName: 'answers';
+  info: {
+    singularName: 'answer';
+    pluralName: 'answers';
+    displayName: 'Answer';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    student: Attribute.Relation<
+      'api::answer.answer',
+      'oneToOne',
+      'plugin::users-permissions.user'
+    >;
+    test_series: Attribute.Relation<
+      'api::answer.answer',
+      'oneToOne',
+      'api::test-serie.test-serie'
+    >;
+    answer: Attribute.JSON;
+    marks: Attribute.Integer;
+    createdAt: Attribute.DateTime;
+    updatedAt: Attribute.DateTime;
+    publishedAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<
+      'api::answer.answer',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+    updatedBy: Attribute.Relation<
+      'api::answer.answer',
       'oneToOne',
       'admin::user'
     > &
@@ -1724,6 +1765,11 @@ export interface ApiSubjectSubject extends Schema.CollectionType {
       'plugin::users-permissions.user'
     >;
     subject_group: Attribute.String;
+    user: Attribute.Relation<
+      'api::subject.subject',
+      'manyToOne',
+      'plugin::users-permissions.user'
+    >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
@@ -1955,6 +2001,7 @@ declare module '@strapi/types' {
       'plugin::users-permissions.permission': PluginUsersPermissionsPermission;
       'plugin::users-permissions.role': PluginUsersPermissionsRole;
       'plugin::users-permissions.user': PluginUsersPermissionsUser;
+      'api::answer.answer': ApiAnswerAnswer;
       'api::class.class': ApiClassClass;
       'api::comment.comment': ApiCommentComment;
       'api::community.community': ApiCommunityCommunity;
