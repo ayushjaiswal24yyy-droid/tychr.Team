@@ -255,12 +255,6 @@
       "target": "api::message.message",
       "mappedBy": "receiver"
     },
-    "notification": {
-      "type": "relation",
-      "relation": "oneToOne",
-      "target": "api::notification.notification",
-      "inversedBy": "user"
-    },
     "tutor_status": {
       "type": "enumeration",
       "enum": [
@@ -276,6 +270,12 @@
         "Trainer",
         "Faculty"
       ]
+    },
+    "notifications": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::notification.notification",
+      "mappedBy": "user"
     }
   }
 }

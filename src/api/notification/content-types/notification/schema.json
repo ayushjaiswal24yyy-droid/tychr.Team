@@ -14,22 +14,15 @@
   "attributes": {
     "user": {
       "type": "relation",
-      "relation": "oneToOne",
+      "relation": "manyToOne",
       "target": "plugin::users-permissions.user",
-      "mappedBy": "notification"
+      "inversedBy": "notifications"
     },
     "classroom": {
       "type": "relation",
       "relation": "oneToOne",
       "target": "api::enrollment.enrollment",
       "inversedBy": "notification"
-    },
-    "notification_type": {
-      "type": "enumeration",
-      "enum": [
-        "Tutor Approval",
-        "Classroom Approval"
-      ]
     },
     "status": {
       "type": "enumeration",
@@ -39,6 +32,14 @@
         "Rejected"
       ],
       "default": "Pending"
+    },
+    "payment_status": {
+      "type": "enumeration",
+      "enum": [
+        "Failed",
+        "Success",
+        "Pending"
+      ]
     }
   }
 }

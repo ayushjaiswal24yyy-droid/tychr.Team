@@ -894,13 +894,13 @@ export interface PluginUsersPermissionsUser extends Schema.CollectionType {
       'oneToMany',
       'api::message.message'
     >;
-    notification: Attribute.Relation<
-      'plugin::users-permissions.user',
-      'oneToOne',
-      'api::notification.notification'
-    >;
     tutor_status: Attribute.Enumeration<['Pending', 'Rejected', 'Approved']>;
     tutor_type: Attribute.Enumeration<['Counsellors', 'Trainer', 'Faculty']>;
+    notifications: Attribute.Relation<
+      'plugin::users-permissions.user',
+      'oneToMany',
+      'api::notification.notification'
+    >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     createdBy: Attribute.Relation<
@@ -1530,7 +1530,7 @@ export interface ApiNotificationNotification extends Schema.CollectionType {
   attributes: {
     user: Attribute.Relation<
       'api::notification.notification',
-      'oneToOne',
+      'manyToOne',
       'plugin::users-permissions.user'
     >;
     classroom: Attribute.Relation<
@@ -1538,11 +1538,9 @@ export interface ApiNotificationNotification extends Schema.CollectionType {
       'oneToOne',
       'api::enrollment.enrollment'
     >;
-    notification_type: Attribute.Enumeration<
-      ['Tutor Approval', 'Classroom Approval']
-    >;
     status: Attribute.Enumeration<['Pending', 'Converted', 'Rejected']> &
       Attribute.DefaultTo<'Pending'>;
+    payment_status: Attribute.Enumeration<['Failed', 'Success', 'Pending']>;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
