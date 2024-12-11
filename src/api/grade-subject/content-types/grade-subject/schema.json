@@ -46,7 +46,8 @@
       "type": "enumeration",
       "enum": [
         "SL",
-        "HL"
+        "HL",
+        "None"
       ]
     },
     "demo_video": {
