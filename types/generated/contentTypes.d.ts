@@ -950,7 +950,7 @@ export interface ApiAnswerAnswer extends Schema.CollectionType {
       'manyToOne',
       'api::test-serie.test-serie'
     >;
-    marks: Attribute.Integer;
+    marks: Attribute.Decimal;
     question_n_answer: Attribute.Component<
       'question-bank.question-n-answer',
       true

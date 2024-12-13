@@ -25,7 +25,7 @@
       "inversedBy": "answers"
     },
     "marks": {
-      "type": "integer"
+      "type": "decimal"
     },
     "question_n_answer": {
       "type": "component",
