@@ -53,6 +53,12 @@
     },
     "year": {
       "type": "integer"
+    },
+    "answers": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::answer.answer",
+      "mappedBy": "test_series"
     }
   }
 }

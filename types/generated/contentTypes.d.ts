@@ -901,6 +901,16 @@ export interface PluginUsersPermissionsUser extends Schema.CollectionType {
       'oneToMany',
       'api::notification.notification'
     >;
+    tutor_grade_subject: Attribute.Relation<
+      'plugin::users-permissions.user',
+      'oneToOne',
+      'api::grade-subject.grade-subject'
+    >;
+    answers: Attribute.Relation<
+      'plugin::users-permissions.user',
+      'oneToMany',
+      'api::answer.answer'
+    >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     createdBy: Attribute.Relation<
@@ -924,6 +934,7 @@ export interface ApiAnswerAnswer extends Schema.CollectionType {
     singularName: 'answer';
     pluralName: 'answers';
     displayName: 'Answer';
+    description: '';
   };
   options: {
     draftAndPublish: true;
@@ -931,16 +942,23 @@ export interface ApiAnswerAnswer extends Schema.CollectionType {
   attributes: {
     student: Attribute.Relation<
       'api::answer.answer',
-      'oneToOne',
+      'manyToOne',
       'plugin::users-permissions.user'
     >;
     test_series: Attribute.Relation<
       'api::answer.answer',
-      'oneToOne',
+      'manyToOne',
       'api::test-serie.test-serie'
     >;
-    answer: Attribute.JSON;
     marks: Attribute.Integer;
+    question_n_answer: Attribute.Component<
+      'question-bank.question-n-answer',
+      true
+    >;
+    evaluation_status: Attribute.Enumeration<
+      ['Completed', 'Need to Evaluate']
+    > &
+      Attribute.DefaultTo<'Need to Evaluate'>;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
@@ -1856,6 +1874,11 @@ export interface ApiTestSerieTestSerie extends Schema.CollectionType {
     test_type: Attribute.Enumeration<['Practice Test', 'Test Series']>;
     image: Attribute.Media<'images' | 'files' | 'videos' | 'audios'>;
     year: Attribute.Integer;
+    answers: Attribute.Relation<
+      'api::test-serie.test-serie',
+      'oneToMany',
+      'api::answer.answer'
+    >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;

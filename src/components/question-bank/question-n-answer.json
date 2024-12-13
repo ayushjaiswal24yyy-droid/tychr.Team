@@ -1,0 +1,18 @@
+{
+  "collectionName": "components_question_bank_question_n_answers",
+  "info": {
+    "displayName": "question_n_answer",
+    "description": ""
+  },
+  "options": {},
+  "attributes": {
+    "question": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::question-bank.question-bank"
+    },
+    "answer": {
+      "type": "json"
+    }
+  }
+}

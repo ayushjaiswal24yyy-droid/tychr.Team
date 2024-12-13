@@ -41,6 +41,22 @@ export interface SubjectRefrenceBooks extends Schema.Component {
   };
 }
 
+export interface QuestionBankQuestionNAnswer extends Schema.Component {
+  collectionName: 'components_question_bank_question_n_answers';
+  info: {
+    displayName: 'question_n_answer';
+    description: '';
+  };
+  attributes: {
+    question: Attribute.Relation<
+      'question-bank.question-n-answer',
+      'oneToOne',
+      'api::question-bank.question-bank'
+    >;
+    answer: Attribute.JSON;
+  };
+}
+
 export interface QuestionBankParts extends Schema.Component {
   collectionName: 'components_question_bank_parts';
   info: {
@@ -120,6 +136,7 @@ declare module '@strapi/types' {
       'subtopic.qn-a': SubtopicQnA;
       'subtopic.heading': SubtopicHeading;
       'subject.refrence-books': SubjectRefrenceBooks;
+      'question-bank.question-n-answer': QuestionBankQuestionNAnswer;
       'question-bank.parts': QuestionBankParts;
       'question-bank.hints': QuestionBankHints;
       'plan.grade-plan': PlanGradePlan;
