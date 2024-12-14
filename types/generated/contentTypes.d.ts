@@ -959,6 +959,8 @@ export interface ApiAnswerAnswer extends Schema.CollectionType {
       ['Completed', 'Need to Evaluate']
     > &
       Attribute.DefaultTo<'Need to Evaluate'>;
+    student_feedback: Attribute.Text;
+    tutor_feedback: Attribute.Text;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;

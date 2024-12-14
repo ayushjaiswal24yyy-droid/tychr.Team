@@ -39,6 +39,12 @@
         "Need to Evaluate"
       ],
       "default": "Need to Evaluate"
+    },
+    "student_feedback": {
+      "type": "text"
+    },
+    "tutor_feedback": {
+      "type": "text"
     }
   }
 }
