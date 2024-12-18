@@ -103,6 +103,16 @@ export interface PlanGradePlan extends Schema.Component {
   };
 }
 
+export interface NotificationHistory extends Schema.Component {
+  collectionName: 'components_notification_histories';
+  info: {
+    displayName: 'history';
+  };
+  attributes: {
+    history: Attribute.Text;
+  };
+}
+
 export interface LecturesLectureHeader extends Schema.Component {
   collectionName: 'components_lectures_lecture_headers';
   info: {
@@ -140,6 +150,7 @@ declare module '@strapi/types' {
       'question-bank.parts': QuestionBankParts;
       'question-bank.hints': QuestionBankHints;
       'plan.grade-plan': PlanGradePlan;
+      'notification.history': NotificationHistory;
       'lectures.lecture-header': LecturesLectureHeader;
       'classroom.days': ClassroomDays;
     }

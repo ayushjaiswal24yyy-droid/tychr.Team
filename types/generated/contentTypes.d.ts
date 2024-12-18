@@ -1567,6 +1567,7 @@ export interface ApiNotificationNotification extends Schema.CollectionType {
       ['Morning', 'Afternoon', 'Evening']
     >;
     comment: Attribute.Text;
+    conversion_history: Attribute.Component<'notification.history', true>;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;

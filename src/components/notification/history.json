@@ -1,0 +1,12 @@
+{
+  "collectionName": "components_notification_histories",
+  "info": {
+    "displayName": "history"
+  },
+  "options": {},
+  "attributes": {
+    "history": {
+      "type": "text"
+    }
+  }
+}

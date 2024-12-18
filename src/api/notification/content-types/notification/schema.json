@@ -57,6 +57,12 @@
     },
     "comment": {
       "type": "text"
+    },
+    "conversion_history": {
+      "displayName": "history",
+      "type": "component",
+      "repeatable": true,
+      "component": "notification.history"
     }
   }
 }
