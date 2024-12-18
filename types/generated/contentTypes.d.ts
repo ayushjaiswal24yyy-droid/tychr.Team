@@ -1541,7 +1541,7 @@ export interface ApiNotificationNotification extends Schema.CollectionType {
   info: {
     singularName: 'notification';
     pluralName: 'notifications';
-    displayName: 'Notification';
+    displayName: 'Enquiries';
     description: '';
   };
   options: {
@@ -1561,6 +1561,12 @@ export interface ApiNotificationNotification extends Schema.CollectionType {
     status: Attribute.Enumeration<['Pending', 'Converted', 'Rejected']> &
       Attribute.DefaultTo<'Pending'>;
     payment_status: Attribute.Enumeration<['Failed', 'Success', 'Pending']>;
+    parent_name: Attribute.String;
+    parent_phonenumber: Attribute.String;
+    preferred_classroom_time: Attribute.Enumeration<
+      ['Morning', 'Afternoon', 'Evening']
+    >;
+    comment: Attribute.Text;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
