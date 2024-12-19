@@ -63,6 +63,17 @@
       "type": "component",
       "repeatable": true,
       "component": "notification.history"
+    },
+    "tracking_status": {
+      "type": "enumeration",
+      "enum": [
+        "New Lead",
+        "Contacted",
+        "Demo Booking",
+        "Demo Done",
+        "Demo Unattended"
+      ],
+      "default": "New Lead"
     }
   }
 }

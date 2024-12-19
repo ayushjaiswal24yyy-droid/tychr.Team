@@ -911,6 +911,10 @@ export interface PluginUsersPermissionsUser extends Schema.CollectionType {
       'oneToMany',
       'api::answer.answer'
     >;
+    demo_booking_time: Attribute.Component<
+      'notification.demo-booking-time',
+      true
+    >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     createdBy: Attribute.Relation<
@@ -1568,6 +1572,10 @@ export interface ApiNotificationNotification extends Schema.CollectionType {
     >;
     comment: Attribute.Text;
     conversion_history: Attribute.Component<'notification.history', true>;
+    tracking_status: Attribute.Enumeration<
+      ['New Lead', 'Contacted', 'Demo Booking', 'Demo Done', 'Demo Unattended']
+    > &
+      Attribute.DefaultTo<'New Lead'>;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;

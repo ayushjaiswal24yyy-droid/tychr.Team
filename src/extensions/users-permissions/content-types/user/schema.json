@@ -287,6 +287,12 @@
       "relation": "oneToMany",
       "target": "api::answer.answer",
       "mappedBy": "student"
+    },
+    "demo_booking_time": {
+      "displayName": "demo_booking_time",
+      "type": "component",
+      "repeatable": true,
+      "component": "notification.demo-booking-time"
     }
   }
 }

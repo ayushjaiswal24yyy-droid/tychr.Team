@@ -107,9 +107,21 @@ export interface NotificationHistory extends Schema.Component {
   collectionName: 'components_notification_histories';
   info: {
     displayName: 'history';
+    description: '';
   };
   attributes: {
     history: Attribute.Text;
+    time_stamp: Attribute.Date;
+  };
+}
+
+export interface NotificationDemoBookingTime extends Schema.Component {
+  collectionName: 'components_notification_demo_booking_times';
+  info: {
+    displayName: 'demo_booking_time';
+  };
+  attributes: {
+    time: Attribute.Time;
   };
 }
 
@@ -151,6 +163,7 @@ declare module '@strapi/types' {
       'question-bank.hints': QuestionBankHints;
       'plan.grade-plan': PlanGradePlan;
       'notification.history': NotificationHistory;
+      'notification.demo-booking-time': NotificationDemoBookingTime;
       'lectures.lecture-header': LecturesLectureHeader;
       'classroom.days': ClassroomDays;
     }

@@ -1,12 +1,16 @@
 {
   "collectionName": "components_notification_histories",
   "info": {
-    "displayName": "history"
+    "displayName": "history",
+    "description": ""
   },
   "options": {},
   "attributes": {
     "history": {
       "type": "text"
+    },
+    "time_stamp": {
+      "type": "date"
     }
   }
 }
