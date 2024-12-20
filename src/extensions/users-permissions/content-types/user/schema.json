@@ -267,8 +267,8 @@
       "type": "enumeration",
       "enum": [
         "Counsellors",
-        "Trainer",
-        "Faculty"
+        "Faculty",
+        "Trainer"
       ]
     },
     "notifications": {

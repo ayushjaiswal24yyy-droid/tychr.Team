@@ -895,7 +895,7 @@ export interface PluginUsersPermissionsUser extends Schema.CollectionType {
       'api::message.message'
     >;
     tutor_status: Attribute.Enumeration<['Pending', 'Rejected', 'Approved']>;
-    tutor_type: Attribute.Enumeration<['Counsellors', 'Trainer', 'Faculty']>;
+    tutor_type: Attribute.Enumeration<['Counsellors', 'Faculty', 'Trainer']>;
     notifications: Attribute.Relation<
       'plugin::users-permissions.user',
       'oneToMany',
