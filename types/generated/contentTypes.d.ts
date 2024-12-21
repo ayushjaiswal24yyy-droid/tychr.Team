@@ -915,6 +915,11 @@ export interface PluginUsersPermissionsUser extends Schema.CollectionType {
       'notification.demo-booking-time',
       true
     >;
+    classroom: Attribute.Relation<
+      'plugin::users-permissions.user',
+      'oneToOne',
+      'api::enrollment.enrollment'
+    >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     createdBy: Attribute.Relation<
@@ -1277,6 +1282,12 @@ export interface ApiEnrollmentEnrollment extends Schema.CollectionType {
       'api::notification.notification'
     >;
     days: Attribute.Component<'classroom.days', true>;
+    isAssist: Attribute.Boolean & Attribute.DefaultTo<false>;
+    assistant: Attribute.Relation<
+      'api::enrollment.enrollment',
+      'oneToOne',
+      'plugin::users-permissions.user'
+    >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;

@@ -121,6 +121,16 @@
       "type": "component",
       "repeatable": true,
       "component": "classroom.days"
+    },
+    "isAssist": {
+      "type": "boolean",
+      "default": false
+    },
+    "assistant": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "plugin::users-permissions.user",
+      "inversedBy": "classroom"
     }
   }
 }
