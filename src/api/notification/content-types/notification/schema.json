@@ -71,9 +71,16 @@
         "Contacted",
         "Demo Booking",
         "Demo Done",
-        "Demo Unattended"
+        "Demo Unattended",
+        "Decision Pending 1",
+        "Decision Pending 2",
+        "Success",
+        "Failed"
       ],
       "default": "New Lead"
+    },
+    "demo_feedback": {
+      "type": "text"
     }
   }
 }

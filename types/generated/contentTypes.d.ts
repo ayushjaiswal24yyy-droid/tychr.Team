@@ -1584,9 +1584,20 @@ export interface ApiNotificationNotification extends Schema.CollectionType {
     comment: Attribute.Text;
     conversion_history: Attribute.Component<'notification.history', true>;
     tracking_status: Attribute.Enumeration<
-      ['New Lead', 'Contacted', 'Demo Booking', 'Demo Done', 'Demo Unattended']
+      [
+        'New Lead',
+        'Contacted',
+        'Demo Booking',
+        'Demo Done',
+        'Demo Unattended',
+        'Decision Pending 1',
+        'Decision Pending 2',
+        'Success',
+        'Failed'
+      ]
     > &
       Attribute.DefaultTo<'New Lead'>;
+    demo_feedback: Attribute.Text;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
