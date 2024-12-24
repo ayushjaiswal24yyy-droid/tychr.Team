@@ -911,10 +911,6 @@ export interface PluginUsersPermissionsUser extends Schema.CollectionType {
       'oneToMany',
       'api::answer.answer'
     >;
-    demo_booking_time: Attribute.Component<
-      'notification.demo-booking-time',
-      true
-    >;
     classroom: Attribute.Relation<
       'plugin::users-permissions.user',
       'oneToOne',
@@ -1287,6 +1283,10 @@ export interface ApiEnrollmentEnrollment extends Schema.CollectionType {
       'api::enrollment.enrollment',
       'oneToOne',
       'plugin::users-permissions.user'
+    >;
+    demo_booking_time: Attribute.Component<
+      'notification.demo-booking-time',
+      true
     >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;

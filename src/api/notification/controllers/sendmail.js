@@ -8,7 +8,6 @@ module.exports = {
       const tutorFullName = inquiry.tutor_fullName;
       const meetingLink = inquiry.meeting_url;
       const demoTime = inquiry.time;
-      const scheduledate = inquiry.schedule;
       const classroomName = inquiry.classroom_name;
       const studentMessage = `
         Dear ${studentFullName},
@@ -16,7 +15,7 @@ module.exports = {
         Thank you for your inquiry! We have scheduled a demo booking for you.
         Here are the details:
 
-        - Demo Time:${scheduledate} at ${demoTime}
+        - Demo Time: ${demoTime}
         - Classroom: ${classroomName}
         - Tutor: ${tutorFullName}
         - Meeting Link: ${meetingLink}
@@ -33,7 +32,7 @@ module.exports = {
         A student has made an inquiry and selected the following demo booking time:
 
         - Student: ${studentFullName}
-        - Demo Time:${scheduledate} at ${demoTime}
+        - Demo Time:${demoTime}
         - Classroom: ${classroomName}
         - Meeting Link: ${meetingLink}
 

@@ -1,12 +1,13 @@
 {
   "collectionName": "components_notification_demo_booking_times",
   "info": {
-    "displayName": "demo_booking_time"
+    "displayName": "demo_booking_time",
+    "description": ""
   },
   "options": {},
   "attributes": {
     "time": {
-      "type": "time"
+      "type": "datetime"
     }
   }
 }

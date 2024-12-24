@@ -119,9 +119,10 @@ export interface NotificationDemoBookingTime extends Schema.Component {
   collectionName: 'components_notification_demo_booking_times';
   info: {
     displayName: 'demo_booking_time';
+    description: '';
   };
   attributes: {
-    time: Attribute.Time;
+    time: Attribute.DateTime;
   };
 }
 
