@@ -73,6 +73,7 @@ export interface QuestionBankQuestionNAnswer extends Schema.Component {
       'api::question-bank.question-bank'
     >;
     answer: Attribute.JSON;
+    question_n_answer: Attribute.RichText;
   };
 }
 

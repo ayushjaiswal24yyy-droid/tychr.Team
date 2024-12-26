@@ -57,11 +57,12 @@
       "type": "blocks"
     },
     "thumbnail": {
+      "type": "media",
+      "multiple": false,
+      "required": false,
       "allowedTypes": [
         "images"
-      ],
-      "type": "media",
-      "multiple": false
+      ]
     },
     "classrooms": {
       "type": "relation",
@@ -69,11 +70,11 @@
       "target": "api::enrollment.enrollment",
       "mappedBy": "recorded_lectures"
     },
-    "grade_subjects": {
+    "grade_subject": {
       "type": "relation",
-      "relation": "manyToMany",
+      "relation": "manyToOne",
       "target": "api::grade-subject.grade-subject",
-      "mappedBy": "demo_video"
+      "inversedBy": "recorded_lectures"
     }
   }
 }

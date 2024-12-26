@@ -50,12 +50,6 @@
         "None"
       ]
     },
-    "demo_video": {
-      "type": "relation",
-      "relation": "manyToMany",
-      "target": "api::recorded-lecture.recorded-lecture",
-      "inversedBy": "grade_subjects"
-    },
     "classrooms": {
       "type": "relation",
       "relation": "oneToMany",
@@ -69,6 +63,12 @@
       "type": "relation",
       "relation": "oneToMany",
       "target": "api::test-serie.test-serie",
+      "mappedBy": "grade_subject"
+    },
+    "recorded_lectures": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::recorded-lecture.recorded-lecture",
       "mappedBy": "grade_subject"
     }
   }
