@@ -853,11 +853,6 @@ export interface PluginUsersPermissionsUser extends Schema.CollectionType {
     experience: Attribute.Integer;
     cv: Attribute.Media<'images' | 'videos' | 'audios' | 'files'>;
     biography: Attribute.Text;
-    student_plan: Attribute.Relation<
-      'plugin::users-permissions.user',
-      'oneToOne',
-      'api::course-plan.course-plan'
-    >;
     tutor_video: Attribute.Media<'videos'>;
     classroom_limit: Attribute.Integer & Attribute.DefaultTo<5>;
     communities: Attribute.Relation<
@@ -916,6 +911,7 @@ export interface PluginUsersPermissionsUser extends Schema.CollectionType {
       'oneToOne',
       'api::enrollment.enrollment'
     >;
+    student_plan: Attribute.Component<'user.student-plan', true>;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     createdBy: Attribute.Relation<
@@ -1054,6 +1050,11 @@ export interface ApiCommentComment extends Schema.CollectionType {
       'plugin::users-permissions.user'
     >;
     attachment: Attribute.Media<'images' | 'files' | 'videos' | 'audios'>;
+    post: Attribute.Relation<
+      'api::comment.comment',
+      'manyToOne',
+      'api::post.post'
+    >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
@@ -1680,6 +1681,11 @@ export interface ApiPostPost extends Schema.CollectionType {
       'api::community.community'
     >;
     attachment: Attribute.Media<'images' | 'files' | 'videos' | 'audios'>;
+    comments: Attribute.Relation<
+      'api::post.post',
+      'oneToMany',
+      'api::comment.comment'
+    >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
