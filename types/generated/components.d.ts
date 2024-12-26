@@ -103,33 +103,6 @@ export interface PlanGradePlan extends Schema.Component {
   };
 }
 
-export interface ClassroomDays extends Schema.Component {
-  collectionName: 'components_classroom_days';
-  info: {
-    displayName: 'days';
-  };
-  attributes: {
-    days: Attribute.Enumeration<
-      ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday']
-    >;
-    startTime: Attribute.Time;
-  };
-}
-
-export interface LecturesLectureHeader extends Schema.Component {
-  collectionName: 'components_lectures_lecture_headers';
-  info: {
-    displayName: 'Lecture Header';
-    icon: 'attachment';
-  };
-  attributes: {
-    label: Attribute.Enumeration<
-      ['Content', 'Recordings', 'Live', 'QnA', 'Test', 'Doubt', 'Practice']
-    >;
-    show: Attribute.Boolean;
-  };
-}
-
 export interface NotificationHistory extends Schema.Component {
   collectionName: 'components_notification_histories';
   info: {
@@ -148,8 +121,33 @@ export interface NotificationDemoBookingTime extends Schema.Component {
     displayName: 'demo_booking_time';
     description: '';
   };
+  attributes: {};
+}
+
+export interface LecturesLectureHeader extends Schema.Component {
+  collectionName: 'components_lectures_lecture_headers';
+  info: {
+    displayName: 'Lecture Header';
+    icon: 'attachment';
+  };
   attributes: {
-    time: Attribute.DateTime;
+    label: Attribute.Enumeration<
+      ['Content', 'Recordings', 'Live', 'QnA', 'Test', 'Doubt', 'Practice']
+    >;
+    show: Attribute.Boolean;
+  };
+}
+
+export interface ClassroomDays extends Schema.Component {
+  collectionName: 'components_classroom_days';
+  info: {
+    displayName: 'days';
+  };
+  attributes: {
+    days: Attribute.Enumeration<
+      ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday']
+    >;
+    startTime: Attribute.Time;
   };
 }
 
@@ -163,10 +161,10 @@ declare module '@strapi/types' {
       'question-bank.parts': QuestionBankParts;
       'question-bank.hints': QuestionBankHints;
       'plan.grade-plan': PlanGradePlan;
-      'classroom.days': ClassroomDays;
-      'lectures.lecture-header': LecturesLectureHeader;
       'notification.history': NotificationHistory;
       'notification.demo-booking-time': NotificationDemoBookingTime;
+      'lectures.lecture-header': LecturesLectureHeader;
+      'classroom.days': ClassroomDays;
     }
   }
 }

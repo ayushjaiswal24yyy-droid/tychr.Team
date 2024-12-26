@@ -5,9 +5,5 @@
     "description": ""
   },
   "options": {},
-  "attributes": {
-    "time": {
-      "type": "datetime"
-    }
-  }
+  "attributes": {}
 }

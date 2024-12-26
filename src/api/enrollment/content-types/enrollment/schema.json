@@ -131,11 +131,6 @@
       "relation": "oneToOne",
       "target": "plugin::users-permissions.user",
       "inversedBy": "classroom"
-    },
-    "demo_booking_time": {
-      "type": "component",
-      "repeatable": true,
-      "component": "notification.demo-booking-time"
     }
   }
 }
