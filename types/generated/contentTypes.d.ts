@@ -1337,11 +1337,6 @@ export interface ApiGradeSubjectGradeSubject extends Schema.CollectionType {
     >;
     name: Attribute.String;
     level: Attribute.Enumeration<['SL', 'HL', 'None']>;
-    demo_video: Attribute.Relation<
-      'api::grade-subject.grade-subject',
-      'manyToMany',
-      'api::recorded-lecture.recorded-lecture'
-    >;
     classrooms: Attribute.Relation<
       'api::grade-subject.grade-subject',
       'oneToMany',
@@ -1352,6 +1347,11 @@ export interface ApiGradeSubjectGradeSubject extends Schema.CollectionType {
       'api::grade-subject.grade-subject',
       'oneToMany',
       'api::test-serie.test-serie'
+    >;
+    recorded_lectures: Attribute.Relation<
+      'api::grade-subject.grade-subject',
+      'oneToMany',
+      'api::recorded-lecture.recorded-lecture'
     >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
@@ -1805,9 +1805,9 @@ export interface ApiRecordedLectureRecordedLecture
       'manyToMany',
       'api::enrollment.enrollment'
     >;
-    grade_subjects: Attribute.Relation<
+    grade_subject: Attribute.Relation<
       'api::recorded-lecture.recorded-lecture',
-      'manyToMany',
+      'manyToOne',
       'api::grade-subject.grade-subject'
     >;
     createdAt: Attribute.DateTime;
