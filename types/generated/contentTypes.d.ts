@@ -1054,6 +1054,11 @@ export interface ApiCommentComment extends Schema.CollectionType {
       'plugin::users-permissions.user'
     >;
     attachment: Attribute.Media<'images' | 'files' | 'videos' | 'audios'>;
+    post: Attribute.Relation<
+      'api::comment.comment',
+      'manyToOne',
+      'api::post.post'
+    >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
@@ -1680,6 +1685,11 @@ export interface ApiPostPost extends Schema.CollectionType {
       'api::community.community'
     >;
     attachment: Attribute.Media<'images' | 'files' | 'videos' | 'audios'>;
+    comments: Attribute.Relation<
+      'api::post.post',
+      'oneToMany',
+      'api::comment.comment'
+    >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
