@@ -1690,6 +1690,40 @@ export interface ApiPostPost extends Schema.CollectionType {
   };
 }
 
+export interface ApiQnAQnA extends Schema.CollectionType {
+  collectionName: 'qn_as';
+  info: {
+    singularName: 'qn-a';
+    pluralName: 'qn-as';
+    displayName: 'QnA';
+    description: '';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    users: Attribute.Relation<
+      'api::qn-a.qn-a',
+      'oneToOne',
+      'plugin::users-permissions.user'
+    >;
+    attachment: Attribute.Media<'images' | 'files' | 'videos' | 'audios'>;
+    grade_subject: Attribute.Relation<
+      'api::qn-a.qn-a',
+      'oneToOne',
+      'api::grade-subject.grade-subject'
+    >;
+    post: Attribute.Relation<'api::qn-a.qn-a', 'oneToOne', 'api::post.post'>;
+    createdAt: Attribute.DateTime;
+    updatedAt: Attribute.DateTime;
+    publishedAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<'api::qn-a.qn-a', 'oneToOne', 'admin::user'> &
+      Attribute.Private;
+    updatedBy: Attribute.Relation<'api::qn-a.qn-a', 'oneToOne', 'admin::user'> &
+      Attribute.Private;
+  };
+}
+
 export interface ApiQuestionBankQuestionBank extends Schema.CollectionType {
   collectionName: 'question_banks';
   info: {
@@ -2076,6 +2110,7 @@ declare module '@strapi/types' {
       'api::notification.notification': ApiNotificationNotification;
       'api::payment.payment': ApiPaymentPayment;
       'api::post.post': ApiPostPost;
+      'api::qn-a.qn-a': ApiQnAQnA;
       'api::question-bank.question-bank': ApiQuestionBankQuestionBank;
       'api::recorded-lecture.recorded-lecture': ApiRecordedLectureRecordedLecture;
       'api::subject.subject': ApiSubjectSubject;
