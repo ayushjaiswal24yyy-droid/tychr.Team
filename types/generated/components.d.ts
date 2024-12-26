@@ -121,7 +121,9 @@ export interface NotificationDemoBookingTime extends Schema.Component {
     displayName: 'demo_booking_time';
     description: '';
   };
-  attributes: {};
+  attributes: {
+    schedule_time: Attribute.DateTime;
+  };
 }
 
 export interface LecturesLectureHeader extends Schema.Component {

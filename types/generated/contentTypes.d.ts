@@ -1284,6 +1284,10 @@ export interface ApiEnrollmentEnrollment extends Schema.CollectionType {
       'oneToOne',
       'plugin::users-permissions.user'
     >;
+    demo_booking_time: Attribute.Component<
+      'notification.demo-booking-time',
+      true
+    >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;

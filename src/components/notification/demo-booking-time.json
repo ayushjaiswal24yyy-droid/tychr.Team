@@ -5,5 +5,9 @@
     "description": ""
   },
   "options": {},
-  "attributes": {}
+  "attributes": {
+    "schedule_time": {
+      "type": "datetime"
+    }
+  }
 }
