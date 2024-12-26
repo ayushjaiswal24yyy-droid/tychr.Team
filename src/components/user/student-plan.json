@@ -1,0 +1,19 @@
+{
+  "collectionName": "components_user_student_plans",
+  "info": {
+    "displayName": "student_plan"
+  },
+  "options": {},
+  "attributes": {
+    "course_plan": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::course-plan.course-plan"
+    },
+    "grade_subject": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::grade-subject.grade-subject"
+    }
+  }
+}

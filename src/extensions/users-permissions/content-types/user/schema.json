@@ -182,11 +182,6 @@
     "biography": {
       "type": "text"
     },
-    "student_plan": {
-      "type": "relation",
-      "relation": "oneToOne",
-      "target": "api::course-plan.course-plan"
-    },
     "tutor_video": {
       "type": "media",
       "multiple": false,
@@ -293,6 +288,12 @@
       "relation": "oneToOne",
       "target": "api::enrollment.enrollment",
       "mappedBy": "assistant"
+    },
+    "student_plan": {
+      "displayName": "student_plan",
+      "type": "component",
+      "repeatable": true,
+      "component": "user.student-plan"
     }
   }
 }
