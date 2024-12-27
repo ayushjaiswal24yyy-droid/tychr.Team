@@ -7,22 +7,22 @@ module.exports = {
         grade: grade,
       },
       populate: {
-        grade_subjects: gradeSubjectId
-          ? {
-              where: {
+        grade_subjects: {
+          where: gradeSubjectId
+            ? {
                 id: gradeSubjectId,
-                ...(level && { level }), 
-              },
-              populate: ["recorded_lectures.thumbnail"],
-            }
-          : {
-              where: level
-                ? { level } 
-                : undefined,
-              populate: {
-                recorded_lectures: { populate: { thumbnail: true } },
-              },
+                ...(level && { level }),
+              }
+            : level
+            ? { level }
+            : undefined,
+          populate: {
+            recorded_lectures: {
+              where: { isFree: true },
+              populate: ["thumbnail"],
             },
+          },
+        },
       },
     });
 
