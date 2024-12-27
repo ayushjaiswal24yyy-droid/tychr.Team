@@ -47,6 +47,10 @@
       "relation": "oneToOne",
       "target": "plugin::users-permissions.user",
       "mappedBy": "ib_program"
+    },
+    "is_live": {
+      "type": "boolean",
+      "default": false
     }
   }
 }

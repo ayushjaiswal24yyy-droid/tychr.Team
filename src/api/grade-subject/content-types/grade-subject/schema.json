@@ -70,6 +70,10 @@
       "relation": "oneToMany",
       "target": "api::recorded-lecture.recorded-lecture",
       "mappedBy": "grade_subject"
+    },
+    "is_live": {
+      "type": "boolean",
+      "default": false
     }
   }
 }

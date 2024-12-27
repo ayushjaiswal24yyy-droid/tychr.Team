@@ -38,6 +38,10 @@
       "relation": "oneToOne",
       "target": "plugin::users-permissions.user",
       "mappedBy": "grade"
+    },
+    "is_live": {
+      "type": "boolean",
+      "default": false
     }
   }
 }

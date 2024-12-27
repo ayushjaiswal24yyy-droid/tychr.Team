@@ -1013,6 +1013,7 @@ export interface ApiClassClass extends Schema.CollectionType {
       'oneToOne',
       'plugin::users-permissions.user'
     >;
+    is_live: Attribute.Boolean & Attribute.DefaultTo<false>;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
@@ -1354,6 +1355,7 @@ export interface ApiGradeSubjectGradeSubject extends Schema.CollectionType {
       'oneToMany',
       'api::recorded-lecture.recorded-lecture'
     >;
+    is_live: Attribute.Boolean & Attribute.DefaultTo<false>;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
@@ -1404,6 +1406,7 @@ export interface ApiIbProgramIbProgram extends Schema.CollectionType {
       'oneToOne',
       'plugin::users-permissions.user'
     >;
+    is_live: Attribute.Boolean & Attribute.DefaultTo<false>;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
