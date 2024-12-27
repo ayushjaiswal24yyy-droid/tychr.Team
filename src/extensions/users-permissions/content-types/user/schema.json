@@ -294,6 +294,10 @@
       "type": "component",
       "repeatable": true,
       "component": "user.student-plan"
+    },
+    "isCreateByAdmin": {
+      "type": "boolean",
+      "default": false
     }
   }
 }

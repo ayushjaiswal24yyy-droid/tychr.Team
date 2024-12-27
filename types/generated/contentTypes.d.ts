@@ -912,6 +912,7 @@ export interface PluginUsersPermissionsUser extends Schema.CollectionType {
       'api::enrollment.enrollment'
     >;
     student_plan: Attribute.Component<'user.student-plan', true>;
+    isCreateByAdmin: Attribute.Boolean & Attribute.DefaultTo<false>;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     createdBy: Attribute.Relation<

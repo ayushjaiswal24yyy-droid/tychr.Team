@@ -14,7 +14,8 @@ module.exports = (plugin) => {
     return sanitizedUser;
   };
   plugin.controllers.auth.register = async (ctx) => {
-    const { email, password, username, fullName, role } = ctx.request.body;
+    const { email, password, username, fullName, role, isCreateByAdmin } =
+      ctx.request.body;
 
     // Check if user already exists
     const userExists = await strapi
@@ -56,9 +57,14 @@ module.exports = (plugin) => {
         uuid: ctx.request.body.uuid,
         otp,
         confirmed: false,
+        isCreateByAdmin,
       },
     });
-    if (role === "assistant") {
+    if (
+      role === "assistant" ||
+      role === "coach" ||
+      (role === "tutor" && isCreateByAdmin)
+    ) {
       await strapi
         .plugin("email")
         .service("email")
@@ -69,11 +75,9 @@ module.exports = (plugin) => {
           text: `Your account has been created. Here are your login details:\n\nEmail: ${email}\nPassword: ${password}\n\nPlease make sure to change your password after logging in.`,
         });
     } else {
-      // If role is not assistant, send OTP email for verification
       await strapi.service("api::email.email").sendEmailBasedOnRole(email, otp);
     }
 
-    await strapi.service("api::email.email").sendEmailBasedOnRole(email, otp);
     const jwt = strapi.plugins["users-permissions"].services.jwt.issue({
       id: user.id,
     });
@@ -96,7 +100,6 @@ module.exports = (plugin) => {
         );
       }
 
-      // Use lowercase for email comparison
       const identifier = params.identifier.toLowerCase();
 
       const user = await strapi
