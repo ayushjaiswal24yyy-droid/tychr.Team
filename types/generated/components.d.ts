@@ -160,6 +160,16 @@ export interface LecturesLectureHeader extends Schema.Component {
   };
 }
 
+export interface ClassroomNotices extends Schema.Component {
+  collectionName: 'components_classroom_notices';
+  info: {
+    displayName: 'notices';
+  };
+  attributes: {
+    notices: Attribute.RichText;
+  };
+}
+
 export interface ClassroomDays extends Schema.Component {
   collectionName: 'components_classroom_days';
   info: {
@@ -187,6 +197,7 @@ declare module '@strapi/types' {
       'notification.history': NotificationHistory;
       'notification.demo-booking-time': NotificationDemoBookingTime;
       'lectures.lecture-header': LecturesLectureHeader;
+      'classroom.notices': ClassroomNotices;
       'classroom.days': ClassroomDays;
     }
   }

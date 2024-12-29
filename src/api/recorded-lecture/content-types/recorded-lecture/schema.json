@@ -75,6 +75,12 @@
       "relation": "manyToOne",
       "target": "api::grade-subject.grade-subject",
       "inversedBy": "recorded_lectures"
+    },
+    "liked_by": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "plugin::users-permissions.user",
+      "inversedBy": "recorded_lectures"
     }
   }
 }

@@ -913,6 +913,11 @@ export interface PluginUsersPermissionsUser extends Schema.CollectionType {
     >;
     student_plan: Attribute.Component<'user.student-plan', true>;
     isCreateByAdmin: Attribute.Boolean & Attribute.DefaultTo<false>;
+    recorded_lectures: Attribute.Relation<
+      'plugin::users-permissions.user',
+      'manyToMany',
+      'api::recorded-lecture.recorded-lecture'
+    >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     createdBy: Attribute.Relation<
@@ -1291,6 +1296,7 @@ export interface ApiEnrollmentEnrollment extends Schema.CollectionType {
       'notification.demo-booking-time',
       true
     >;
+    notices: Attribute.Component<'classroom.notices', true>;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
@@ -1819,6 +1825,11 @@ export interface ApiRecordedLectureRecordedLecture
       'api::recorded-lecture.recorded-lecture',
       'manyToOne',
       'api::grade-subject.grade-subject'
+    >;
+    liked_by: Attribute.Relation<
+      'api::recorded-lecture.recorded-lecture',
+      'manyToMany',
+      'plugin::users-permissions.user'
     >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;

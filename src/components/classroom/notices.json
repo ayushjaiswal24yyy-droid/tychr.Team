@@ -1,0 +1,12 @@
+{
+  "collectionName": "components_classroom_notices",
+  "info": {
+    "displayName": "notices"
+  },
+  "options": {},
+  "attributes": {
+    "notices": {
+      "type": "richtext"
+    }
+  }
+}

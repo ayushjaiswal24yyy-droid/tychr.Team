@@ -298,6 +298,12 @@
     "isCreateByAdmin": {
       "type": "boolean",
       "default": false
+    },
+    "recorded_lectures": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::recorded-lecture.recorded-lecture",
+      "mappedBy": "liked_by"
     }
   }
 }

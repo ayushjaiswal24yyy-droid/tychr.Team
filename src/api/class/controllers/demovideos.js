@@ -19,7 +19,10 @@ module.exports = {
           populate: {
             recorded_lectures: {
               where: { isFree: true },
-              populate: ["thumbnail"],
+              populate: {
+                thumbnail: true,
+                classrooms: { populate: ["tutors.avatar"] },
+              },
             },
           },
         },
