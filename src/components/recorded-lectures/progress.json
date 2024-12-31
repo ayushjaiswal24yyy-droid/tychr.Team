@@ -1,0 +1,17 @@
+{
+  "collectionName": "components_recorded_lectures_progresses",
+  "info": {
+    "displayName": "progress"
+  },
+  "options": {},
+  "attributes": {
+    "student": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "plugin::users-permissions.user"
+    },
+    "progress_time": {
+      "type": "decimal"
+    }
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "kind": "collectionType",
+  "collectionName": "progresses",
+  "info": {
+    "singularName": "progress",
+    "pluralName": "progresses",
+    "displayName": "Progress"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "student": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "plugin::users-permissions.user"
+    },
+    "recorded_lecture": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::recorded-lecture.recorded-lecture",
+      "inversedBy": "progresses"
+    },
+    "progress": {
+      "type": "decimal"
+    }
+  }
+}

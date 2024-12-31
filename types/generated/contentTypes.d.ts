@@ -1706,6 +1706,46 @@ export interface ApiPostPost extends Schema.CollectionType {
   };
 }
 
+export interface ApiProgressProgress extends Schema.CollectionType {
+  collectionName: 'progresses';
+  info: {
+    singularName: 'progress';
+    pluralName: 'progresses';
+    displayName: 'Progress';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    student: Attribute.Relation<
+      'api::progress.progress',
+      'oneToOne',
+      'plugin::users-permissions.user'
+    >;
+    recorded_lecture: Attribute.Relation<
+      'api::progress.progress',
+      'manyToOne',
+      'api::recorded-lecture.recorded-lecture'
+    >;
+    progress: Attribute.Decimal;
+    createdAt: Attribute.DateTime;
+    updatedAt: Attribute.DateTime;
+    publishedAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<
+      'api::progress.progress',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+    updatedBy: Attribute.Relation<
+      'api::progress.progress',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+  };
+}
+
 export interface ApiQnAQnA extends Schema.CollectionType {
   collectionName: 'qn_as';
   info: {
@@ -1830,6 +1870,11 @@ export interface ApiRecordedLectureRecordedLecture
       'api::recorded-lecture.recorded-lecture',
       'manyToMany',
       'plugin::users-permissions.user'
+    >;
+    progresses: Attribute.Relation<
+      'api::recorded-lecture.recorded-lecture',
+      'oneToMany',
+      'api::progress.progress'
     >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
@@ -2131,6 +2176,7 @@ declare module '@strapi/types' {
       'api::notification.notification': ApiNotificationNotification;
       'api::payment.payment': ApiPaymentPayment;
       'api::post.post': ApiPostPost;
+      'api::progress.progress': ApiProgressProgress;
       'api::qn-a.qn-a': ApiQnAQnA;
       'api::question-bank.question-bank': ApiQuestionBankQuestionBank;
       'api::recorded-lecture.recorded-lecture': ApiRecordedLectureRecordedLecture;
