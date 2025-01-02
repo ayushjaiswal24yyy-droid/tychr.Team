@@ -42,6 +42,12 @@
       "relation": "oneToMany",
       "target": "api::comment.comment",
       "mappedBy": "post"
+    },
+    "grade_subject": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::grade-subject.grade-subject",
+      "inversedBy": "post"
     }
   }
 }

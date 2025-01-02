@@ -74,6 +74,12 @@
     "is_live": {
       "type": "boolean",
       "default": false
+    },
+    "post": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::post.post",
+      "mappedBy": "grade_subject"
     }
   }
 }
