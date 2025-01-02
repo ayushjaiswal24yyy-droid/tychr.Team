@@ -45,9 +45,9 @@
     },
     "grade_subject": {
       "type": "relation",
-      "relation": "oneToOne",
+      "relation": "manyToOne",
       "target": "api::grade-subject.grade-subject",
-      "inversedBy": "post"
+      "inversedBy": "posts"
     }
   }
 }

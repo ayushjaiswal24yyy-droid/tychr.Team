@@ -75,9 +75,9 @@
       "type": "boolean",
       "default": false
     },
-    "post": {
+    "posts": {
       "type": "relation",
-      "relation": "oneToOne",
+      "relation": "oneToMany",
       "target": "api::post.post",
       "mappedBy": "grade_subject"
     }

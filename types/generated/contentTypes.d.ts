@@ -1363,9 +1363,9 @@ export interface ApiGradeSubjectGradeSubject extends Schema.CollectionType {
       'api::recorded-lecture.recorded-lecture'
     >;
     is_live: Attribute.Boolean & Attribute.DefaultTo<false>;
-    post: Attribute.Relation<
+    posts: Attribute.Relation<
       'api::grade-subject.grade-subject',
-      'oneToOne',
+      'oneToMany',
       'api::post.post'
     >;
     createdAt: Attribute.DateTime;
@@ -1703,7 +1703,7 @@ export interface ApiPostPost extends Schema.CollectionType {
     >;
     grade_subject: Attribute.Relation<
       'api::post.post',
-      'oneToOne',
+      'manyToOne',
       'api::grade-subject.grade-subject'
     >;
     createdAt: Attribute.DateTime;
