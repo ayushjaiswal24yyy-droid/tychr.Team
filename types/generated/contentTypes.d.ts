@@ -1280,11 +1280,6 @@ export interface ApiEnrollmentEnrollment extends Schema.CollectionType {
     >;
     classroom_type: Attribute.Enumeration<['one-on-one', 'group']>;
     group_limit: Attribute.Integer & Attribute.DefaultTo<10>;
-    notification: Attribute.Relation<
-      'api::enrollment.enrollment',
-      'oneToOne',
-      'api::notification.notification'
-    >;
     days: Attribute.Component<'classroom.days', true>;
     isAssist: Attribute.Boolean & Attribute.DefaultTo<false>;
     assistant: Attribute.Relation<
@@ -1297,6 +1292,11 @@ export interface ApiEnrollmentEnrollment extends Schema.CollectionType {
       true
     >;
     notices: Attribute.Component<'classroom.notices', true>;
+    notifications: Attribute.Relation<
+      'api::enrollment.enrollment',
+      'manyToMany',
+      'api::notification.notification'
+    >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
@@ -1584,9 +1584,9 @@ export interface ApiNotificationNotification extends Schema.CollectionType {
       'manyToOne',
       'plugin::users-permissions.user'
     >;
-    classroom: Attribute.Relation<
+    classrooms: Attribute.Relation<
       'api::notification.notification',
-      'oneToOne',
+      'manyToMany',
       'api::enrollment.enrollment'
     >;
     status: Attribute.Enumeration<['Pending', 'Converted', 'Rejected']> &

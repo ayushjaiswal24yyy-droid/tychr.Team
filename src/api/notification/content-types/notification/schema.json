@@ -18,11 +18,11 @@
       "target": "plugin::users-permissions.user",
       "inversedBy": "notifications"
     },
-    "classroom": {
+    "classrooms": {
       "type": "relation",
-      "relation": "oneToOne",
+      "relation": "manyToMany",
       "target": "api::enrollment.enrollment",
-      "inversedBy": "notification"
+      "mappedBy": "notifications"
     },
     "status": {
       "type": "enumeration",

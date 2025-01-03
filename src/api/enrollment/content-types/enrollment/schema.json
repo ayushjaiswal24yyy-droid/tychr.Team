@@ -110,12 +110,6 @@
       "type": "integer",
       "default": 10
     },
-    "notification": {
-      "type": "relation",
-      "relation": "oneToOne",
-      "target": "api::notification.notification",
-      "mappedBy": "classroom"
-    },
     "days": {
       "displayName": "days",
       "type": "component",
@@ -142,6 +136,12 @@
       "type": "component",
       "repeatable": true,
       "component": "classroom.notices"
+    },
+    "notifications": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::notification.notification",
+      "inversedBy": "classrooms"
     }
   }
 }
