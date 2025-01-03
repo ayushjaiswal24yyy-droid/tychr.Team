@@ -31,26 +31,31 @@ module.exports = createCoreController(
           timeStyle: "short",
         }).format(new Date(schedule));
         const students = classroom.students;
+        if (students.length > 0) {
+          const emailContent = {
+            subject: `New Live Lecture: ${title}`,
+            text: `Dear student,\n\nA new live lecture titled "${title}" has been scheduled.\n\nTopic: ${topicname.name}\nDescription: ${description}\nZoom Link: ${zoom_url}\nScheduled for: ${formattedSchedule}\n\nBest regards,\nYour Tutor \n${classroom.tutors[0].fullName}`,
+          };
 
-        const emailContent = {
-          subject: `New Live Lecture: ${title}`,
-          text: `Dear student,\n\nA new live lecture titled "${title}" has been scheduled.\n\nTopic: ${topicname.name}\nDescription: ${description}\nZoom Link: ${zoom_url}\nScheduled for: ${formattedSchedule}\n\nBest regards,\nYour Tutor \n${classroom.tutors[0].fullName}`,
-        };
+          await Promise.all(
+            students.map((student) =>
+              strapi.plugins["email"].services.email.send({
+                to: student.email,
+                from: "tychr@saralgroups.com",
+                subject: emailContent.subject,
+                text: emailContent.text,
+              })
+            )
+          );
 
-        await Promise.all(
-          students.map((student) =>
-            strapi.plugins["email"].services.email.send({
-              to: student.email,
-              from: "tychr@saralgroups.com",
-              subject: emailContent.subject,
-              text: emailContent.text,
-            })
-          )
-        );
-
-        return ctx.send({
-          message: "Live lecture created successfully",
-        });
+          return ctx.send({
+            message: "Live lecture created successfully",
+          });
+        } else {
+          return ctx.send({
+            message: "Live lecture created successfully",
+          });
+        }
       } catch (error) {
         strapi.log.error(
           "Error creating class or sending notifications:",
