@@ -142,6 +142,12 @@
       "relation": "manyToMany",
       "target": "api::notification.notification",
       "inversedBy": "classrooms"
+    },
+    "community": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::community.community",
+      "mappedBy": "classroom"
     }
   }
 }

@@ -1105,6 +1105,11 @@ export interface ApiCommunityCommunity extends Schema.CollectionType {
       'oneToMany',
       'api::post.post'
     >;
+    classroom: Attribute.Relation<
+      'api::community.community',
+      'oneToOne',
+      'api::enrollment.enrollment'
+    >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
@@ -1296,6 +1301,11 @@ export interface ApiEnrollmentEnrollment extends Schema.CollectionType {
       'api::enrollment.enrollment',
       'manyToMany',
       'api::notification.notification'
+    >;
+    community: Attribute.Relation<
+      'api::enrollment.enrollment',
+      'oneToOne',
+      'api::community.community'
     >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;

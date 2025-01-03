@@ -40,6 +40,12 @@
       "relation": "oneToMany",
       "target": "api::post.post",
       "mappedBy": "community"
+    },
+    "classroom": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::enrollment.enrollment",
+      "inversedBy": "community"
     }
   }
 }
