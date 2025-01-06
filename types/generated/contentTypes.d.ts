@@ -1862,6 +1862,7 @@ export interface ApiRecordedLectureRecordedLecture
       'oneToMany',
       'api::progress.progress'
     >;
+    isPremium: Attribute.Boolean & Attribute.DefaultTo<false>;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;

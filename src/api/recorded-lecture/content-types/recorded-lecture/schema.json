@@ -87,6 +87,10 @@
       "relation": "oneToMany",
       "target": "api::progress.progress",
       "mappedBy": "recorded_lecture"
+    },
+    "isPremium": {
+      "type": "boolean",
+      "default": false
     }
   }
 }
