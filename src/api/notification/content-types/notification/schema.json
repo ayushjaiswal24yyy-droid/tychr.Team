@@ -81,6 +81,11 @@
     },
     "demo_feedback": {
       "type": "text"
+    },
+    "student_plan": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::course-plan.course-plan"
     }
   }
 }

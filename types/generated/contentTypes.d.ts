@@ -1624,6 +1624,11 @@ export interface ApiNotificationNotification extends Schema.CollectionType {
     > &
       Attribute.DefaultTo<'New Lead'>;
     demo_feedback: Attribute.Text;
+    student_plan: Attribute.Relation<
+      'api::notification.notification',
+      'oneToOne',
+      'api::course-plan.course-plan'
+    >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
