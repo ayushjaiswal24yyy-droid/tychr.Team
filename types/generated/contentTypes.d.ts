@@ -1378,6 +1378,11 @@ export interface ApiGradeSubjectGradeSubject extends Schema.CollectionType {
       'oneToMany',
       'api::post.post'
     >;
+    enquiries: Attribute.Relation<
+      'api::grade-subject.grade-subject',
+      'oneToMany',
+      'api::notification.notification'
+    >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
@@ -1628,6 +1633,11 @@ export interface ApiNotificationNotification extends Schema.CollectionType {
       'api::notification.notification',
       'oneToOne',
       'api::course-plan.course-plan'
+    >;
+    grade_subject: Attribute.Relation<
+      'api::notification.notification',
+      'manyToOne',
+      'api::grade-subject.grade-subject'
     >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;

@@ -80,6 +80,12 @@
       "relation": "oneToMany",
       "target": "api::post.post",
       "mappedBy": "grade_subject"
+    },
+    "enquiries": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::notification.notification",
+      "mappedBy": "grade_subject"
     }
   }
 }

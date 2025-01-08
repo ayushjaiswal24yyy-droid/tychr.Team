@@ -86,6 +86,12 @@
       "type": "relation",
       "relation": "oneToOne",
       "target": "api::course-plan.course-plan"
+    },
+    "grade_subject": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::grade-subject.grade-subject",
+      "inversedBy": "enquiries"
     }
   }
 }
