@@ -1639,6 +1639,7 @@ export interface ApiNotificationNotification extends Schema.CollectionType {
       'manyToOne',
       'api::grade-subject.grade-subject'
     >;
+    enquiry_type: Attribute.Enumeration<['Classroom', 'Student Plan']>;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;

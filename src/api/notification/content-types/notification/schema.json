@@ -92,6 +92,13 @@
       "relation": "manyToOne",
       "target": "api::grade-subject.grade-subject",
       "inversedBy": "enquiries"
+    },
+    "enquiry_type": {
+      "type": "enumeration",
+      "enum": [
+        "Classroom",
+        "Student Plan"
+      ]
     }
   }
 }
