@@ -1361,7 +1361,6 @@ export interface ApiGradeSubjectGradeSubject extends Schema.CollectionType {
       'oneToMany',
       'api::enrollment.enrollment'
     >;
-    subject_group: Attribute.String;
     test_series: Attribute.Relation<
       'api::grade-subject.grade-subject',
       'oneToMany',
@@ -1382,6 +1381,11 @@ export interface ApiGradeSubjectGradeSubject extends Schema.CollectionType {
       'api::grade-subject.grade-subject',
       'oneToMany',
       'api::notification.notification'
+    >;
+    subject_group: Attribute.Relation<
+      'api::grade-subject.grade-subject',
+      'manyToOne',
+      'api::subject-group.subject-group'
     >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
@@ -1434,6 +1438,11 @@ export interface ApiIbProgramIbProgram extends Schema.CollectionType {
       'plugin::users-permissions.user'
     >;
     is_live: Attribute.Boolean & Attribute.DefaultTo<false>;
+    subject_groups: Attribute.Relation<
+      'api::ib-program.ib-program',
+      'oneToMany',
+      'api::subject-group.subject-group'
+    >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
@@ -1946,6 +1955,48 @@ export interface ApiSubjectSubject extends Schema.CollectionType {
   };
 }
 
+export interface ApiSubjectGroupSubjectGroup extends Schema.CollectionType {
+  collectionName: 'subject_groups';
+  info: {
+    singularName: 'subject-group';
+    pluralName: 'subject-groups';
+    displayName: 'Subject_Group';
+    description: '';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    ib_program: Attribute.Relation<
+      'api::subject-group.subject-group',
+      'manyToOne',
+      'api::ib-program.ib-program'
+    >;
+    name: Attribute.String;
+    description: Attribute.Text;
+    grade_subjects: Attribute.Relation<
+      'api::subject-group.subject-group',
+      'oneToMany',
+      'api::grade-subject.grade-subject'
+    >;
+    createdAt: Attribute.DateTime;
+    updatedAt: Attribute.DateTime;
+    publishedAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<
+      'api::subject-group.subject-group',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+    updatedBy: Attribute.Relation<
+      'api::subject-group.subject-group',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+  };
+}
+
 export interface ApiSubtopicSubtopic extends Schema.CollectionType {
   collectionName: 'subtopics';
   info: {
@@ -2183,6 +2234,7 @@ declare module '@strapi/types' {
       'api::question-bank.question-bank': ApiQuestionBankQuestionBank;
       'api::recorded-lecture.recorded-lecture': ApiRecordedLectureRecordedLecture;
       'api::subject.subject': ApiSubjectSubject;
+      'api::subject-group.subject-group': ApiSubjectGroupSubjectGroup;
       'api::subtopic.subtopic': ApiSubtopicSubtopic;
       'api::test-serie.test-serie': ApiTestSerieTestSerie;
       'api::topic.topic': ApiTopicTopic;

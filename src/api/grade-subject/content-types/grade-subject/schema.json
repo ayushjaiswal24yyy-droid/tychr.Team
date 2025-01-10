@@ -56,9 +56,6 @@
       "target": "api::enrollment.enrollment",
       "mappedBy": "grade_subject"
     },
-    "subject_group": {
-      "type": "string"
-    },
     "test_series": {
       "type": "relation",
       "relation": "oneToMany",
@@ -86,6 +83,12 @@
       "relation": "oneToMany",
       "target": "api::notification.notification",
       "mappedBy": "grade_subject"
+    },
+    "subject_group": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::subject-group.subject-group",
+      "inversedBy": "grade_subjects"
     }
   }
 }

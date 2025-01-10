@@ -51,6 +51,12 @@
     "is_live": {
       "type": "boolean",
       "default": false
+    },
+    "subject_groups": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::subject-group.subject-group",
+      "mappedBy": "ib_program"
     }
   }
 }
