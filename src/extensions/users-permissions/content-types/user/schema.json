@@ -103,9 +103,9 @@
     },
     "grade": {
       "type": "relation",
-      "relation": "oneToOne",
+      "relation": "manyToOne",
       "target": "api::class.class",
-      "inversedBy": "user"
+      "inversedBy": "users"
     },
     "teaching": {
       "type": "relation",
@@ -304,6 +304,17 @@
       "relation": "manyToMany",
       "target": "api::recorded-lecture.recorded-lecture",
       "mappedBy": "liked_by"
+    },
+    "live_lectures_meetings": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::live-lectures-meeting.live-lectures-meeting",
+      "mappedBy": "tutor"
+    },
+    "demo_booking_time": {
+      "type": "component",
+      "repeatable": true,
+      "component": "classroom.days"
     }
   }
 }

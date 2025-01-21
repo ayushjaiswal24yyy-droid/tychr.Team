@@ -33,15 +33,15 @@
       "target": "api::course-plan.course-plan",
       "mappedBy": "grades"
     },
-    "user": {
-      "type": "relation",
-      "relation": "oneToOne",
-      "target": "plugin::users-permissions.user",
-      "mappedBy": "grade"
-    },
     "is_live": {
       "type": "boolean",
       "default": false
+    },
+    "users": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "plugin::users-permissions.user",
+      "mappedBy": "grade"
     }
   }
 }

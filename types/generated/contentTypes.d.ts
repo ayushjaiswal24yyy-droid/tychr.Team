@@ -814,7 +814,7 @@ export interface PluginUsersPermissionsUser extends Schema.CollectionType {
     onBoarded: Attribute.Boolean & Attribute.DefaultTo<false>;
     grade: Attribute.Relation<
       'plugin::users-permissions.user',
-      'oneToOne',
+      'manyToOne',
       'api::class.class'
     >;
     teaching: Attribute.Relation<
@@ -918,6 +918,12 @@ export interface PluginUsersPermissionsUser extends Schema.CollectionType {
       'manyToMany',
       'api::recorded-lecture.recorded-lecture'
     >;
+    live_lectures_meetings: Attribute.Relation<
+      'plugin::users-permissions.user',
+      'oneToMany',
+      'api::live-lectures-meeting.live-lectures-meeting'
+    >;
+    demo_booking_time: Attribute.Component<'classroom.days', true>;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     createdBy: Attribute.Relation<
@@ -1014,12 +1020,12 @@ export interface ApiClassClass extends Schema.CollectionType {
       'manyToMany',
       'api::course-plan.course-plan'
     >;
-    user: Attribute.Relation<
+    is_live: Attribute.Boolean & Attribute.DefaultTo<false>;
+    users: Attribute.Relation<
       'api::class.class',
-      'oneToOne',
+      'oneToMany',
       'plugin::users-permissions.user'
     >;
-    is_live: Attribute.Boolean & Attribute.DefaultTo<false>;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
@@ -1183,6 +1189,46 @@ export interface ApiCoursePlanCoursePlan extends Schema.CollectionType {
   };
 }
 
+export interface ApiDemoBookingDemoBooking extends Schema.CollectionType {
+  collectionName: 'demo_bookings';
+  info: {
+    singularName: 'demo-booking';
+    pluralName: 'demo-bookings';
+    displayName: 'Demo_Booking';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    student: Attribute.Relation<
+      'api::demo-booking.demo-booking',
+      'oneToOne',
+      'plugin::users-permissions.user'
+    >;
+    schedule_time: Attribute.DateTime;
+    tutor: Attribute.Relation<
+      'api::demo-booking.demo-booking',
+      'oneToOne',
+      'plugin::users-permissions.user'
+    >;
+    createdAt: Attribute.DateTime;
+    updatedAt: Attribute.DateTime;
+    publishedAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<
+      'api::demo-booking.demo-booking',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+    updatedBy: Attribute.Relation<
+      'api::demo-booking.demo-booking',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+  };
+}
+
 export interface ApiDoubtSectionDoubtSection extends Schema.CollectionType {
   collectionName: 'doubt_sections';
   info: {
@@ -1291,10 +1337,6 @@ export interface ApiEnrollmentEnrollment extends Schema.CollectionType {
       'api::enrollment.enrollment',
       'oneToOne',
       'plugin::users-permissions.user'
-    >;
-    demo_booking_time: Attribute.Component<
-      'notification.demo-booking-time',
-      true
     >;
     notices: Attribute.Component<'classroom.notices', true>;
     notifications: Attribute.Relation<
@@ -1505,6 +1547,51 @@ export interface ApiLiveLectureLiveLecture extends Schema.CollectionType {
       Attribute.Private;
     updatedBy: Attribute.Relation<
       'api::live-lecture.live-lecture',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+  };
+}
+
+export interface ApiLiveLecturesMeetingLiveLecturesMeeting
+  extends Schema.CollectionType {
+  collectionName: 'live_lectures_meetings';
+  info: {
+    singularName: 'live-lectures-meeting';
+    pluralName: 'live-lectures-meetings';
+    displayName: 'Live_Lectures_Meeting';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    students: Attribute.Relation<
+      'api::live-lectures-meeting.live-lectures-meeting',
+      'manyToMany',
+      'plugin::users-permissions.user'
+    >;
+    tutor: Attribute.Relation<
+      'api::live-lectures-meeting.live-lectures-meeting',
+      'manyToOne',
+      'plugin::users-permissions.user'
+    >;
+    live_lecture: Attribute.Relation<
+      'api::live-lectures-meeting.live-lectures-meeting',
+      'oneToOne',
+      'api::live-lecture.live-lecture'
+    >;
+    createdAt: Attribute.DateTime;
+    updatedAt: Attribute.DateTime;
+    publishedAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<
+      'api::live-lectures-meeting.live-lectures-meeting',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+    updatedBy: Attribute.Relation<
+      'api::live-lectures-meeting.live-lectures-meeting',
       'oneToOne',
       'admin::user'
     > &
@@ -2220,11 +2307,13 @@ declare module '@strapi/types' {
       'api::comment.comment': ApiCommentComment;
       'api::community.community': ApiCommunityCommunity;
       'api::course-plan.course-plan': ApiCoursePlanCoursePlan;
+      'api::demo-booking.demo-booking': ApiDemoBookingDemoBooking;
       'api::doubt-section.doubt-section': ApiDoubtSectionDoubtSection;
       'api::enrollment.enrollment': ApiEnrollmentEnrollment;
       'api::grade-subject.grade-subject': ApiGradeSubjectGradeSubject;
       'api::ib-program.ib-program': ApiIbProgramIbProgram;
       'api::live-lecture.live-lecture': ApiLiveLectureLiveLecture;
+      'api::live-lectures-meeting.live-lectures-meeting': ApiLiveLecturesMeetingLiveLecturesMeeting;
       'api::message.message': ApiMessageMessage;
       'api::note.note': ApiNoteNote;
       'api::notification.notification': ApiNotificationNotification;

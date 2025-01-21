@@ -1,0 +1,28 @@
+{
+  "kind": "collectionType",
+  "collectionName": "demo_bookings",
+  "info": {
+    "singularName": "demo-booking",
+    "pluralName": "demo-bookings",
+    "displayName": "Demo_Booking"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "student": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "plugin::users-permissions.user"
+    },
+    "schedule_time": {
+      "type": "datetime"
+    },
+    "tutor": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "plugin::users-permissions.user"
+    }
+  }
+}

@@ -9,6 +9,7 @@ module.exports = {
       const meetingLink = inquiry.meeting_url;
       const demoTime = inquiry.demoTime;
       const classroomName = inquiry.classroom_name;
+      console
       const studentMessage = `
         Dear ${studentFullName},
 

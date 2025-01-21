@@ -7,7 +7,7 @@
 module.exports = {
   async sendBrochureEmail(ctx) {
     const { leadName, email, classname, brochure } = ctx.request.body;
-
+    console.log(leadName, email, classname, brochure);
     if (!leadName || !email || !classname || !brochure) {
       return ctx.send({ error: "Missing required fields" }, 400);
     }
