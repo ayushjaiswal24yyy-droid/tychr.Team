@@ -9,7 +9,7 @@ module.exports = {
       const meetingLink = inquiry.meeting_url;
       const demoTime = inquiry.demoTime;
       const classroomName = inquiry.classroom_name;
-      console
+
       const studentMessage = `
         Dear ${studentFullName},
 
@@ -17,27 +17,11 @@ module.exports = {
         Here are the details:
 
         - Demo Time: ${demoTime}
-        - Classroom: ${classroomName}
-        - Tutor: ${tutorFullName}
+        ${tutorFullName ? ` - Classroom: ${classroomName}` : ""}
+        ${tutorFullName ? `- Tutor: ${tutorFullName}` : ""}
         - Meeting Link: ${meetingLink}
 
         Please reply to this email if you have any questions.
-
-        Regards,
-        Tychr Team
-      `;
-
-      const tutorMessage = `
-        Dear ${tutorFullName},
-
-        A student has made an inquiry and selected the following demo booking time:
-
-        - Student: ${studentFullName}
-        - Demo Time: ${demoTime}
-        - Classroom: ${classroomName}
-        - Meeting Link: ${meetingLink}
-
-        Please ensure you are available during this time.
 
         Regards,
         Tychr Team
@@ -50,12 +34,30 @@ module.exports = {
         html: `<p>${studentMessage.replace(/\n/g, "<br>")}</p>`,
       });
 
-      await strapi.plugins["email"].services.email.send({
-        to: tutorEmail,
-        subject: "New Student Inquiry",
-        text: tutorMessage,
-        html: `<p>${tutorMessage.replace(/\n/g, "<br>")}</p>`,
-      });
+      if (tutorEmail) {
+        const tutorMessage = `
+          Dear ${tutorFullName},
+
+          A student has made an inquiry and selected the following demo booking time:
+
+          - Student: ${studentFullName}
+          - Demo Time: ${demoTime}
+          - Classroom: ${classroomName}
+          - Meeting Link: ${meetingLink}
+
+          Please ensure you are available during this time.
+
+          Regards,
+          Tychr Team
+        `;
+
+        await strapi.plugins["email"].services.email.send({
+          to: tutorEmail,
+          subject: "New Student Inquiry",
+          text: tutorMessage,
+          html: `<p>${tutorMessage.replace(/\n/g, "<br>")}</p>`,
+        });
+      }
 
       ctx.send({ message: "Inquiry emails sent successfully!", status: true });
     } catch (error) {
