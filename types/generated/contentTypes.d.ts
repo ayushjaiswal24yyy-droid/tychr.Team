@@ -1183,6 +1183,43 @@ export interface ApiCoursePlanCoursePlan extends Schema.CollectionType {
   };
 }
 
+export interface ApiCredentialCredential extends Schema.CollectionType {
+  collectionName: 'credentials';
+  info: {
+    singularName: 'credential';
+    pluralName: 'credentials';
+    displayName: 'credentials';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    email_smtp: Attribute.Text;
+    whatsapp_wati: Attribute.Text;
+    razorpay: Attribute.Text;
+    stripe: Attribute.Text;
+    google_auth: Attribute.Text;
+    sns_messages: Attribute.Text;
+    google_meet: Attribute.Text;
+    microsoft_teams: Attribute.Text;
+    createdAt: Attribute.DateTime;
+    updatedAt: Attribute.DateTime;
+    publishedAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<
+      'api::credential.credential',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+    updatedBy: Attribute.Relation<
+      'api::credential.credential',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+  };
+}
+
 export interface ApiDoubtSectionDoubtSection extends Schema.CollectionType {
   collectionName: 'doubt_sections';
   info: {
@@ -2220,6 +2257,7 @@ declare module '@strapi/types' {
       'api::comment.comment': ApiCommentComment;
       'api::community.community': ApiCommunityCommunity;
       'api::course-plan.course-plan': ApiCoursePlanCoursePlan;
+      'api::credential.credential': ApiCredentialCredential;
       'api::doubt-section.doubt-section': ApiDoubtSectionDoubtSection;
       'api::enrollment.enrollment': ApiEnrollmentEnrollment;
       'api::grade-subject.grade-subject': ApiGradeSubjectGradeSubject;
