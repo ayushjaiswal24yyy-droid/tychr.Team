@@ -1226,6 +1226,46 @@ export interface ApiCredentialCredential extends Schema.CollectionType {
   };
 }
 
+export interface ApiDemoBookingDemoBooking extends Schema.CollectionType {
+  collectionName: 'demo_bookings';
+  info: {
+    singularName: 'demo-booking';
+    pluralName: 'demo-bookings';
+    displayName: 'Demo_Booking';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    student: Attribute.Relation<
+      'api::demo-booking.demo-booking',
+      'oneToOne',
+      'plugin::users-permissions.user'
+    >;
+    schedule_time: Attribute.DateTime;
+    tutor: Attribute.Relation<
+      'api::demo-booking.demo-booking',
+      'oneToOne',
+      'plugin::users-permissions.user'
+    >;
+    createdAt: Attribute.DateTime;
+    updatedAt: Attribute.DateTime;
+    publishedAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<
+      'api::demo-booking.demo-booking',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+    updatedBy: Attribute.Relation<
+      'api::demo-booking.demo-booking',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+  };
+}
+
 export interface ApiDoubtSectionDoubtSection extends Schema.CollectionType {
   collectionName: 'doubt_sections';
   info: {
@@ -1982,6 +2022,11 @@ export interface ApiRecordedLectureRecordedLecture
       'manyToOne',
       'api::note.note'
     >;
+    tutor: Attribute.Relation<
+      'api::recorded-lecture.recorded-lecture',
+      'oneToOne',
+      'plugin::users-permissions.user'
+    >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
@@ -2315,6 +2360,7 @@ declare module '@strapi/types' {
       'api::community.community': ApiCommunityCommunity;
       'api::course-plan.course-plan': ApiCoursePlanCoursePlan;
       'api::credential.credential': ApiCredentialCredential;
+      'api::demo-booking.demo-booking': ApiDemoBookingDemoBooking;
       'api::doubt-section.doubt-section': ApiDoubtSectionDoubtSection;
       'api::enrollment.enrollment': ApiEnrollmentEnrollment;
       'api::grade-subject.grade-subject': ApiGradeSubjectGradeSubject;

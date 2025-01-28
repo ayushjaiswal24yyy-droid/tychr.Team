@@ -97,6 +97,11 @@
       "relation": "manyToOne",
       "target": "api::note.note",
       "inversedBy": "recorded_lectures"
+    },
+    "tutor": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "plugin::users-permissions.user"
     }
   }
 }
