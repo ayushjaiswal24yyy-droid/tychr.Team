@@ -91,6 +91,12 @@
     "isPremium": {
       "type": "boolean",
       "default": false
+    },
+    "note": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::note.note",
+      "inversedBy": "recorded_lectures"
     }
   }
 }

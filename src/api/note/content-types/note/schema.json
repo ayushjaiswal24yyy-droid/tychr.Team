@@ -37,6 +37,12 @@
     },
     "note": {
       "type": "richtext"
+    },
+    "recorded_lectures": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::recorded-lecture.recorded-lecture",
+      "mappedBy": "note"
     }
   }
 }

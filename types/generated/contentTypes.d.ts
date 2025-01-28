@@ -1618,6 +1618,11 @@ export interface ApiNoteNote extends Schema.CollectionType {
       'api::question-bank.question-bank'
     >;
     note: Attribute.RichText;
+    recorded_lectures: Attribute.Relation<
+      'api::note.note',
+      'oneToMany',
+      'api::recorded-lecture.recorded-lecture'
+    >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
@@ -1925,6 +1930,11 @@ export interface ApiRecordedLectureRecordedLecture
       'api::progress.progress'
     >;
     isPremium: Attribute.Boolean & Attribute.DefaultTo<false>;
+    note: Attribute.Relation<
+      'api::recorded-lecture.recorded-lecture',
+      'manyToOne',
+      'api::note.note'
+    >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
