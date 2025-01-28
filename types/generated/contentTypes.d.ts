@@ -2027,6 +2027,11 @@ export interface ApiRecordedLectureRecordedLecture
       'oneToOne',
       'plugin::users-permissions.user'
     >;
+    subtopic: Attribute.Relation<
+      'api::recorded-lecture.recorded-lecture',
+      'oneToOne',
+      'api::subtopic.subtopic'
+    >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
