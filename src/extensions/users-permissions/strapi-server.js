@@ -45,7 +45,8 @@ module.exports = (plugin) => {
     if (!roleEntity) {
       return ctx.badRequest(`Role "${role}" not found`);
     }
-
+    const uuid = crypto.randomUUID();
+    console.log(uuid);
     // Create user
     const user = await strapi.query("plugin::users-permissions.user").create({
       data: {
@@ -54,7 +55,7 @@ module.exports = (plugin) => {
         role: roleEntity.id,
         password: hashedPassword,
         username,
-        uuid: ctx.request.body.uuid,
+        uuid: uuid,
         otp,
         confirmed: false,
         isCreateByAdmin,
