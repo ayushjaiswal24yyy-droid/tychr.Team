@@ -1195,6 +1195,7 @@ export interface ApiCredentialCredential extends Schema.CollectionType {
     singularName: 'credential';
     pluralName: 'credentials';
     displayName: 'credentials';
+    description: '';
   };
   options: {
     draftAndPublish: true;
@@ -1208,6 +1209,12 @@ export interface ApiCredentialCredential extends Schema.CollectionType {
     sns_messages: Attribute.Text;
     google_meet: Attribute.Text;
     microsoft_teams: Attribute.Text;
+    user: Attribute.Relation<
+      'api::credential.credential',
+      'oneToOne',
+      'plugin::users-permissions.user'
+    >;
+    custom_prompt: Attribute.Text;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
