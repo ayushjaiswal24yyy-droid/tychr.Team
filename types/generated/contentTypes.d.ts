@@ -1214,7 +1214,8 @@ export interface ApiCredentialCredential extends Schema.CollectionType {
       'oneToOne',
       'plugin::users-permissions.user'
     >;
-    custom_prompt: Attribute.Text;
+    custom_prompt: Attribute.Text &
+      Attribute.DefaultTo<'Provide direct notes for the International Baccalaureate (IB) {program_name} curriculum, Grade {grade_name}, subject: {subject_name}. Topic: {topic_name}, Subtopic: {sub_topic_name}. Please start directly with\u00A0the\u00A0content.'>;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
