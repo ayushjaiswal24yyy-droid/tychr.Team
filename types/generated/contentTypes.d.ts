@@ -1802,6 +1802,7 @@ export interface ApiPaymentPayment extends Schema.CollectionType {
     singularName: 'payment';
     pluralName: 'payments';
     displayName: 'Payment';
+    description: '';
   };
   options: {
     draftAndPublish: true;
@@ -1817,6 +1818,16 @@ export interface ApiPaymentPayment extends Schema.CollectionType {
       'api::payment.payment',
       'manyToOne',
       'api::recorded-lecture.recorded-lecture'
+    >;
+    user: Attribute.Relation<
+      'api::payment.payment',
+      'oneToOne',
+      'plugin::users-permissions.user'
+    >;
+    classroom: Attribute.Relation<
+      'api::payment.payment',
+      'oneToOne',
+      'api::enrollment.enrollment'
     >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
@@ -1945,6 +1956,9 @@ export interface ApiQuestionBankQuestionBank extends Schema.CollectionType {
       'api::question-bank.question-bank',
       'manyToMany',
       'api::test-serie.test-serie'
+    >;
+    question_type: Attribute.Enumeration<
+      ['mcq', 'single_part', 'multiple_part']
     >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;

@@ -37,6 +37,14 @@
       "relation": "manyToMany",
       "target": "api::test-serie.test-serie",
       "mappedBy": "question_banks"
+    },
+    "question_type": {
+      "type": "enumeration",
+      "enum": [
+        "mcq",
+        "single_part",
+        "multiple_part"
+      ]
     }
   }
 }
