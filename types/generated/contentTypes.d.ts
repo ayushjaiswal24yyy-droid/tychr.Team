@@ -1195,6 +1195,7 @@ export interface ApiCredentialCredential extends Schema.CollectionType {
     singularName: 'credential';
     pluralName: 'credentials';
     displayName: 'credentials';
+    description: '';
   };
   options: {
     draftAndPublish: true;
@@ -1208,6 +1209,13 @@ export interface ApiCredentialCredential extends Schema.CollectionType {
     sns_messages: Attribute.Text;
     google_meet: Attribute.Text;
     microsoft_teams: Attribute.Text;
+    user: Attribute.Relation<
+      'api::credential.credential',
+      'oneToOne',
+      'plugin::users-permissions.user'
+    >;
+    custom_prompt: Attribute.Text &
+      Attribute.DefaultTo<'Provide direct notes for the International Baccalaureate (IB) {program_name} curriculum, Grade {grade_name}, subject: {subject_name}. Topic: {topic_name}, Subtopic: {sub_topic_name}. Please start directly with\u00A0the\u00A0content.'>;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
