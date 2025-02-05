@@ -60,21 +60,6 @@ export interface SubjectRefrenceBooks extends Schema.Component {
   };
 }
 
-export interface RecordedLecturesProgress extends Schema.Component {
-  collectionName: 'components_recorded_lectures_progresses';
-  info: {
-    displayName: 'progress';
-  };
-  attributes: {
-    student: Attribute.Relation<
-      'recorded-lectures.progress',
-      'oneToOne',
-      'plugin::users-permissions.user'
-    >;
-    progress_time: Attribute.Decimal;
-  };
-}
-
 export interface QuestionBankQuestionNAnswer extends Schema.Component {
   collectionName: 'components_question_bank_question_n_answers';
   info: {
@@ -118,6 +103,21 @@ export interface QuestionBankHints extends Schema.Component {
   };
   attributes: {
     hint: Attribute.RichText;
+  };
+}
+
+export interface RecordedLecturesProgress extends Schema.Component {
+  collectionName: 'components_recorded_lectures_progresses';
+  info: {
+    displayName: 'progress';
+  };
+  attributes: {
+    student: Attribute.Relation<
+      'recorded-lectures.progress',
+      'oneToOne',
+      'plugin::users-permissions.user'
+    >;
+    progress_time: Attribute.Decimal;
   };
 }
 
@@ -205,10 +205,10 @@ declare module '@strapi/types' {
       'subtopic.qn-a': SubtopicQnA;
       'subtopic.heading': SubtopicHeading;
       'subject.refrence-books': SubjectRefrenceBooks;
-      'recorded-lectures.progress': RecordedLecturesProgress;
       'question-bank.question-n-answer': QuestionBankQuestionNAnswer;
       'question-bank.parts': QuestionBankParts;
       'question-bank.hints': QuestionBankHints;
+      'recorded-lectures.progress': RecordedLecturesProgress;
       'plan.grade-plan': PlanGradePlan;
       'notification.history': NotificationHistory;
       'notification.demo-booking-time': NotificationDemoBookingTime;

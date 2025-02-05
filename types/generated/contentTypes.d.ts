@@ -2238,6 +2238,7 @@ export interface ApiTestSerieTestSerie extends Schema.CollectionType {
       'oneToMany',
       'api::answer.answer'
     >;
+    resource_booklet: Attribute.Media<'images' | 'files' | 'videos' | 'audios'>;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;

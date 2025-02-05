@@ -59,6 +59,16 @@
       "relation": "oneToMany",
       "target": "api::answer.answer",
       "mappedBy": "test_series"
+    },
+    "resource_booklet": {
+      "allowedTypes": [
+        "images",
+        "files",
+        "videos",
+        "audios"
+      ],
+      "type": "media",
+      "multiple": false
     }
   }
 }
