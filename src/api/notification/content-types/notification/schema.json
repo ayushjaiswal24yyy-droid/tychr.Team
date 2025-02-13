@@ -99,6 +99,23 @@
         "Classroom",
         "Student Plan"
       ]
+    },
+    "classroom_limit": {
+      "type": "enumeration",
+      "enum": [
+        "offline",
+        "online"
+      ]
+    },
+    "classroom_type": {
+      "type": "enumeration",
+      "enum": [
+        "offline",
+        "online"
+      ]
+    },
+    "parent_location": {
+      "type": "string"
     }
   }
 }

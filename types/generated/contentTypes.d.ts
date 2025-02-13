@@ -1786,6 +1786,9 @@ export interface ApiNotificationNotification extends Schema.CollectionType {
       'api::grade-subject.grade-subject'
     >;
     enquiry_type: Attribute.Enumeration<['Classroom', 'Student Plan']>;
+    classroom_limit: Attribute.Enumeration<['offline', 'online']>;
+    classroom_type: Attribute.Enumeration<['offline', 'online']>;
+    parent_location: Attribute.String;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
