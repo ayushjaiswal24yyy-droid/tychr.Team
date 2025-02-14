@@ -1369,7 +1369,7 @@ export interface ApiEnrollmentEnrollment extends Schema.CollectionType {
     duration: Attribute.Integer;
     image: Attribute.Media<'images', true>;
     status: Attribute.Enumeration<
-      ['Requested', 'Approved', 'Responded', 'Assigned Topic']
+      ['Requested', 'Approved', 'Responded', 'Requested Demo']
     >;
     grade_subject: Attribute.Relation<
       'api::enrollment.enrollment',
