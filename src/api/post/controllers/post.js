@@ -14,6 +14,8 @@ module.exports = createCoreController('api::post.post', ({ strapi }) => ({
     if (strapi.io) {
       const newPost = response.data; // Extract the newly created post
       strapi.io.emit('newPost', newPost); // Broadcast the new post
+      console.log('New post broadcasted:', newPost);
+      
     }
 
     return response;
