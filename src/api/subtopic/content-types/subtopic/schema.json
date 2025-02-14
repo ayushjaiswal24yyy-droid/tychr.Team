@@ -31,6 +31,12 @@
       "relation": "manyToMany",
       "target": "api::note.note",
       "mappedBy": "topics"
+    },
+    "classrooms": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::enrollment.enrollment",
+      "mappedBy": "topic"
     }
   }
 }

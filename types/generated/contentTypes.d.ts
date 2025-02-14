@@ -1359,16 +1359,18 @@ export interface ApiEnrollmentEnrollment extends Schema.CollectionType {
       'manyToMany',
       'api::recorded-lecture.recorded-lecture'
     >;
-    topics: Attribute.Relation<
+    topic: Attribute.Relation<
       'api::enrollment.enrollment',
-      'manyToMany',
-      'api::topic.topic'
+      'manyToOne',
+      'api::subtopic.subtopic'
     >;
     startDate: Attribute.Date;
     endDate: Attribute.Date;
     duration: Attribute.Integer;
     image: Attribute.Media<'images', true>;
-    status: Attribute.Enumeration<['Pending', 'Approved']>;
+    status: Attribute.Enumeration<
+      ['Requested', 'Approved', 'Responded', 'Requested Demo']
+    >;
     grade_subject: Attribute.Relation<
       'api::enrollment.enrollment',
       'manyToOne',
@@ -1394,6 +1396,7 @@ export interface ApiEnrollmentEnrollment extends Schema.CollectionType {
       'oneToOne',
       'api::community.community'
     >;
+    demo_video: Attribute.Media<'images' | 'files' | 'videos' | 'audios'>;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
@@ -2190,6 +2193,11 @@ export interface ApiSubtopicSubtopic extends Schema.CollectionType {
       'manyToMany',
       'api::note.note'
     >;
+    classrooms: Attribute.Relation<
+      'api::subtopic.subtopic',
+      'oneToMany',
+      'api::enrollment.enrollment'
+    >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
@@ -2297,11 +2305,6 @@ export interface ApiTopicTopic extends Schema.CollectionType {
       'api::topic.topic',
       'manyToOne',
       'api::grade-subject.grade-subject'
-    >;
-    classrooms: Attribute.Relation<
-      'api::topic.topic',
-      'manyToMany',
-      'api::enrollment.enrollment'
     >;
     isPaid: Attribute.Boolean & Attribute.DefaultTo<true>;
     doubt_sections: Attribute.Relation<
