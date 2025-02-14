@@ -63,10 +63,10 @@
       "target": "api::recorded-lecture.recorded-lecture",
       "inversedBy": "classrooms"
     },
-    "topics": {
+    "topic": {
       "type": "relation",
-      "relation": "manyToMany",
-      "target": "api::topic.topic",
+      "relation": "manyToOne",
+      "target": "api::subtopic.subtopic",
       "inversedBy": "classrooms"
     },
     "startDate": {
@@ -89,8 +89,10 @@
     "status": {
       "type": "enumeration",
       "enum": [
-        "Pending",
-        "Approved"
+        "Requested",
+        "Approved",
+        "Responded",
+        "Requested Demo"
       ]
     },
     "grade_subject": {
@@ -143,6 +145,17 @@
       "relation": "oneToOne",
       "target": "api::community.community",
       "mappedBy": "classroom"
+    },
+    "demo_video": {
+      "type": "media",
+      "multiple": false,
+      "required": false,
+      "allowedTypes": [
+        "images",
+        "files",
+        "videos",
+        "audios"
+      ]
     }
   }
 }
