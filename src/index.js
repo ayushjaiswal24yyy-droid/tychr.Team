@@ -1,24 +1,42 @@
 "use strict";
-const { Server } = require('socket.io');
-
+const { Server } = require("socket.io");
 
 module.exports = {
   register({ strapi }) {
+    const allowedOrigins =
+      process.env.NODE_ENV === "production"
+        ? ["https://tychr.pages.dev/"]
+        : "*";
+
     const io = new Server(strapi.server.httpServer, {
       cors: {
-        origin: "*", 
+        origin: allowedOrigins,
         methods: ["GET", "POST"],
       },
+      path: "/socket.io",
     });
 
     strapi.io = io;
 
-    io.on('connection', (socket) => {
-      console.log('A client connected:', socket.id);
+    strapi.log.info("WebSocket server initialized");
 
-      // Handle disconnection
-      socket.on('disconnect', () => {
-        console.log('A client disconnected:', socket.id);
+    io.on("connection", (socket) => {
+      strapi.log.info(`Client connected: ${socket.id}`);
+
+      socket.on("disconnect", () => {
+        strapi.log.info(`Client disconnected: ${socket.id}`);
+      });
+
+      socket.on("error", (err) => {
+        strapi.log.error(`WebSocket error: ${err.message}`);
+      });
+    });
+
+    process.on("SIGINT", () => {
+      strapi.log.info("Shutting down WebSocket server...");
+      io.close(() => {
+        strapi.log.info("WebSocket server closed");
+        process.exit(0);
       });
     });
   },
