@@ -17,18 +17,23 @@ module.exports = createCoreController("api::enrollment.enrollment", () => ({
     const emailContent = `
         <h2>Classroom Approval Process</h2>
         <p>Dear ${user?.fullName},</p>
-        <p>Thank you for your interest in creating a classroom on Tychr. To proceed with the approval of your classroom "<strong>${classroomname}</strong>", we require a demo video.</p>
-        <p>Please submit a short demo video on the topic "<strong>${topic}</strong>". This will help us assess the quality and structure of your teaching.</p>
-        <p><strong>How to Submit:</strong></p>
-        <ul>
-          <li>Ensure the video is clear and properly structured.</li>
-          <li>Upload the demo video to Google Drive, YouTube, or any cloud storage.</li>
-          <li>Send the video link to our team at <a href="mailto:support@tychr.com">support@tychr.com</a>.</li>
-        </ul>
-        <p>Once we review your demo, we will get back to you regarding the approval of your classroom.</p>
-        <p>Thank you for your commitment to education!</p>
-        <p>Best regards,</p>
-        <p>The Tychr Team</p>
+       <p>Thank you for your interest in creating a classroom on Tychr! To proceed with the approval of your classroom, <strong>"${classroomname}"</strong>, we kindly ask you to submit a short demo video on the topic <strong>"${topic}"</strong>.</p>
+
+    <h3>Why is this required?</h3>
+    <p>This demo video will help us assess the quality and structure of your teaching before approving your classroom.</p>
+
+    <h3>How to Submit Your Demo Video:</h3>
+    <ul>
+        <li>Ensure the video is clear and well-structured.</li>
+        <li>Upload it directly to your classroom on Tychr.</li>
+    </ul>
+
+    <p>Once we review your demo, we’ll get back to you regarding the approval of your classroom.</p>
+
+    <p>We appreciate your dedication to education and look forward to seeing your teaching style in action!</p>
+
+    <p><strong>Best regards,</strong></p>
+    <p>The Tychr Team</p>
       `;
 
     await strapi.plugins["email"].services.email.send({
