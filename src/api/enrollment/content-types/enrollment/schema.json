@@ -147,15 +147,9 @@
       "mappedBy": "classroom"
     },
     "demo_video": {
-      "type": "media",
-      "multiple": false,
-      "required": false,
-      "allowedTypes": [
-        "images",
-        "files",
-        "videos",
-        "audios"
-      ]
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::recorded-lecture.recorded-lecture"
     }
   }
 }

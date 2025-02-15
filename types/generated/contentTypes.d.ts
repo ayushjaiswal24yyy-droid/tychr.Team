@@ -1396,7 +1396,11 @@ export interface ApiEnrollmentEnrollment extends Schema.CollectionType {
       'oneToOne',
       'api::community.community'
     >;
-    demo_video: Attribute.Media<'images' | 'files' | 'videos' | 'audios'>;
+    demo_video: Attribute.Relation<
+      'api::enrollment.enrollment',
+      'oneToOne',
+      'api::recorded-lecture.recorded-lecture'
+    >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
