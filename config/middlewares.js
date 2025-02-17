@@ -18,7 +18,8 @@ module.exports = ({ env }) => [
             "data:", 
             externalURI, 
             "https://*.strapi.io", 
-            "https://m.media-amazon.com" // Add this line
+            "https://m.media-amazon.com",
+            "https://tychr-strapi.s3.ap-south-1.amazonaws.com"
           ],
         },
       },
