@@ -1401,6 +1401,16 @@ export interface ApiEnrollmentEnrollment extends Schema.CollectionType {
       'oneToOne',
       'api::recorded-lecture.recorded-lecture'
     >;
+    ib_program: Attribute.Relation<
+      'api::enrollment.enrollment',
+      'oneToOne',
+      'api::ib-program.ib-program'
+    >;
+    grade: Attribute.Relation<
+      'api::enrollment.enrollment',
+      'oneToOne',
+      'api::class.class'
+    >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;

@@ -150,6 +150,16 @@
       "type": "relation",
       "relation": "oneToOne",
       "target": "api::recorded-lecture.recorded-lecture"
+    },
+    "ib_program": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::ib-program.ib-program"
+    },
+    "grade": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::class.class"
     }
   }
 }
