@@ -1274,6 +1274,46 @@ export interface ApiDemoBookingDemoBooking extends Schema.CollectionType {
   };
 }
 
+export interface ApiDemoVideoDemoVideo extends Schema.CollectionType {
+  collectionName: 'demo_videos';
+  info: {
+    singularName: 'demo-video';
+    pluralName: 'demo-videos';
+    displayName: 'Demo Video';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    video: Attribute.Media<'images' | 'files' | 'videos' | 'audios'>;
+    unit: Attribute.Relation<
+      'api::demo-video.demo-video',
+      'oneToOne',
+      'api::topic.topic'
+    >;
+    tutor: Attribute.Relation<
+      'api::demo-video.demo-video',
+      'oneToOne',
+      'plugin::users-permissions.user'
+    >;
+    createdAt: Attribute.DateTime;
+    updatedAt: Attribute.DateTime;
+    publishedAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<
+      'api::demo-video.demo-video',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+    updatedBy: Attribute.Relation<
+      'api::demo-video.demo-video',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+  };
+}
+
 export interface ApiDoubtSectionDoubtSection extends Schema.CollectionType {
   collectionName: 'doubt_sections';
   info: {
@@ -2409,6 +2449,7 @@ declare module '@strapi/types' {
       'api::course-plan.course-plan': ApiCoursePlanCoursePlan;
       'api::credential.credential': ApiCredentialCredential;
       'api::demo-booking.demo-booking': ApiDemoBookingDemoBooking;
+      'api::demo-video.demo-video': ApiDemoVideoDemoVideo;
       'api::doubt-section.doubt-section': ApiDoubtSectionDoubtSection;
       'api::enrollment.enrollment': ApiEnrollmentEnrollment;
       'api::grade-subject.grade-subject': ApiGradeSubjectGradeSubject;

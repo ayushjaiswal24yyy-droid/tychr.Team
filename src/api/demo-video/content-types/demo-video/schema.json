@@ -1,0 +1,35 @@
+{
+  "kind": "collectionType",
+  "collectionName": "demo_videos",
+  "info": {
+    "singularName": "demo-video",
+    "pluralName": "demo-videos",
+    "displayName": "Demo Video"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "video": {
+      "allowedTypes": [
+        "images",
+        "files",
+        "videos",
+        "audios"
+      ],
+      "type": "media",
+      "multiple": false
+    },
+    "unit": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::topic.topic"
+    },
+    "tutor": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "plugin::users-permissions.user"
+    }
+  }
+}
