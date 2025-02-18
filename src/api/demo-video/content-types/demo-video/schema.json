@@ -4,7 +4,8 @@
   "info": {
     "singularName": "demo-video",
     "pluralName": "demo-videos",
-    "displayName": "Demo Video"
+    "displayName": "Demo Video",
+    "description": ""
   },
   "options": {
     "draftAndPublish": true
@@ -12,14 +13,15 @@
   "pluginOptions": {},
   "attributes": {
     "video": {
+      "type": "media",
+      "multiple": false,
+      "required": false,
       "allowedTypes": [
         "images",
         "files",
         "videos",
         "audios"
-      ],
-      "type": "media",
-      "multiple": false
+      ]
     },
     "unit": {
       "type": "relation",
@@ -30,6 +32,11 @@
       "type": "relation",
       "relation": "oneToOne",
       "target": "plugin::users-permissions.user"
+    },
+    "grade_subject": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::grade-subject.grade-subject"
     }
   }
 }

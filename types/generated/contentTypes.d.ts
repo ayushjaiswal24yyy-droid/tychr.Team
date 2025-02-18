@@ -1280,6 +1280,7 @@ export interface ApiDemoVideoDemoVideo extends Schema.CollectionType {
     singularName: 'demo-video';
     pluralName: 'demo-videos';
     displayName: 'Demo Video';
+    description: '';
   };
   options: {
     draftAndPublish: true;
@@ -1295,6 +1296,11 @@ export interface ApiDemoVideoDemoVideo extends Schema.CollectionType {
       'api::demo-video.demo-video',
       'oneToOne',
       'plugin::users-permissions.user'
+    >;
+    grade_subject: Attribute.Relation<
+      'api::demo-video.demo-video',
+      'oneToOne',
+      'api::grade-subject.grade-subject'
     >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
