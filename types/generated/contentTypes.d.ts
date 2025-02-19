@@ -1707,6 +1707,45 @@ export interface ApiLiveLecturesMeetingLiveLecturesMeeting
   };
 }
 
+export interface ApiMentorApplicationMentorApplication
+  extends Schema.CollectionType {
+  collectionName: 'mentor_applications';
+  info: {
+    singularName: 'mentor-application';
+    pluralName: 'mentor-applications';
+    displayName: 'Mentor Applications';
+    description: '';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    user: Attribute.Relation<
+      'api::mentor-application.mentor-application',
+      'oneToOne',
+      'plugin::users-permissions.user'
+    >;
+    status: Attribute.Enumeration<['pending', 'approved']> &
+      Attribute.DefaultTo<'pending'>;
+    questions: Attribute.Component<'mentor.mentor-questions', true>;
+    createdAt: Attribute.DateTime;
+    updatedAt: Attribute.DateTime;
+    publishedAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<
+      'api::mentor-application.mentor-application',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+    updatedBy: Attribute.Relation<
+      'api::mentor-application.mentor-application',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+  };
+}
+
 export interface ApiMessageMessage extends Schema.CollectionType {
   collectionName: 'messages';
   info: {
@@ -2462,6 +2501,7 @@ declare module '@strapi/types' {
       'api::ib-program.ib-program': ApiIbProgramIbProgram;
       'api::live-lecture.live-lecture': ApiLiveLectureLiveLecture;
       'api::live-lectures-meeting.live-lectures-meeting': ApiLiveLecturesMeetingLiveLecturesMeeting;
+      'api::mentor-application.mentor-application': ApiMentorApplicationMentorApplication;
       'api::message.message': ApiMessageMessage;
       'api::note.note': ApiNoteNote;
       'api::notification.notification': ApiNotificationNotification;

@@ -161,6 +161,17 @@ export interface NotificationDemoBookingTime extends Schema.Component {
   };
 }
 
+export interface MentorMentorQuestions extends Schema.Component {
+  collectionName: 'components_mentor_mentor_questions';
+  info: {
+    displayName: 'Mentor Questions';
+  };
+  attributes: {
+    question: Attribute.Text;
+    answer: Attribute.Text;
+  };
+}
+
 export interface LecturesLectureHeader extends Schema.Component {
   collectionName: 'components_lectures_lecture_headers';
   info: {
@@ -212,6 +223,7 @@ declare module '@strapi/types' {
       'plan.grade-plan': PlanGradePlan;
       'notification.history': NotificationHistory;
       'notification.demo-booking-time': NotificationDemoBookingTime;
+      'mentor.mentor-questions': MentorMentorQuestions;
       'lectures.lecture-header': LecturesLectureHeader;
       'classroom.notices': ClassroomNotices;
       'classroom.days': ClassroomDays;

@@ -1,0 +1,15 @@
+{
+  "collectionName": "components_mentor_mentor_questions",
+  "info": {
+    "displayName": "Mentor Questions"
+  },
+  "options": {},
+  "attributes": {
+    "question": {
+      "type": "text"
+    },
+    "answer": {
+      "type": "text"
+    }
+  }
+}
