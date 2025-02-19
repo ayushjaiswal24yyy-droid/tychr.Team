@@ -110,8 +110,8 @@
     "classroom_type": {
       "type": "enumeration",
       "enum": [
-        "offline",
-        "online"
+        "Offline",
+        "Online"
       ]
     },
     "parent_location": {

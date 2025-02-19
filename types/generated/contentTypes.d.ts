@@ -1889,7 +1889,7 @@ export interface ApiNotificationNotification extends Schema.CollectionType {
     >;
     enquiry_type: Attribute.Enumeration<['Classroom', 'Student Plan']>;
     classroom_limit: Attribute.Enumeration<['offline', 'online']>;
-    classroom_type: Attribute.Enumeration<['offline', 'online']>;
+    classroom_type: Attribute.Enumeration<['Offline', 'Online']>;
     parent_location: Attribute.String;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
