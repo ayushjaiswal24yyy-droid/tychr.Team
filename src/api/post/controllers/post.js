@@ -1,7 +1,4 @@
 "use strict";
-/**
- * post controller
- */
 const { createCoreController } = require("@strapi/strapi").factories;
 
 module.exports = createCoreController("api::post.post", ({ strapi }) => ({
@@ -12,13 +9,20 @@ module.exports = createCoreController("api::post.post", ({ strapi }) => ({
       "api::post.post",
       response.data.id,
       {
-        populate: ["author", "attachment", "community"],
+        populate: ["author", "attachment", "community"], // Add all relational fields here
       }
     );
 
+    const formattedPost = {
+      id: populatedPost.id,
+      attributes: {
+        ...populatedPost,
+      },
+    };
+
     if (strapi.io) {
-      strapi.io.emit("newPost", populatedPost); // Broadcast the fully populated post
-      console.log("New post broadcasted:", populatedPost);
+      strapi.io.emit("newPost", formattedPost);
+      console.log("New post broadcasted:", formattedPost);
     }
 
     return response;
