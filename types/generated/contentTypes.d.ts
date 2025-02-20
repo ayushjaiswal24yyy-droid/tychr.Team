@@ -1307,6 +1307,8 @@ export interface ApiDemoVideoDemoVideo extends Schema.CollectionType {
       'oneToOne',
       'api::enrollment.enrollment'
     >;
+    title: Attribute.Text;
+    description: Attribute.Text;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
