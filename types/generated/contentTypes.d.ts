@@ -1728,6 +1728,7 @@ export interface ApiMentorApplicationMentorApplication
     status: Attribute.Enumeration<['pending', 'approved']> &
       Attribute.DefaultTo<'pending'>;
     questions: Attribute.Component<'mentor.mentor-questions', true>;
+    video: Attribute.Media<'images' | 'files' | 'videos' | 'audios'>;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
