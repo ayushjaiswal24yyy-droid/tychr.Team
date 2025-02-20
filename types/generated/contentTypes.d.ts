@@ -1302,6 +1302,11 @@ export interface ApiDemoVideoDemoVideo extends Schema.CollectionType {
       'oneToOne',
       'api::grade-subject.grade-subject'
     >;
+    classroom: Attribute.Relation<
+      'api::demo-video.demo-video',
+      'oneToOne',
+      'api::enrollment.enrollment'
+    >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;

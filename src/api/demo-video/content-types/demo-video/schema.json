@@ -37,6 +37,11 @@
       "type": "relation",
       "relation": "oneToOne",
       "target": "api::grade-subject.grade-subject"
+    },
+    "classroom": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::enrollment.enrollment"
     }
   }
 }
