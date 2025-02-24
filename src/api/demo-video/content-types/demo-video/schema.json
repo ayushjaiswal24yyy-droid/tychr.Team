@@ -23,10 +23,10 @@
         "audios"
       ]
     },
-    "unit": {
+    "topic": {
       "type": "relation",
       "relation": "oneToOne",
-      "target": "api::topic.topic"
+      "target": "api::subtopic.subtopic"
     },
     "tutor": {
       "type": "relation",

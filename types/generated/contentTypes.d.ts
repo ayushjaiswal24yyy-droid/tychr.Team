@@ -1287,10 +1287,10 @@ export interface ApiDemoVideoDemoVideo extends Schema.CollectionType {
   };
   attributes: {
     video: Attribute.Media<'images' | 'files' | 'videos' | 'audios'>;
-    unit: Attribute.Relation<
+    topic: Attribute.Relation<
       'api::demo-video.demo-video',
       'oneToOne',
-      'api::topic.topic'
+      'api::subtopic.subtopic'
     >;
     tutor: Attribute.Relation<
       'api::demo-video.demo-video',
