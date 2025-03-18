@@ -1,0 +1,31 @@
+{
+  "kind": "collectionType",
+  "collectionName": "logs",
+  "info": {
+    "singularName": "log",
+    "pluralName": "logs",
+    "displayName": "log"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "user": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "plugin::users-permissions.user"
+    },
+    "Action": {
+      "type": "enumeration",
+      "enum": [
+        "Login",
+        "Logout",
+        "Test_Taken",
+        "Add_Classroom",
+        "Joined_Classroom",
+        "Add_Lecture"
+      ]
+    }
+  }
+}

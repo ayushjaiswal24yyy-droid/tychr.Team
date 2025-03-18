@@ -1714,6 +1714,42 @@ export interface ApiLiveLecturesMeetingLiveLecturesMeeting
   };
 }
 
+export interface ApiLogLog extends Schema.CollectionType {
+  collectionName: 'logs';
+  info: {
+    singularName: 'log';
+    pluralName: 'logs';
+    displayName: 'log';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    user: Attribute.Relation<
+      'api::log.log',
+      'oneToOne',
+      'plugin::users-permissions.user'
+    >;
+    Action: Attribute.Enumeration<
+      [
+        'Login',
+        'Logout',
+        'Test_Taken',
+        'Add_Classroom',
+        'Joined_Classroom',
+        'Add_Lecture'
+      ]
+    >;
+    createdAt: Attribute.DateTime;
+    updatedAt: Attribute.DateTime;
+    publishedAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<'api::log.log', 'oneToOne', 'admin::user'> &
+      Attribute.Private;
+    updatedBy: Attribute.Relation<'api::log.log', 'oneToOne', 'admin::user'> &
+      Attribute.Private;
+  };
+}
+
 export interface ApiMentorApplicationMentorApplication
   extends Schema.CollectionType {
   collectionName: 'mentor_applications';
@@ -2509,6 +2545,7 @@ declare module '@strapi/types' {
       'api::ib-program.ib-program': ApiIbProgramIbProgram;
       'api::live-lecture.live-lecture': ApiLiveLectureLiveLecture;
       'api::live-lectures-meeting.live-lectures-meeting': ApiLiveLecturesMeetingLiveLecturesMeeting;
+      'api::log.log': ApiLogLog;
       'api::mentor-application.mentor-application': ApiMentorApplicationMentorApplication;
       'api::message.message': ApiMessageMessage;
       'api::note.note': ApiNoteNote;
