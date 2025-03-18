@@ -4,7 +4,8 @@
   "info": {
     "singularName": "log",
     "pluralName": "logs",
-    "displayName": "log"
+    "displayName": "log",
+    "description": ""
   },
   "options": {
     "draftAndPublish": true
@@ -24,7 +25,8 @@
         "Test_Taken",
         "Add_Classroom",
         "Joined_Classroom",
-        "Add_Lecture"
+        "Add_Lecture",
+        "Add_Live_Class"
       ]
     }
   }

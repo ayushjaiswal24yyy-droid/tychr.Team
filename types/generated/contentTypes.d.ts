@@ -1720,6 +1720,7 @@ export interface ApiLogLog extends Schema.CollectionType {
     singularName: 'log';
     pluralName: 'logs';
     displayName: 'log';
+    description: '';
   };
   options: {
     draftAndPublish: true;
@@ -1737,7 +1738,8 @@ export interface ApiLogLog extends Schema.CollectionType {
         'Test_Taken',
         'Add_Classroom',
         'Joined_Classroom',
-        'Add_Lecture'
+        'Add_Lecture',
+        'Add_Live_Class'
       ]
     >;
     createdAt: Attribute.DateTime;
