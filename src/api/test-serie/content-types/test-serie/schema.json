@@ -61,6 +61,17 @@
       "mappedBy": "test_series"
     },
     "resource_booklet": {
+      "type": "media",
+      "multiple": false,
+      "required": false,
+      "allowedTypes": [
+        "images",
+        "files",
+        "videos",
+        "audios"
+      ]
+    },
+    "instruction_booklet": {
       "allowedTypes": [
         "images",
         "files",

@@ -45,6 +45,11 @@
         "single_part",
         "multiple_part"
       ]
+    },
+    "unit": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::topic.topic"
     }
   }
 }

@@ -2119,6 +2119,11 @@ export interface ApiQuestionBankQuestionBank extends Schema.CollectionType {
     question_type: Attribute.Enumeration<
       ['mcq', 'single_part', 'multiple_part']
     >;
+    unit: Attribute.Relation<
+      'api::question-bank.question-bank',
+      'oneToOne',
+      'api::topic.topic'
+    >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
@@ -2395,6 +2400,9 @@ export interface ApiTestSerieTestSerie extends Schema.CollectionType {
       'api::answer.answer'
     >;
     resource_booklet: Attribute.Media<'images' | 'files' | 'videos' | 'audios'>;
+    instruction_booklet: Attribute.Media<
+      'images' | 'files' | 'videos' | 'audios'
+    >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
