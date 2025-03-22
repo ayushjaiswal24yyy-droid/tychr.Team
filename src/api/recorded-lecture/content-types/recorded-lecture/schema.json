@@ -107,6 +107,11 @@
       "type": "relation",
       "relation": "oneToOne",
       "target": "api::subtopic.subtopic"
+    },
+    "program": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::ib-program.ib-program"
     }
   }
 }

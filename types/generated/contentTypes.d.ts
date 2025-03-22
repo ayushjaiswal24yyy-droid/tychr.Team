@@ -2210,6 +2210,11 @@ export interface ApiRecordedLectureRecordedLecture
       'oneToOne',
       'api::subtopic.subtopic'
     >;
+    program: Attribute.Relation<
+      'api::recorded-lecture.recorded-lecture',
+      'oneToOne',
+      'api::ib-program.ib-program'
+    >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
