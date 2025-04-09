@@ -924,6 +924,7 @@ export interface PluginUsersPermissionsUser extends Schema.CollectionType {
       'api::live-lectures-meeting.live-lectures-meeting'
     >;
     demo_booking_time: Attribute.Component<'classroom.days', true>;
+    tutor_role: Attribute.Enumeration<['tutor', 'buddy', 'mentor']>;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     createdBy: Attribute.Relation<
