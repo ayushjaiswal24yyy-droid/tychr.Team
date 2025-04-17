@@ -4,7 +4,8 @@
   "info": {
     "singularName": "whats-new",
     "pluralName": "whats-news",
-    "displayName": "whats-new"
+    "displayName": "whats-new",
+    "description": ""
   },
   "options": {
     "draftAndPublish": true
@@ -12,6 +13,9 @@
   "pluginOptions": {},
   "attributes": {
     "text": {
+      "type": "text"
+    },
+    "heading": {
       "type": "text"
     }
   }

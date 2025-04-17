@@ -2534,12 +2534,14 @@ export interface ApiWhatsNewWhatsNew extends Schema.CollectionType {
     singularName: 'whats-new';
     pluralName: 'whats-news';
     displayName: 'whats-new';
+    description: '';
   };
   options: {
     draftAndPublish: true;
   };
   attributes: {
     text: Attribute.Text;
+    heading: Attribute.Text;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
