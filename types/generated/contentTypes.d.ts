@@ -2528,6 +2528,36 @@ export interface ApiTutorPlanTutorPlan extends Schema.CollectionType {
   };
 }
 
+export interface ApiWhatsNewWhatsNew extends Schema.CollectionType {
+  collectionName: 'whats_news';
+  info: {
+    singularName: 'whats-new';
+    pluralName: 'whats-news';
+    displayName: 'whats-new';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    text: Attribute.Text;
+    createdAt: Attribute.DateTime;
+    updatedAt: Attribute.DateTime;
+    publishedAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<
+      'api::whats-new.whats-new',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+    updatedBy: Attribute.Relation<
+      'api::whats-new.whats-new',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+  };
+}
+
 declare module '@strapi/types' {
   export module Shared {
     export interface ContentTypes {
@@ -2577,6 +2607,7 @@ declare module '@strapi/types' {
       'api::test-serie.test-serie': ApiTestSerieTestSerie;
       'api::topic.topic': ApiTopicTopic;
       'api::tutor-plan.tutor-plan': ApiTutorPlanTutorPlan;
+      'api::whats-new.whats-new': ApiWhatsNewWhatsNew;
     }
   }
 }
