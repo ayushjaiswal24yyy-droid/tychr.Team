@@ -1045,6 +1045,47 @@ export interface ApiClassClass extends Schema.CollectionType {
   };
 }
 
+export interface ApiCollegeCollege extends Schema.CollectionType {
+  collectionName: 'colleges';
+  info: {
+    singularName: 'college';
+    pluralName: 'colleges';
+    displayName: 'College';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    college_name: Attribute.Text;
+    image: Attribute.Media<'images' | 'files' | 'videos' | 'audios'>;
+    college_id: Attribute.BigInteger;
+    university: Attribute.Relation<
+      'api::college.college',
+      'oneToOne',
+      'api::university.university'
+    >;
+    lor_requirements: Attribute.Text;
+    essay_requirements: Attribute.Text;
+    financial_aid_requirements: Attribute.Text;
+    application_timeline_requirements: Attribute.Text;
+    createdAt: Attribute.DateTime;
+    updatedAt: Attribute.DateTime;
+    publishedAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<
+      'api::college.college',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+    updatedBy: Attribute.Relation<
+      'api::college.college',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+  };
+}
+
 export interface ApiCommentComment extends Schema.CollectionType {
   collectionName: 'comments';
   info: {
@@ -2528,6 +2569,40 @@ export interface ApiTutorPlanTutorPlan extends Schema.CollectionType {
   };
 }
 
+export interface ApiUniversityUniversity extends Schema.CollectionType {
+  collectionName: 'universities';
+  info: {
+    singularName: 'university';
+    pluralName: 'universities';
+    displayName: 'university';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    university_name: Attribute.Text;
+    region: Attribute.Text;
+    university_id: Attribute.BigInteger;
+    requirements: Attribute.Text;
+    image: Attribute.Media<'images' | 'files' | 'videos' | 'audios'>;
+    createdAt: Attribute.DateTime;
+    updatedAt: Attribute.DateTime;
+    publishedAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<
+      'api::university.university',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+    updatedBy: Attribute.Relation<
+      'api::university.university',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+  };
+}
+
 export interface ApiWhatsNewWhatsNew extends Schema.CollectionType {
   collectionName: 'whats_news';
   info: {
@@ -2581,6 +2656,7 @@ declare module '@strapi/types' {
       'plugin::users-permissions.user': PluginUsersPermissionsUser;
       'api::answer.answer': ApiAnswerAnswer;
       'api::class.class': ApiClassClass;
+      'api::college.college': ApiCollegeCollege;
       'api::comment.comment': ApiCommentComment;
       'api::community.community': ApiCommunityCommunity;
       'api::course-plan.course-plan': ApiCoursePlanCoursePlan;
@@ -2609,6 +2685,7 @@ declare module '@strapi/types' {
       'api::test-serie.test-serie': ApiTestSerieTestSerie;
       'api::topic.topic': ApiTopicTopic;
       'api::tutor-plan.tutor-plan': ApiTutorPlanTutorPlan;
+      'api::university.university': ApiUniversityUniversity;
       'api::whats-new.whats-new': ApiWhatsNewWhatsNew;
     }
   }

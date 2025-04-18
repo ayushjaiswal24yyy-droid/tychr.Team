@@ -1,0 +1,48 @@
+{
+  "kind": "collectionType",
+  "collectionName": "colleges",
+  "info": {
+    "singularName": "college",
+    "pluralName": "colleges",
+    "displayName": "College"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "college_name": {
+      "type": "text"
+    },
+    "image": {
+      "allowedTypes": [
+        "images",
+        "files",
+        "videos",
+        "audios"
+      ],
+      "type": "media",
+      "multiple": false
+    },
+    "college_id": {
+      "type": "biginteger"
+    },
+    "university": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::university.university"
+    },
+    "lor_requirements": {
+      "type": "text"
+    },
+    "essay_requirements": {
+      "type": "text"
+    },
+    "financial_aid_requirements": {
+      "type": "text"
+    },
+    "application_timeline_requirements": {
+      "type": "text"
+    }
+  }
+}
