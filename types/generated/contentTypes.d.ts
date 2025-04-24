@@ -2275,6 +2275,46 @@ export interface ApiRecordedLectureRecordedLecture
   };
 }
 
+export interface ApiResourceResource extends Schema.CollectionType {
+  collectionName: 'resources';
+  info: {
+    singularName: 'resource';
+    pluralName: 'resources';
+    displayName: 'resources';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    title: Attribute.Text;
+    type: Attribute.Enumeration<['article', 'guide']>;
+    context: Attribute.Enumeration<['essay', 'interview', 'financial_aid']>;
+    files: Attribute.Media<'images' | 'files' | 'videos' | 'audios', true>;
+    link: Attribute.Text;
+    detail: Attribute.Text;
+    mentor: Attribute.Relation<
+      'api::resource.resource',
+      'oneToOne',
+      'plugin::users-permissions.user'
+    >;
+    createdAt: Attribute.DateTime;
+    updatedAt: Attribute.DateTime;
+    publishedAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<
+      'api::resource.resource',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+    updatedBy: Attribute.Relation<
+      'api::resource.resource',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+  };
+}
+
 export interface ApiSubjectSubject extends Schema.CollectionType {
   collectionName: 'subjects';
   info: {
@@ -2679,6 +2719,7 @@ declare module '@strapi/types' {
       'api::progress.progress': ApiProgressProgress;
       'api::question-bank.question-bank': ApiQuestionBankQuestionBank;
       'api::recorded-lecture.recorded-lecture': ApiRecordedLectureRecordedLecture;
+      'api::resource.resource': ApiResourceResource;
       'api::subject.subject': ApiSubjectSubject;
       'api::subject-group.subject-group': ApiSubjectGroupSubjectGroup;
       'api::subtopic.subtopic': ApiSubtopicSubtopic;
