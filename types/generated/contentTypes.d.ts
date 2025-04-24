@@ -2281,6 +2281,7 @@ export interface ApiResourceResource extends Schema.CollectionType {
     singularName: 'resource';
     pluralName: 'resources';
     displayName: 'resources';
+    description: '';
   };
   options: {
     draftAndPublish: true;
@@ -2297,6 +2298,7 @@ export interface ApiResourceResource extends Schema.CollectionType {
       'oneToOne',
       'plugin::users-permissions.user'
     >;
+    country: Attribute.String;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;

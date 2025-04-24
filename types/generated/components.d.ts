@@ -75,23 +75,6 @@ export interface RecordedLecturesProgress extends Schema.Component {
   };
 }
 
-export interface PlanGradePlan extends Schema.Component {
-  collectionName: 'components_plan_grade_plans';
-  info: {
-    displayName: 'Grade Plan';
-    icon: 'crown';
-    description: '';
-  };
-  attributes: {
-    name: Attribute.String;
-    price: Attribute.Decimal;
-    currency: Attribute.Enumeration<['USD', 'INR']>;
-    recorded_lectures: Attribute.Boolean & Attribute.DefaultTo<true>;
-    live_lectures: Attribute.Boolean & Attribute.DefaultTo<false>;
-    qna: Attribute.Boolean & Attribute.DefaultTo<true>;
-  };
-}
-
 export interface QuestionBankQuestionNAnswer extends Schema.Component {
   collectionName: 'components_question_bank_question_n_answers';
   info: {
@@ -138,6 +121,23 @@ export interface QuestionBankHints extends Schema.Component {
   };
 }
 
+export interface PlanGradePlan extends Schema.Component {
+  collectionName: 'components_plan_grade_plans';
+  info: {
+    displayName: 'Grade Plan';
+    icon: 'crown';
+    description: '';
+  };
+  attributes: {
+    name: Attribute.String;
+    price: Attribute.Decimal;
+    currency: Attribute.Enumeration<['USD', 'INR']>;
+    recorded_lectures: Attribute.Boolean & Attribute.DefaultTo<true>;
+    live_lectures: Attribute.Boolean & Attribute.DefaultTo<false>;
+    qna: Attribute.Boolean & Attribute.DefaultTo<true>;
+  };
+}
+
 export interface NotificationHistory extends Schema.Component {
   collectionName: 'components_notification_histories';
   info: {
@@ -172,6 +172,20 @@ export interface MentorMentorQuestions extends Schema.Component {
   };
 }
 
+export interface LecturesLectureHeader extends Schema.Component {
+  collectionName: 'components_lectures_lecture_headers';
+  info: {
+    displayName: 'Lecture Header';
+    icon: 'attachment';
+  };
+  attributes: {
+    label: Attribute.Enumeration<
+      ['Content', 'Recordings', 'Live', 'QnA', 'Test', 'Doubt', 'Practice']
+    >;
+    show: Attribute.Boolean;
+  };
+}
+
 export interface ClassroomNotices extends Schema.Component {
   collectionName: 'components_classroom_notices';
   info: {
@@ -195,20 +209,6 @@ export interface ClassroomDays extends Schema.Component {
   };
 }
 
-export interface LecturesLectureHeader extends Schema.Component {
-  collectionName: 'components_lectures_lecture_headers';
-  info: {
-    displayName: 'Lecture Header';
-    icon: 'attachment';
-  };
-  attributes: {
-    label: Attribute.Enumeration<
-      ['Content', 'Recordings', 'Live', 'QnA', 'Test', 'Doubt', 'Practice']
-    >;
-    show: Attribute.Boolean;
-  };
-}
-
 declare module '@strapi/types' {
   export module Shared {
     export interface Components {
@@ -217,16 +217,16 @@ declare module '@strapi/types' {
       'subtopic.heading': SubtopicHeading;
       'subject.refrence-books': SubjectRefrenceBooks;
       'recorded-lectures.progress': RecordedLecturesProgress;
-      'plan.grade-plan': PlanGradePlan;
       'question-bank.question-n-answer': QuestionBankQuestionNAnswer;
       'question-bank.parts': QuestionBankParts;
       'question-bank.hints': QuestionBankHints;
+      'plan.grade-plan': PlanGradePlan;
       'notification.history': NotificationHistory;
       'notification.demo-booking-time': NotificationDemoBookingTime;
       'mentor.mentor-questions': MentorMentorQuestions;
+      'lectures.lecture-header': LecturesLectureHeader;
       'classroom.notices': ClassroomNotices;
       'classroom.days': ClassroomDays;
-      'lectures.lecture-header': LecturesLectureHeader;
     }
   }
 }

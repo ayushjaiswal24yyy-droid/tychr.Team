@@ -4,7 +4,8 @@
   "info": {
     "singularName": "resource",
     "pluralName": "resources",
-    "displayName": "resources"
+    "displayName": "resources",
+    "description": ""
   },
   "options": {
     "draftAndPublish": true
@@ -30,14 +31,15 @@
       ]
     },
     "files": {
+      "type": "media",
+      "multiple": true,
+      "required": false,
       "allowedTypes": [
         "images",
         "files",
         "videos",
         "audios"
-      ],
-      "type": "media",
-      "multiple": true
+      ]
     },
     "link": {
       "type": "text"
@@ -49,6 +51,9 @@
       "type": "relation",
       "relation": "oneToOne",
       "target": "plugin::users-permissions.user"
+    },
+    "country": {
+      "type": "string"
     }
   }
 }
