@@ -4,7 +4,8 @@
   "info": {
     "singularName": "university",
     "pluralName": "universities",
-    "displayName": "university"
+    "displayName": "university",
+    "description": ""
   },
   "options": {
     "draftAndPublish": true
@@ -20,18 +21,80 @@
     "university_id": {
       "type": "biginteger"
     },
-    "requirements": {
-      "type": "text"
-    },
-    "image": {
+    "images": {
+      "type": "media",
+      "multiple": true,
+      "required": false,
       "allowedTypes": [
         "images",
         "files",
         "videos",
         "audios"
-      ],
-      "type": "media",
-      "multiple": false
+      ]
+    },
+    "university_type": {
+      "type": "enumeration",
+      "enum": [
+        "public",
+        "private",
+        "coed",
+        "single_sex",
+        "religiously_affiliated",
+        "ivy_league",
+        "group_of_8",
+        "russell_group",
+        "C9_league",
+        "oxbridge",
+        "golden_triangle",
+        "grandes_ecoles",
+        "TU9",
+        "SKY_universities",
+        "imperial_universities",
+        "state_university",
+        "liberal_arts_colleges",
+        "community_colleges",
+        "research_universities",
+        "deemed_universities"
+      ]
+    },
+    "university_ranking": {
+      "type": "integer"
+    },
+    "acceptance_rate": {
+      "type": "float"
+    },
+    "essays": {
+      "type": "component",
+      "repeatable": true,
+      "component": "essays.essay"
+    },
+    "cycles": {
+      "type": "component",
+      "repeatable": true,
+      "component": "cycles.cycle"
+    },
+    "min_GPA": {
+      "type": "decimal"
+    },
+    "SAT_range": {
+      "type": "string"
+    },
+    "IELTS_range": {
+      "type": "string"
+    },
+    "recommendations": {
+      "type": "text"
+    },
+    "tution_fee": {
+      "type": "string"
+    },
+    "financial_aid_information": {
+      "type": "string"
+    },
+    "colleges": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::college.college"
     }
   }
 }

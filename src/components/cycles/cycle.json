@@ -1,0 +1,22 @@
+{
+  "collectionName": "components_cycles_cycles",
+  "info": {
+    "displayName": "cycle"
+  },
+  "options": {},
+  "attributes": {
+    "name": {
+      "type": "string"
+    },
+    "deadline": {
+      "type": "date"
+    },
+    "status": {
+      "type": "enumeration",
+      "enum": [
+        "open",
+        "closed"
+      ]
+    }
+  }
+}

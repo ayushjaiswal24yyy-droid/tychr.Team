@@ -2617,6 +2617,7 @@ export interface ApiUniversityUniversity extends Schema.CollectionType {
     singularName: 'university';
     pluralName: 'universities';
     displayName: 'university';
+    description: '';
   };
   options: {
     draftAndPublish: true;
@@ -2625,8 +2626,46 @@ export interface ApiUniversityUniversity extends Schema.CollectionType {
     university_name: Attribute.Text;
     region: Attribute.Text;
     university_id: Attribute.BigInteger;
-    requirements: Attribute.Text;
-    image: Attribute.Media<'images' | 'files' | 'videos' | 'audios'>;
+    images: Attribute.Media<'images' | 'files' | 'videos' | 'audios', true>;
+    university_type: Attribute.Enumeration<
+      [
+        'public',
+        'private',
+        'coed',
+        'single_sex',
+        'religiously_affiliated',
+        'ivy_league',
+        'group_of_8',
+        'russell_group',
+        'C9_league',
+        'oxbridge',
+        'golden_triangle',
+        'grandes_ecoles',
+        'TU9',
+        'SKY_universities',
+        'imperial_universities',
+        'state_university',
+        'liberal_arts_colleges',
+        'community_colleges',
+        'research_universities',
+        'deemed_universities'
+      ]
+    >;
+    university_ranking: Attribute.Integer;
+    acceptance_rate: Attribute.Float;
+    essays: Attribute.Component<'essays.essay', true>;
+    cycles: Attribute.Component<'cycles.cycle', true>;
+    min_GPA: Attribute.Decimal;
+    SAT_range: Attribute.String;
+    IELTS_range: Attribute.String;
+    recommendations: Attribute.Text;
+    tution_fee: Attribute.String;
+    financial_aid_information: Attribute.String;
+    colleges: Attribute.Relation<
+      'api::university.university',
+      'oneToMany',
+      'api::college.college'
+    >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;

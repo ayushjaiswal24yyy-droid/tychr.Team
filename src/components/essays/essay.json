@@ -1,0 +1,15 @@
+{
+  "collectionName": "components_essays_essays",
+  "info": {
+    "displayName": "Essay"
+  },
+  "options": {},
+  "attributes": {
+    "prompt": {
+      "type": "string"
+    },
+    "word_count": {
+      "type": "integer"
+    }
+  }
+}
