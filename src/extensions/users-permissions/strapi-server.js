@@ -26,9 +26,14 @@ module.exports = (plugin) => {
     }
 
     // Validate role
-    if (role !== "student" && role !== "tutor" && role !== "assistant") {
+    if (
+      role !== "student" &&
+      role !== "tutor" &&
+      role !== "assistant" &&
+      role !== "third_party_user"
+    ) {
       return ctx.badRequest(
-        'Invalid role. Must be either "student" or "tutor"'
+        'Invalid role. Must be either "student" or "tutor" or "Third Party User"'
       );
     }
 
