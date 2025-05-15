@@ -1660,6 +1660,48 @@ export interface ApiIbProgramIbProgram extends Schema.CollectionType {
   };
 }
 
+export interface ApiIndividualUserIndividualUser extends Schema.CollectionType {
+  collectionName: 'individual_users';
+  info: {
+    singularName: 'individual-user';
+    pluralName: 'individual-users';
+    displayName: 'Individual Users';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    user: Attribute.Relation<
+      'api::individual-user.individual-user',
+      'oneToOne',
+      'plugin::users-permissions.user'
+    >;
+    type: Attribute.Enumeration<['professor', 'startup_mentor']>;
+    university_name: Attribute.Text;
+    startup_name: Attribute.Text;
+    specialization: Attribute.Text;
+    Industry: Attribute.Text;
+    experience: Attribute.String;
+    linkedin_url: Attribute.Text;
+    description: Attribute.Text;
+    createdAt: Attribute.DateTime;
+    updatedAt: Attribute.DateTime;
+    publishedAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<
+      'api::individual-user.individual-user',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+    updatedBy: Attribute.Relation<
+      'api::individual-user.individual-user',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+  };
+}
+
 export interface ApiLiveLectureLiveLecture extends Schema.CollectionType {
   collectionName: 'live_lectures';
   info: {
@@ -2748,6 +2790,7 @@ declare module '@strapi/types' {
       'api::enrollment.enrollment': ApiEnrollmentEnrollment;
       'api::grade-subject.grade-subject': ApiGradeSubjectGradeSubject;
       'api::ib-program.ib-program': ApiIbProgramIbProgram;
+      'api::individual-user.individual-user': ApiIndividualUserIndividualUser;
       'api::live-lecture.live-lecture': ApiLiveLectureLiveLecture;
       'api::live-lectures-meeting.live-lectures-meeting': ApiLiveLecturesMeetingLiveLecturesMeeting;
       'api::log.log': ApiLogLog;

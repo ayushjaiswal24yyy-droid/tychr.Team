@@ -1,0 +1,48 @@
+{
+  "kind": "collectionType",
+  "collectionName": "individual_users",
+  "info": {
+    "singularName": "individual-user",
+    "pluralName": "individual-users",
+    "displayName": "Individual Users"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "user": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "plugin::users-permissions.user"
+    },
+    "type": {
+      "type": "enumeration",
+      "enum": [
+        "professor",
+        "startup_mentor"
+      ]
+    },
+    "university_name": {
+      "type": "text"
+    },
+    "startup_name": {
+      "type": "text"
+    },
+    "specialization": {
+      "type": "text"
+    },
+    "Industry": {
+      "type": "text"
+    },
+    "experience": {
+      "type": "string"
+    },
+    "linkedin_url": {
+      "type": "text"
+    },
+    "description": {
+      "type": "text"
+    }
+  }
+}

@@ -186,6 +186,17 @@ export interface LecturesLectureHeader extends Schema.Component {
   };
 }
 
+export interface EssaysEssay extends Schema.Component {
+  collectionName: 'components_essays_essays';
+  info: {
+    displayName: 'Essay';
+  };
+  attributes: {
+    prompt: Attribute.String;
+    word_count: Attribute.Integer;
+  };
+}
+
 export interface CyclesCycle extends Schema.Component {
   collectionName: 'components_cycles_cycles';
   info: {
@@ -221,17 +232,6 @@ export interface ClassroomDays extends Schema.Component {
   };
 }
 
-export interface EssaysEssay extends Schema.Component {
-  collectionName: 'components_essays_essays';
-  info: {
-    displayName: 'Essay';
-  };
-  attributes: {
-    prompt: Attribute.String;
-    word_count: Attribute.Integer;
-  };
-}
-
 declare module '@strapi/types' {
   export module Shared {
     export interface Components {
@@ -248,10 +248,10 @@ declare module '@strapi/types' {
       'notification.demo-booking-time': NotificationDemoBookingTime;
       'mentor.mentor-questions': MentorMentorQuestions;
       'lectures.lecture-header': LecturesLectureHeader;
+      'essays.essay': EssaysEssay;
       'cycles.cycle': CyclesCycle;
       'classroom.notices': ClassroomNotices;
       'classroom.days': ClassroomDays;
-      'essays.essay': EssaysEssay;
     }
   }
 }
