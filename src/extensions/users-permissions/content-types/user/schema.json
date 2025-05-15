@@ -323,6 +323,16 @@
         "buddy",
         "mentor"
       ]
+    },
+    "third_party_role": {
+      "type": "enumeration",
+      "enum": [
+        "professor",
+        "startup_mentor",
+        "student_org",
+        "ngo",
+        "corporate_firm"
+      ]
     }
   }
 }

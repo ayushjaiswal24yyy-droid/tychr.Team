@@ -925,6 +925,9 @@ export interface PluginUsersPermissionsUser extends Schema.CollectionType {
     >;
     demo_booking_time: Attribute.Component<'classroom.days', true>;
     tutor_role: Attribute.Enumeration<['tutor', 'buddy', 'mentor']>;
+    third_party_role: Attribute.Enumeration<
+      ['professor', 'startup_mentor', 'student_org', 'ngo', 'corporate_firm']
+    >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     createdBy: Attribute.Relation<
