@@ -4,7 +4,8 @@
   "info": {
     "singularName": "individual-user",
     "pluralName": "individual-users",
-    "displayName": "Individual Users"
+    "displayName": "Individual Users",
+    "description": ""
   },
   "options": {
     "draftAndPublish": true
@@ -43,6 +44,10 @@
     },
     "description": {
       "type": "text"
+    },
+    "confirmed": {
+      "type": "boolean",
+      "default": false
     }
   }
 }

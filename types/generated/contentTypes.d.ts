@@ -1669,6 +1669,7 @@ export interface ApiIndividualUserIndividualUser extends Schema.CollectionType {
     singularName: 'individual-user';
     pluralName: 'individual-users';
     displayName: 'Individual Users';
+    description: '';
   };
   options: {
     draftAndPublish: true;
@@ -1687,6 +1688,7 @@ export interface ApiIndividualUserIndividualUser extends Schema.CollectionType {
     experience: Attribute.String;
     linkedin_url: Attribute.Text;
     description: Attribute.Text;
+    confirmed: Attribute.Boolean & Attribute.DefaultTo<false>;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
