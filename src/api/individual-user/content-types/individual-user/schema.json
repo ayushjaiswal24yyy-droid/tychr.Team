@@ -33,7 +33,7 @@
     "specialization": {
       "type": "text"
     },
-    "Industry": {
+    "industry": {
       "type": "text"
     },
     "experience": {

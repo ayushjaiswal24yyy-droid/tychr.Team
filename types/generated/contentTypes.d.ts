@@ -1684,7 +1684,7 @@ export interface ApiIndividualUserIndividualUser extends Schema.CollectionType {
     university_name: Attribute.Text;
     startup_name: Attribute.Text;
     specialization: Attribute.Text;
-    Industry: Attribute.Text;
+    industry: Attribute.Text;
     experience: Attribute.String;
     linkedin_url: Attribute.Text;
     description: Attribute.Text;
