@@ -1,0 +1,33 @@
+{
+  "collectionName": "components_college_programs",
+  "info": {
+    "displayName": "programs"
+  },
+  "options": {},
+  "attributes": {
+    "program_name": {
+      "type": "string"
+    },
+    "program_type": {
+      "type": "string"
+    },
+    "department": {
+      "type": "string"
+    },
+    "duration": {
+      "type": "string"
+    },
+    "annual_fee": {
+      "type": "string"
+    },
+    "intake": {
+      "type": "string"
+    },
+    "program_overview": {
+      "type": "text"
+    },
+    "career_prospects": {
+      "type": "text"
+    }
+  }
+}

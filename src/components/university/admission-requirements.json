@@ -1,0 +1,36 @@
+{
+  "collectionName": "components_university_admission_requirements",
+  "info": {
+    "displayName": "admission_requirements"
+  },
+  "options": {},
+  "attributes": {
+    "min_gpa": {
+      "type": "decimal"
+    },
+    "high_school_diploma": {
+      "type": "boolean"
+    },
+    "sat": {
+      "type": "boolean"
+    },
+    "ap": {
+      "type": "boolean"
+    },
+    "subject_specific_requirements": {
+      "type": "boolean"
+    },
+    "ielts_score": {
+      "type": "decimal"
+    },
+    "toefl_score": {
+      "type": "integer"
+    },
+    "cambridge_score": {
+      "type": "string"
+    },
+    "duolingo_score": {
+      "type": "decimal"
+    }
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "collectionName": "components_university_lors",
+  "info": {
+    "displayName": "LOR"
+  },
+  "options": {},
+  "attributes": {
+    "type": {
+      "type": "string"
+    },
+    "requirements": {
+      "type": "text"
+    }
+  }
+}

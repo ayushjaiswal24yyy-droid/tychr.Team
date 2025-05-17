@@ -1,0 +1,21 @@
+{
+  "collectionName": "components_university_key_stats",
+  "info": {
+    "displayName": "key-stats"
+  },
+  "options": {},
+  "attributes": {
+    "total_students": {
+      "type": "biginteger"
+    },
+    "int_students": {
+      "type": "biginteger"
+    },
+    "student_faculty_ratio": {
+      "type": "decimal"
+    },
+    "research_funding": {
+      "type": "biginteger"
+    }
+  }
+}

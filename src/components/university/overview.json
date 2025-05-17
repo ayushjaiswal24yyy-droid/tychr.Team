@@ -1,0 +1,18 @@
+{
+  "collectionName": "components_university_overviews",
+  "info": {
+    "displayName": "overview"
+  },
+  "options": {},
+  "attributes": {
+    "university_overview": {
+      "type": "text"
+    },
+    "research_excellence": {
+      "type": "text"
+    },
+    "global_impact": {
+      "type": "text"
+    }
+  }
+}

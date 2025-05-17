@@ -1,0 +1,21 @@
+{
+  "collectionName": "components_university_subject_rankings",
+  "info": {
+    "displayName": "subject-ranking"
+  },
+  "options": {},
+  "attributes": {
+    "arts": {
+      "type": "integer"
+    },
+    "engineering": {
+      "type": "integer"
+    },
+    "life_science": {
+      "type": "integer"
+    },
+    "physical_science": {
+      "type": "integer"
+    }
+  }
+}

@@ -1,22 +1,22 @@
 {
   "collectionName": "components_cycles_cycles",
   "info": {
-    "displayName": "cycle"
+    "displayName": "cycle",
+    "description": ""
   },
   "options": {},
   "attributes": {
     "name": {
       "type": "string"
     },
-    "deadline": {
-      "type": "date"
+    "early_decision": {
+      "type": "string"
     },
-    "status": {
-      "type": "enumeration",
-      "enum": [
-        "open",
-        "closed"
-      ]
+    "regular_decision": {
+      "type": "string"
+    },
+    "early_action": {
+      "type": "string"
     }
   }
 }

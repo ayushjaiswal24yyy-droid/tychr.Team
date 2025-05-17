@@ -1054,23 +1054,16 @@ export interface ApiCollegeCollege extends Schema.CollectionType {
     singularName: 'college';
     pluralName: 'colleges';
     displayName: 'College';
+    description: '';
   };
   options: {
     draftAndPublish: true;
   };
   attributes: {
     college_name: Attribute.Text;
-    image: Attribute.Media<'images' | 'files' | 'videos' | 'audios'>;
-    college_id: Attribute.BigInteger;
-    university: Attribute.Relation<
-      'api::college.college',
-      'oneToOne',
-      'api::university.university'
-    >;
-    lor_requirements: Attribute.Text;
-    essay_requirements: Attribute.Text;
-    financial_aid_requirements: Attribute.Text;
-    application_timeline_requirements: Attribute.Text;
+    college_type: Attribute.String;
+    requirement: Attribute.Component<'college.requirement', true>;
+    programs: Attribute.Component<'college.programs', true>;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
@@ -2670,49 +2663,23 @@ export interface ApiUniversityUniversity extends Schema.CollectionType {
     draftAndPublish: true;
   };
   attributes: {
-    university_name: Attribute.Text;
-    region: Attribute.Text;
-    university_id: Attribute.BigInteger;
-    images: Attribute.Media<'images' | 'files' | 'videos' | 'audios', true>;
-    university_type: Attribute.Enumeration<
-      [
-        'public',
-        'private',
-        'coed',
-        'single_sex',
-        'religiously_affiliated',
-        'ivy_league',
-        'group_of_8',
-        'russell_group',
-        'C9_league',
-        'oxbridge',
-        'golden_triangle',
-        'grandes_ecoles',
-        'TU9',
-        'SKY_universities',
-        'imperial_universities',
-        'state_university',
-        'liberal_arts_colleges',
-        'community_colleges',
-        'research_universities',
-        'deemed_universities'
-      ]
-    >;
-    university_ranking: Attribute.Integer;
-    acceptance_rate: Attribute.Float;
     essays: Attribute.Component<'essays.essay', true>;
-    cycles: Attribute.Component<'cycles.cycle', true>;
-    min_GPA: Attribute.Decimal;
-    SAT_range: Attribute.String;
-    IELTS_range: Attribute.String;
-    recommendations: Attribute.Text;
-    tution_fee: Attribute.String;
-    financial_aid_information: Attribute.String;
+    intakes: Attribute.Component<'cycles.cycle', true>;
     colleges: Attribute.Relation<
       'api::university.university',
       'oneToMany',
       'api::college.college'
     >;
+    basic: Attribute.Component<'university.basic-info'>;
+    stats: Attribute.Component<'university.key-stats'>;
+    global_ranking: Attribute.Component<'university.global-ranking'>;
+    subject_ranking: Attribute.Component<'university.subject-ranking'>;
+    overview: Attribute.Component<'university.overview'>;
+    lors: Attribute.Component<'university.lor', true>;
+    admission_requirements: Attribute.Component<'university.admission-requirements'>;
+    tution_fees: Attribute.Component<'university.tution-fees'>;
+    financial_aids: Attribute.Component<'university.financial-aids'>;
+    additional_costs: Attribute.Component<'university.additional-costs'>;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;

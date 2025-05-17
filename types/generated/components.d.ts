@@ -19,6 +19,147 @@ export interface UserStudentPlan extends Schema.Component {
   };
 }
 
+export interface UniversityTutionFees extends Schema.Component {
+  collectionName: 'components_university_tution_fees';
+  info: {
+    displayName: 'tution-fees';
+  };
+  attributes: {
+    ug_int: Attribute.BigInteger;
+    ug_uk: Attribute.Integer;
+    grad_int: Attribute.Integer;
+    grad_uk: Attribute.Integer;
+  };
+}
+
+export interface UniversitySubjectRanking extends Schema.Component {
+  collectionName: 'components_university_subject_rankings';
+  info: {
+    displayName: 'subject-ranking';
+  };
+  attributes: {
+    arts: Attribute.Integer;
+    engineering: Attribute.Integer;
+    life_science: Attribute.Integer;
+    physical_science: Attribute.Integer;
+  };
+}
+
+export interface UniversityOverview extends Schema.Component {
+  collectionName: 'components_university_overviews';
+  info: {
+    displayName: 'overview';
+  };
+  attributes: {
+    university_overview: Attribute.Text;
+    research_excellence: Attribute.Text;
+    global_impact: Attribute.Text;
+  };
+}
+
+export interface UniversityLor extends Schema.Component {
+  collectionName: 'components_university_lors';
+  info: {
+    displayName: 'LOR';
+  };
+  attributes: {
+    type: Attribute.String;
+    requirements: Attribute.Text;
+  };
+}
+
+export interface UniversityKeyStats extends Schema.Component {
+  collectionName: 'components_university_key_stats';
+  info: {
+    displayName: 'key-stats';
+  };
+  attributes: {
+    total_students: Attribute.BigInteger;
+    int_students: Attribute.BigInteger;
+    student_faculty_ratio: Attribute.Decimal;
+    research_funding: Attribute.BigInteger;
+  };
+}
+
+export interface UniversityGlobalRanking extends Schema.Component {
+  collectionName: 'components_university_global_rankings';
+  info: {
+    displayName: 'global-ranking';
+    description: '';
+  };
+  attributes: {
+    times_rank: Attribute.Integer;
+    us_news_rank: Attribute.BigInteger;
+    arwu_rank: Attribute.Integer;
+    qs_rank: Attribute.Integer;
+  };
+}
+
+export interface UniversityFinancialAids extends Schema.Component {
+  collectionName: 'components_university_financial_aids';
+  info: {
+    displayName: 'financial-aids';
+  };
+  attributes: {
+    rhodes: Attribute.Boolean;
+    claderon: Attribute.Boolean;
+    oxford_weidenfeld: Attribute.Boolean;
+    reach_oxford: Attribute.Boolean;
+    oxford_bursary: Attribute.Boolean;
+    college_specific_support: Attribute.Boolean;
+  };
+}
+
+export interface UniversityBasicInfo extends Schema.Component {
+  collectionName: 'components_university_basic_infos';
+  info: {
+    displayName: 'basic-info';
+  };
+  attributes: {
+    university_name: Attribute.Text;
+    location: Attribute.String;
+    university_type: Attribute.String;
+    year_of_establishment: Attribute.Integer;
+    world_rank: Attribute.Integer;
+    acceptance_rate: Attribute.Decimal;
+  };
+}
+
+export interface UniversityAdmissionRequirements extends Schema.Component {
+  collectionName: 'components_university_admission_requirements';
+  info: {
+    displayName: 'admission_requirements';
+  };
+  attributes: {
+    min_gpa: Attribute.Decimal;
+    high_school_diploma: Attribute.Boolean;
+    sat: Attribute.Boolean;
+    ap: Attribute.Boolean;
+    subject_specific_requirements: Attribute.Boolean;
+    ielts_score: Attribute.Decimal;
+    toefl_score: Attribute.Integer;
+    cambridge_score: Attribute.String;
+    duolingo_score: Attribute.Decimal;
+  };
+}
+
+export interface UniversityAdditionalCosts extends Schema.Component {
+  collectionName: 'components_university_additional_costs';
+  info: {
+    displayName: 'additional_costs';
+  };
+  attributes: {
+    accomodation_min: Attribute.String;
+    accomodation_max: Attribute.String;
+    books_min: Attribute.String;
+    books_max: Attribute.String;
+    living_expense_min: Attribute.String;
+    living_expense_max: Attribute.String;
+    insurance_min: Attribute.String;
+    insurance_max: Attribute.String;
+  };
+}
+
 export interface SubtopicQnA extends Schema.Component {
   collectionName: 'components_subtopic_qn_as';
   info: {
@@ -190,10 +331,12 @@ export interface EssaysEssay extends Schema.Component {
   collectionName: 'components_essays_essays';
   info: {
     displayName: 'Essay';
+    description: '';
   };
   attributes: {
     prompt: Attribute.String;
     word_count: Attribute.Integer;
+    title: Attribute.String;
   };
 }
 
@@ -201,11 +344,40 @@ export interface CyclesCycle extends Schema.Component {
   collectionName: 'components_cycles_cycles';
   info: {
     displayName: 'cycle';
+    description: '';
   };
   attributes: {
     name: Attribute.String;
-    deadline: Attribute.Date;
-    status: Attribute.Enumeration<['open', 'closed']>;
+    early_decision: Attribute.String;
+    regular_decision: Attribute.String;
+    early_action: Attribute.String;
+  };
+}
+
+export interface CollegeRequirement extends Schema.Component {
+  collectionName: 'components_college_requirements';
+  info: {
+    displayName: 'requirement';
+  };
+  attributes: {
+    requirement: Attribute.String;
+  };
+}
+
+export interface CollegePrograms extends Schema.Component {
+  collectionName: 'components_college_programs';
+  info: {
+    displayName: 'programs';
+  };
+  attributes: {
+    program_name: Attribute.String;
+    program_type: Attribute.String;
+    department: Attribute.String;
+    duration: Attribute.String;
+    annual_fee: Attribute.String;
+    intake: Attribute.String;
+    program_overview: Attribute.Text;
+    career_prospects: Attribute.Text;
   };
 }
 
@@ -236,6 +408,16 @@ declare module '@strapi/types' {
   export module Shared {
     export interface Components {
       'user.student-plan': UserStudentPlan;
+      'university.tution-fees': UniversityTutionFees;
+      'university.subject-ranking': UniversitySubjectRanking;
+      'university.overview': UniversityOverview;
+      'university.lor': UniversityLor;
+      'university.key-stats': UniversityKeyStats;
+      'university.global-ranking': UniversityGlobalRanking;
+      'university.financial-aids': UniversityFinancialAids;
+      'university.basic-info': UniversityBasicInfo;
+      'university.admission-requirements': UniversityAdmissionRequirements;
+      'university.additional-costs': UniversityAdditionalCosts;
       'subtopic.qn-a': SubtopicQnA;
       'subtopic.heading': SubtopicHeading;
       'subject.refrence-books': SubjectRefrenceBooks;
@@ -250,6 +432,8 @@ declare module '@strapi/types' {
       'lectures.lecture-header': LecturesLectureHeader;
       'essays.essay': EssaysEssay;
       'cycles.cycle': CyclesCycle;
+      'college.requirement': CollegeRequirement;
+      'college.programs': CollegePrograms;
       'classroom.notices': ClassroomNotices;
       'classroom.days': ClassroomDays;
     }

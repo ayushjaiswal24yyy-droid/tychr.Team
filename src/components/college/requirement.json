@@ -1,0 +1,12 @@
+{
+  "collectionName": "components_college_requirements",
+  "info": {
+    "displayName": "requirement"
+  },
+  "options": {},
+  "attributes": {
+    "requirement": {
+      "type": "string"
+    }
+  }
+}

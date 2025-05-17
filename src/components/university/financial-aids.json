@@ -1,0 +1,27 @@
+{
+  "collectionName": "components_university_financial_aids",
+  "info": {
+    "displayName": "financial-aids"
+  },
+  "options": {},
+  "attributes": {
+    "rhodes": {
+      "type": "boolean"
+    },
+    "claderon": {
+      "type": "boolean"
+    },
+    "oxford_weidenfeld": {
+      "type": "boolean"
+    },
+    "reach_oxford": {
+      "type": "boolean"
+    },
+    "oxford_bursary": {
+      "type": "boolean"
+    },
+    "college_specific_support": {
+      "type": "boolean"
+    }
+  }
+}

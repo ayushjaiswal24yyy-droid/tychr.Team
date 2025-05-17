@@ -1,0 +1,22 @@
+{
+  "collectionName": "components_university_global_rankings",
+  "info": {
+    "displayName": "global-ranking",
+    "description": ""
+  },
+  "options": {},
+  "attributes": {
+    "times_rank": {
+      "type": "integer"
+    },
+    "us_news_rank": {
+      "type": "biginteger"
+    },
+    "arwu_rank": {
+      "type": "integer"
+    },
+    "qs_rank": {
+      "type": "integer"
+    }
+  }
+}

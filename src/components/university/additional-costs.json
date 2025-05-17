@@ -1,0 +1,33 @@
+{
+  "collectionName": "components_university_additional_costs",
+  "info": {
+    "displayName": "additional_costs"
+  },
+  "options": {},
+  "attributes": {
+    "accomodation_min": {
+      "type": "string"
+    },
+    "accomodation_max": {
+      "type": "string"
+    },
+    "books_min": {
+      "type": "string"
+    },
+    "books_max": {
+      "type": "string"
+    },
+    "living_expense_min": {
+      "type": "string"
+    },
+    "living_expense_max": {
+      "type": "string"
+    },
+    "insurance_min": {
+      "type": "string"
+    },
+    "insurance_max": {
+      "type": "string"
+    }
+  }
+}

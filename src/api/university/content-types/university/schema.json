@@ -12,89 +12,70 @@
   },
   "pluginOptions": {},
   "attributes": {
-    "university_name": {
-      "type": "text"
-    },
-    "region": {
-      "type": "text"
-    },
-    "university_id": {
-      "type": "biginteger"
-    },
-    "images": {
-      "type": "media",
-      "multiple": true,
-      "required": false,
-      "allowedTypes": [
-        "images",
-        "files",
-        "videos",
-        "audios"
-      ]
-    },
-    "university_type": {
-      "type": "enumeration",
-      "enum": [
-        "public",
-        "private",
-        "coed",
-        "single_sex",
-        "religiously_affiliated",
-        "ivy_league",
-        "group_of_8",
-        "russell_group",
-        "C9_league",
-        "oxbridge",
-        "golden_triangle",
-        "grandes_ecoles",
-        "TU9",
-        "SKY_universities",
-        "imperial_universities",
-        "state_university",
-        "liberal_arts_colleges",
-        "community_colleges",
-        "research_universities",
-        "deemed_universities"
-      ]
-    },
-    "university_ranking": {
-      "type": "integer"
-    },
-    "acceptance_rate": {
-      "type": "float"
-    },
     "essays": {
       "type": "component",
       "repeatable": true,
       "component": "essays.essay"
     },
-    "cycles": {
+    "intakes": {
       "type": "component",
       "repeatable": true,
       "component": "cycles.cycle"
-    },
-    "min_GPA": {
-      "type": "decimal"
-    },
-    "SAT_range": {
-      "type": "string"
-    },
-    "IELTS_range": {
-      "type": "string"
-    },
-    "recommendations": {
-      "type": "text"
-    },
-    "tution_fee": {
-      "type": "string"
-    },
-    "financial_aid_information": {
-      "type": "string"
     },
     "colleges": {
       "type": "relation",
       "relation": "oneToMany",
       "target": "api::college.college"
+    },
+    "basic": {
+      "type": "component",
+      "repeatable": false,
+      "component": "university.basic-info"
+    },
+    "stats": {
+      "type": "component",
+      "repeatable": false,
+      "component": "university.key-stats"
+    },
+    "global_ranking": {
+      "type": "component",
+      "repeatable": false,
+      "component": "university.global-ranking"
+    },
+    "subject_ranking": {
+      "type": "component",
+      "repeatable": false,
+      "component": "university.subject-ranking"
+    },
+    "overview": {
+      "type": "component",
+      "repeatable": false,
+      "component": "university.overview"
+    },
+    "lors": {
+      "type": "component",
+      "repeatable": true,
+      "component": "university.lor"
+    },
+    "admission_requirements": {
+      "type": "component",
+      "repeatable": false,
+      "component": "university.admission-requirements"
+    },
+    "tution_fees": {
+      "type": "component",
+      "repeatable": false,
+      "component": "university.tution-fees"
+    },
+    "financial_aids": {
+      "type": "component",
+      "repeatable": false,
+      "component": "university.financial-aids"
+    },
+    "additional_costs": {
+      "type": "component",
+      "repeatable": false,
+      "component": "university.additional-costs"
     }
   }
 }
