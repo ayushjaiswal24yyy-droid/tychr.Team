@@ -55,4 +55,14 @@ module.exports = ({ env }) => ({
       },
     },
   },
+
+  ckeditor: {
+    enabled: true,
+    config: {
+      plugin: {
+        // Ensure media embed plugin is enabled
+        mediaEmbed: true,
+      },
+    },
+  },
 });
