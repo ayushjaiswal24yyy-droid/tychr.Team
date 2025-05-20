@@ -55,32 +55,4 @@ module.exports = ({ env }) => ({
       },
     },
   },
-
-  ckeditor: {
-    enabled: true,
-    config: {
-      plugin: {
-        mediaEmbed: true,
-      },
-      editor: {
-        toolbar: {
-          items: [
-            "heading",
-            "|",
-            "bold",
-            "italic",
-            "link",
-            "bulletedList",
-            "numberedList",
-            "|",
-            "insertImage",
-            "mediaEmbed",
-            "|",
-            "undo",
-            "redo",
-          ],
-        },
-      },
-    },
-  },
 });
