@@ -2582,6 +2582,51 @@ export interface ApiTestSerieTestSerie extends Schema.CollectionType {
   };
 }
 
+export interface ApiThirdPartyMeetingThirdPartyMeeting
+  extends Schema.CollectionType {
+  collectionName: 'third_party_meetings';
+  info: {
+    singularName: 'third-party-meeting';
+    pluralName: 'third-party-meetings';
+    displayName: 'Third Party Meetings';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    title: Attribute.Text;
+    date: Attribute.Date;
+    time: Attribute.Time;
+    description: Attribute.Text;
+    meeting_link: Attribute.String;
+    student: Attribute.Relation<
+      'api::third-party-meeting.third-party-meeting',
+      'oneToOne',
+      'plugin::users-permissions.user'
+    >;
+    mentor: Attribute.Relation<
+      'api::third-party-meeting.third-party-meeting',
+      'oneToOne',
+      'plugin::users-permissions.user'
+    >;
+    createdAt: Attribute.DateTime;
+    updatedAt: Attribute.DateTime;
+    publishedAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<
+      'api::third-party-meeting.third-party-meeting',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+    updatedBy: Attribute.Relation<
+      'api::third-party-meeting.third-party-meeting',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+  };
+}
+
 export interface ApiTopicTopic extends Schema.CollectionType {
   collectionName: 'topics';
   info: {
@@ -2813,6 +2858,7 @@ declare module '@strapi/types' {
       'api::subtopic.subtopic': ApiSubtopicSubtopic;
       'api::task.task': ApiTaskTask;
       'api::test-serie.test-serie': ApiTestSerieTestSerie;
+      'api::third-party-meeting.third-party-meeting': ApiThirdPartyMeetingThirdPartyMeeting;
       'api::topic.topic': ApiTopicTopic;
       'api::tutor-plan.tutor-plan': ApiTutorPlanTutorPlan;
       'api::university.university': ApiUniversityUniversity;

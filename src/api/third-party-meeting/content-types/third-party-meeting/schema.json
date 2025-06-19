@@ -1,0 +1,40 @@
+{
+  "kind": "collectionType",
+  "collectionName": "third_party_meetings",
+  "info": {
+    "singularName": "third-party-meeting",
+    "pluralName": "third-party-meetings",
+    "displayName": "Third Party Meetings"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "title": {
+      "type": "text"
+    },
+    "date": {
+      "type": "date"
+    },
+    "time": {
+      "type": "time"
+    },
+    "description": {
+      "type": "text"
+    },
+    "meeting_link": {
+      "type": "string"
+    },
+    "student": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "plugin::users-permissions.user"
+    },
+    "mentor": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "plugin::users-permissions.user"
+    }
+  }
+}
