@@ -50,6 +50,16 @@
       "type": "relation",
       "relation": "oneToOne",
       "target": "api::topic.topic"
+    },
+    "attachment": {
+      "allowedTypes": [
+        "images",
+        "files",
+        "videos",
+        "audios"
+      ],
+      "type": "media",
+      "multiple": true
     }
   }
 }

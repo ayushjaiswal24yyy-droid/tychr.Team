@@ -2206,6 +2206,7 @@ export interface ApiQuestionBankQuestionBank extends Schema.CollectionType {
       'oneToOne',
       'api::topic.topic'
     >;
+    attachment: Attribute.Media<'images' | 'files' | 'videos' | 'audios', true>;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
