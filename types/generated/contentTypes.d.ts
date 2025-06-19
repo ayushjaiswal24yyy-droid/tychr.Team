@@ -2502,6 +2502,7 @@ export interface ApiTaskTask extends Schema.CollectionType {
     singularName: 'task';
     pluralName: 'tasks';
     displayName: 'tasks';
+    description: '';
   };
   options: {
     draftAndPublish: true;
@@ -2513,6 +2514,11 @@ export interface ApiTaskTask extends Schema.CollectionType {
     time: Attribute.Time;
     description: Attribute.Text;
     user: Attribute.Relation<
+      'api::task.task',
+      'oneToOne',
+      'plugin::users-permissions.user'
+    >;
+    student: Attribute.Relation<
       'api::task.task',
       'oneToOne',
       'plugin::users-permissions.user'

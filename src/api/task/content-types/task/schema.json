@@ -4,7 +4,8 @@
   "info": {
     "singularName": "task",
     "pluralName": "tasks",
-    "displayName": "tasks"
+    "displayName": "tasks",
+    "description": ""
   },
   "options": {
     "draftAndPublish": true
@@ -32,6 +33,11 @@
       "type": "text"
     },
     "user": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "plugin::users-permissions.user"
+    },
+    "student": {
       "type": "relation",
       "relation": "oneToOne",
       "target": "plugin::users-permissions.user"
