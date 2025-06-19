@@ -2496,6 +2496,37 @@ export interface ApiSubtopicSubtopic extends Schema.CollectionType {
   };
 }
 
+export interface ApiTaskTask extends Schema.CollectionType {
+  collectionName: 'tasks';
+  info: {
+    singularName: 'task';
+    pluralName: 'tasks';
+    displayName: 'tasks';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    title: Attribute.Text;
+    status: Attribute.Enumeration<['not_started', 'in_progress', 'completed']>;
+    date: Attribute.Date;
+    time: Attribute.Time;
+    description: Attribute.Text;
+    user: Attribute.Relation<
+      'api::task.task',
+      'oneToOne',
+      'plugin::users-permissions.user'
+    >;
+    createdAt: Attribute.DateTime;
+    updatedAt: Attribute.DateTime;
+    publishedAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<'api::task.task', 'oneToOne', 'admin::user'> &
+      Attribute.Private;
+    updatedBy: Attribute.Relation<'api::task.task', 'oneToOne', 'admin::user'> &
+      Attribute.Private;
+  };
+}
+
 export interface ApiTestSerieTestSerie extends Schema.CollectionType {
   collectionName: 'test_series';
   info: {
@@ -2780,6 +2811,7 @@ declare module '@strapi/types' {
       'api::subject.subject': ApiSubjectSubject;
       'api::subject-group.subject-group': ApiSubjectGroupSubjectGroup;
       'api::subtopic.subtopic': ApiSubtopicSubtopic;
+      'api::task.task': ApiTaskTask;
       'api::test-serie.test-serie': ApiTestSerieTestSerie;
       'api::topic.topic': ApiTopicTopic;
       'api::tutor-plan.tutor-plan': ApiTutorPlanTutorPlan;
