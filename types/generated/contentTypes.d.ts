@@ -1520,6 +1520,44 @@ export interface ApiEnrollmentEnrollment extends Schema.CollectionType {
   };
 }
 
+export interface ApiExternalUserExternalUser extends Schema.CollectionType {
+  collectionName: 'external_users';
+  info: {
+    singularName: 'external-user';
+    pluralName: 'external-users';
+    displayName: 'External User';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    user: Attribute.Relation<
+      'api::external-user.external-user',
+      'oneToOne',
+      'plugin::users-permissions.user'
+    >;
+    type: Attribute.Enumeration<['student_org', 'ngo', 'corporate_firm']>;
+    org_details: Attribute.Component<'external-users.org-details'>;
+    founder_details: Attribute.Component<'external-users.founder'>;
+    position_details: Attribute.Component<'external-users.position'>;
+    createdAt: Attribute.DateTime;
+    updatedAt: Attribute.DateTime;
+    publishedAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<
+      'api::external-user.external-user',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+    updatedBy: Attribute.Relation<
+      'api::external-user.external-user',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+  };
+}
+
 export interface ApiGradeSubjectGradeSubject extends Schema.CollectionType {
   collectionName: 'grade_subjects';
   info: {
@@ -2843,6 +2881,7 @@ declare module '@strapi/types' {
       'api::demo-video.demo-video': ApiDemoVideoDemoVideo;
       'api::doubt-section.doubt-section': ApiDoubtSectionDoubtSection;
       'api::enrollment.enrollment': ApiEnrollmentEnrollment;
+      'api::external-user.external-user': ApiExternalUserExternalUser;
       'api::grade-subject.grade-subject': ApiGradeSubjectGradeSubject;
       'api::ib-program.ib-program': ApiIbProgramIbProgram;
       'api::individual-user.individual-user': ApiIndividualUserIndividualUser;

@@ -1,0 +1,30 @@
+{
+  "collectionName": "components_external_users_founders",
+  "info": {
+    "displayName": "founder"
+  },
+  "options": {},
+  "attributes": {
+    "name": {
+      "type": "string"
+    },
+    "university": {
+      "type": "string"
+    },
+    "email": {
+      "type": "email"
+    },
+    "linkedin": {
+      "type": "string"
+    },
+    "phone": {
+      "type": "string"
+    },
+    "yoe": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    }
+  }
+}

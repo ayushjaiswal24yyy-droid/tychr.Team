@@ -1,0 +1,42 @@
+{
+  "collectionName": "components_external_users_positions",
+  "info": {
+    "displayName": "position"
+  },
+  "options": {},
+  "attributes": {
+    "title": {
+      "type": "string"
+    },
+    "duration": {
+      "type": "string"
+    },
+    "start_date": {
+      "type": "date"
+    },
+    "end_date": {
+      "type": "date"
+    },
+    "description": {
+      "type": "text"
+    },
+    "compensation": {
+      "type": "string"
+    },
+    "eligibility": {
+      "type": "string"
+    },
+    "location": {
+      "type": "string"
+    },
+    "time_commitment": {
+      "type": "string"
+    },
+    "selection_process": {
+      "type": "text"
+    },
+    "benefits": {
+      "type": "text"
+    }
+  }
+}

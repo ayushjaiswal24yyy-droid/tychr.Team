@@ -1,0 +1,46 @@
+{
+  "kind": "collectionType",
+  "collectionName": "external_users",
+  "info": {
+    "singularName": "external-user",
+    "pluralName": "external-users",
+    "displayName": "External User"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "user": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "plugin::users-permissions.user"
+    },
+    "type": {
+      "type": "enumeration",
+      "enum": [
+        "student_org",
+        "ngo",
+        "corporate_firm"
+      ]
+    },
+    "org_details": {
+      "displayName": "org_details",
+      "type": "component",
+      "repeatable": false,
+      "component": "external-users.org-details"
+    },
+    "founder_details": {
+      "displayName": "founder",
+      "type": "component",
+      "repeatable": false,
+      "component": "external-users.founder"
+    },
+    "position_details": {
+      "displayName": "position",
+      "type": "component",
+      "repeatable": false,
+      "component": "external-users.position"
+    }
+  }
+}

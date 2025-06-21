@@ -1,0 +1,48 @@
+{
+  "collectionName": "components_external_users_org_details",
+  "info": {
+    "displayName": "org_details"
+  },
+  "options": {},
+  "attributes": {
+    "org_name": {
+      "type": "string"
+    },
+    "description": {
+      "type": "text"
+    },
+    "years_running": {
+      "type": "string"
+    },
+    "location": {
+      "type": "string"
+    },
+    "website": {
+      "type": "string"
+    },
+    "cause": {
+      "type": "string"
+    },
+    "facebook": {
+      "type": "string"
+    },
+    "twitter": {
+      "type": "string"
+    },
+    "linkedin": {
+      "type": "string"
+    },
+    "instagram": {
+      "type": "string"
+    },
+    "tiktok": {
+      "type": "string"
+    },
+    "company_type": {
+      "type": "string"
+    },
+    "industry": {
+      "type": "string"
+    }
+  }
+}
