@@ -1986,6 +1986,7 @@ export interface ApiNoteNote extends Schema.CollectionType {
       'oneToMany',
       'api::recorded-lecture.recorded-lecture'
     >;
+    attachment: Attribute.Media<'images' | 'files' | 'videos' | 'audios', true>;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
