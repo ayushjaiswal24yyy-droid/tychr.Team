@@ -12,6 +12,7 @@ module.exports = ({ env }) => ({
           Bucket: env("AWS_BUCKET_NAME"),
         },
       },
+      sizeLimit: 1024 * 1024 * 1024, // 1GB
 
       breakpoints: {
         sm: 576,
