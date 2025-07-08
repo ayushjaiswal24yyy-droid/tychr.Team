@@ -50,9 +50,18 @@ module.exports = ({ env }) => [
   {
     name: "strapi::body",
     config: {
-      formLimit: "1024mb",
-      jsonLimit: "1024mb",
-      textLimit: "1024mb",
+      enabled: true,
+      multipart: true,
+      textLimit: 10 * 1024 * 1024 * 1024,
+      formLimit: 10 * 1024 * 1024 * 1024,
+      jsonLimit: 10 * 1024 * 1024 * 1024,
+      includeUnparsed: true,
+      formidable: {
+        maxFileSize: 10 * 1024 * 1024 * 1024, // 10 GB
+      },
+      providerOptions: {
+        sizeLimit: 10 * 1024 * 1024 * 1024, // 10 GB
+      },
     },
   },
   "strapi::favicon",
