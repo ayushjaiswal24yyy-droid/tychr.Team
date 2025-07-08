@@ -2572,6 +2572,28 @@ export interface ApiTaskTask extends Schema.CollectionType {
   };
 }
 
+export interface ApiTestTest extends Schema.SingleType {
+  collectionName: 'tests';
+  info: {
+    singularName: 'test';
+    pluralName: 'tests';
+    displayName: 'Test';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    Test: Attribute.String;
+    createdAt: Attribute.DateTime;
+    updatedAt: Attribute.DateTime;
+    publishedAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<'api::test.test', 'oneToOne', 'admin::user'> &
+      Attribute.Private;
+    updatedBy: Attribute.Relation<'api::test.test', 'oneToOne', 'admin::user'> &
+      Attribute.Private;
+  };
+}
+
 export interface ApiTestSerieTestSerie extends Schema.CollectionType {
   collectionName: 'test_series';
   info: {
@@ -2903,6 +2925,7 @@ declare module '@strapi/types' {
       'api::subject-group.subject-group': ApiSubjectGroupSubjectGroup;
       'api::subtopic.subtopic': ApiSubtopicSubtopic;
       'api::task.task': ApiTaskTask;
+      'api::test.test': ApiTestTest;
       'api::test-serie.test-serie': ApiTestSerieTestSerie;
       'api::third-party-meeting.third-party-meeting': ApiThirdPartyMeetingThirdPartyMeeting;
       'api::topic.topic': ApiTopicTopic;
