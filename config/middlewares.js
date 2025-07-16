@@ -39,6 +39,11 @@ module.exports = ({ env }) => [
             "https://m.media-amazon.com",
             "https://tychr-strapi.s3.ap-south-1.amazonaws.com",
           ],
+          "frame-src": [
+            "'self'",
+            "https://www.youtube.com",
+            "https://player.vimeo.com",
+          ],
         },
       },
     },
