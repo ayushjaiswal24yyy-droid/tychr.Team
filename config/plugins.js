@@ -56,4 +56,47 @@ module.exports = ({ env }) => ({
       },
     },
   },
+
+  "content-manager": {
+    config: {
+      sanitize: {
+        enabled: true,
+        options: {
+          // all the tags you want Strapi to allow
+          allowedTags: [
+            "h1",
+            "h2",
+            "h3",
+            "h4",
+            "h5",
+            "h6",
+            "p",
+            "a",
+            "ul",
+            "ol",
+            "li",
+            "strong",
+            "em",
+            "img",
+            "iframe",
+          ],
+          // and the attributes each tag can have
+          allowedAttributes: {
+            iframe: [
+              "src",
+              "width",
+              "height",
+              "frameborder",
+              "allow",
+              "allowfullscreen",
+              "referrerpolicy",
+              "title",
+            ],
+            a: ["href", "target", "rel", "title"],
+            img: ["src", "alt", "width", "height"],
+          },
+        },
+      },
+    },
+  },
 });

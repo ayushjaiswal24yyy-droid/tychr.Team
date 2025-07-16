@@ -216,52 +216,6 @@ export interface RecordedLecturesProgress extends Schema.Component {
   };
 }
 
-export interface QuestionBankQuestionNAnswer extends Schema.Component {
-  collectionName: 'components_question_bank_question_n_answers';
-  info: {
-    displayName: 'question_n_answer';
-    description: '';
-  };
-  attributes: {
-    question: Attribute.Relation<
-      'question-bank.question-n-answer',
-      'oneToOne',
-      'api::question-bank.question-bank'
-    >;
-    answer: Attribute.JSON;
-    question_n_answer: Attribute.RichText;
-  };
-}
-
-export interface QuestionBankParts extends Schema.Component {
-  collectionName: 'components_question_bank_parts';
-  info: {
-    displayName: 'Parts';
-    icon: 'feather';
-    description: '';
-  };
-  attributes: {
-    answer_type: Attribute.Enumeration<
-      ['Single Correct', 'Integer', 'Small Text', 'Large Text']
-    >;
-    marks: Attribute.Integer;
-    one_liner: Attribute.RichText;
-    options: Attribute.RichText;
-    correct_answer: Attribute.RichText;
-    hints: Attribute.Component<'question-bank.hints', true>;
-  };
-}
-
-export interface QuestionBankHints extends Schema.Component {
-  collectionName: 'components_question_bank_hints';
-  info: {
-    displayName: 'hints';
-  };
-  attributes: {
-    hint: Attribute.RichText;
-  };
-}
-
 export interface PlanGradePlan extends Schema.Component {
   collectionName: 'components_plan_grade_plans';
   info: {
@@ -462,6 +416,52 @@ export interface ClassroomDays extends Schema.Component {
   };
 }
 
+export interface QuestionBankQuestionNAnswer extends Schema.Component {
+  collectionName: 'components_question_bank_question_n_answers';
+  info: {
+    displayName: 'question_n_answer';
+    description: '';
+  };
+  attributes: {
+    question: Attribute.Relation<
+      'question-bank.question-n-answer',
+      'oneToOne',
+      'api::question-bank.question-bank'
+    >;
+    answer: Attribute.JSON;
+    question_n_answer: Attribute.RichText;
+  };
+}
+
+export interface QuestionBankParts extends Schema.Component {
+  collectionName: 'components_question_bank_parts';
+  info: {
+    displayName: 'Parts';
+    icon: 'feather';
+    description: '';
+  };
+  attributes: {
+    answer_type: Attribute.Enumeration<
+      ['Single Correct', 'Integer', 'Small Text', 'Large Text']
+    >;
+    marks: Attribute.Integer;
+    one_liner: Attribute.RichText;
+    options: Attribute.RichText;
+    correct_answer: Attribute.RichText;
+    hints: Attribute.Component<'question-bank.hints', true>;
+  };
+}
+
+export interface QuestionBankHints extends Schema.Component {
+  collectionName: 'components_question_bank_hints';
+  info: {
+    displayName: 'hints';
+  };
+  attributes: {
+    hint: Attribute.RichText;
+  };
+}
+
 declare module '@strapi/types' {
   export module Shared {
     export interface Components {
@@ -480,9 +480,6 @@ declare module '@strapi/types' {
       'subtopic.heading': SubtopicHeading;
       'subject.refrence-books': SubjectRefrenceBooks;
       'recorded-lectures.progress': RecordedLecturesProgress;
-      'question-bank.question-n-answer': QuestionBankQuestionNAnswer;
-      'question-bank.parts': QuestionBankParts;
-      'question-bank.hints': QuestionBankHints;
       'plan.grade-plan': PlanGradePlan;
       'notification.history': NotificationHistory;
       'notification.demo-booking-time': NotificationDemoBookingTime;
@@ -497,6 +494,9 @@ declare module '@strapi/types' {
       'college.programs': CollegePrograms;
       'classroom.notices': ClassroomNotices;
       'classroom.days': ClassroomDays;
+      'question-bank.question-n-answer': QuestionBankQuestionNAnswer;
+      'question-bank.parts': QuestionBankParts;
+      'question-bank.hints': QuestionBankHints;
     }
   }
 }
