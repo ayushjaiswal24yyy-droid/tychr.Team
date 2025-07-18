@@ -1987,6 +1987,8 @@ export interface ApiNoteNote extends Schema.CollectionType {
       'api::recorded-lecture.recorded-lecture'
     >;
     attachment: Attribute.Media<'images' | 'files' | 'videos' | 'audios', true>;
+    note_type: Attribute.Enumeration<['strapi', 'wordpress']>;
+    wordpress_url: Attribute.String;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;

@@ -45,14 +45,25 @@
       "mappedBy": "note"
     },
     "attachment": {
+      "type": "media",
+      "multiple": true,
+      "required": false,
       "allowedTypes": [
         "images",
         "files",
         "videos",
         "audios"
-      ],
-      "type": "media",
-      "multiple": true
+      ]
+    },
+    "note_type": {
+      "type": "enumeration",
+      "enum": [
+        "strapi",
+        "wordpress"
+      ]
+    },
+    "wordpress_url": {
+      "type": "string"
     }
   }
 }
