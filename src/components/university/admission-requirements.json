@@ -1,13 +1,11 @@
 {
   "collectionName": "components_university_admission_requirements",
   "info": {
-    "displayName": "admission_requirements"
+    "displayName": "admission_requirements",
+    "description": ""
   },
   "options": {},
   "attributes": {
-    "min_gpa": {
-      "type": "decimal"
-    },
     "high_school_diploma": {
       "type": "boolean"
     },
@@ -31,6 +29,9 @@
     },
     "duolingo_score": {
       "type": "decimal"
+    },
+    "min_gpa": {
+      "type": "string"
     }
   }
 }

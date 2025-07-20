@@ -1,7 +1,8 @@
 {
   "collectionName": "components_university_basic_infos",
   "info": {
-    "displayName": "basic-info"
+    "displayName": "basic-info",
+    "description": ""
   },
   "options": {},
   "attributes": {
@@ -21,7 +22,7 @@
       "type": "integer"
     },
     "acceptance_rate": {
-      "type": "decimal"
+      "type": "string"
     }
   }
 }

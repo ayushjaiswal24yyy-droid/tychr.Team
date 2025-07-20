@@ -72,12 +72,13 @@ export interface UniversityKeyStats extends Schema.Component {
   collectionName: 'components_university_key_stats';
   info: {
     displayName: 'key-stats';
+    description: '';
   };
   attributes: {
     total_students: Attribute.BigInteger;
     int_students: Attribute.BigInteger;
-    student_faculty_ratio: Attribute.Decimal;
     research_funding: Attribute.BigInteger;
+    student_faculty_ratio: Attribute.String;
   };
 }
 
@@ -114,6 +115,7 @@ export interface UniversityBasicInfo extends Schema.Component {
   collectionName: 'components_university_basic_infos';
   info: {
     displayName: 'basic-info';
+    description: '';
   };
   attributes: {
     university_name: Attribute.Text;
@@ -121,7 +123,7 @@ export interface UniversityBasicInfo extends Schema.Component {
     university_type: Attribute.String;
     year_of_establishment: Attribute.Integer;
     world_rank: Attribute.Integer;
-    acceptance_rate: Attribute.Decimal;
+    acceptance_rate: Attribute.String;
   };
 }
 
@@ -129,9 +131,9 @@ export interface UniversityAdmissionRequirements extends Schema.Component {
   collectionName: 'components_university_admission_requirements';
   info: {
     displayName: 'admission_requirements';
+    description: '';
   };
   attributes: {
-    min_gpa: Attribute.Decimal;
     high_school_diploma: Attribute.Boolean;
     sat: Attribute.Boolean;
     ap: Attribute.Boolean;
@@ -140,6 +142,7 @@ export interface UniversityAdmissionRequirements extends Schema.Component {
     toefl_score: Attribute.Integer;
     cambridge_score: Attribute.String;
     duolingo_score: Attribute.Decimal;
+    min_gpa: Attribute.String;
   };
 }
 
