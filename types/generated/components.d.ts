@@ -442,6 +442,18 @@ export interface CollegePrograms extends Schema.Component {
   };
 }
 
+export interface ClassroomResources extends Schema.Component {
+  collectionName: 'components_classroom_resources';
+  info: {
+    displayName: 'resources';
+    icon: 'apps';
+  };
+  attributes: {
+    url: Attribute.Text;
+    attachment: Attribute.Media<'images' | 'files' | 'videos' | 'audios'>;
+  };
+}
+
 export interface ClassroomNotices extends Schema.Component {
   collectionName: 'components_classroom_notices';
   info: {
@@ -498,6 +510,7 @@ declare module '@strapi/types' {
       'cycles.cycle': CyclesCycle;
       'college.requirement': CollegeRequirement;
       'college.programs': CollegePrograms;
+      'classroom.resources': ClassroomResources;
       'classroom.notices': ClassroomNotices;
       'classroom.days': ClassroomDays;
     }

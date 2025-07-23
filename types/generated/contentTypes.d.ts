@@ -1502,6 +1502,7 @@ export interface ApiEnrollmentEnrollment extends Schema.CollectionType {
       'oneToOne',
       'api::class.class'
     >;
+    additional_resources: Attribute.Component<'classroom.resources', true>;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;

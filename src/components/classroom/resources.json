@@ -1,0 +1,23 @@
+{
+  "collectionName": "components_classroom_resources",
+  "info": {
+    "displayName": "resources",
+    "icon": "apps"
+  },
+  "options": {},
+  "attributes": {
+    "url": {
+      "type": "text"
+    },
+    "attachment": {
+      "allowedTypes": [
+        "images",
+        "files",
+        "videos",
+        "audios"
+      ],
+      "type": "media",
+      "multiple": false
+    }
+  }
+}

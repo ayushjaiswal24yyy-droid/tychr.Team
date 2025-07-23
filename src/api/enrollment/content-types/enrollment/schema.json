@@ -160,6 +160,11 @@
       "type": "relation",
       "relation": "oneToOne",
       "target": "api::class.class"
+    },
+    "additional_resources": {
+      "type": "component",
+      "repeatable": true,
+      "component": "classroom.resources"
     }
   }
 }
