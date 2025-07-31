@@ -2195,7 +2195,6 @@ export interface ApiPremiumPlanPremiumPlan extends Schema.CollectionType {
     description: Attribute.Text;
     type: Attribute.Enumeration<['mentor', 'counselor']> & Attribute.Required;
     price: Attribute.Decimal & Attribute.Required;
-    currency: Attribute.String;
     hours_included: Attribute.Integer;
     active: Attribute.Boolean;
     user_plans: Attribute.Relation<
@@ -2203,6 +2202,7 @@ export interface ApiPremiumPlanPremiumPlan extends Schema.CollectionType {
       'oneToMany',
       'api::user-plan.user-plan'
     >;
+    currency: Attribute.Enumeration<['INR', 'USD']>;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     createdBy: Attribute.Relation<
@@ -2897,6 +2897,7 @@ export interface ApiUserPlanUserPlan extends Schema.CollectionType {
     singularName: 'user-plan';
     pluralName: 'user-plans';
     displayName: 'UserPlan';
+    description: '';
   };
   options: {
     draftAndPublish: false;
@@ -2917,6 +2918,9 @@ export interface ApiUserPlanUserPlan extends Schema.CollectionType {
     purchased_at: Attribute.DateTime;
     status: Attribute.Enumeration<['active', 'expired', 'used_up']> &
       Attribute.DefaultTo<'active'>;
+    razorpay_payment_id: Attribute.String;
+    razorpay_order_id: Attribute.String;
+    razorpay_signature: Attribute.String;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     createdBy: Attribute.Relation<

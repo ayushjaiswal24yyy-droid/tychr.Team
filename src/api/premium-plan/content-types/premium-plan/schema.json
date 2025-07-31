@@ -31,9 +31,6 @@
       "type": "decimal",
       "required": true
     },
-    "currency": {
-      "type": "string"
-    },
     "hours_included": {
       "type": "integer"
     },
@@ -45,6 +42,13 @@
       "relation": "oneToMany",
       "target": "api::user-plan.user-plan",
       "mappedBy": "premium_plan"
+    },
+    "currency": {
+      "type": "enumeration",
+      "enum": [
+        "INR",
+        "USD"
+      ]
     }
   }
 }

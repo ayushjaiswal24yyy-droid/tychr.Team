@@ -4,7 +4,8 @@
   "info": {
     "singularName": "user-plan",
     "pluralName": "user-plans",
-    "displayName": "UserPlan"
+    "displayName": "UserPlan",
+    "description": ""
   },
   "options": {
     "draftAndPublish": false
@@ -41,6 +42,15 @@
         "used_up"
       ],
       "default": "active"
+    },
+    "razorpay_payment_id": {
+      "type": "string"
+    },
+    "razorpay_order_id": {
+      "type": "string"
+    },
+    "razorpay_signature": {
+      "type": "string"
     }
   }
 }
