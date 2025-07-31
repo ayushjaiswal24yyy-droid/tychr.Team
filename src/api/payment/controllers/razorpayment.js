@@ -29,25 +29,14 @@ module.exports = {
 
   async verifyPayment(ctx) {
     try {
+      // Extract required data from request
       const {
         razorpay_order_id,
         razorpay_payment_id,
-        // razorpay_signature,
         planId,
         mentorOrCounsellorId,
       } = ctx.request.body;
 
-      const token = ctx.request.header.authorization?.replace("Bearer ", "");
-      let userId = null;
-
-      if (token) {
-        const { id } = await strapi.plugins[
-          "users-permissions"
-        ].services.jwt.verify(token);
-        userId = id;
-      }
-
-      const purchased_at = new Date().toISOString();
       // const expires_at = new Date(
       //   Date.now() + plan_duration_days * 24 * 60 * 60 * 1000
       // ).toISOString();
@@ -63,16 +52,32 @@ module.exports = {
       //   return ctx.badRequest("Payment verification failed");
       // }
 
-      console.log("inserting new payment with order ID:", razorpay_order_id);
+      const token = ctx.request.header.authorization?.replace("Bearer ", "");
+      let userId = null;
 
+      if (token) {
+        const { id } = await strapi.plugins[
+          "users-permissions"
+        ].services.jwt.verify(token);
+        userId = id;
+      }
+
+      const purchased_at = new Date().toISOString();
+
+      // Log payment details
       console.log(
-        "Payment inserted:",
+        "Processing payment verification for order:",
+        razorpay_order_id
+      );
+      console.log({
         userId,
         mentorOrCounsellorId,
         planId,
         razorpay_order_id,
-        razorpay_payment_id
-      );
+        razorpay_payment_id,
+      });
+
+      // Create user plan record
       try {
         const userPlan = await strapi.entityService.create(
           "api::user-plan.user-plan",
@@ -80,24 +85,24 @@ module.exports = {
             data: {
               razorpay_order_id,
               razorpay_payment_id,
-              // razorpay_signature,
               status: "active",
               purchased_at,
-              // expires_at,
               remaining_hours: 10,
-              student: userId, // assumes relation by ID
-              premium_plan: planId, // assumes relation by ID
+              student: userId,
+              premium_plan: planId,
             },
           }
         );
-        console.log("User plan created:", userPlan);
+
+        console.log("Successfully created user plan:", userPlan.id);
+        return { verified: true, userPlan, userid: userId };
       } catch (error) {
-        console.error("Failed to create user plan:", error);
+        console.error("Error creating user plan:", error);
+        throw new Error("Failed to create user plan record");
       }
-      return { verified: true };
     } catch (error) {
-      console.error(error);
-      return ctx.internalServerError("Verification failed");
+      console.error("Payment verification error:", error);
+      return ctx.internalServerError("Payment verification failed");
     }
   },
 };
