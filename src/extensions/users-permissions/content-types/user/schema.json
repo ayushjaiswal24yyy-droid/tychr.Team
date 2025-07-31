@@ -345,6 +345,11 @@
       "relation": "oneToMany",
       "target": "api::premium-plan.premium-plan",
       "mappedBy": "created_by_user"
+    },
+    "experiencesOfUser": {
+      "type": "component",
+      "repeatable": true,
+      "component": "user.user-experience"
     }
   }
 }

@@ -1,0 +1,45 @@
+{
+  "collectionName": "components_user_user_experiences",
+  "info": {
+    "displayName": "userExperience",
+    "icon": "bulletList"
+  },
+  "options": {},
+  "attributes": {
+    "company_name": {
+      "type": "string"
+    },
+    "company_type": {
+      "type": "enumeration",
+      "enum": [
+        "private",
+        "government"
+      ]
+    },
+    "position": {
+      "type": "string"
+    },
+    "start_date": {
+      "type": "date"
+    },
+    "end_date": {
+      "type": "date"
+    },
+    "employment_type": {
+      "type": "enumeration",
+      "enum": [
+        "Full time",
+        "Part time",
+        "Contract",
+        "Internship",
+        "Freelance"
+      ]
+    },
+    "description": {
+      "type": "text"
+    },
+    "responsibilities": {
+      "type": "json"
+    }
+  }
+}

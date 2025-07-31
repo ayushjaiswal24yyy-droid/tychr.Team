@@ -938,6 +938,7 @@ export interface PluginUsersPermissionsUser extends Schema.CollectionType {
       'oneToMany',
       'api::premium-plan.premium-plan'
     >;
+    experiencesOfUser: Attribute.Component<'user.user-experience', true>;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     createdBy: Attribute.Relation<
