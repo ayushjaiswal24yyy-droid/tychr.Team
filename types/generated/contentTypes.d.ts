@@ -933,6 +933,11 @@ export interface PluginUsersPermissionsUser extends Schema.CollectionType {
       'oneToMany',
       'api::user-plan.user-plan'
     >;
+    premium_plans_created: Attribute.Relation<
+      'plugin::users-permissions.user',
+      'oneToMany',
+      'api::premium-plan.premium-plan'
+    >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     createdBy: Attribute.Relation<
@@ -2203,6 +2208,11 @@ export interface ApiPremiumPlanPremiumPlan extends Schema.CollectionType {
       'api::user-plan.user-plan'
     >;
     currency: Attribute.Enumeration<['INR', 'USD']>;
+    created_by_user: Attribute.Relation<
+      'api::premium-plan.premium-plan',
+      'manyToOne',
+      'plugin::users-permissions.user'
+    >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     createdBy: Attribute.Relation<

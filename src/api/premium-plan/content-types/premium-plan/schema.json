@@ -49,6 +49,12 @@
         "INR",
         "USD"
       ]
+    },
+    "created_by_user": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "plugin::users-permissions.user",
+      "inversedBy": "premium_plans_created"
     }
   }
 }

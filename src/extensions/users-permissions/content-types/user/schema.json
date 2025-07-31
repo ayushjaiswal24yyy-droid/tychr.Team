@@ -339,6 +339,12 @@
       "relation": "oneToMany",
       "target": "api::user-plan.user-plan",
       "mappedBy": "student"
+    },
+    "premium_plans_created": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::premium-plan.premium-plan",
+      "mappedBy": "created_by_user"
     }
   }
 }
