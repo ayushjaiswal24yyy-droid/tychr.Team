@@ -2174,6 +2174,42 @@ export interface ApiPostPost extends Schema.CollectionType {
   };
 }
 
+export interface ApiPremiumPlanPremiumPlan extends Schema.CollectionType {
+  collectionName: 'premium_plans';
+  info: {
+    singularName: 'premium-plan';
+    pluralName: 'premium-plans';
+    displayName: 'PremiumPlan';
+    description: '';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    title: Attribute.String & Attribute.Required;
+    description: Attribute.Text;
+    type: Attribute.Enumeration<['mentor', 'counselor']> & Attribute.Required;
+    price: Attribute.Decimal & Attribute.Required;
+    currency: Attribute.String;
+    hours_included: Attribute.Integer;
+    active: Attribute.Boolean;
+    createdAt: Attribute.DateTime;
+    updatedAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<
+      'api::premium-plan.premium-plan',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+    updatedBy: Attribute.Relation<
+      'api::premium-plan.premium-plan',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+  };
+}
+
 export interface ApiProgressProgress extends Schema.CollectionType {
   collectionName: 'progresses';
   info: {
@@ -2920,6 +2956,7 @@ declare module '@strapi/types' {
       'api::notification.notification': ApiNotificationNotification;
       'api::payment.payment': ApiPaymentPayment;
       'api::post.post': ApiPostPost;
+      'api::premium-plan.premium-plan': ApiPremiumPlanPremiumPlan;
       'api::progress.progress': ApiProgressProgress;
       'api::question-bank.question-bank': ApiQuestionBankQuestionBank;
       'api::recorded-lecture.recorded-lecture': ApiRecordedLectureRecordedLecture;

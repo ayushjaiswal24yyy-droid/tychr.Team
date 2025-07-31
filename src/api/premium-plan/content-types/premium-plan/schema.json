@@ -1,0 +1,44 @@
+{
+  "kind": "collectionType",
+  "collectionName": "premium_plans",
+  "info": {
+    "singularName": "premium-plan",
+    "pluralName": "premium-plans",
+    "displayName": "PremiumPlan",
+    "description": ""
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "title": {
+      "type": "string",
+      "required": true
+    },
+    "description": {
+      "type": "text"
+    },
+    "type": {
+      "type": "enumeration",
+      "enum": [
+        "mentor",
+        "counselor"
+      ],
+      "required": true
+    },
+    "price": {
+      "type": "decimal",
+      "required": true
+    },
+    "currency": {
+      "type": "string"
+    },
+    "hours_included": {
+      "type": "integer"
+    },
+    "active": {
+      "type": "boolean"
+    }
+  }
+}
