@@ -333,6 +333,12 @@
         "ngo",
         "corporate_firm"
       ]
+    },
+    "user_plans": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::user-plan.user-plan",
+      "mappedBy": "student"
     }
   }
 }

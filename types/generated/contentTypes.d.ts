@@ -928,6 +928,11 @@ export interface PluginUsersPermissionsUser extends Schema.CollectionType {
     third_party_role: Attribute.Enumeration<
       ['professor', 'startup_mentor', 'student_org', 'ngo', 'corporate_firm']
     >;
+    user_plans: Attribute.Relation<
+      'plugin::users-permissions.user',
+      'oneToMany',
+      'api::user-plan.user-plan'
+    >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     createdBy: Attribute.Relation<
@@ -2193,6 +2198,11 @@ export interface ApiPremiumPlanPremiumPlan extends Schema.CollectionType {
     currency: Attribute.String;
     hours_included: Attribute.Integer;
     active: Attribute.Boolean;
+    user_plans: Attribute.Relation<
+      'api::premium-plan.premium-plan',
+      'oneToMany',
+      'api::user-plan.user-plan'
+    >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     createdBy: Attribute.Relation<
@@ -2881,6 +2891,49 @@ export interface ApiUniversityUniversity extends Schema.CollectionType {
   };
 }
 
+export interface ApiUserPlanUserPlan extends Schema.CollectionType {
+  collectionName: 'user_plans';
+  info: {
+    singularName: 'user-plan';
+    pluralName: 'user-plans';
+    displayName: 'UserPlan';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    student: Attribute.Relation<
+      'api::user-plan.user-plan',
+      'manyToOne',
+      'plugin::users-permissions.user'
+    >;
+    premium_plan: Attribute.Relation<
+      'api::user-plan.user-plan',
+      'manyToOne',
+      'api::premium-plan.premium-plan'
+    >;
+    remaining_hours: Attribute.Decimal;
+    expires_at: Attribute.DateTime;
+    purchased_at: Attribute.DateTime;
+    status: Attribute.Enumeration<['active', 'expired', 'used_up']> &
+      Attribute.DefaultTo<'active'>;
+    createdAt: Attribute.DateTime;
+    updatedAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<
+      'api::user-plan.user-plan',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+    updatedBy: Attribute.Relation<
+      'api::user-plan.user-plan',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+  };
+}
+
 export interface ApiWhatsNewWhatsNew extends Schema.CollectionType {
   collectionName: 'whats_news';
   info: {
@@ -2971,6 +3024,7 @@ declare module '@strapi/types' {
       'api::topic.topic': ApiTopicTopic;
       'api::tutor-plan.tutor-plan': ApiTutorPlanTutorPlan;
       'api::university.university': ApiUniversityUniversity;
+      'api::user-plan.user-plan': ApiUserPlanUserPlan;
       'api::whats-new.whats-new': ApiWhatsNewWhatsNew;
     }
   }

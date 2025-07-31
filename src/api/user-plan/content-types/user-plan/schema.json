@@ -1,0 +1,46 @@
+{
+  "kind": "collectionType",
+  "collectionName": "user_plans",
+  "info": {
+    "singularName": "user-plan",
+    "pluralName": "user-plans",
+    "displayName": "UserPlan"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "student": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "plugin::users-permissions.user",
+      "inversedBy": "user_plans"
+    },
+    "premium_plan": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::premium-plan.premium-plan",
+      "inversedBy": "user_plans"
+    },
+    "remaining_hours": {
+      "type": "decimal"
+    },
+    "expires_at": {
+      "type": "datetime"
+    },
+    "purchased_at": {
+      "type": "datetime",
+      "required": false
+    },
+    "status": {
+      "type": "enumeration",
+      "enum": [
+        "active",
+        "expired",
+        "used_up"
+      ],
+      "default": "active"
+    }
+  }
+}

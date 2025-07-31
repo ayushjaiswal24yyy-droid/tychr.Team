@@ -39,6 +39,12 @@
     },
     "active": {
       "type": "boolean"
+    },
+    "user_plans": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::user-plan.user-plan",
+      "mappedBy": "premium_plan"
     }
   }
 }
