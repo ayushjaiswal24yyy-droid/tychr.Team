@@ -2607,8 +2607,9 @@ export interface ApiTaskTask extends Schema.CollectionType {
     draftAndPublish: true;
   };
   attributes: {
-    title: Attribute.Text;
-    status: Attribute.Enumeration<['not_started', 'in_progress', 'completed']>;
+    title: Attribute.Text & Attribute.Required;
+    status: Attribute.Enumeration<['not_started', 'in_progress', 'completed']> &
+      Attribute.DefaultTo<'not_started'>;
     date: Attribute.DateTime;
     time: Attribute.Time;
     description: Attribute.Text;
@@ -2637,6 +2638,17 @@ export interface ApiTaskTask extends Schema.CollectionType {
       Attribute.DefaultTo<0>;
     priority: Attribute.Enumeration<['low', 'medium', 'high', 'critical']> &
       Attribute.DefaultTo<'low'>;
+    taskCategory: Attribute.Enumeration<
+      [
+        'essay',
+        'academics',
+        'interview',
+        'financial-ain-consultation',
+        'lor',
+        'others'
+      ]
+    > &
+      Attribute.Required;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;

@@ -13,7 +13,8 @@
   "pluginOptions": {},
   "attributes": {
     "title": {
-      "type": "text"
+      "type": "text",
+      "required": true
     },
     "status": {
       "type": "enumeration",
@@ -21,7 +22,8 @@
         "not_started",
         "in_progress",
         "completed"
-      ]
+      ],
+      "default": "not_started"
     },
     "date": {
       "type": "datetime"
@@ -62,6 +64,18 @@
         "critical"
       ],
       "default": "low"
+    },
+    "taskCategory": {
+      "type": "enumeration",
+      "enum": [
+        "essay",
+        "academics",
+        "interview",
+        "financial-ain-consultation",
+        "lor",
+        "others"
+      ],
+      "required": true
     }
   }
 }
