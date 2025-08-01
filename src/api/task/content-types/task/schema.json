@@ -24,7 +24,7 @@
       ]
     },
     "date": {
-      "type": "date"
+      "type": "datetime"
     },
     "time": {
       "type": "time"
@@ -41,6 +41,27 @@
       "type": "relation",
       "relation": "oneToOne",
       "target": "plugin::users-permissions.user"
+    },
+    "university": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::university.university",
+      "inversedBy": "student_application_tasks"
+    },
+    "progress": {
+      "type": "integer",
+      "max": 10,
+      "default": 0
+    },
+    "priority": {
+      "type": "enumeration",
+      "enum": [
+        "low",
+        "medium",
+        "high",
+        "critical"
+      ],
+      "default": "low"
     }
   }
 }

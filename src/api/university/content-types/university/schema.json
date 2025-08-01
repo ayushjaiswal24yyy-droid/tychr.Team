@@ -76,6 +76,12 @@
       "type": "component",
       "repeatable": false,
       "component": "university.additional-costs"
+    },
+    "student_application_tasks": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::task.task",
+      "mappedBy": "university"
     }
   }
 }

@@ -2609,7 +2609,7 @@ export interface ApiTaskTask extends Schema.CollectionType {
   attributes: {
     title: Attribute.Text;
     status: Attribute.Enumeration<['not_started', 'in_progress', 'completed']>;
-    date: Attribute.Date;
+    date: Attribute.DateTime;
     time: Attribute.Time;
     description: Attribute.Text;
     user: Attribute.Relation<
@@ -2622,6 +2622,21 @@ export interface ApiTaskTask extends Schema.CollectionType {
       'oneToOne',
       'plugin::users-permissions.user'
     >;
+    university: Attribute.Relation<
+      'api::task.task',
+      'manyToOne',
+      'api::university.university'
+    >;
+    progress: Attribute.Integer &
+      Attribute.SetMinMax<
+        {
+          max: 10;
+        },
+        number
+      > &
+      Attribute.DefaultTo<0>;
+    priority: Attribute.Enumeration<['low', 'medium', 'high', 'critical']> &
+      Attribute.DefaultTo<'low'>;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
@@ -2884,6 +2899,11 @@ export interface ApiUniversityUniversity extends Schema.CollectionType {
     tution_fees: Attribute.Component<'university.tution-fees'>;
     financial_aids: Attribute.Component<'university.financial-aids'>;
     additional_costs: Attribute.Component<'university.additional-costs'>;
+    student_application_tasks: Attribute.Relation<
+      'api::university.university',
+      'oneToMany',
+      'api::task.task'
+    >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
