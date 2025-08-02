@@ -356,6 +356,12 @@
       "relation": "oneToMany",
       "target": "api::article.article",
       "mappedBy": "written_by"
+    },
+    "student_uni_applications": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::student-uni-application.student-uni-application",
+      "mappedBy": "student"
     }
   }
 }

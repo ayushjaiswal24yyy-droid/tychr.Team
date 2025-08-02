@@ -44,6 +44,17 @@
       "component": "essays.tags"
     },
     "primaryImage": {
+      "type": "media",
+      "multiple": false,
+      "required": false,
+      "allowedTypes": [
+        "images",
+        "files",
+        "videos",
+        "audios"
+      ]
+    },
+    "videos": {
       "allowedTypes": [
         "images",
         "files",

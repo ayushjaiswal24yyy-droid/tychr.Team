@@ -1,0 +1,54 @@
+{
+  "kind": "collectionType",
+  "collectionName": "student_uni_applications",
+  "info": {
+    "singularName": "student-uni-application",
+    "pluralName": "student-uni-applications",
+    "displayName": "studentUniApplication"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "student": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "plugin::users-permissions.user",
+      "inversedBy": "student_uni_applications"
+    },
+    "university": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::university.university",
+      "inversedBy": "student_uni_applications"
+    },
+    "course": {
+      "type": "string",
+      "required": false
+    },
+    "status": {
+      "type": "enumeration",
+      "enum": [
+        "dream",
+        "target",
+        "safety",
+        "reach",
+        "others"
+      ]
+    },
+    "progress": {
+      "type": "integer"
+    },
+    "universityDecision": {
+      "type": "enumeration",
+      "enum": [
+        "Pending",
+        "Accepted",
+        "Rejected",
+        "Waitlisted",
+        "Deferred"
+      ]
+    }
+  }
+}

@@ -944,6 +944,11 @@ export interface PluginUsersPermissionsUser extends Schema.CollectionType {
       'oneToMany',
       'api::article.article'
     >;
+    student_uni_applications: Attribute.Relation<
+      'plugin::users-permissions.user',
+      'oneToMany',
+      'api::student-uni-application.student-uni-application'
+    >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     createdBy: Attribute.Relation<
@@ -1040,6 +1045,7 @@ export interface ApiArticleArticle extends Schema.CollectionType {
     readingTime: Attribute.Integer;
     tags: Attribute.Component<'essays.tags', true>;
     primaryImage: Attribute.Media<'images' | 'files' | 'videos' | 'audios'>;
+    videos: Attribute.Media<'images' | 'files' | 'videos' | 'audios'>;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
@@ -2508,6 +2514,53 @@ export interface ApiResourceResource extends Schema.CollectionType {
   };
 }
 
+export interface ApiStudentUniApplicationStudentUniApplication
+  extends Schema.CollectionType {
+  collectionName: 'student_uni_applications';
+  info: {
+    singularName: 'student-uni-application';
+    pluralName: 'student-uni-applications';
+    displayName: 'studentUniApplication';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    student: Attribute.Relation<
+      'api::student-uni-application.student-uni-application',
+      'manyToOne',
+      'plugin::users-permissions.user'
+    >;
+    university: Attribute.Relation<
+      'api::student-uni-application.student-uni-application',
+      'manyToOne',
+      'api::university.university'
+    >;
+    course: Attribute.String;
+    status: Attribute.Enumeration<
+      ['dream', 'target', 'safety', 'reach', 'others']
+    >;
+    progress: Attribute.Integer;
+    universityDecision: Attribute.Enumeration<
+      ['Pending', 'Accepted', 'Rejected', 'Waitlisted', 'Deferred']
+    >;
+    createdAt: Attribute.DateTime;
+    updatedAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<
+      'api::student-uni-application.student-uni-application',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+    updatedBy: Attribute.Relation<
+      'api::student-uni-application.student-uni-application',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+  };
+}
+
 export interface ApiSubjectSubject extends Schema.CollectionType {
   collectionName: 'subjects';
   info: {
@@ -2972,6 +3025,11 @@ export interface ApiUniversityUniversity extends Schema.CollectionType {
       'oneToMany',
       'api::article.article'
     >;
+    student_uni_applications: Attribute.Relation<
+      'api::university.university',
+      'oneToMany',
+      'api::student-uni-application.student-uni-application'
+    >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
@@ -3118,6 +3176,7 @@ declare module '@strapi/types' {
       'api::question-bank.question-bank': ApiQuestionBankQuestionBank;
       'api::recorded-lecture.recorded-lecture': ApiRecordedLectureRecordedLecture;
       'api::resource.resource': ApiResourceResource;
+      'api::student-uni-application.student-uni-application': ApiStudentUniApplicationStudentUniApplication;
       'api::subject.subject': ApiSubjectSubject;
       'api::subject-group.subject-group': ApiSubjectGroupSubjectGroup;
       'api::subtopic.subtopic': ApiSubtopicSubtopic;
