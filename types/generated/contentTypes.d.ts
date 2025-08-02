@@ -1039,6 +1039,7 @@ export interface ApiArticleArticle extends Schema.CollectionType {
     subTitle: Attribute.Text;
     readingTime: Attribute.Integer;
     tags: Attribute.Component<'essays.tags', true>;
+    primaryImage: Attribute.Media<'images' | 'files' | 'videos' | 'audios'>;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
