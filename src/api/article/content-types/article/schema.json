@@ -31,14 +31,17 @@
       "target": "api::university.university",
       "inversedBy": "university_articles"
     },
-    "tags": {
-      "type": "string"
-    },
     "subTitle": {
       "type": "text"
     },
     "readingTime": {
       "type": "integer"
+    },
+    "tags": {
+      "displayName": "tags",
+      "type": "component",
+      "repeatable": true,
+      "component": "essays.tags"
     }
   }
 }

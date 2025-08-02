@@ -1,0 +1,13 @@
+{
+  "collectionName": "components_essays_tags",
+  "info": {
+    "displayName": "tags",
+    "icon": "check"
+  },
+  "options": {},
+  "attributes": {
+    "name": {
+      "type": "string"
+    }
+  }
+}

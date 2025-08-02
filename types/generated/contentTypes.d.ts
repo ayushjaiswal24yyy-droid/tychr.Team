@@ -1036,9 +1036,9 @@ export interface ApiArticleArticle extends Schema.CollectionType {
       'manyToOne',
       'api::university.university'
     >;
-    tags: Attribute.String;
     subTitle: Attribute.Text;
     readingTime: Attribute.Integer;
+    tags: Attribute.Component<'essays.tags', true>;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
