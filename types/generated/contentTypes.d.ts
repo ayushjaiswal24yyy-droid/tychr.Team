@@ -939,6 +939,11 @@ export interface PluginUsersPermissionsUser extends Schema.CollectionType {
       'api::premium-plan.premium-plan'
     >;
     experiencesOfUser: Attribute.Component<'user.user-experience', true>;
+    written_articles: Attribute.Relation<
+      'plugin::users-permissions.user',
+      'oneToMany',
+      'api::article.article'
+    >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     createdBy: Attribute.Relation<
@@ -1000,6 +1005,51 @@ export interface ApiAnswerAnswer extends Schema.CollectionType {
       Attribute.Private;
     updatedBy: Attribute.Relation<
       'api::answer.answer',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+  };
+}
+
+export interface ApiArticleArticle extends Schema.CollectionType {
+  collectionName: 'articles';
+  info: {
+    singularName: 'article';
+    pluralName: 'articles';
+    displayName: 'article';
+    description: '';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    description: Attribute.Blocks & Attribute.Required;
+    title: Attribute.String;
+    written_by: Attribute.Relation<
+      'api::article.article',
+      'manyToOne',
+      'plugin::users-permissions.user'
+    >;
+    university: Attribute.Relation<
+      'api::article.article',
+      'manyToOne',
+      'api::university.university'
+    >;
+    tags: Attribute.String;
+    subTitle: Attribute.Text;
+    readingTime: Attribute.Integer;
+    createdAt: Attribute.DateTime;
+    updatedAt: Attribute.DateTime;
+    publishedAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<
+      'api::article.article',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+    updatedBy: Attribute.Relation<
+      'api::article.article',
       'oneToOne',
       'admin::user'
     > &
@@ -2631,7 +2681,7 @@ export interface ApiTaskTask extends Schema.CollectionType {
     progress: Attribute.Integer &
       Attribute.SetMinMax<
         {
-          max: 10;
+          max: 100;
         },
         number
       > &
@@ -2916,6 +2966,11 @@ export interface ApiUniversityUniversity extends Schema.CollectionType {
       'oneToMany',
       'api::task.task'
     >;
+    university_articles: Attribute.Relation<
+      'api::university.university',
+      'oneToMany',
+      'api::article.article'
+    >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
@@ -3033,6 +3088,7 @@ declare module '@strapi/types' {
       'plugin::users-permissions.role': PluginUsersPermissionsRole;
       'plugin::users-permissions.user': PluginUsersPermissionsUser;
       'api::answer.answer': ApiAnswerAnswer;
+      'api::article.article': ApiArticleArticle;
       'api::class.class': ApiClassClass;
       'api::college.college': ApiCollegeCollege;
       'api::comment.comment': ApiCommentComment;

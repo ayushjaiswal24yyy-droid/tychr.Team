@@ -350,6 +350,12 @@
       "type": "component",
       "repeatable": true,
       "component": "user.user-experience"
+    },
+    "written_articles": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::article.article",
+      "mappedBy": "written_by"
     }
   }
 }

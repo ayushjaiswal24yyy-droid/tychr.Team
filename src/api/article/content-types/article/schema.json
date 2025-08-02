@@ -1,0 +1,44 @@
+{
+  "kind": "collectionType",
+  "collectionName": "articles",
+  "info": {
+    "singularName": "article",
+    "pluralName": "articles",
+    "displayName": "article",
+    "description": ""
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "description": {
+      "type": "blocks",
+      "required": true
+    },
+    "title": {
+      "type": "string"
+    },
+    "written_by": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "plugin::users-permissions.user",
+      "inversedBy": "written_articles"
+    },
+    "university": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::university.university",
+      "inversedBy": "university_articles"
+    },
+    "tags": {
+      "type": "string"
+    },
+    "subTitle": {
+      "type": "text"
+    },
+    "readingTime": {
+      "type": "integer"
+    }
+  }
+}

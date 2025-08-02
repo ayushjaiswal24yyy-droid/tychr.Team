@@ -82,6 +82,12 @@
       "relation": "oneToMany",
       "target": "api::task.task",
       "mappedBy": "university"
+    },
+    "university_articles": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::article.article",
+      "mappedBy": "university"
     }
   }
 }
