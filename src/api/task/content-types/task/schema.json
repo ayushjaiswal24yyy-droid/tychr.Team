@@ -76,6 +76,10 @@
         "others"
       ],
       "required": true
+    },
+    "isImportant": {
+      "type": "boolean",
+      "default": false
     }
   }
 }

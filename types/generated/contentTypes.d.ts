@@ -2753,6 +2753,7 @@ export interface ApiTaskTask extends Schema.CollectionType {
       ]
     > &
       Attribute.Required;
+    isImportant: Attribute.Boolean & Attribute.DefaultTo<false>;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
