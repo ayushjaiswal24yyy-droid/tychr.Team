@@ -39,34 +39,6 @@ export interface UserStudentPlan extends Schema.Component {
   };
 }
 
-export interface SubtopicQnA extends Schema.Component {
-  collectionName: 'components_subtopic_qn_as';
-  info: {
-    displayName: 'QnA';
-    icon: 'quote';
-    description: '';
-  };
-  attributes: {
-    question: Attribute.String;
-    answer: Attribute.Blocks;
-    format: Attribute.Enumeration<['one_line', 'md_file']>;
-  };
-}
-
-export interface SubtopicHeading extends Schema.Component {
-  collectionName: 'components_subtopic_headings';
-  info: {
-    displayName: 'Heading';
-    icon: 'bulletList';
-    description: '';
-  };
-  attributes: {
-    title: Attribute.String;
-    content: Attribute.Blocks;
-    qna: Attribute.Component<'subtopic.qn-a', true>;
-  };
-}
-
 export interface UniversityTutionFees extends Schema.Component {
   collectionName: 'components_university_tution_fees';
   info: {
@@ -211,6 +183,34 @@ export interface UniversityAdditionalCosts extends Schema.Component {
   };
 }
 
+export interface SubtopicQnA extends Schema.Component {
+  collectionName: 'components_subtopic_qn_as';
+  info: {
+    displayName: 'QnA';
+    icon: 'quote';
+    description: '';
+  };
+  attributes: {
+    question: Attribute.String;
+    answer: Attribute.Blocks;
+    format: Attribute.Enumeration<['one_line', 'md_file']>;
+  };
+}
+
+export interface SubtopicHeading extends Schema.Component {
+  collectionName: 'components_subtopic_headings';
+  info: {
+    displayName: 'Heading';
+    icon: 'bulletList';
+    description: '';
+  };
+  attributes: {
+    title: Attribute.String;
+    content: Attribute.Blocks;
+    qna: Attribute.Component<'subtopic.qn-a', true>;
+  };
+}
+
 export interface SubjectRefrenceBooks extends Schema.Component {
   collectionName: 'components_subject_refrence_books';
   info: {
@@ -350,30 +350,6 @@ export interface LecturesLectureHeader extends Schema.Component {
   };
 }
 
-export interface EssaysTags extends Schema.Component {
-  collectionName: 'components_essays_tags';
-  info: {
-    displayName: 'tags';
-    icon: 'check';
-  };
-  attributes: {
-    name: Attribute.String;
-  };
-}
-
-export interface EssaysEssay extends Schema.Component {
-  collectionName: 'components_essays_essays';
-  info: {
-    displayName: 'Essay';
-    description: '';
-  };
-  attributes: {
-    prompt: Attribute.String;
-    word_count: Attribute.Integer;
-    title: Attribute.String;
-  };
-}
-
 export interface ExternalUsersPosition extends Schema.Component {
   collectionName: 'components_external_users_positions';
   info: {
@@ -429,6 +405,30 @@ export interface ExternalUsersFounder extends Schema.Component {
     phone: Attribute.String;
     yoe: Attribute.String;
     description: Attribute.String;
+  };
+}
+
+export interface EssaysTags extends Schema.Component {
+  collectionName: 'components_essays_tags';
+  info: {
+    displayName: 'tags';
+    icon: 'check';
+  };
+  attributes: {
+    name: Attribute.String;
+  };
+}
+
+export interface EssaysEssay extends Schema.Component {
+  collectionName: 'components_essays_essays';
+  info: {
+    displayName: 'Essay';
+    description: '';
+  };
+  attributes: {
+    prompt: Attribute.String;
+    word_count: Attribute.Integer;
+    title: Attribute.String;
   };
 }
 
@@ -513,8 +513,6 @@ declare module '@strapi/types' {
     export interface Components {
       'user.user-experience': UserUserExperience;
       'user.student-plan': UserStudentPlan;
-      'subtopic.qn-a': SubtopicQnA;
-      'subtopic.heading': SubtopicHeading;
       'university.tution-fees': UniversityTutionFees;
       'university.subject-ranking': UniversitySubjectRanking;
       'university.overview': UniversityOverview;
@@ -525,6 +523,8 @@ declare module '@strapi/types' {
       'university.basic-info': UniversityBasicInfo;
       'university.admission-requirements': UniversityAdmissionRequirements;
       'university.additional-costs': UniversityAdditionalCosts;
+      'subtopic.qn-a': SubtopicQnA;
+      'subtopic.heading': SubtopicHeading;
       'subject.refrence-books': SubjectRefrenceBooks;
       'recorded-lectures.progress': RecordedLecturesProgress;
       'question-bank.question-n-answer': QuestionBankQuestionNAnswer;
@@ -535,11 +535,11 @@ declare module '@strapi/types' {
       'notification.demo-booking-time': NotificationDemoBookingTime;
       'mentor.mentor-questions': MentorMentorQuestions;
       'lectures.lecture-header': LecturesLectureHeader;
-      'essays.tags': EssaysTags;
-      'essays.essay': EssaysEssay;
       'external-users.position': ExternalUsersPosition;
       'external-users.org-details': ExternalUsersOrgDetails;
       'external-users.founder': ExternalUsersFounder;
+      'essays.tags': EssaysTags;
+      'essays.essay': EssaysEssay;
       'cycles.cycle': CyclesCycle;
       'college.requirement': CollegeRequirement;
       'college.programs': CollegePrograms;
