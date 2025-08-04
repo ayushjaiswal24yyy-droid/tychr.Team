@@ -54,6 +54,13 @@ module.exports = {
 
       const token = ctx.request.header.authorization?.replace("Bearer ", "");
       let userId = null;
+      // if (!token) {
+      //   // If no token, try to get userId from session
+      //   const session = ctx.state.user;
+      //   if (session && session.id) {
+      //     userId = session.id;
+      //   }
+      // }
 
       if (token) {
         const { id } = await strapi.plugins[
@@ -83,6 +90,8 @@ module.exports = {
       const now = new Date().toISOString();
       let commissionPct = 0; // default to zero if none set
 
+      console.log("plan tye:", plan.type);
+
       const commissionSettings = await strapi.entityService.findMany(
         "api::commission-setting.commission-setting",
         {
@@ -91,12 +100,12 @@ module.exports = {
             is_premium_plan_active: true,
             premium_plan_effective_from: { $lte: now },
           },
-          sort: { effective_from: "desc" },
+          sort: { premium_plan_effective_from: "desc" },
           limit: 1,
         }
       );
       if (commissionSettings.length > 0) {
-        commissionPct = parseFloat(commissionSettings[0].percentage) || 0;
+        commissionPct = parseFloat(commissionSettings[0].premium_plan_percentage) || 0;
       }
 
       // Compute commission amount (what system admin gets)

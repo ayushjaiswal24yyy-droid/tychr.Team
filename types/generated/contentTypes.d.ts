@@ -1202,7 +1202,7 @@ export interface ApiCommissionSettingCommissionSetting
     description: '';
   };
   options: {
-    draftAndPublish: true;
+    draftAndPublish: false;
   };
   attributes: {
     premium_plan_percentage: Attribute.Decimal;
@@ -1212,7 +1212,6 @@ export interface ApiCommissionSettingCommissionSetting
       Attribute.Required;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
-    publishedAt: Attribute.DateTime;
     createdBy: Attribute.Relation<
       'api::commission-setting.commission-setting',
       'oneToOne',
