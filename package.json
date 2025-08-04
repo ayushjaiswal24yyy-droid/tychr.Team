@@ -29,7 +29,6 @@
     "crypto": "^1.0.1",
     "node-cron": "^3.0.3",
     "nodemailer": "^6.9.14",
-    "pdfkit": "^0.17.1",
     "pg": "8.8.0",
     "razorpay": "^2.9.5",
     "react": "^18.0.0",
@@ -52,8 +51,5 @@
     "node": ">=18.0.0 <=20.x.x",
     "npm": ">=6.0.0"
   },
-  "license": "MIT",
-  "devDependencies": {
-    "@types/pdfkit": "^0.17.2"
-  }
+  "license": "MIT"
 }

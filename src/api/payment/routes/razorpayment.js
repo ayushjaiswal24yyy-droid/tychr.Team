@@ -18,15 +18,6 @@ module.exports = {
         middlewares: [],
       },
     },
-    {
-      method: "GET",
-      path: "/payment/invoices/:id",
-      handler: "razorpayment.downloadInvoiceInstant",
-      config: {
-        policies: [],
-        middlewares: [],
-      },
-    },
   ],
   //   routes: [
   //   {
