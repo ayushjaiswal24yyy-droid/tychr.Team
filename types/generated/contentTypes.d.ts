@@ -1192,6 +1192,42 @@ export interface ApiCommentComment extends Schema.CollectionType {
   };
 }
 
+export interface ApiCommissionSettingCommissionSetting
+  extends Schema.CollectionType {
+  collectionName: 'commission_settings';
+  info: {
+    singularName: 'commission-setting';
+    pluralName: 'commission-settings';
+    displayName: 'commission-setting';
+    description: '';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    premium_plan_percentage: Attribute.Decimal;
+    premium_plan_effective_from: Attribute.Date;
+    is_premium_plan_active: Attribute.Boolean;
+    system_plan: Attribute.Enumeration<['mentor', 'Counsellor']> &
+      Attribute.Required;
+    createdAt: Attribute.DateTime;
+    updatedAt: Attribute.DateTime;
+    publishedAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<
+      'api::commission-setting.commission-setting',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+    updatedBy: Attribute.Relation<
+      'api::commission-setting.commission-setting',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+  };
+}
+
 export interface ApiCommunityCommunity extends Schema.CollectionType {
   collectionName: 'communities';
   info: {
@@ -3079,6 +3115,10 @@ export interface ApiUserPlanUserPlan extends Schema.CollectionType {
     razorpay_payment_id: Attribute.String;
     razorpay_order_id: Attribute.String;
     razorpay_signature: Attribute.String;
+    price_at_purchase: Attribute.Decimal & Attribute.Required;
+    commission_percentage_applied: Attribute.Decimal & Attribute.Required;
+    commission_amount: Attribute.Decimal & Attribute.Required;
+    total_paid: Attribute.Decimal & Attribute.Required;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     createdBy: Attribute.Relation<
@@ -3152,6 +3192,7 @@ declare module '@strapi/types' {
       'api::class.class': ApiClassClass;
       'api::college.college': ApiCollegeCollege;
       'api::comment.comment': ApiCommentComment;
+      'api::commission-setting.commission-setting': ApiCommissionSettingCommissionSetting;
       'api::community.community': ApiCommunityCommunity;
       'api::course-plan.course-plan': ApiCoursePlanCoursePlan;
       'api::credential.credential': ApiCredentialCredential;

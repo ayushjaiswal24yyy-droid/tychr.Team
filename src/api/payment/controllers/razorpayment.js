@@ -61,8 +61,47 @@ module.exports = {
         ].services.jwt.verify(token);
         userId = id;
       }
+      if (!userId) {
+        return ctx.badRequest("Student (user) not identified");
+      }
 
       const purchased_at = new Date().toISOString();
+
+      // Fetch the premium plan (to get its price and owner info if needed)
+      const plan = await strapi.entityService.findOne(
+        "api::premium-plan.premium-plan",
+        planId,
+        {
+          populate: [], // expand if you need creator or other relations
+        }
+      );
+
+      if (!plan) {
+        return ctx.badRequest("Invalid premium plan");
+      }
+
+      const now = new Date().toISOString();
+      let commissionPct = 0; // default to zero if none set
+
+      const commissionSettings = await strapi.entityService.findMany(
+        "api::commission-setting.commission-setting",
+        {
+          filters: {
+            premium_plan: planId,
+            is_premium_plan_active: true,
+            premium_plan_effective_from: { $lte: now },
+          },
+          sort: { effective_from: "desc" },
+          limit: 1,
+        }
+      );
+      if (commissionSettings.length > 0) {
+        commissionPct = parseFloat(commissionSettings[0].percentage) || 0;
+      }
+
+      // Compute commission amount (what system admin gets)
+      const commissionAmount = (commissionPct / 100) * plan.price;
+      const totalPaid = plan.price; // if taxes/fees, add here
 
       // Log payment details
       console.log(
@@ -87,9 +126,13 @@ module.exports = {
               razorpay_payment_id,
               status: "active",
               purchased_at,
-              remaining_hours: 10,
+              remaining_hours: plan.hours_included || 0,
               student: userId,
               premium_plan: planId,
+              price_at_purchase: plan.price,
+              commission_percentage_applied: commissionPct,
+              commission_amount: commissionAmount.toFixed(2),
+              total_paid: totalPaid,
             },
           }
         );

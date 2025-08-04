@@ -1,0 +1,33 @@
+{
+  "kind": "collectionType",
+  "collectionName": "commission_settings",
+  "info": {
+    "singularName": "commission-setting",
+    "pluralName": "commission-settings",
+    "displayName": "commission-setting",
+    "description": ""
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "premium_plan_percentage": {
+      "type": "decimal"
+    },
+    "premium_plan_effective_from": {
+      "type": "date"
+    },
+    "is_premium_plan_active": {
+      "type": "boolean"
+    },
+    "system_plan": {
+      "type": "enumeration",
+      "enum": [
+        "mentor",
+        "Counsellor"
+      ],
+      "required": true
+    }
+  }
+}

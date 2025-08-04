@@ -51,6 +51,22 @@
     },
     "razorpay_signature": {
       "type": "string"
+    },
+    "price_at_purchase": {
+      "type": "decimal",
+      "required": true
+    },
+    "commission_percentage_applied": {
+      "type": "decimal",
+      "required": true
+    },
+    "commission_amount": {
+      "type": "decimal",
+      "required": true
+    },
+    "total_paid": {
+      "type": "decimal",
+      "required": true
     }
   }
 }
