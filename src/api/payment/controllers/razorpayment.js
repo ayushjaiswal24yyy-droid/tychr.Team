@@ -87,7 +87,7 @@ module.exports = {
         "api::commission-setting.commission-setting",
         {
           filters: {
-            system_plan: planId?.type === "mentor" ? "mentor" : "counsellor",
+            system_plan: plan?.type === "mentor" ? "mentor" : "counsellor",
             is_premium_plan_active: true,
             premium_plan_effective_from: { $lte: now },
           },
