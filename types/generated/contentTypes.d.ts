@@ -2598,7 +2598,7 @@ export interface ApiStudentMeetingStudentMeeting extends Schema.CollectionType {
       'api::user-plan.user-plan'
     >;
     status: Attribute.Enumeration<
-      ['scheduled', 'ompleted', 'canceled', 'no_show']
+      ['scheduled', 'completed', 'canceled', 'no_show']
     > &
       Attribute.DefaultTo<'scheduled'>;
     meeting_notes: Attribute.Text;
@@ -3084,7 +3084,7 @@ export interface ApiTransactionOutTransactionOut extends Schema.CollectionType {
     user_plan: Attribute.Relation<
       'api::transaction-out.transaction-out',
       'manyToOne',
-      'plugin::users-permissions.user'
+      'api::user-plan.user-plan'
     >;
     transaction_date: Attribute.DateTime;
     amount: Attribute.Decimal;
@@ -3259,6 +3259,11 @@ export interface ApiUserPlanUserPlan extends Schema.CollectionType {
       'api::user-plan.user-plan',
       'oneToMany',
       'api::student-meeting.student-meeting'
+    >;
+    admin_transaction_outs: Attribute.Relation<
+      'api::user-plan.user-plan',
+      'oneToMany',
+      'api::transaction-out.transaction-out'
     >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;

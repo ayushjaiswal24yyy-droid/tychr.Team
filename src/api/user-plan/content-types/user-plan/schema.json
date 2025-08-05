@@ -73,6 +73,12 @@
       "relation": "oneToMany",
       "target": "api::student-meeting.student-meeting",
       "mappedBy": "user_plan"
+    },
+    "admin_transaction_outs": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::transaction-out.transaction-out",
+      "mappedBy": "user_plan"
     }
   }
 }

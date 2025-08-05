@@ -27,7 +27,7 @@
     "user_plan": {
       "type": "relation",
       "relation": "manyToOne",
-      "target": "plugin::users-permissions.user",
+      "target": "api::user-plan.user-plan",
       "inversedBy": "admin_transaction_outs"
     },
     "transaction_date": {

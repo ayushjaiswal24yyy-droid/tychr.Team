@@ -379,7 +379,7 @@
       "type": "relation",
       "relation": "oneToMany",
       "target": "api::transaction-out.transaction-out",
-      "mappedBy": "user_plan"
+      "mappedBy": "meeting_scheduled_with"
     }
   }
 }

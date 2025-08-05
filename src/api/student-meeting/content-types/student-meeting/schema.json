@@ -54,7 +54,7 @@
       "type": "enumeration",
       "enum": [
         "scheduled",
-        "ompleted",
+        "completed",
         "canceled",
         "no_show"
       ],
