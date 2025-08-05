@@ -949,6 +949,21 @@ export interface PluginUsersPermissionsUser extends Schema.CollectionType {
       'oneToMany',
       'api::student-uni-application.student-uni-application'
     >;
+    student_meetings_scheduled: Attribute.Relation<
+      'plugin::users-permissions.user',
+      'oneToMany',
+      'api::student-meeting.student-meeting'
+    >;
+    meeting_scheduled_with_student: Attribute.Relation<
+      'plugin::users-permissions.user',
+      'oneToMany',
+      'api::student-meeting.student-meeting'
+    >;
+    admin_transaction_outs: Attribute.Relation<
+      'plugin::users-permissions.user',
+      'oneToMany',
+      'api::transaction-out.transaction-out'
+    >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     createdBy: Attribute.Relation<
@@ -1198,7 +1213,7 @@ export interface ApiCommissionSettingCommissionSetting
   info: {
     singularName: 'commission-setting';
     pluralName: 'commission-settings';
-    displayName: 'commission-setting';
+    displayName: 'Admin: Comission Setting';
     description: '';
   };
   options: {
@@ -2549,6 +2564,67 @@ export interface ApiResourceResource extends Schema.CollectionType {
   };
 }
 
+export interface ApiStudentMeetingStudentMeeting extends Schema.CollectionType {
+  collectionName: 'student_meetings';
+  info: {
+    singularName: 'student-meeting';
+    pluralName: 'student-meetings';
+    displayName: 'Student: Meeting';
+    description: '';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    title: Attribute.String & Attribute.Required;
+    description: Attribute.Text;
+    link: Attribute.String & Attribute.Required;
+    date: Attribute.Date;
+    time: Attribute.Time;
+    duration_in_minutes: Attribute.Integer;
+    student: Attribute.Relation<
+      'api::student-meeting.student-meeting',
+      'manyToOne',
+      'plugin::users-permissions.user'
+    >;
+    meeting_with: Attribute.Relation<
+      'api::student-meeting.student-meeting',
+      'manyToOne',
+      'plugin::users-permissions.user'
+    >;
+    user_plan: Attribute.Relation<
+      'api::student-meeting.student-meeting',
+      'manyToOne',
+      'api::user-plan.user-plan'
+    >;
+    status: Attribute.Enumeration<
+      ['scheduled', 'ompleted', 'canceled', 'no_show']
+    > &
+      Attribute.DefaultTo<'scheduled'>;
+    meeting_notes: Attribute.Text;
+    admin_transaction_out: Attribute.Relation<
+      'api::student-meeting.student-meeting',
+      'oneToOne',
+      'api::transaction-out.transaction-out'
+    >;
+    createdAt: Attribute.DateTime;
+    updatedAt: Attribute.DateTime;
+    publishedAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<
+      'api::student-meeting.student-meeting',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+    updatedBy: Attribute.Relation<
+      'api::student-meeting.student-meeting',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+  };
+}
+
 export interface ApiStudentUniApplicationStudentUniApplication
   extends Schema.CollectionType {
   collectionName: 'student_uni_applications';
@@ -2983,6 +3059,67 @@ export interface ApiTopicTopic extends Schema.CollectionType {
   };
 }
 
+export interface ApiTransactionOutTransactionOut extends Schema.CollectionType {
+  collectionName: 'transaction_outs';
+  info: {
+    singularName: 'transaction-out';
+    pluralName: 'transaction-outs';
+    displayName: 'Admin: Transaction Out';
+    description: '';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    student_meeting: Attribute.Relation<
+      'api::transaction-out.transaction-out',
+      'oneToOne',
+      'api::student-meeting.student-meeting'
+    >;
+    meeting_scheduled_with: Attribute.Relation<
+      'api::transaction-out.transaction-out',
+      'manyToOne',
+      'plugin::users-permissions.user'
+    >;
+    user_plan: Attribute.Relation<
+      'api::transaction-out.transaction-out',
+      'manyToOne',
+      'plugin::users-permissions.user'
+    >;
+    transaction_date: Attribute.DateTime;
+    amount: Attribute.Decimal;
+    currency: Attribute.Enumeration<['INR', 'USD']>;
+    duration_minutes: Attribute.Integer;
+    payment_status: Attribute.Enumeration<
+      ['pending', 'processing', 'paid', 'failed']
+    > &
+      Attribute.DefaultTo<'pending'>;
+    payment_reference: Attribute.String;
+    payment_method: Attribute.String;
+    notes: Attribute.Text;
+    calculated_rate_per_minute: Attribute.Decimal;
+    total_plan_minutes: Attribute.Decimal;
+    total_plan_amount: Attribute.Decimal;
+    commission_deducted: Attribute.Decimal;
+    net_amount: Attribute.Decimal;
+    createdAt: Attribute.DateTime;
+    updatedAt: Attribute.DateTime;
+    publishedAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<
+      'api::transaction-out.transaction-out',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+    updatedBy: Attribute.Relation<
+      'api::transaction-out.transaction-out',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+  };
+}
+
 export interface ApiTutorPlanTutorPlan extends Schema.CollectionType {
   collectionName: 'tutor_plans';
   info: {
@@ -3118,6 +3255,11 @@ export interface ApiUserPlanUserPlan extends Schema.CollectionType {
     commission_percentage_applied: Attribute.Decimal & Attribute.Required;
     commission_amount: Attribute.Decimal & Attribute.Required;
     total_paid: Attribute.Decimal & Attribute.Required;
+    student_meetings: Attribute.Relation<
+      'api::user-plan.user-plan',
+      'oneToMany',
+      'api::student-meeting.student-meeting'
+    >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     createdBy: Attribute.Relation<
@@ -3217,6 +3359,7 @@ declare module '@strapi/types' {
       'api::question-bank.question-bank': ApiQuestionBankQuestionBank;
       'api::recorded-lecture.recorded-lecture': ApiRecordedLectureRecordedLecture;
       'api::resource.resource': ApiResourceResource;
+      'api::student-meeting.student-meeting': ApiStudentMeetingStudentMeeting;
       'api::student-uni-application.student-uni-application': ApiStudentUniApplicationStudentUniApplication;
       'api::subject.subject': ApiSubjectSubject;
       'api::subject-group.subject-group': ApiSubjectGroupSubjectGroup;
@@ -3226,6 +3369,7 @@ declare module '@strapi/types' {
       'api::test-serie.test-serie': ApiTestSerieTestSerie;
       'api::third-party-meeting.third-party-meeting': ApiThirdPartyMeetingThirdPartyMeeting;
       'api::topic.topic': ApiTopicTopic;
+      'api::transaction-out.transaction-out': ApiTransactionOutTransactionOut;
       'api::tutor-plan.tutor-plan': ApiTutorPlanTutorPlan;
       'api::university.university': ApiUniversityUniversity;
       'api::user-plan.user-plan': ApiUserPlanUserPlan;

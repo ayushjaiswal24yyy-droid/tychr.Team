@@ -67,6 +67,12 @@
     "total_paid": {
       "type": "decimal",
       "required": true
+    },
+    "student_meetings": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::student-meeting.student-meeting",
+      "mappedBy": "user_plan"
     }
   }
 }

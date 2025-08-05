@@ -1,0 +1,84 @@
+{
+  "kind": "collectionType",
+  "collectionName": "transaction_outs",
+  "info": {
+    "singularName": "transaction-out",
+    "pluralName": "transaction-outs",
+    "displayName": "Admin: Transaction Out",
+    "description": ""
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "student_meeting": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::student-meeting.student-meeting",
+      "inversedBy": "admin_transaction_out"
+    },
+    "meeting_scheduled_with": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "plugin::users-permissions.user",
+      "inversedBy": "admin_transaction_outs"
+    },
+    "user_plan": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "plugin::users-permissions.user",
+      "inversedBy": "admin_transaction_outs"
+    },
+    "transaction_date": {
+      "type": "datetime"
+    },
+    "amount": {
+      "type": "decimal"
+    },
+    "currency": {
+      "type": "enumeration",
+      "enum": [
+        "INR",
+        "USD"
+      ]
+    },
+    "duration_minutes": {
+      "type": "integer"
+    },
+    "payment_status": {
+      "type": "enumeration",
+      "enum": [
+        "pending",
+        "processing",
+        "paid",
+        "failed"
+      ],
+      "default": "pending"
+    },
+    "payment_reference": {
+      "type": "string"
+    },
+    "payment_method": {
+      "type": "string"
+    },
+    "notes": {
+      "type": "text"
+    },
+    "calculated_rate_per_minute": {
+      "type": "decimal"
+    },
+    "total_plan_minutes": {
+      "type": "decimal"
+    },
+    "total_plan_amount": {
+      "type": "decimal"
+    },
+    "commission_deducted": {
+      "type": "decimal"
+    },
+    "net_amount": {
+      "type": "decimal"
+    }
+  }
+}

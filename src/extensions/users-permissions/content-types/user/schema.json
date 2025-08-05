@@ -362,6 +362,24 @@
       "relation": "oneToMany",
       "target": "api::student-uni-application.student-uni-application",
       "mappedBy": "student"
+    },
+    "student_meetings_scheduled": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::student-meeting.student-meeting",
+      "mappedBy": "student"
+    },
+    "meeting_scheduled_with_student": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::student-meeting.student-meeting",
+      "mappedBy": "meeting_with"
+    },
+    "admin_transaction_outs": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::transaction-out.transaction-out",
+      "mappedBy": "user_plan"
     }
   }
 }

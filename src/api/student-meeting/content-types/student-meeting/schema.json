@@ -1,0 +1,73 @@
+{
+  "kind": "collectionType",
+  "collectionName": "student_meetings",
+  "info": {
+    "singularName": "student-meeting",
+    "pluralName": "student-meetings",
+    "displayName": "Student: Meeting",
+    "description": ""
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "title": {
+      "type": "string",
+      "required": true
+    },
+    "description": {
+      "type": "text"
+    },
+    "link": {
+      "type": "string",
+      "required": true
+    },
+    "date": {
+      "type": "date"
+    },
+    "time": {
+      "type": "time"
+    },
+    "duration_in_minutes": {
+      "type": "integer"
+    },
+    "student": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "plugin::users-permissions.user",
+      "inversedBy": "student_meetings_scheduled"
+    },
+    "meeting_with": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "plugin::users-permissions.user",
+      "inversedBy": "meeting_scheduled_with_student"
+    },
+    "user_plan": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::user-plan.user-plan",
+      "inversedBy": "student_meetings"
+    },
+    "status": {
+      "type": "enumeration",
+      "enum": [
+        "scheduled",
+        "ompleted",
+        "canceled",
+        "no_show"
+      ],
+      "default": "scheduled"
+    },
+    "meeting_notes": {
+      "type": "text"
+    },
+    "admin_transaction_out": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::transaction-out.transaction-out",
+      "mappedBy": "student_meeting"
+    }
+  }
+}
