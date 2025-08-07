@@ -39,6 +39,11 @@
       "type": "component",
       "repeatable": true,
       "component": "college.requirement"
+    },
+    "student_applications": {
+      "type": "component",
+      "repeatable": true,
+      "component": "university.student-application"
     }
   }
 }

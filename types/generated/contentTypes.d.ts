@@ -3192,14 +3192,6 @@ export interface ApiUniversityUniversity extends Schema.CollectionType {
       'oneToMany',
       'api::article.article'
     >;
-    student_applications: Attribute.Component<
-      'university.student-application',
-      true
-    >;
-    application_deadlines: Attribute.Component<
-      'university.application-cycle-deadline',
-      true
-    >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;

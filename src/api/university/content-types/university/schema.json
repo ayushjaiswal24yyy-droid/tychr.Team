@@ -88,16 +88,6 @@
       "relation": "oneToMany",
       "target": "api::article.article",
       "mappedBy": "university"
-    },
-    "student_applications": {
-      "type": "component",
-      "repeatable": true,
-      "component": "university.student-application"
-    },
-    "application_deadlines": {
-      "type": "component",
-      "repeatable": true,
-      "component": "university.application-cycle-deadline"
     }
   }
 }
