@@ -4,7 +4,7 @@
   "info": {
     "singularName": "user-plan",
     "pluralName": "user-plans",
-    "displayName": "UserPlan",
+    "displayName": "Student: UserPlan",
     "description": ""
   },
   "options": {

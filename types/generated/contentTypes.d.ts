@@ -2642,11 +2642,6 @@ export interface ApiStudentUniApplicationStudentUniApplication
       'manyToOne',
       'plugin::users-permissions.user'
     >;
-    university: Attribute.Relation<
-      'api::student-uni-application.student-uni-application',
-      'manyToOne',
-      'api::university.university'
-    >;
     course: Attribute.String;
     status: Attribute.Enumeration<
       ['dream', 'target', 'safety', 'reach', 'others']
@@ -3164,8 +3159,8 @@ export interface ApiUniversityUniversity extends Schema.CollectionType {
   info: {
     singularName: 'university';
     pluralName: 'universities';
-    displayName: 'university';
-    description: '';
+    displayName: 'Admin: university';
+    description: 'Admin will add universities';
   };
   options: {
     draftAndPublish: true;
@@ -3198,10 +3193,13 @@ export interface ApiUniversityUniversity extends Schema.CollectionType {
       'oneToMany',
       'api::article.article'
     >;
-    student_uni_applications: Attribute.Relation<
-      'api::university.university',
-      'oneToMany',
-      'api::student-uni-application.student-uni-application'
+    student_applications: Attribute.Component<
+      'university.student-application',
+      true
+    >;
+    application_deadlines: Attribute.Component<
+      'university.application-cycle-deadline',
+      true
     >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
@@ -3226,7 +3224,7 @@ export interface ApiUserPlanUserPlan extends Schema.CollectionType {
   info: {
     singularName: 'user-plan';
     pluralName: 'user-plans';
-    displayName: 'UserPlan';
+    displayName: 'Student: UserPlan';
     description: '';
   };
   options: {

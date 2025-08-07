@@ -1,0 +1,69 @@
+{
+  "collectionName": "components_university_student_applications",
+  "info": {
+    "displayName": "Student Application",
+    "icon": "file"
+  },
+  "options": {},
+  "attributes": {
+    "student": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "plugin::users-permissions.user"
+    },
+    "college": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::college.college"
+    },
+    "application_cycle": {
+      "type": "component",
+      "repeatable": false,
+      "component": "university.application-cycle-deadline"
+    },
+    "category": {
+      "type": "enumeration",
+      "enum": [
+        "in  progress",
+        "submitted",
+        "completed"
+      ]
+    },
+    "status": {
+      "type": "enumeration",
+      "enum": [
+        "Safety",
+        "Target",
+        "Reach"
+      ]
+    },
+    "course_major": {
+      "type": "string"
+    },
+    "university_decision": {
+      "type": "enumeration",
+      "enum": [
+        "pending",
+        "accepted",
+        "rejected",
+        "waitlisted"
+      ],
+      "default": "pending"
+    },
+    "student_decision": {
+      "type": "enumeration",
+      "enum": [
+        "pending",
+        "accept",
+        "decline"
+      ],
+      "default": "pending"
+    },
+    "application_materials": {
+      "displayName": "application_materials",
+      "type": "component",
+      "repeatable": true,
+      "component": "university.application-materials"
+    }
+  }
+}

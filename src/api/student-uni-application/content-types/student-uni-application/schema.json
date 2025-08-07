@@ -17,12 +17,6 @@
       "target": "plugin::users-permissions.user",
       "inversedBy": "student_uni_applications"
     },
-    "university": {
-      "type": "relation",
-      "relation": "manyToOne",
-      "target": "api::university.university",
-      "inversedBy": "student_uni_applications"
-    },
     "course": {
       "type": "string",
       "required": false

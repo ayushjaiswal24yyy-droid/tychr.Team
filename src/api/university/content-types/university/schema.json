@@ -4,8 +4,8 @@
   "info": {
     "singularName": "university",
     "pluralName": "universities",
-    "displayName": "university",
-    "description": ""
+    "displayName": "Admin: university",
+    "description": "Admin will add universities"
   },
   "options": {
     "draftAndPublish": true
@@ -89,11 +89,15 @@
       "target": "api::article.article",
       "mappedBy": "university"
     },
-    "student_uni_applications": {
-      "type": "relation",
-      "relation": "oneToMany",
-      "target": "api::student-uni-application.student-uni-application",
-      "mappedBy": "university"
+    "student_applications": {
+      "type": "component",
+      "repeatable": true,
+      "component": "university.student-application"
+    },
+    "application_deadlines": {
+      "type": "component",
+      "repeatable": true,
+      "component": "university.application-cycle-deadline"
     }
   }
 }

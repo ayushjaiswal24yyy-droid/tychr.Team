@@ -1,7 +1,8 @@
 {
   "collectionName": "components_college_programs",
   "info": {
-    "displayName": "programs"
+    "displayName": "programs",
+    "description": ""
   },
   "options": {},
   "attributes": {
@@ -28,6 +29,11 @@
     },
     "career_prospects": {
       "type": "text"
+    },
+    "application_deadlines": {
+      "type": "component",
+      "repeatable": true,
+      "component": "university.application-cycle-deadline"
     }
   }
 }

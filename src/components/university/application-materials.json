@@ -1,0 +1,21 @@
+{
+  "collectionName": "components_university_application_materials",
+  "info": {
+    "displayName": "application_materials",
+    "icon": "attachment"
+  },
+  "options": {},
+  "attributes": {
+    "material_type": {
+      "type": "string",
+      "required": true
+    },
+    "submitted": {
+      "type": "boolean",
+      "default": false
+    },
+    "submission_date": {
+      "type": "datetime"
+    }
+  }
+}

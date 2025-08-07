@@ -1,0 +1,24 @@
+{
+  "collectionName": "components_university_application_cycle_deadlines",
+  "info": {
+    "displayName": "Application Cycle Deadline",
+    "icon": "collapse"
+  },
+  "options": {},
+  "attributes": {
+    "cycle_type": {
+      "type": "enumeration",
+      "enum": [
+        "early decision",
+        "regular decision",
+        "early action",
+        "rolling admission"
+      ],
+      "required": true
+    },
+    "deadline": {
+      "type": "date",
+      "required": true
+    }
+  }
+}
