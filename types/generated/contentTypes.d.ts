@@ -1145,7 +1145,6 @@ export interface ApiCollegeCollege extends Schema.CollectionType {
   attributes: {
     college_name: Attribute.Text;
     college_type: Attribute.String;
-    requirement: Attribute.Component<'college.requirement', true>;
     programs: Attribute.Component<'college.programs', true>;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;

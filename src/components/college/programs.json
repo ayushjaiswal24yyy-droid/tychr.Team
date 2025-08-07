@@ -34,6 +34,11 @@
       "type": "component",
       "repeatable": true,
       "component": "university.application-cycle-deadline"
+    },
+    "requirement": {
+      "type": "component",
+      "repeatable": true,
+      "component": "college.requirement"
     }
   }
 }

@@ -18,11 +18,6 @@
     "college_type": {
       "type": "string"
     },
-    "requirement": {
-      "type": "component",
-      "repeatable": true,
-      "component": "college.requirement"
-    },
     "programs": {
       "type": "component",
       "repeatable": true,
