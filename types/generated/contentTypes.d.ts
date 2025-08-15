@@ -1692,7 +1692,7 @@ export interface ApiGradeSubjectGradeSubject extends Schema.CollectionType {
   info: {
     singularName: 'grade-subject';
     pluralName: 'grade-subjects';
-    displayName: 'Grade Subject';
+    displayName: 'Lecture: Grade Subject';
     description: '';
   };
   options: {
@@ -2221,7 +2221,7 @@ export interface ApiPaymentPayment extends Schema.CollectionType {
     description: '';
   };
   options: {
-    draftAndPublish: true;
+    draftAndPublish: false;
   };
   attributes: {
     amount: Attribute.Decimal;
@@ -2258,7 +2258,6 @@ export interface ApiPaymentPayment extends Schema.CollectionType {
     >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
-    publishedAt: Attribute.DateTime;
     createdBy: Attribute.Relation<
       'api::payment.payment',
       'oneToOne',
