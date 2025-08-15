@@ -4,11 +4,11 @@
   "info": {
     "singularName": "enrollment",
     "pluralName": "enrollments",
-    "displayName": "Classroom",
+    "displayName": "Tutor: Classroom",
     "description": ""
   },
   "options": {
-    "draftAndPublish": true
+    "draftAndPublish": false
   },
   "pluginOptions": {},
   "attributes": {

@@ -1545,7 +1545,7 @@ export interface ApiEnrollmentEnrollment extends Schema.CollectionType {
     description: '';
   };
   options: {
-    draftAndPublish: true;
+    draftAndPublish: false;
   };
   attributes: {
     enrollment_date: Attribute.Date;
@@ -1634,7 +1634,6 @@ export interface ApiEnrollmentEnrollment extends Schema.CollectionType {
     additional_resources: Attribute.Component<'classroom.resources', true>;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
-    publishedAt: Attribute.DateTime;
     createdBy: Attribute.Relation<
       'api::enrollment.enrollment',
       'oneToOne',

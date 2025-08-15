@@ -198,27 +198,25 @@ module.exports = {
         return ctx.badRequest("Invalid item type");
       }
 
-      const apiMap = {
-        live_lecture: "live-lecture",
-        recorded_lecture: "recorded-lecture",
-        classroom: "classroom", // Directly uses classroom (not enrollment)
-      };
-
-      if (!apiMap[item_type]) {
-        return ctx.badRequest(
-          "Invalid item type. Allowed: live_lecture, recorded_lecture, classroom"
+      let item;
+      try {
+        const apiName =
+          item_type === "classroom"
+            ? "enrollment"
+            : item_type.replace("_", "-");
+        item = await strapi.entityService.findOne(
+          `api::${apiName}.${apiName}`,
+          item_id,
+          {
+            populate: ["price", "creator"],
+          }
         );
+      } catch (error) {
+        return ctx.badRequest("Invalid item ID or type");
       }
 
-      // 4. Fetch the item
-      const item = await strapi.entityService.findOne(
-        `api::${apiMap[item_type]}.${apiMap[item_type]}`,
-        item_id,
-        { populate: ["price", "creator"] } // Required fields
-      );
-
-      if (!item || !item.price) {
-        return ctx.badRequest("Item not found or missing price");
+      if (!item) {
+        return ctx.badRequest("Item not found");
       }
 
       // Get current commission settings for this item type
@@ -254,7 +252,7 @@ module.exports = {
       const paymentData = {
         amount: price,
         [item_type]: item_id, // dynamic field based on item_type
-        user: userId,
+        student: userId,
         expires_at: expires_at.toISOString(),
         purchased_at: new Date().toISOString(),
         status: "active",
