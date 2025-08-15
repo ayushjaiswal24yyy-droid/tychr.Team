@@ -18,7 +18,7 @@ module.exports = {
             : undefined,
           populate: {
             recorded_lectures: {
-              where: { isFree: true },
+              // where: { isFree: true },
               populate: {
                 thumbnail: true,
                 classrooms: { populate: ["tutors.avatar"] },

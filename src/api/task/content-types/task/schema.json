@@ -34,11 +34,11 @@
     "description": {
       "type": "text"
     },
-    "user": {
-      "type": "relation",
-      "relation": "oneToOne",
-      "target": "plugin::users-permissions.user"
-    },
+      "user": {
+        "type": "relation",
+        "relation": "oneToOne",
+        "target": "plugin::users-permissions.user"
+      },
     "student": {
       "type": "relation",
       "relation": "oneToOne",
