@@ -380,6 +380,12 @@
       "relation": "oneToMany",
       "target": "api::transaction-out.transaction-out",
       "mappedBy": "meeting_scheduled_with"
+    },
+    "user_demo_classes_grade_plans": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::user-grade-plan.user-grade-plan",
+      "mappedBy": "student"
     }
   }
 }

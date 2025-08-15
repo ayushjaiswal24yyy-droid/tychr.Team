@@ -89,6 +89,12 @@
       "relation": "manyToOne",
       "target": "api::subject-group.subject-group",
       "inversedBy": "grade_subjects"
+    },
+    "user_demo_classes_grade_plans": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::user-grade-plan.user-grade-plan",
+      "mappedBy": "grade_subject"
     }
   }
 }

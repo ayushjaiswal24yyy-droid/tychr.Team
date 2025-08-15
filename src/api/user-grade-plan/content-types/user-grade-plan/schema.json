@@ -1,0 +1,64 @@
+{
+  "kind": "collectionType",
+  "collectionName": "user_grade_plans",
+  "info": {
+    "singularName": "user-grade-plan",
+    "pluralName": "user-grade-plans",
+    "displayName": "User: Demo Classes (Grade) Plan"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "grade_subject": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::grade-subject.grade-subject",
+      "inversedBy": "user_demo_classes_grade_plans"
+    },
+    "student": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "plugin::users-permissions.user",
+      "inversedBy": "user_demo_classes_grade_plans"
+    },
+    "expires_at": {
+      "type": "datetime"
+    },
+    "purchased_at": {
+      "type": "datetime",
+      "required": false
+    },
+    "status": {
+      "type": "enumeration",
+      "enum": ["active", "expired", "used_up"],
+      "default": "active"
+    },
+    "razorpay_payment_id": {
+      "type": "string"
+    },
+    "razorpay_order_id": {
+      "type": "string"
+    },
+    "razorpay_signature": {
+      "type": "string"
+    },
+    "price_at_purchase": {
+      "type": "decimal",
+      "required": true
+    },
+    "commission_percentage_applied": {
+      "type": "decimal",
+      "required": true
+    },
+    "commission_amount": {
+      "type": "decimal",
+      "required": true
+    },
+    "total_paid": {
+      "type": "decimal",
+      "required": true
+    }
+  }
+}

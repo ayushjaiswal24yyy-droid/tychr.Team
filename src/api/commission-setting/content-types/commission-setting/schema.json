@@ -25,7 +25,9 @@
       "type": "enumeration",
       "enum": [
         "mentor",
-        "counsellor"
+        "counsellor",
+        "grade-classes",
+        "classroom"
       ],
       "required": true
     }

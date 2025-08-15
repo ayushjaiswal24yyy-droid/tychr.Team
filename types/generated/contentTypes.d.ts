@@ -964,6 +964,11 @@ export interface PluginUsersPermissionsUser extends Schema.CollectionType {
       'oneToMany',
       'api::transaction-out.transaction-out'
     >;
+    user_demo_classes_grade_plans: Attribute.Relation<
+      'plugin::users-permissions.user',
+      'oneToMany',
+      'api::user-grade-plan.user-grade-plan'
+    >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     createdBy: Attribute.Relation<
@@ -1222,7 +1227,9 @@ export interface ApiCommissionSettingCommissionSetting
     premium_plan_percentage: Attribute.Decimal;
     premium_plan_effective_from: Attribute.Date;
     is_premium_plan_active: Attribute.Boolean;
-    system_plan: Attribute.Enumeration<['mentor', 'counsellor']> &
+    system_plan: Attribute.Enumeration<
+      ['mentor', 'counsellor', 'grade-classes', 'classroom']
+    > &
       Attribute.Required;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
@@ -1737,6 +1744,11 @@ export interface ApiGradeSubjectGradeSubject extends Schema.CollectionType {
       'api::grade-subject.grade-subject',
       'manyToOne',
       'api::subject-group.subject-group'
+    >;
+    user_demo_classes_grade_plans: Attribute.Relation<
+      'api::grade-subject.grade-subject',
+      'oneToMany',
+      'api::user-grade-plan.user-grade-plan'
     >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
@@ -3210,6 +3222,56 @@ export interface ApiUniversityUniversity extends Schema.CollectionType {
   };
 }
 
+export interface ApiUserGradePlanUserGradePlan extends Schema.CollectionType {
+  collectionName: 'user_grade_plans';
+  info: {
+    singularName: 'user-grade-plan';
+    pluralName: 'user-grade-plans';
+    displayName: 'User: Demo Classes (Grade) Plan';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    grade_subject: Attribute.Relation<
+      'api::user-grade-plan.user-grade-plan',
+      'manyToOne',
+      'api::grade-subject.grade-subject'
+    >;
+    student: Attribute.Relation<
+      'api::user-grade-plan.user-grade-plan',
+      'manyToOne',
+      'plugin::users-permissions.user'
+    >;
+    expires_at: Attribute.DateTime;
+    purchased_at: Attribute.DateTime;
+    status: Attribute.Enumeration<['active', 'expired', 'used_up']> &
+      Attribute.DefaultTo<'active'>;
+    razorpay_payment_id: Attribute.String;
+    razorpay_order_id: Attribute.String;
+    razorpay_signature: Attribute.String;
+    price_at_purchase: Attribute.Decimal & Attribute.Required;
+    commission_percentage_applied: Attribute.Decimal & Attribute.Required;
+    commission_amount: Attribute.Decimal & Attribute.Required;
+    total_paid: Attribute.Decimal & Attribute.Required;
+    createdAt: Attribute.DateTime;
+    updatedAt: Attribute.DateTime;
+    publishedAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<
+      'api::user-grade-plan.user-grade-plan',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+    updatedBy: Attribute.Relation<
+      'api::user-grade-plan.user-grade-plan',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+  };
+}
+
 export interface ApiUserPlanUserPlan extends Schema.CollectionType {
   collectionName: 'user_plans';
   info: {
@@ -3366,6 +3428,7 @@ declare module '@strapi/types' {
       'api::transaction-out.transaction-out': ApiTransactionOutTransactionOut;
       'api::tutor-plan.tutor-plan': ApiTutorPlanTutorPlan;
       'api::university.university': ApiUniversityUniversity;
+      'api::user-grade-plan.user-grade-plan': ApiUserGradePlanUserGradePlan;
       'api::user-plan.user-plan': ApiUserPlanUserPlan;
       'api::whats-new.whats-new': ApiWhatsNewWhatsNew;
     }
