@@ -1094,7 +1094,7 @@ export interface ApiClassClass extends Schema.CollectionType {
   info: {
     singularName: 'class';
     pluralName: 'classes';
-    displayName: 'Grade';
+    displayName: 'Lecture: Grade';
     description: '';
   };
   options: {
@@ -1541,7 +1541,7 @@ export interface ApiEnrollmentEnrollment extends Schema.CollectionType {
   info: {
     singularName: 'enrollment';
     pluralName: 'enrollments';
-    displayName: 'Classroom';
+    displayName: 'Tutor: Classroom';
     description: '';
   };
   options: {
@@ -2789,7 +2789,7 @@ export interface ApiSubtopicSubtopic extends Schema.CollectionType {
   info: {
     singularName: 'subtopic';
     pluralName: 'subtopics';
-    displayName: 'Topics';
+    displayName: 'Lectures: sub-topics';
     description: '';
   };
   options: {
@@ -3023,7 +3023,7 @@ export interface ApiTopicTopic extends Schema.CollectionType {
   info: {
     singularName: 'topic';
     pluralName: 'topics';
-    displayName: 'Units';
+    displayName: 'Lectures: Units';
     description: '';
   };
   options: {
