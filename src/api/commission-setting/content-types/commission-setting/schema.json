@@ -26,8 +26,9 @@
       "enum": [
         "mentor",
         "counsellor",
-        "grade-classes",
-        "classroom"
+        "recorded_lecture",
+        "classroom",
+        "live_lecture"
       ],
       "required": true
     }

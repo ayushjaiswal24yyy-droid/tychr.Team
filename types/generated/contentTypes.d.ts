@@ -969,6 +969,11 @@ export interface PluginUsersPermissionsUser extends Schema.CollectionType {
       'oneToMany',
       'api::user-grade-plan.user-grade-plan'
     >;
+    payments: Attribute.Relation<
+      'plugin::users-permissions.user',
+      'oneToMany',
+      'api::payment.payment'
+    >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     createdBy: Attribute.Relation<
@@ -1228,7 +1233,7 @@ export interface ApiCommissionSettingCommissionSetting
     premium_plan_effective_from: Attribute.Date;
     is_premium_plan_active: Attribute.Boolean;
     system_plan: Attribute.Enumeration<
-      ['mentor', 'counsellor', 'grade-classes', 'classroom']
+      ['mentor', 'counsellor', 'recorded_lecture', 'classroom', 'live_lecture']
     > &
       Attribute.Required;
     createdAt: Attribute.DateTime;
@@ -1545,7 +1550,7 @@ export interface ApiEnrollmentEnrollment extends Schema.CollectionType {
   attributes: {
     enrollment_date: Attribute.Date;
     isPaid: Attribute.Boolean & Attribute.DefaultTo<true>;
-    payment_amount: Attribute.Decimal;
+    price: Attribute.Decimal;
     payment_date: Attribute.Date;
     tutors: Attribute.Relation<
       'api::enrollment.enrollment',
@@ -2213,7 +2218,7 @@ export interface ApiPaymentPayment extends Schema.CollectionType {
   info: {
     singularName: 'payment';
     pluralName: 'payments';
-    displayName: 'Payment';
+    displayName: 'Student: Payment';
     description: '';
   };
   options: {
@@ -2231,15 +2236,26 @@ export interface ApiPaymentPayment extends Schema.CollectionType {
       'manyToOne',
       'api::recorded-lecture.recorded-lecture'
     >;
-    user: Attribute.Relation<
-      'api::payment.payment',
-      'oneToOne',
-      'plugin::users-permissions.user'
-    >;
     classroom: Attribute.Relation<
       'api::payment.payment',
       'oneToOne',
       'api::enrollment.enrollment'
+    >;
+    expires_at: Attribute.DateTime;
+    purchased_at: Attribute.DateTime;
+    status: Attribute.Enumeration<['active', 'expired', 'used_up']> &
+      Attribute.DefaultTo<'active'>;
+    razorpay_payment_id: Attribute.String;
+    razorpay_order_id: Attribute.String;
+    razorpay_signature: Attribute.String;
+    price_at_purchase: Attribute.Decimal & Attribute.Required;
+    commission_percentage_applied: Attribute.Decimal & Attribute.Required;
+    commission_amount: Attribute.Decimal & Attribute.Required;
+    total_paid: Attribute.Decimal & Attribute.Required;
+    student: Attribute.Relation<
+      'api::payment.payment',
+      'manyToOne',
+      'plugin::users-permissions.user'
     >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
@@ -2459,7 +2475,7 @@ export interface ApiRecordedLectureRecordedLecture
     description: Attribute.Text;
     video: Attribute.Media<'videos'>;
     isFree: Attribute.Boolean & Attribute.DefaultTo<false>;
-    price: Attribute.Decimal;
+    price: Attribute.Decimal & Attribute.Required & Attribute.DefaultTo<0>;
     payments: Attribute.Relation<
       'api::recorded-lecture.recorded-lecture',
       'oneToMany',
@@ -3227,7 +3243,8 @@ export interface ApiUserGradePlanUserGradePlan extends Schema.CollectionType {
   info: {
     singularName: 'user-grade-plan';
     pluralName: 'user-grade-plans';
-    displayName: 'User: Demo Classes (Grade) Plan';
+    displayName: 'Student: Demo Classes (Grade) Plan';
+    description: '';
   };
   options: {
     draftAndPublish: true;

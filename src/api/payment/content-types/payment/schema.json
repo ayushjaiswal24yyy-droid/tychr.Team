@@ -4,7 +4,7 @@
   "info": {
     "singularName": "payment",
     "pluralName": "payments",
-    "displayName": "Payment",
+    "displayName": "Student: Payment",
     "description": ""
   },
   "options": {
@@ -27,15 +27,57 @@
       "target": "api::recorded-lecture.recorded-lecture",
       "inversedBy": "payments"
     },
-    "user": {
-      "type": "relation",
-      "relation": "oneToOne",
-      "target": "plugin::users-permissions.user"
-    },
     "classroom": {
       "type": "relation",
       "relation": "oneToOne",
       "target": "api::enrollment.enrollment"
+    },
+    "expires_at": {
+      "type": "datetime"
+    },
+    "purchased_at": {
+      "type": "datetime",
+      "required": false
+    },
+    "status": {
+      "type": "enumeration",
+      "enum": [
+        "active",
+        "expired",
+        "used_up"
+      ],
+      "default": "active"
+    },
+    "razorpay_payment_id": {
+      "type": "string"
+    },
+    "razorpay_order_id": {
+      "type": "string"
+    },
+    "razorpay_signature": {
+      "type": "string"
+    },
+    "price_at_purchase": {
+      "type": "decimal",
+      "required": true
+    },
+    "commission_percentage_applied": {
+      "type": "decimal",
+      "required": true
+    },
+    "commission_amount": {
+      "type": "decimal",
+      "required": true
+    },
+    "total_paid": {
+      "type": "decimal",
+      "required": true
+    },
+    "student": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "plugin::users-permissions.user",
+      "inversedBy": "payments"
     }
   }
 }

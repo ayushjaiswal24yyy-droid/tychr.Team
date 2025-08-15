@@ -2,7 +2,7 @@ module.exports = {
   routes: [
     {
       method: "POST",
-      path: "/payment/razorpayment",
+      path: "/user-grad-plan/razorpayment",
       handler: "razorpayment.createOrder",
       config: {
         policies: [],
@@ -11,17 +11,8 @@ module.exports = {
     },
     {
       method: "POST",
-      path: "/payment/verify-payment",
+      path: "/user-grad-plan/verify-payment",
       handler: "razorpayment.verifyPayment",
-      config: {
-        policies: [],
-        middlewares: [],
-      },
-    },
-    {
-      method: "POST",
-      path: "/payment/enrollments-purchases/verify-payment", //
-      handler: "razorpayment.completeTransaction",
       config: {
         policies: [],
         middlewares: [],

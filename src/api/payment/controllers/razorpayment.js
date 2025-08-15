@@ -105,7 +105,8 @@ module.exports = {
         }
       );
       if (commissionSettings.length > 0) {
-        commissionPct = parseFloat(commissionSettings[0].premium_plan_percentage) || 0;
+        commissionPct =
+          parseFloat(commissionSettings[0].premium_plan_percentage) || 0;
       }
 
       // Compute commission amount (what system admin gets)
@@ -155,6 +156,151 @@ module.exports = {
     } catch (error) {
       console.error("Payment verification error:", error);
       return ctx.internalServerError("Payment verification failed");
+    }
+  },
+  async completeTransaction(ctx) {
+    try {
+      // Extract required data from request
+      const {
+        razorpay_order_id,
+        razorpay_payment_id,
+        razorpay_signature,
+        item_id, // ID of the item being purchased (live_lecture, recorded_lecture, or classroom)
+        item_type, // 'live_lecture', 'recorded_lecture', or 'classroom'
+      } = ctx.request.body;
+
+      // Verify the payment signature (uncomment when ready)
+      // const generatedSignature = crypto
+      //   .createHmac("sha256", process.env.RAZORPAY_SECRET)
+      //   .update(`${razorpay_order_id}|${razorpay_payment_id}`)
+      //   .digest("hex");
+
+      // if (generatedSignature !== razorpay_signature) {
+      //   return ctx.badRequest("Payment verification failed");
+      // }
+
+      // Get user ID from token
+      const token = ctx.request.header.authorization?.replace("Bearer ", "");
+      if (!token) {
+        return ctx.unauthorized("Authorization token missing");
+      }
+
+      const { id: userId } = await strapi.plugins[
+        "users-permissions"
+      ].services.jwt.verify(token);
+      if (!userId) {
+        return ctx.badRequest("Student (user) not identified");
+      }
+
+      // Validate item type
+      const validItemTypes = ["live_lecture", "recorded_lecture", "classroom"];
+      if (!validItemTypes.includes(item_type)) {
+        return ctx.badRequest("Invalid item type");
+      }
+
+      const apiMap = {
+        live_lecture: "live-lecture",
+        recorded_lecture: "recorded-lecture",
+        classroom: "classroom", // Directly uses classroom (not enrollment)
+      };
+
+      if (!apiMap[item_type]) {
+        return ctx.badRequest(
+          "Invalid item type. Allowed: live_lecture, recorded_lecture, classroom"
+        );
+      }
+
+      // 4. Fetch the item
+      const item = await strapi.entityService.findOne(
+        `api::${apiMap[item_type]}.${apiMap[item_type]}`,
+        item_id,
+        { populate: ["price", "creator"] } // Required fields
+      );
+
+      if (!item || !item.price) {
+        return ctx.badRequest("Item not found or missing price");
+      }
+
+      // Get current commission settings for this item type
+      const now = new Date().toISOString();
+      const commissionSettings = await strapi.entityService.findMany(
+        "api::commission-setting.commission-setting",
+        {
+          filters: {
+            system_plan: item_type,
+            is_premium_plan_active: true,
+            premium_plan_effective_from: { $lte: now },
+          },
+          sort: { premium_plan_effective_from: "desc" },
+          limit: 1,
+        }
+      );
+
+      // Calculate commission
+      const commissionPct =
+        commissionSettings.length > 0
+          ? parseFloat(commissionSettings[0].premium_plan_percentage)
+          : 0;
+
+      const price = parseFloat(item.price);
+      const commissionAmount = (commissionPct / 100) * price;
+      const totalPaid = price;
+
+      // Calculate expiration date (example: 1 year from now)
+      const expires_at = new Date();
+      expires_at.setDate(expires_at.getDate() + 365);
+
+      // Create payment record
+      const paymentData = {
+        amount: price,
+        [item_type]: item_id, // dynamic field based on item_type
+        user: userId,
+        expires_at: expires_at.toISOString(),
+        purchased_at: new Date().toISOString(),
+        status: "active",
+        razorpay_payment_id,
+        razorpay_order_id,
+        razorpay_signature,
+        price_at_purchase: price,
+        commission_percentage_applied: commissionPct,
+        commission_amount: commissionAmount,
+        total_paid: totalPaid,
+      };
+
+      const payment = await strapi.entityService.create(
+        "api::payment.payment",
+        {
+          data: paymentData,
+        }
+      );
+
+      // Additional logic based on item type
+      if (item_type === "classroom") {
+        // Add user to classroom or update enrollment status
+        await strapi.entityService.update(
+          "api::enrollment.enrollment",
+          item_id,
+          {
+            data: {
+              student: userId,
+              status: "active",
+              payment: payment.id,
+            },
+          }
+        );
+      }
+
+      return {
+        success: true,
+        payment,
+        commission: {
+          percentage: commissionPct,
+          amount: commissionAmount,
+        },
+      };
+    } catch (error) {
+      console.error("Payment processing error:", error);
+      return ctx.internalServerError("Payment processing failed");
     }
   },
 };

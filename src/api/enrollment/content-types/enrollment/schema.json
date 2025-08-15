@@ -19,7 +19,7 @@
       "type": "boolean",
       "default": true
     },
-    "payment_amount": {
+    "price": {
       "type": "decimal"
     },
     "payment_date": {

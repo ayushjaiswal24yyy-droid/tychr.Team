@@ -386,6 +386,12 @@
       "relation": "oneToMany",
       "target": "api::user-grade-plan.user-grade-plan",
       "mappedBy": "student"
+    },
+    "payments": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::payment.payment",
+      "mappedBy": "student"
     }
   }
 }

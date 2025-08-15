@@ -31,7 +31,9 @@
       "default": false
     },
     "price": {
-      "type": "decimal"
+      "type": "decimal",
+      "required": true,
+      "default": 0
     },
     "payments": {
       "type": "relation",

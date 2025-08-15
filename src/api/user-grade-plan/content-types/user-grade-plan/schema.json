@@ -4,7 +4,8 @@
   "info": {
     "singularName": "user-grade-plan",
     "pluralName": "user-grade-plans",
-    "displayName": "User: Demo Classes (Grade) Plan"
+    "displayName": "Student: Demo Classes (Grade) Plan",
+    "description": ""
   },
   "options": {
     "draftAndPublish": true
@@ -32,7 +33,11 @@
     },
     "status": {
       "type": "enumeration",
-      "enum": ["active", "expired", "used_up"],
+      "enum": [
+        "active",
+        "expired",
+        "used_up"
+      ],
       "default": "active"
     },
     "razorpay_payment_id": {
