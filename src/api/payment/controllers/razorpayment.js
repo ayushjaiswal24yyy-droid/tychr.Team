@@ -280,9 +280,9 @@ module.exports = {
           item_id,
           {
             data: {
-              student: userId,
-              status: "active",
-              payment: payment.id,
+              students: userId,
+              // status: "active",
+              // payment: payment.id,
             },
           }
         );
