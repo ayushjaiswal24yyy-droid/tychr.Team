@@ -39,6 +39,62 @@ export interface UserStudentPlan extends Schema.Component {
   };
 }
 
+export interface SubtopicQnA extends Schema.Component {
+  collectionName: 'components_subtopic_qn_as';
+  info: {
+    displayName: 'QnA';
+    icon: 'quote';
+    description: '';
+  };
+  attributes: {
+    question: Attribute.String;
+    answer: Attribute.Blocks;
+    format: Attribute.Enumeration<['one_line', 'md_file']>;
+  };
+}
+
+export interface SubtopicHeading extends Schema.Component {
+  collectionName: 'components_subtopic_headings';
+  info: {
+    displayName: 'Heading';
+    icon: 'bulletList';
+    description: '';
+  };
+  attributes: {
+    title: Attribute.String;
+    content: Attribute.Blocks;
+    qna: Attribute.Component<'subtopic.qn-a', true>;
+  };
+}
+
+export interface SubjectRefrenceBooks extends Schema.Component {
+  collectionName: 'components_subject_refrence_books';
+  info: {
+    displayName: 'Refrence Books';
+    icon: 'book';
+  };
+  attributes: {
+    title: Attribute.String;
+    author: Attribute.String;
+    publication_year: Attribute.Integer;
+  };
+}
+
+export interface RecordedLecturesProgress extends Schema.Component {
+  collectionName: 'components_recorded_lectures_progresses';
+  info: {
+    displayName: 'progress';
+  };
+  attributes: {
+    student: Attribute.Relation<
+      'recorded-lectures.progress',
+      'oneToOne',
+      'plugin::users-permissions.user'
+    >;
+    progress_time: Attribute.Decimal;
+  };
+}
+
 export interface UniversityTutionFees extends Schema.Component {
   collectionName: 'components_university_tution_fees';
   info: {
@@ -296,51 +352,6 @@ export interface QuestionBankHints extends Schema.Component {
   };
 }
 
-export interface PlanGradePlan extends Schema.Component {
-  collectionName: 'components_plan_grade_plans';
-  info: {
-    displayName: 'Grade Plan';
-    icon: 'crown';
-    description: '';
-  };
-  attributes: {
-    name: Attribute.String;
-    price: Attribute.Decimal;
-    currency: Attribute.Enumeration<['USD', 'INR']>;
-    recorded_lectures: Attribute.Boolean & Attribute.DefaultTo<true>;
-    live_lectures: Attribute.Boolean & Attribute.DefaultTo<false>;
-    qna: Attribute.Boolean & Attribute.DefaultTo<true>;
-  };
-}
-
-export interface RecordedLecturesProgress extends Schema.Component {
-  collectionName: 'components_recorded_lectures_progresses';
-  info: {
-    displayName: 'progress';
-  };
-  attributes: {
-    student: Attribute.Relation<
-      'recorded-lectures.progress',
-      'oneToOne',
-      'plugin::users-permissions.user'
-    >;
-    progress_time: Attribute.Decimal;
-  };
-}
-
-export interface SubjectRefrenceBooks extends Schema.Component {
-  collectionName: 'components_subject_refrence_books';
-  info: {
-    displayName: 'Refrence Books';
-    icon: 'book';
-  };
-  attributes: {
-    title: Attribute.String;
-    author: Attribute.String;
-    publication_year: Attribute.Integer;
-  };
-}
-
 export interface NotificationHistory extends Schema.Component {
   collectionName: 'components_notification_histories';
   info: {
@@ -364,42 +375,20 @@ export interface NotificationDemoBookingTime extends Schema.Component {
   };
 }
 
-export interface MentorMentorQuestions extends Schema.Component {
-  collectionName: 'components_mentor_mentor_questions';
+export interface PlanGradePlan extends Schema.Component {
+  collectionName: 'components_plan_grade_plans';
   info: {
-    displayName: 'Mentor Questions';
-  };
-  attributes: {
-    question: Attribute.Text;
-    answer: Attribute.Text;
-  };
-}
-
-export interface SubtopicQnA extends Schema.Component {
-  collectionName: 'components_subtopic_qn_as';
-  info: {
-    displayName: 'QnA';
-    icon: 'quote';
+    displayName: 'Grade Plan';
+    icon: 'crown';
     description: '';
   };
   attributes: {
-    question: Attribute.String;
-    answer: Attribute.Blocks;
-    format: Attribute.Enumeration<['one_line', 'md_file']>;
-  };
-}
-
-export interface SubtopicHeading extends Schema.Component {
-  collectionName: 'components_subtopic_headings';
-  info: {
-    displayName: 'Heading';
-    icon: 'bulletList';
-    description: '';
-  };
-  attributes: {
-    title: Attribute.String;
-    content: Attribute.Blocks;
-    qna: Attribute.Component<'subtopic.qn-a', true>;
+    name: Attribute.String;
+    price: Attribute.Decimal;
+    currency: Attribute.Enumeration<['USD', 'INR']>;
+    recorded_lectures: Attribute.Boolean & Attribute.DefaultTo<true>;
+    live_lectures: Attribute.Boolean & Attribute.DefaultTo<false>;
+    qna: Attribute.Boolean & Attribute.DefaultTo<true>;
   };
 }
 
@@ -414,6 +403,17 @@ export interface LecturesLectureHeader extends Schema.Component {
       ['Content', 'Recordings', 'Live', 'QnA', 'Test', 'Doubt', 'Practice']
     >;
     show: Attribute.Boolean;
+  };
+}
+
+export interface MentorMentorQuestions extends Schema.Component {
+  collectionName: 'components_mentor_mentor_questions';
+  info: {
+    displayName: 'Mentor Questions';
+  };
+  attributes: {
+    question: Attribute.Text;
+    answer: Attribute.Text;
   };
 }
 
@@ -475,20 +475,6 @@ export interface ExternalUsersFounder extends Schema.Component {
   };
 }
 
-export interface CyclesCycle extends Schema.Component {
-  collectionName: 'components_cycles_cycles';
-  info: {
-    displayName: 'cycle';
-    description: '';
-  };
-  attributes: {
-    name: Attribute.String;
-    early_decision: Attribute.String;
-    regular_decision: Attribute.String;
-    early_action: Attribute.String;
-  };
-}
-
 export interface EssaysTags extends Schema.Component {
   collectionName: 'components_essays_tags';
   info: {
@@ -510,6 +496,20 @@ export interface EssaysEssay extends Schema.Component {
     prompt: Attribute.String;
     word_count: Attribute.Integer;
     title: Attribute.String;
+  };
+}
+
+export interface CyclesCycle extends Schema.Component {
+  collectionName: 'components_cycles_cycles';
+  info: {
+    displayName: 'cycle';
+    description: '';
+  };
+  attributes: {
+    name: Attribute.String;
+    early_decision: Attribute.String;
+    regular_decision: Attribute.String;
+    early_action: Attribute.String;
   };
 }
 
@@ -590,6 +590,10 @@ declare module '@strapi/types' {
     export interface Components {
       'user.user-experience': UserUserExperience;
       'user.student-plan': UserStudentPlan;
+      'subtopic.qn-a': SubtopicQnA;
+      'subtopic.heading': SubtopicHeading;
+      'subject.refrence-books': SubjectRefrenceBooks;
+      'recorded-lectures.progress': RecordedLecturesProgress;
       'university.tution-fees': UniversityTutionFees;
       'university.subject-ranking': UniversitySubjectRanking;
       'university.student-application': UniversityStudentApplication;
@@ -606,21 +610,17 @@ declare module '@strapi/types' {
       'question-bank.question-n-answer': QuestionBankQuestionNAnswer;
       'question-bank.parts': QuestionBankParts;
       'question-bank.hints': QuestionBankHints;
-      'plan.grade-plan': PlanGradePlan;
-      'recorded-lectures.progress': RecordedLecturesProgress;
-      'subject.refrence-books': SubjectRefrenceBooks;
       'notification.history': NotificationHistory;
       'notification.demo-booking-time': NotificationDemoBookingTime;
-      'mentor.mentor-questions': MentorMentorQuestions;
-      'subtopic.qn-a': SubtopicQnA;
-      'subtopic.heading': SubtopicHeading;
+      'plan.grade-plan': PlanGradePlan;
       'lectures.lecture-header': LecturesLectureHeader;
+      'mentor.mentor-questions': MentorMentorQuestions;
       'external-users.position': ExternalUsersPosition;
       'external-users.org-details': ExternalUsersOrgDetails;
       'external-users.founder': ExternalUsersFounder;
-      'cycles.cycle': CyclesCycle;
       'essays.tags': EssaysTags;
       'essays.essay': EssaysEssay;
+      'cycles.cycle': CyclesCycle;
       'college.requirement': CollegeRequirement;
       'college.programs': CollegePrograms;
       'classroom.resources': ClassroomResources;

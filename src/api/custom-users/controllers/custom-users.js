@@ -1,62 +1,71 @@
 module.exports = {
   async find(ctx) {
-    const page = parseInt(ctx.query.page, 10) || 1;
-    const pageSize = parseInt(ctx.query.pageSize, 10) || 10;
-    const confirmTutor = ctx.query.confirmTutor;
-    const tutor_type = ctx.query.tutor_type;
-    const tutor_grade_subject = ctx.query.tutor_grade_subject;
-    const nationality = ctx.query.nationality;
-    const start = (page - 1) * pageSize;
+    try {
+      const page = parseInt(ctx.query.page, 10) || 1;
+      const pageSize = parseInt(ctx.query.pageSize, 10) || 10;
+      const start = (page - 1) * pageSize;
 
-    const specificNationalities = ["India", "United States", "Canada"];
+      // Define filter conditions
+      const where = {
+        role: {
+          name: 'Tutor'
+        }
+      };
 
-    const nationalityFilter = specificNationalities.includes(nationality)
-      ? { nationality: { $in: nationality } }
-      : { nationality: { $notIn: specificNationalities } };
+      // Add optional filters if they exist in query
+      if (ctx.query.confirmTutor !== undefined) {
+        where.confirmTutor = ctx.query.confirmTutor === 'true';
+      }
 
-    const results = await strapi.db
-      .query("plugin::users-permissions.user")
-      .findMany({
-        where: {
-          confirmTutor,
-          ...nationalityFilter,
-          tutor_type: tutor_type,
-          tutor_grade_subject: tutor_grade_subject,
-          role: {
-            name: "Tutor",
-          },
-        },
-        populate: [
-          "role",
-          "cv",
-          "subject_of_expertise",
-          "tutor_grade_subject",
-          "tutor_video",
-          "teaching",
-          "notification",
-        ],
-        offset: start,
-        limit: pageSize,
-      });
+      if (ctx.query.tutor_type) {
+        where.tutor_type = ctx.query.tutor_type;
+      }
 
-    const total = await strapi.db
-      .query("plugin::users-permissions.user")
-      .count({
-        where: {
-          confirmTutor,
-          role: {
-            name: "Tutor",
-          },
-        },
-      });
+      if (ctx.query.tutor_grade_subject) {
+        where.tutor_grade_subject = ctx.query.tutor_grade_subject;
+      }
 
-    const pagination = {
-      page,
-      pageSize,
-      pageCount: Math.ceil(total / pageSize),
-      total,
-    };
+      // Handle nationality filter
+      const specificNationalities = ["India", "United States", "Canada"];
+      if (ctx.query.nationality) {
+        if (specificNationalities.includes(ctx.query.nationality)) {
+          where.nationality = ctx.query.nationality;
+        } else {
+          where.nationality = { $notIn: specificNationalities };
+        }
+      }
 
-    ctx.body = { results, pagination };
-  },
+      // Query with pagination
+      const [results, total] = await Promise.all([
+        strapi.db.query("plugin::users-permissions.user").findMany({
+          where,
+          populate: [
+            "role",
+            "cv",
+            "subject_of_expertise",
+            "tutor_grade_subject",
+            "tutor_video",
+            "teaching",
+            "notifications" // Fixed typo from 'notification' to 'notifications'
+          ],
+          offset: start,
+          limit: pageSize,
+          orderBy: { createdAt: 'desc' } // Added sorting
+        }),
+        strapi.db.query("plugin::users-permissions.user").count({ where })
+      ]);
+
+      ctx.body = {
+        results,
+        pagination: {
+          page,
+          pageSize,
+          pageCount: Math.ceil(total / pageSize),
+          total
+        }
+      };
+    } catch (err) {
+      ctx.throw(500, err);
+    }
+  }
 };
