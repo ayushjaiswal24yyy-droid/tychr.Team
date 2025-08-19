@@ -1,11 +1,10 @@
 {
   "kind": "collectionType",
-  "collectionName": "availabilities",
+  "collectionName": "mentor_availabilities",
   "info": {
-    "singularName": "availability",
-    "pluralName": "availabilities",
-    "displayName": "Mentor-Availability",
-    "description": ""
+    "singularName": "mentor-availability",
+    "pluralName": "mentor-availabilities",
+    "displayName": "Mentor-Availability"
   },
   "options": {
     "draftAndPublish": true

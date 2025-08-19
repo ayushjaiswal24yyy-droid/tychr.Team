@@ -982,7 +982,7 @@ export interface PluginUsersPermissionsUser extends Schema.CollectionType {
     mentor_availabilities: Attribute.Relation<
       'plugin::users-permissions.user',
       'oneToMany',
-      'api::availability.availability'
+      'api::mentor-availability.mentor-availability'
     >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
@@ -1092,43 +1092,6 @@ export interface ApiArticleArticle extends Schema.CollectionType {
       Attribute.Private;
     updatedBy: Attribute.Relation<
       'api::article.article',
-      'oneToOne',
-      'admin::user'
-    > &
-      Attribute.Private;
-  };
-}
-
-export interface ApiAvailabilityAvailability extends Schema.CollectionType {
-  collectionName: 'availabilities';
-  info: {
-    singularName: 'availability';
-    pluralName: 'availabilities';
-    displayName: 'Mentor-Availability';
-    description: '';
-  };
-  options: {
-    draftAndPublish: true;
-  };
-  attributes: {
-    mentor: Attribute.Relation<
-      'api::availability.availability',
-      'manyToOne',
-      'plugin::users-permissions.user'
-    >;
-    setToDefault: Attribute.Boolean;
-    days: Attribute.Component<'availability.day-availability', true>;
-    createdAt: Attribute.DateTime;
-    updatedAt: Attribute.DateTime;
-    publishedAt: Attribute.DateTime;
-    createdBy: Attribute.Relation<
-      'api::availability.availability',
-      'oneToOne',
-      'admin::user'
-    > &
-      Attribute.Private;
-    updatedBy: Attribute.Relation<
-      'api::availability.availability',
       'oneToOne',
       'admin::user'
     > &
@@ -2128,6 +2091,43 @@ export interface ApiMentorApplicationMentorApplication
       Attribute.Private;
     updatedBy: Attribute.Relation<
       'api::mentor-application.mentor-application',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+  };
+}
+
+export interface ApiMentorAvailabilityMentorAvailability
+  extends Schema.CollectionType {
+  collectionName: 'mentor_availabilities';
+  info: {
+    singularName: 'mentor-availability';
+    pluralName: 'mentor-availabilities';
+    displayName: 'Mentor-Availability';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    mentor: Attribute.Relation<
+      'api::mentor-availability.mentor-availability',
+      'manyToOne',
+      'plugin::users-permissions.user'
+    >;
+    setToDefault: Attribute.Boolean;
+    days: Attribute.Component<'availability.day-availability', true>;
+    createdAt: Attribute.DateTime;
+    updatedAt: Attribute.DateTime;
+    publishedAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<
+      'api::mentor-availability.mentor-availability',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+    updatedBy: Attribute.Relation<
+      'api::mentor-availability.mentor-availability',
       'oneToOne',
       'admin::user'
     > &
@@ -3491,7 +3491,6 @@ declare module '@strapi/types' {
       'plugin::users-permissions.user': PluginUsersPermissionsUser;
       'api::answer.answer': ApiAnswerAnswer;
       'api::article.article': ApiArticleArticle;
-      'api::availability.availability': ApiAvailabilityAvailability;
       'api::booking.booking': ApiBookingBooking;
       'api::class.class': ApiClassClass;
       'api::college.college': ApiCollegeCollege;
@@ -3512,6 +3511,7 @@ declare module '@strapi/types' {
       'api::live-lectures-meeting.live-lectures-meeting': ApiLiveLecturesMeetingLiveLecturesMeeting;
       'api::log.log': ApiLogLog;
       'api::mentor-application.mentor-application': ApiMentorApplicationMentorApplication;
+      'api::mentor-availability.mentor-availability': ApiMentorAvailabilityMentorAvailability;
       'api::message.message': ApiMessageMessage;
       'api::note.note': ApiNoteNote;
       'api::notification.notification': ApiNotificationNotification;

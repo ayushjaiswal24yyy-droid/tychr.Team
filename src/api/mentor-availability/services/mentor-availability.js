@@ -1,0 +1,9 @@
+'use strict';
+
+/**
+ * mentor-availability service
+ */
+
+const { createCoreService } = require('@strapi/strapi').factories;
+
+module.exports = createCoreService('api::mentor-availability.mentor-availability');

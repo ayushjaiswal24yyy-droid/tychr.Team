@@ -402,7 +402,7 @@
     "mentor_availabilities": {
       "type": "relation",
       "relation": "oneToMany",
-      "target": "api::availability.availability",
+      "target": "api::mentor-availability.mentor-availability",
       "mappedBy": "mentor"
     }
   }
