@@ -974,6 +974,16 @@ export interface PluginUsersPermissionsUser extends Schema.CollectionType {
       'oneToMany',
       'api::payment.payment'
     >;
+    bookings: Attribute.Relation<
+      'plugin::users-permissions.user',
+      'oneToMany',
+      'api::booking.booking'
+    >;
+    mentor_availabilities: Attribute.Relation<
+      'plugin::users-permissions.user',
+      'oneToMany',
+      'api::availability.availability'
+    >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     createdBy: Attribute.Relation<
@@ -1082,6 +1092,85 @@ export interface ApiArticleArticle extends Schema.CollectionType {
       Attribute.Private;
     updatedBy: Attribute.Relation<
       'api::article.article',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+  };
+}
+
+export interface ApiAvailabilityAvailability extends Schema.CollectionType {
+  collectionName: 'availabilities';
+  info: {
+    singularName: 'availability';
+    pluralName: 'availabilities';
+    displayName: 'Mentor-Availability';
+    description: '';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    mentor: Attribute.Relation<
+      'api::availability.availability',
+      'manyToOne',
+      'plugin::users-permissions.user'
+    >;
+    setToDefault: Attribute.Boolean;
+    days: Attribute.Component<'availability.day-availability', true>;
+    createdAt: Attribute.DateTime;
+    updatedAt: Attribute.DateTime;
+    publishedAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<
+      'api::availability.availability',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+    updatedBy: Attribute.Relation<
+      'api::availability.availability',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+  };
+}
+
+export interface ApiBookingBooking extends Schema.CollectionType {
+  collectionName: 'bookings';
+  info: {
+    singularName: 'booking';
+    pluralName: 'bookings';
+    displayName: 'Booking';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    student: Attribute.Relation<
+      'api::booking.booking',
+      'manyToOne',
+      'plugin::users-permissions.user'
+    >;
+    mentor: Attribute.Relation<
+      'api::booking.booking',
+      'manyToOne',
+      'plugin::users-permissions.user'
+    >;
+    date: Attribute.Date;
+    slotStart: Attribute.String;
+    slotEnd: Attribute.String;
+    createdAt: Attribute.DateTime;
+    updatedAt: Attribute.DateTime;
+    publishedAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<
+      'api::booking.booking',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+    updatedBy: Attribute.Relation<
+      'api::booking.booking',
       'oneToOne',
       'admin::user'
     > &
@@ -3401,6 +3490,8 @@ declare module '@strapi/types' {
       'plugin::users-permissions.user': PluginUsersPermissionsUser;
       'api::answer.answer': ApiAnswerAnswer;
       'api::article.article': ApiArticleArticle;
+      'api::availability.availability': ApiAvailabilityAvailability;
+      'api::booking.booking': ApiBookingBooking;
       'api::class.class': ApiClassClass;
       'api::college.college': ApiCollegeCollege;
       'api::comment.comment': ApiCommentComment;

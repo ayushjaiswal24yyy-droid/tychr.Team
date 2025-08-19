@@ -1,0 +1,17 @@
+{
+  "collectionName": "components_availability_time_slots",
+  "info": {
+    "displayName": "timeSlot"
+  },
+  "options": {},
+  "attributes": {
+    "start": {
+      "type": "string",
+      "regex": "HH:MM"
+    },
+    "end": {
+      "type": "string",
+      "regex": "HH:MM"
+    }
+  }
+}
