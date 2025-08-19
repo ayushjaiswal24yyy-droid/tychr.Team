@@ -1183,7 +1183,7 @@ export interface ApiClassClass extends Schema.CollectionType {
   info: {
     singularName: 'class';
     pluralName: 'classes';
-    displayName: 'Lecture: Grade';
+    displayName: '\u2B50Lecture: Grade';
     description: '';
   };
   options: {
@@ -1630,7 +1630,7 @@ export interface ApiEnrollmentEnrollment extends Schema.CollectionType {
   info: {
     singularName: 'enrollment';
     pluralName: 'enrollments';
-    displayName: 'Tutor: Classroom';
+    displayName: '\u2B50Tutor: Classroom';
     description: '';
   };
   options: {
@@ -1781,7 +1781,7 @@ export interface ApiGradeSubjectGradeSubject extends Schema.CollectionType {
   info: {
     singularName: 'grade-subject';
     pluralName: 'grade-subjects';
-    displayName: 'Lecture: Grade Subject';
+    displayName: '\u2B50Lecture: Grade Subject';
     description: '';
   };
   options: {
@@ -2306,7 +2306,7 @@ export interface ApiPaymentPayment extends Schema.CollectionType {
   info: {
     singularName: 'payment';
     pluralName: 'payments';
-    displayName: 'Student: Payment';
+    displayName: '\u2B50Student: Payment';
     description: '';
   };
   options: {
@@ -2411,7 +2411,7 @@ export interface ApiPremiumPlanPremiumPlan extends Schema.CollectionType {
   info: {
     singularName: 'premium-plan';
     pluralName: 'premium-plans';
-    displayName: 'PremiumPlan';
+    displayName: '\u2B50PremiumPlan';
     description: '';
   };
   options: {
@@ -2551,7 +2551,7 @@ export interface ApiRecordedLectureRecordedLecture
   info: {
     singularName: 'recorded-lecture';
     pluralName: 'recorded-lectures';
-    displayName: 'Recorded_Lecture';
+    displayName: '\u2B50Recorded_Lecture';
     description: '';
   };
   options: {
@@ -2683,7 +2683,7 @@ export interface ApiStudentMeetingStudentMeeting extends Schema.CollectionType {
   info: {
     singularName: 'student-meeting';
     pluralName: 'student-meetings';
-    displayName: 'Student: Meeting';
+    displayName: '\u2B50Student: Meeting';
     description: '';
   };
   options: {
@@ -2877,7 +2877,7 @@ export interface ApiSubtopicSubtopic extends Schema.CollectionType {
   info: {
     singularName: 'subtopic';
     pluralName: 'subtopics';
-    displayName: 'Lectures: sub-topics';
+    displayName: '\u2B50Lectures: sub-topics';
     description: '';
   };
   options: {
@@ -2924,7 +2924,7 @@ export interface ApiTaskTask extends Schema.CollectionType {
   info: {
     singularName: 'task';
     pluralName: 'tasks';
-    displayName: 'tasks';
+    displayName: '\u2B50tasks';
     description: '';
   };
   options: {
@@ -3234,7 +3234,8 @@ export interface ApiTutorPlanTutorPlan extends Schema.CollectionType {
   info: {
     singularName: 'tutor-plan';
     pluralName: 'tutor-plans';
-    displayName: 'tutorPlan';
+    displayName: '\u2B50tutorPlan';
+    description: '';
   };
   options: {
     draftAndPublish: true;
@@ -3330,7 +3331,7 @@ export interface ApiUserGradePlanUserGradePlan extends Schema.CollectionType {
   info: {
     singularName: 'user-grade-plan';
     pluralName: 'user-grade-plans';
-    displayName: 'Student: Demo Classes (Grade) Plan';
+    displayName: '\u2B50Student: Demo Classes (Grade) Plan';
     description: '';
   };
   options: {
@@ -3381,7 +3382,7 @@ export interface ApiUserPlanUserPlan extends Schema.CollectionType {
   info: {
     singularName: 'user-plan';
     pluralName: 'user-plans';
-    displayName: 'Student: UserPlan';
+    displayName: '\u2B50Student: UserPlan';
     description: '';
   };
   options: {

@@ -274,15 +274,14 @@ module.exports = {
 
       // Additional logic based on item type
       if (item_type === "classroom") {
-        // Add user to classroom or update enrollment status
         await strapi.entityService.update(
           "api::enrollment.enrollment",
           item_id,
           {
             data: {
-              student: userId,
-              status: "active",
-              payment: payment.id,
+              students: {
+                connect: [userId], // This will add the user without removing others
+              },
             },
           }
         );
