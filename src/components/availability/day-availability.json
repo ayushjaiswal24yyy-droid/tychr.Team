@@ -1,0 +1,29 @@
+{
+  "collectionName": "components_availability_day_availabilities",
+  "info": {
+    "displayName": "dayAvailability"
+  },
+  "options": {},
+  "attributes": {
+    "day": {
+      "type": "enumeration",
+      "enum": [
+        "monday",
+        "tuesday",
+        "wednesday",
+        "thursday",
+        "friday",
+        "saturday",
+        "sunday"
+      ]
+    },
+    "enabled": {
+      "type": "boolean"
+    },
+    "slots": {
+      "type": "component",
+      "repeatable": true,
+      "component": "availability.time-slot"
+    }
+  }
+}

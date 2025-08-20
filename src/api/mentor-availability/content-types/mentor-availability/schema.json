@@ -1,0 +1,30 @@
+{
+  "kind": "collectionType",
+  "collectionName": "mentor_availabilities",
+  "info": {
+    "singularName": "mentor-availability",
+    "pluralName": "mentor-availabilities",
+    "displayName": "Mentor-Availability",
+    "description": ""
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "mentor": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "plugin::users-permissions.user",
+      "inversedBy": "mentor_availabilities"
+    },
+    "setToDefault": {
+      "type": "boolean"
+    },
+    "days": {
+      "type": "component",
+      "repeatable": true,
+      "component": "availability.day-availability"
+    }
+  }
+}

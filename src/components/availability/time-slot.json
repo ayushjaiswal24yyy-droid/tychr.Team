@@ -1,0 +1,16 @@
+{
+  "collectionName": "components_availability_time_slots",
+  "info": {
+    "displayName": "timeSlot",
+    "description": ""
+  },
+  "options": {},
+  "attributes": {
+    "start": {
+      "type": "string"
+    },
+    "end": {
+      "type": "string"
+    }
+  }
+}
