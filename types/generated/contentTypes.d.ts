@@ -3154,6 +3154,11 @@ export interface ApiThirdPartyOfferingThirdPartyOffering
     selection_process: Attribute.Text;
     benefits: Attribute.JSON;
     application_process: Attribute.JSON;
+    created_by_user: Attribute.Relation<
+      'api::third-party-offering.third-party-offering',
+      'oneToOne',
+      'plugin::users-permissions.user'
+    >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     createdBy: Attribute.Relation<

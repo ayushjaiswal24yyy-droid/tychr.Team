@@ -47,6 +47,11 @@
     },
     "application_process": {
       "type": "json"
+    },
+    "created_by_user": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "plugin::users-permissions.user"
     }
   }
 }
