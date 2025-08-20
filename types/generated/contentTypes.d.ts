@@ -3129,6 +3129,48 @@ export interface ApiThirdPartyMeetingThirdPartyMeeting
   };
 }
 
+export interface ApiThirdPartyOfferingThirdPartyOffering
+  extends Schema.CollectionType {
+  collectionName: 'third_party_offerings';
+  info: {
+    singularName: 'third-party-offering';
+    pluralName: 'third-party-offerings';
+    displayName: '\u2B50Third Party Offering';
+    description: '';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    title: Attribute.String;
+    description: Attribute.Text;
+    eligibility: Attribute.Text;
+    startDate: Attribute.Date;
+    endDate: Attribute.Date;
+    weekly_time_commitment: Attribute.Decimal;
+    total_duration: Attribute.Decimal;
+    compensation: Attribute.Text;
+    Location: Attribute.String;
+    selection_process: Attribute.Text;
+    benefits: Attribute.JSON;
+    application_process: Attribute.JSON;
+    createdAt: Attribute.DateTime;
+    updatedAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<
+      'api::third-party-offering.third-party-offering',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+    updatedBy: Attribute.Relation<
+      'api::third-party-offering.third-party-offering',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+  };
+}
+
 export interface ApiTopicTopic extends Schema.CollectionType {
   collectionName: 'topics';
   info: {
@@ -3555,6 +3597,7 @@ declare module '@strapi/types' {
       'api::test.test': ApiTestTest;
       'api::test-serie.test-serie': ApiTestSerieTestSerie;
       'api::third-party-meeting.third-party-meeting': ApiThirdPartyMeetingThirdPartyMeeting;
+      'api::third-party-offering.third-party-offering': ApiThirdPartyOfferingThirdPartyOffering;
       'api::topic.topic': ApiTopicTopic;
       'api::transaction-out.transaction-out': ApiTransactionOutTransactionOut;
       'api::tutor-plan.tutor-plan': ApiTutorPlanTutorPlan;

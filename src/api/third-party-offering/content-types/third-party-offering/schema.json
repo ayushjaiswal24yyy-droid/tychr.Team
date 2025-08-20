@@ -1,0 +1,52 @@
+{
+  "kind": "collectionType",
+  "collectionName": "third_party_offerings",
+  "info": {
+    "singularName": "third-party-offering",
+    "pluralName": "third-party-offerings",
+    "displayName": "⭐Third Party Offering",
+    "description": ""
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "title": {
+      "type": "string"
+    },
+    "description": {
+      "type": "text"
+    },
+    "eligibility": {
+      "type": "text"
+    },
+    "startDate": {
+      "type": "date"
+    },
+    "endDate": {
+      "type": "date"
+    },
+    "weekly_time_commitment": {
+      "type": "decimal"
+    },
+    "total_duration": {
+      "type": "decimal"
+    },
+    "compensation": {
+      "type": "text"
+    },
+    "Location": {
+      "type": "string"
+    },
+    "selection_process": {
+      "type": "text"
+    },
+    "benefits": {
+      "type": "json"
+    },
+    "application_process": {
+      "type": "json"
+    }
+  }
+}
