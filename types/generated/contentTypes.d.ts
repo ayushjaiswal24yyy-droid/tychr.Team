@@ -2105,6 +2105,7 @@ export interface ApiMentorAvailabilityMentorAvailability
     singularName: 'mentor-availability';
     pluralName: 'mentor-availabilities';
     displayName: 'Mentor-Availability';
+    description: '';
   };
   options: {
     draftAndPublish: true;
