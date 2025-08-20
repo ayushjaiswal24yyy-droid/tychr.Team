@@ -1772,6 +1772,28 @@ export interface ApiGradeSubjectGradeSubject extends Schema.CollectionType {
   };
 }
 
+export interface ApiGstGst extends Schema.SingleType {
+  collectionName: 'gsts';
+  info: {
+    singularName: 'gst';
+    pluralName: 'gsts';
+    displayName: 'gst';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    gst_rate: Attribute.Decimal;
+    is_active: Attribute.Boolean;
+    createdAt: Attribute.DateTime;
+    updatedAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<'api::gst.gst', 'oneToOne', 'admin::user'> &
+      Attribute.Private;
+    updatedBy: Attribute.Relation<'api::gst.gst', 'oneToOne', 'admin::user'> &
+      Attribute.Private;
+  };
+}
+
 export interface ApiIbProgramIbProgram extends Schema.CollectionType {
   collectionName: 'ib_programs';
   info: {
@@ -3415,6 +3437,7 @@ declare module '@strapi/types' {
       'api::enrollment.enrollment': ApiEnrollmentEnrollment;
       'api::external-user.external-user': ApiExternalUserExternalUser;
       'api::grade-subject.grade-subject': ApiGradeSubjectGradeSubject;
+      'api::gst.gst': ApiGstGst;
       'api::ib-program.ib-program': ApiIbProgramIbProgram;
       'api::individual-user.individual-user': ApiIndividualUserIndividualUser;
       'api::live-lecture.live-lecture': ApiLiveLectureLiveLecture;
