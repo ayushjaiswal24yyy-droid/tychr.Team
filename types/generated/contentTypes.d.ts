@@ -989,11 +989,6 @@ export interface PluginUsersPermissionsUser extends Schema.CollectionType {
       'oneToMany',
       'api::third-party-offering.third-party-offering'
     >;
-    tp_applicants: Attribute.Relation<
-      'plugin::users-permissions.user',
-      'oneToMany',
-      'api::tp-applican.tp-applican'
-    >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     createdBy: Attribute.Relation<
@@ -3169,11 +3164,6 @@ export interface ApiThirdPartyOfferingThirdPartyOffering
       'manyToOne',
       'plugin::users-permissions.user'
     >;
-    tp_applicant: Attribute.Relation<
-      'api::third-party-offering.third-party-offering',
-      'manyToOne',
-      'api::tp-applican.tp-applican'
-    >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     createdBy: Attribute.Relation<
@@ -3246,45 +3236,6 @@ export interface ApiTopicTopic extends Schema.CollectionType {
       Attribute.Private;
     updatedBy: Attribute.Relation<
       'api::topic.topic',
-      'oneToOne',
-      'admin::user'
-    > &
-      Attribute.Private;
-  };
-}
-
-export interface ApiTpApplicanTpApplican extends Schema.CollectionType {
-  collectionName: 'tp_applicants';
-  info: {
-    singularName: 'tp-applican';
-    pluralName: 'tp-applicants';
-    displayName: 'TP : Applicants';
-  };
-  options: {
-    draftAndPublish: false;
-  };
-  attributes: {
-    third_party_offerings: Attribute.Relation<
-      'api::tp-applican.tp-applican',
-      'oneToMany',
-      'api::third-party-offering.third-party-offering'
-    >;
-    applied_by: Attribute.Relation<
-      'api::tp-applican.tp-applican',
-      'manyToOne',
-      'plugin::users-permissions.user'
-    >;
-    is_accepted: Attribute.Boolean;
-    createdAt: Attribute.DateTime;
-    updatedAt: Attribute.DateTime;
-    createdBy: Attribute.Relation<
-      'api::tp-applican.tp-applican',
-      'oneToOne',
-      'admin::user'
-    > &
-      Attribute.Private;
-    updatedBy: Attribute.Relation<
-      'api::tp-applican.tp-applican',
       'oneToOne',
       'admin::user'
     > &
@@ -3658,7 +3609,6 @@ declare module '@strapi/types' {
       'api::third-party-meeting.third-party-meeting': ApiThirdPartyMeetingThirdPartyMeeting;
       'api::third-party-offering.third-party-offering': ApiThirdPartyOfferingThirdPartyOffering;
       'api::topic.topic': ApiTopicTopic;
-      'api::tp-applican.tp-applican': ApiTpApplicanTpApplican;
       'api::transaction-out.transaction-out': ApiTransactionOutTransactionOut;
       'api::tutor-plan.tutor-plan': ApiTutorPlanTutorPlan;
       'api::university.university': ApiUniversityUniversity;
