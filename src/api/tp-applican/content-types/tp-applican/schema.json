@@ -1,0 +1,30 @@
+{
+  "kind": "collectionType",
+  "collectionName": "tp_applicants",
+  "info": {
+    "singularName": "tp-applican",
+    "pluralName": "tp-applicants",
+    "displayName": "TP : Applicants"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "third_party_offerings": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::third-party-offering.third-party-offering",
+      "mappedBy": "tp_applicant"
+    },
+    "applied_by": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "plugin::users-permissions.user",
+      "inversedBy": "tp_applicants"
+    },
+    "is_accepted": {
+      "type": "boolean"
+    }
+  }
+}
