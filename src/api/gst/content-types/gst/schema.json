@@ -1,0 +1,21 @@
+{
+  "kind": "singleType",
+  "collectionName": "gsts",
+  "info": {
+    "singularName": "gst",
+    "pluralName": "gsts",
+    "displayName": "gst"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "gst_rate": {
+      "type": "decimal"
+    },
+    "is_active": {
+      "type": "boolean"
+    }
+  }
+}

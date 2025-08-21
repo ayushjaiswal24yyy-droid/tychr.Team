@@ -1824,6 +1824,28 @@ export interface ApiGradeSubjectGradeSubject extends Schema.CollectionType {
   };
 }
 
+export interface ApiGstGst extends Schema.SingleType {
+  collectionName: 'gsts';
+  info: {
+    singularName: 'gst';
+    pluralName: 'gsts';
+    displayName: 'gst';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    gst_rate: Attribute.Decimal;
+    is_active: Attribute.Boolean;
+    createdAt: Attribute.DateTime;
+    updatedAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<'api::gst.gst', 'oneToOne', 'admin::user'> &
+      Attribute.Private;
+    updatedBy: Attribute.Relation<'api::gst.gst', 'oneToOne', 'admin::user'> &
+      Attribute.Private;
+  };
+}
+
 export interface ApiIbProgramIbProgram extends Schema.CollectionType {
   collectionName: 'ib_programs';
   info: {
@@ -3107,6 +3129,53 @@ export interface ApiThirdPartyMeetingThirdPartyMeeting
   };
 }
 
+export interface ApiThirdPartyOfferingThirdPartyOffering
+  extends Schema.CollectionType {
+  collectionName: 'third_party_offerings';
+  info: {
+    singularName: 'third-party-offering';
+    pluralName: 'third-party-offerings';
+    displayName: '\u2B50Third Party Offering';
+    description: '';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    title: Attribute.String;
+    description: Attribute.Text;
+    eligibility: Attribute.Text;
+    startDate: Attribute.Date;
+    endDate: Attribute.Date;
+    weekly_time_commitment: Attribute.Decimal;
+    total_duration: Attribute.Decimal;
+    compensation: Attribute.Text;
+    Location: Attribute.String;
+    selection_process: Attribute.Text;
+    benefits: Attribute.JSON;
+    application_process: Attribute.JSON;
+    created_by_user: Attribute.Relation<
+      'api::third-party-offering.third-party-offering',
+      'oneToOne',
+      'plugin::users-permissions.user'
+    >;
+    createdAt: Attribute.DateTime;
+    updatedAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<
+      'api::third-party-offering.third-party-offering',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+    updatedBy: Attribute.Relation<
+      'api::third-party-offering.third-party-offering',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+  };
+}
+
 export interface ApiTopicTopic extends Schema.CollectionType {
   collectionName: 'topics';
   info: {
@@ -3506,6 +3575,7 @@ declare module '@strapi/types' {
       'api::enrollment.enrollment': ApiEnrollmentEnrollment;
       'api::external-user.external-user': ApiExternalUserExternalUser;
       'api::grade-subject.grade-subject': ApiGradeSubjectGradeSubject;
+      'api::gst.gst': ApiGstGst;
       'api::ib-program.ib-program': ApiIbProgramIbProgram;
       'api::individual-user.individual-user': ApiIndividualUserIndividualUser;
       'api::live-lecture.live-lecture': ApiLiveLectureLiveLecture;
@@ -3532,6 +3602,7 @@ declare module '@strapi/types' {
       'api::test.test': ApiTestTest;
       'api::test-serie.test-serie': ApiTestSerieTestSerie;
       'api::third-party-meeting.third-party-meeting': ApiThirdPartyMeetingThirdPartyMeeting;
+      'api::third-party-offering.third-party-offering': ApiThirdPartyOfferingThirdPartyOffering;
       'api::topic.topic': ApiTopicTopic;
       'api::transaction-out.transaction-out': ApiTransactionOutTransactionOut;
       'api::tutor-plan.tutor-plan': ApiTutorPlanTutorPlan;
