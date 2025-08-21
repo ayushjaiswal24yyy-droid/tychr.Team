@@ -986,7 +986,7 @@ export interface PluginUsersPermissionsUser extends Schema.CollectionType {
     >;
     third_party_offerings: Attribute.Relation<
       'plugin::users-permissions.user',
-      'oneToOne',
+      'oneToMany',
       'api::third-party-offering.third-party-offering'
     >;
     createdAt: Attribute.DateTime;
@@ -3161,7 +3161,7 @@ export interface ApiThirdPartyOfferingThirdPartyOffering
     application_process: Attribute.JSON;
     created_by_user: Attribute.Relation<
       'api::third-party-offering.third-party-offering',
-      'oneToOne',
+      'manyToOne',
       'plugin::users-permissions.user'
     >;
     createdAt: Attribute.DateTime;
