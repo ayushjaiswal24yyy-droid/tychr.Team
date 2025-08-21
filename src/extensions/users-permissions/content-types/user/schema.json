@@ -404,6 +404,12 @@
       "relation": "oneToMany",
       "target": "api::mentor-availability.mentor-availability",
       "mappedBy": "mentor"
+    },
+    "third_party_offerings": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::third-party-offering.third-party-offering",
+      "inversedBy": "created_by_user"
     }
   }
 }

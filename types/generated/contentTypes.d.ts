@@ -1498,7 +1498,7 @@ export interface ApiDemoVideoDemoVideo extends Schema.CollectionType {
   info: {
     singularName: 'demo-video';
     pluralName: 'demo-videos';
-    displayName: 'Demo Video';
+    displayName: 'Turor: Demo Video';
     description: '';
   };
   options: {
@@ -1551,7 +1551,7 @@ export interface ApiDoubtSectionDoubtSection extends Schema.CollectionType {
   info: {
     singularName: 'doubt-section';
     pluralName: 'doubt-sections';
-    displayName: 'Doubt_Section';
+    displayName: 'Student: Doubt Section';
     description: '';
   };
   options: {
@@ -2086,7 +2086,7 @@ export interface ApiMentorApplicationMentorApplication
   info: {
     singularName: 'mentor-application';
     pluralName: 'mentor-applications';
-    displayName: 'Mentor Applications';
+    displayName: 'Mentor: Mentor Applications';
     description: '';
   };
   options: {
@@ -2205,7 +2205,7 @@ export interface ApiNoteNote extends Schema.CollectionType {
   info: {
     singularName: 'note';
     pluralName: 'notes';
-    displayName: 'Notes';
+    displayName: 'Admin: Notes';
     description: '';
   };
   options: {
