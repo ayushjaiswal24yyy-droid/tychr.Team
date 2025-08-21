@@ -407,9 +407,9 @@
     },
     "third_party_offerings": {
       "type": "relation",
-      "relation": "oneToOne",
+      "relation": "oneToMany",
       "target": "api::third-party-offering.third-party-offering",
-      "inversedBy": "created_by_user"
+      "mappedBy": "created_by_user"
     }
   }
 }

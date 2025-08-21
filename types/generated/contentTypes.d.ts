@@ -984,6 +984,11 @@ export interface PluginUsersPermissionsUser extends Schema.CollectionType {
       'oneToMany',
       'api::mentor-availability.mentor-availability'
     >;
+    third_party_offerings: Attribute.Relation<
+      'plugin::users-permissions.user',
+      'oneToOne',
+      'api::third-party-offering.third-party-offering'
+    >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     createdBy: Attribute.Relation<
