@@ -410,6 +410,12 @@
       "relation": "oneToMany",
       "target": "api::third-party-offering.third-party-offering",
       "mappedBy": "created_by_user"
+    },
+    "tp_applicants": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::tp-applicant.tp-applicant",
+      "mappedBy": "applied_by"
     }
   }
 }

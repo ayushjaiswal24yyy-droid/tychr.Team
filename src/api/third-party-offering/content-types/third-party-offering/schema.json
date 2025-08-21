@@ -53,6 +53,12 @@
       "relation": "manyToOne",
       "target": "plugin::users-permissions.user",
       "inversedBy": "third_party_offerings"
+    },
+    "tp_applicants": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::tp-applicant.tp-applicant",
+      "mappedBy": "third_party_offering"
     }
   }
 }
