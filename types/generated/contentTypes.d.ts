@@ -979,6 +979,16 @@ export interface PluginUsersPermissionsUser extends Schema.CollectionType {
       'oneToMany',
       'api::mentor-availability.mentor-availability'
     >;
+    third_party_offerings: Attribute.Relation<
+      'plugin::users-permissions.user',
+      'oneToMany',
+      'api::third-party-offering.third-party-offering'
+    >;
+    tp_applicants: Attribute.Relation<
+      'plugin::users-permissions.user',
+      'oneToMany',
+      'api::tp-applicant.tp-applicant'
+    >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     createdBy: Attribute.Relation<
@@ -1451,7 +1461,7 @@ export interface ApiDemoVideoDemoVideo extends Schema.CollectionType {
   info: {
     singularName: 'demo-video';
     pluralName: 'demo-videos';
-    displayName: 'Demo Video';
+    displayName: 'Turor: Demo Video';
     description: '';
   };
   options: {
@@ -1504,7 +1514,7 @@ export interface ApiDoubtSectionDoubtSection extends Schema.CollectionType {
   info: {
     singularName: 'doubt-section';
     pluralName: 'doubt-sections';
-    displayName: 'Doubt_Section';
+    displayName: 'Student: Doubt Section';
     description: '';
   };
   options: {
@@ -2039,7 +2049,7 @@ export interface ApiMentorApplicationMentorApplication
   info: {
     singularName: 'mentor-application';
     pluralName: 'mentor-applications';
-    displayName: 'Mentor Applications';
+    displayName: 'Mentor: Mentor Applications';
     description: '';
   };
   options: {
@@ -2158,7 +2168,7 @@ export interface ApiNoteNote extends Schema.CollectionType {
   info: {
     singularName: 'note';
     pluralName: 'notes';
-    displayName: 'Notes';
+    displayName: 'Admin: Notes';
     description: '';
   };
   options: {
@@ -3116,8 +3126,13 @@ export interface ApiThirdPartyOfferingThirdPartyOffering
     application_process: Attribute.JSON;
     created_by_user: Attribute.Relation<
       'api::third-party-offering.third-party-offering',
-      'oneToOne',
+      'manyToOne',
       'plugin::users-permissions.user'
+    >;
+    tp_applicants: Attribute.Relation<
+      'api::third-party-offering.third-party-offering',
+      'oneToMany',
+      'api::tp-applicant.tp-applicant'
     >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
@@ -3191,6 +3206,45 @@ export interface ApiTopicTopic extends Schema.CollectionType {
       Attribute.Private;
     updatedBy: Attribute.Relation<
       'api::topic.topic',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+  };
+}
+
+export interface ApiTpApplicantTpApplicant extends Schema.CollectionType {
+  collectionName: 'tp_applicants';
+  info: {
+    singularName: 'tp-applicant';
+    pluralName: 'tp-applicants';
+    displayName: 'tp-applicants';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    applied_by: Attribute.Relation<
+      'api::tp-applicant.tp-applicant',
+      'manyToOne',
+      'plugin::users-permissions.user'
+    >;
+    third_party_offering: Attribute.Relation<
+      'api::tp-applicant.tp-applicant',
+      'manyToOne',
+      'api::third-party-offering.third-party-offering'
+    >;
+    is_accepted: Attribute.Boolean;
+    createdAt: Attribute.DateTime;
+    updatedAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<
+      'api::tp-applicant.tp-applicant',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+    updatedBy: Attribute.Relation<
+      'api::tp-applicant.tp-applicant',
       'oneToOne',
       'admin::user'
     > &
@@ -3563,6 +3617,7 @@ declare module '@strapi/types' {
       'api::third-party-meeting.third-party-meeting': ApiThirdPartyMeetingThirdPartyMeeting;
       'api::third-party-offering.third-party-offering': ApiThirdPartyOfferingThirdPartyOffering;
       'api::topic.topic': ApiTopicTopic;
+      'api::tp-applicant.tp-applicant': ApiTpApplicantTpApplicant;
       'api::transaction-out.transaction-out': ApiTransactionOutTransactionOut;
       'api::tutor-plan.tutor-plan': ApiTutorPlanTutorPlan;
       'api::university.university': ApiUniversityUniversity;

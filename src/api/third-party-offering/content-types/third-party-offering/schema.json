@@ -50,8 +50,15 @@
     },
     "created_by_user": {
       "type": "relation",
-      "relation": "oneToOne",
-      "target": "plugin::users-permissions.user"
+      "relation": "manyToOne",
+      "target": "plugin::users-permissions.user",
+      "inversedBy": "third_party_offerings"
+    },
+    "tp_applicants": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::tp-applicant.tp-applicant",
+      "mappedBy": "third_party_offering"
     }
   }
 }
