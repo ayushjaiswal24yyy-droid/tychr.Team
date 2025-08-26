@@ -1,16 +1,9 @@
 'use strict';
 
 /**
- * Custom routes for student-meeting
+ * student-meeting router
  */
 
-module.exports = {
-  routes: [
-    {
-      method: 'GET',
-      path: '/student-meetings/join/:id',
-      handler: 'student-meeting.joinMeeting',
-      config: { auth: false }, // set to true / remove if you want JWT auth
-    },
-  ],
-};
+const { createCoreRouter } = require('@strapi/strapi').factories;
+
+module.exports = createCoreRouter('api::student-meeting.student-meeting');
