@@ -1,29 +1,62 @@
 'use strict';
 const { createCoreController } = require('@strapi/strapi').factories;
+
 module.exports = createCoreController('api::student-meeting.student-meeting', ({ strapi }) => ({
-  async create(ctx) {
-    const { user_plan, date, start_time, end_time, mentor } = ctx.request.body.data;
-    // Validate: Check if slot is available (call getAvailableSlots), remaining_hours >=1
-    const plan = await strapi.entityService.findOne('api::user-plan.user-plan', user_plan, { populate: '*' });
-    if (plan.remaining_hours < 1) return ctx.badRequest('No hours left');
-    // Generate meet_link (e.g., custom or integrate Zoom API: `https://your-domain/meet/${randomId}`)
-    const meetLink = `https://meet.google.com/join/${Date.now()}`; // Placeholder
-    const newMeeting = await super.create(ctx);
-    // In lifecycle (src/extensions/student-meeting/strapi-server.js), afterCreate: populate student/mentor from plan if needed
-    return newMeeting;
-  },
   async joinMeeting(ctx) {
-  const { id } = ctx.params;
-  const meeting = await strapi.entityService.findOne('api::student-meeting.student-meeting', id, { populate: ['user_plan'] });
-  if (!meeting || meeting.status !== 'scheduled') return ctx.badRequest('Invalid meeting');
-  if (meeting.user_plan.remaining_hours < 1) return ctx.badRequest('No hours left');
-  await strapi.entityService.update('api::user-plan.user-plan', meeting.user_plan.id, {
-    data: { remaining_hours: meeting.user_plan.remaining_hours - 1 },
-  });
-  await strapi.entityService.update('api::student-meeting.student-meeting', id, {
-    data: { status: 'in_progress' },
-  });
-  // Redirect to actual meet_link or return it
-  ctx.redirect(meeting.meet_link);
-}
+    try {
+      const { id } = ctx.params;
+      console.log(`Joining meeting ID: ${id}`); // Log for debug
+
+      const meeting = await strapi.entityService.findOne('api::student-meeting.student-meeting', id, { 
+        populate: ['user_plan'],
+        publicationState: 'preview'  // Include drafts if enabled
+      });
+
+      console.log('Found meeting:', meeting ? { id: meeting.id, status: meeting.status, userPlanId: meeting.user_plan?.id } : 'null'); // Log meeting details
+
+      if (!meeting) {
+        return ctx.badRequest('Meeting not found');
+      }
+      if (meeting.status !== 'scheduled') {
+        return ctx.badRequest(`Invalid meeting status: ${meeting.status}`);
+      }
+
+      const userPlan = meeting.user_plan;
+      if (!userPlan) {
+        return ctx.badRequest('User plan not linked to meeting');
+      }
+      console.log('User plan hours:', userPlan.remaining_hours); // Log hours
+
+      if (userPlan.remaining_hours < 1) {
+        return ctx.badRequest('No hours left');
+      }
+
+      // Deduct hour
+      const newHours = userPlan.remaining_hours - 1;
+      await strapi.entityService.update('api::user-plan.user-plan', userPlan.id, {
+        data: { remaining_hours: newHours },
+        publicationState: 'preview'  // Add for drafts
+      });
+      console.log('Updated user plan hours to:', newHours);
+
+      // Update status
+      await strapi.entityService.update('api::student-meeting.student-meeting', id, {
+        data: { status: 'in_progress' },
+        publicationState: 'preview'  // Add for drafts
+      });
+      console.log('Updated meeting status to in_progress');
+
+      // Redirect (check link exists)
+      const meetLink = meeting.link;
+      if (!meetLink) {
+        return ctx.badRequest('Meeting link not set');
+      }
+      console.log('Redirecting to:', meetLink);
+      ctx.redirect(meetLink);
+
+    } catch (error) {
+      console.error('Error in joinMeeting:', error); // Log full error
+      return ctx.internalServerError(`Join meeting failed: ${error.message}`);
+    }
+  },
 }));
