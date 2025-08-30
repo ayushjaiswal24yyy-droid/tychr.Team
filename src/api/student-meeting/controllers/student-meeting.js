@@ -5,14 +5,14 @@ module.exports = createCoreController('api::student-meeting.student-meeting', ({
   async joinMeeting(ctx) {
     try {
       const { id } = ctx.params;
-      console.log(`Joining meeting ID: ${id}`); // Log for debug
+      console.log(`Joining meeting ID: ${id}`);
 
       const meeting = await strapi.entityService.findOne('api::student-meeting.student-meeting', id, { 
         populate: ['user_plan'],
-        publicationState: 'preview'  // Include drafts if enabled
+        publicationState: 'preview'
       });
 
-      console.log('Found meeting:', meeting ? { id: meeting.id, status: meeting.status, userPlanId: meeting.user_plan?.id } : 'null'); // Log meeting details
+      console.log('Found meeting:', meeting ? { id: meeting.id, status: meeting.status, userPlanId: meeting.user_plan?.id } : 'null');
 
       if (!meeting) {
         return ctx.badRequest('Meeting not found');
@@ -25,7 +25,7 @@ module.exports = createCoreController('api::student-meeting.student-meeting', ({
       if (!userPlan) {
         return ctx.badRequest('User plan not linked to meeting');
       }
-      console.log('User plan hours:', userPlan.remaining_hours); // Log hours
+      console.log('User plan hours:', userPlan.remaining_hours);
 
       if (userPlan.remaining_hours < 1) {
         return ctx.badRequest('No hours left');
@@ -35,28 +35,33 @@ module.exports = createCoreController('api::student-meeting.student-meeting', ({
       const newHours = userPlan.remaining_hours - 1;
       await strapi.entityService.update('api::user-plan.user-plan', userPlan.id, {
         data: { remaining_hours: newHours },
-        publicationState: 'preview'  // Add for drafts
+        publicationState: 'preview'
       });
-      ctx.send({ ok: true, meetingId: id});
       console.log('Updated user plan hours to:', newHours);
 
-      // Update status
+      // Update status to in_progress (not completed yet)
       await strapi.entityService.update('api::student-meeting.student-meeting', id, {
-        data: { status: 'completed' },
-        publicationState: 'preview'  // Add for drafts
+        data: { status: 'in_progress' },
+        publicationState: 'preview'
       });
       console.log('Updated meeting status to in_progress');
 
-      // Redirect (check link exists)
+      // Check meeting link exists
       const meetLink = meeting.link;
       if (!meetLink) {
         return ctx.badRequest('Meeting link not set');
       }
-      console.log('Redirecting to:', meetLink);
-      ctx.redirect(meetLink);
+      
+      // Return success with meeting link - let frontend handle opening
+      console.log('Meeting ready, link:', meetLink);
+      return ctx.send({ 
+        ok: true, 
+        meetingId: id,
+        link: meetLink 
+      });
 
     } catch (error) {
-      console.error('Error in joinMeeting:', error); // Log full error
+      console.error('Error in joinMeeting:', error);
       return ctx.internalServerError(`Join meeting failed: ${error.message}`);
     }
   },
