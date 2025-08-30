@@ -37,11 +37,12 @@ module.exports = createCoreController('api::student-meeting.student-meeting', ({
         data: { remaining_hours: newHours },
         publicationState: 'preview'  // Add for drafts
       });
+      ctx.send({ ok: true, meetingId: id});
       console.log('Updated user plan hours to:', newHours);
 
       // Update status
       await strapi.entityService.update('api::student-meeting.student-meeting', id, {
-        data: { status: 'in_progress' },
+        data: { status: 'completed' },
         publicationState: 'preview'  // Add for drafts
       });
       console.log('Updated meeting status to in_progress');

@@ -9,9 +9,6 @@ module.exports = {
       handler: 'user-plan.getAvailableMentors', // Points to your custom controller method
       config: {
         policies: [], // Add policies if needed (e.g., for auth checks)
-        auth: { // Optional: Require JWT; studentId from ctx.state.user
-          scope: ['authenticated'],
-        },
       },
     },
   ],

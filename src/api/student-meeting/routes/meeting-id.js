@@ -10,7 +10,12 @@ module.exports = {
       method: 'GET',
       path: '/student-meetings/join/:id',
       handler: 'student-meeting.joinMeeting',
-      config: { auth: false }, // set to true / remove if you want JWT auth
+      config: {
+        policies: [], // Add policies if needed (e.g., for auth checks)
+        auth: { // Optional: Require JWT; studentId from ctx.state.user
+          scope: ['authenticated'],
+        },
+      }, // set to true / remove if you want JWT auth
     },
   ],
 };
