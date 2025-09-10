@@ -21,12 +21,6 @@
     "Title": {
       "type": "string"
     },
-    "description": {
-      "type": "text"
-    },
-    "is_live": {
-      "type": "boolean"
-    },
     "add_on_contents": {
       "type": "relation",
       "relation": "oneToMany",

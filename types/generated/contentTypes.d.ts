@@ -1024,8 +1024,6 @@ export interface ApiAddOnAddOn extends Schema.CollectionType {
       'api::ib-program.ib-program'
     >;
     Title: Attribute.String;
-    description: Attribute.Text;
-    is_live: Attribute.Boolean;
     add_on_contents: Attribute.Relation<
       'api::add-on.add-on',
       'oneToMany',
