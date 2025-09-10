@@ -393,12 +393,6 @@
       "target": "api::payment.payment",
       "mappedBy": "student"
     },
-    "bookings": {
-      "type": "relation",
-      "relation": "oneToMany",
-      "target": "api::booking.booking",
-      "mappedBy": "mentor"
-    },
     "mentor_availabilities": {
       "type": "relation",
       "relation": "oneToMany",

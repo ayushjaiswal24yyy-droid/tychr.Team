@@ -974,11 +974,6 @@ export interface PluginUsersPermissionsUser extends Schema.CollectionType {
       'oneToMany',
       'api::payment.payment'
     >;
-    bookings: Attribute.Relation<
-      'plugin::users-permissions.user',
-      'oneToMany',
-      'api::booking.booking'
-    >;
     mentor_availabilities: Attribute.Relation<
       'plugin::users-permissions.user',
       'oneToMany',
@@ -1129,6 +1124,7 @@ export interface ApiArticleArticle extends Schema.CollectionType {
     tags: Attribute.Component<'essays.tags', true>;
     primaryImage: Attribute.Media<'images' | 'files' | 'videos' | 'audios'>;
     videos: Attribute.Media<'images' | 'files' | 'videos' | 'audios'>;
+    thumbnail: Attribute.Media<'images' | 'files' | 'videos' | 'audios'>;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
@@ -1140,48 +1136,6 @@ export interface ApiArticleArticle extends Schema.CollectionType {
       Attribute.Private;
     updatedBy: Attribute.Relation<
       'api::article.article',
-      'oneToOne',
-      'admin::user'
-    > &
-      Attribute.Private;
-  };
-}
-
-export interface ApiBookingBooking extends Schema.CollectionType {
-  collectionName: 'bookings';
-  info: {
-    singularName: 'booking';
-    pluralName: 'bookings';
-    displayName: 'Booking';
-  };
-  options: {
-    draftAndPublish: true;
-  };
-  attributes: {
-    student: Attribute.Relation<
-      'api::booking.booking',
-      'manyToOne',
-      'plugin::users-permissions.user'
-    >;
-    mentor: Attribute.Relation<
-      'api::booking.booking',
-      'manyToOne',
-      'plugin::users-permissions.user'
-    >;
-    date: Attribute.Date;
-    slotStart: Attribute.String;
-    slotEnd: Attribute.String;
-    createdAt: Attribute.DateTime;
-    updatedAt: Attribute.DateTime;
-    publishedAt: Attribute.DateTime;
-    createdBy: Attribute.Relation<
-      'api::booking.booking',
-      'oneToOne',
-      'admin::user'
-    > &
-      Attribute.Private;
-    updatedBy: Attribute.Relation<
-      'api::booking.booking',
       'oneToOne',
       'admin::user'
     > &
@@ -2762,15 +2716,23 @@ export interface ApiStudentMeetingStudentMeeting extends Schema.CollectionType {
     description: '';
   };
   options: {
-    draftAndPublish: true;
+    draftAndPublish: false;
   };
   attributes: {
     title: Attribute.String & Attribute.Required;
     description: Attribute.Text;
     link: Attribute.String & Attribute.Required;
-    date: Attribute.Date;
-    time: Attribute.Time;
-    duration_in_minutes: Attribute.Integer;
+    date: Attribute.Date & Attribute.Required;
+    start_time: Attribute.Time & Attribute.Required;
+    duration_in_minutes: Attribute.Integer &
+      Attribute.Required &
+      Attribute.SetMinMax<
+        {
+          min: 15;
+          max: 120;
+        },
+        number
+      >;
     student: Attribute.Relation<
       'api::student-meeting.student-meeting',
       'manyToOne',
@@ -2787,7 +2749,7 @@ export interface ApiStudentMeetingStudentMeeting extends Schema.CollectionType {
       'api::user-plan.user-plan'
     >;
     status: Attribute.Enumeration<
-      ['scheduled', 'completed', 'canceled', 'no_show']
+      ['scheduled', 'in_progress', 'completed', 'canceled', 'no_show']
     > &
       Attribute.DefaultTo<'scheduled'>;
     meeting_notes: Attribute.Text;
@@ -2798,7 +2760,6 @@ export interface ApiStudentMeetingStudentMeeting extends Schema.CollectionType {
     >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
-    publishedAt: Attribute.DateTime;
     createdBy: Attribute.Relation<
       'api::student-meeting.student-meeting',
       'oneToOne',
@@ -3658,7 +3619,6 @@ declare module '@strapi/types' {
       'api::add-on.add-on': ApiAddOnAddOn;
       'api::answer.answer': ApiAnswerAnswer;
       'api::article.article': ApiArticleArticle;
-      'api::booking.booking': ApiBookingBooking;
       'api::class.class': ApiClassClass;
       'api::college.college': ApiCollegeCollege;
       'api::comment.comment': ApiCommentComment;
