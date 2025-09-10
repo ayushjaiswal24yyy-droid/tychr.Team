@@ -1,0 +1,33 @@
+{
+  "kind": "collectionType",
+  "collectionName": "add_ons",
+  "info": {
+    "singularName": "add-on",
+    "pluralName": "add-ons",
+    "displayName": "add-on"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "ib_program": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::ib-program.ib-program",
+      "inversedBy": "add_ons"
+    },
+    "Title": {
+      "type": "string"
+    },
+    "description": {
+      "type": "text"
+    },
+    "price": {
+      "type": "decimal"
+    },
+    "is_live": {
+      "type": "boolean"
+    }
+  }
+}

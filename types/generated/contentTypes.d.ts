@@ -1011,6 +1011,44 @@ export interface PluginUsersPermissionsUser extends Schema.CollectionType {
   };
 }
 
+export interface ApiAddOnAddOn extends Schema.CollectionType {
+  collectionName: 'add_ons';
+  info: {
+    singularName: 'add-on';
+    pluralName: 'add-ons';
+    displayName: 'add-on';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    ib_program: Attribute.Relation<
+      'api::add-on.add-on',
+      'manyToOne',
+      'api::ib-program.ib-program'
+    >;
+    Title: Attribute.String;
+    description: Attribute.Text;
+    price: Attribute.Decimal;
+    is_live: Attribute.Boolean;
+    createdAt: Attribute.DateTime;
+    updatedAt: Attribute.DateTime;
+    publishedAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<
+      'api::add-on.add-on',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+    updatedBy: Attribute.Relation<
+      'api::add-on.add-on',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+  };
+}
+
 export interface ApiAnswerAnswer extends Schema.CollectionType {
   collectionName: 'answers';
   info: {
@@ -1893,6 +1931,11 @@ export interface ApiIbProgramIbProgram extends Schema.CollectionType {
       'api::ib-program.ib-program',
       'oneToMany',
       'api::subject-group.subject-group'
+    >;
+    add_ons: Attribute.Relation<
+      'api::ib-program.ib-program',
+      'oneToMany',
+      'api::add-on.add-on'
     >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
@@ -3612,6 +3655,7 @@ declare module '@strapi/types' {
       'plugin::users-permissions.permission': PluginUsersPermissionsPermission;
       'plugin::users-permissions.role': PluginUsersPermissionsRole;
       'plugin::users-permissions.user': PluginUsersPermissionsUser;
+      'api::add-on.add-on': ApiAddOnAddOn;
       'api::answer.answer': ApiAnswerAnswer;
       'api::article.article': ApiArticleArticle;
       'api::booking.booking': ApiBookingBooking;
