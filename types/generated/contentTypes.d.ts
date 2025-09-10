@@ -1012,6 +1012,7 @@ export interface ApiAddOnAddOn extends Schema.CollectionType {
     singularName: 'add-on';
     pluralName: 'add-ons';
     displayName: 'add-on';
+    description: '';
   };
   options: {
     draftAndPublish: true;
@@ -1024,7 +1025,6 @@ export interface ApiAddOnAddOn extends Schema.CollectionType {
     >;
     Title: Attribute.String;
     description: Attribute.Text;
-    price: Attribute.Decimal;
     is_live: Attribute.Boolean;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
@@ -1037,6 +1037,42 @@ export interface ApiAddOnAddOn extends Schema.CollectionType {
       Attribute.Private;
     updatedBy: Attribute.Relation<
       'api::add-on.add-on',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+  };
+}
+
+export interface ApiAddOnContentAddOnContent extends Schema.CollectionType {
+  collectionName: 'add_on_contents';
+  info: {
+    singularName: 'add-on-content';
+    pluralName: 'add-on-contents';
+    displayName: 'add-on-content';
+    description: '';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    name: Attribute.String & Attribute.Required;
+    description: Attribute.Text & Attribute.Required;
+    price: Attribute.Decimal;
+    is_free: Attribute.Boolean & Attribute.DefaultTo<false>;
+    contents: Attribute.Media<'images' | 'files' | 'videos' | 'audios', true>;
+    validity_in_months: Attribute.Integer;
+    other_information: Attribute.Text;
+    createdAt: Attribute.DateTime;
+    updatedAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<
+      'api::add-on-content.add-on-content',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+    updatedBy: Attribute.Relation<
+      'api::add-on-content.add-on-content',
       'oneToOne',
       'admin::user'
     > &
@@ -3617,6 +3653,7 @@ declare module '@strapi/types' {
       'plugin::users-permissions.role': PluginUsersPermissionsRole;
       'plugin::users-permissions.user': PluginUsersPermissionsUser;
       'api::add-on.add-on': ApiAddOnAddOn;
+      'api::add-on-content.add-on-content': ApiAddOnContentAddOnContent;
       'api::answer.answer': ApiAnswerAnswer;
       'api::article.article': ApiArticleArticle;
       'api::class.class': ApiClassClass;

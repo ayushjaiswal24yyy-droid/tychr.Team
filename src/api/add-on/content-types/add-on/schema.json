@@ -4,7 +4,8 @@
   "info": {
     "singularName": "add-on",
     "pluralName": "add-ons",
-    "displayName": "add-on"
+    "displayName": "add-on",
+    "description": ""
   },
   "options": {
     "draftAndPublish": true
@@ -22,9 +23,6 @@
     },
     "description": {
       "type": "text"
-    },
-    "price": {
-      "type": "decimal"
     },
     "is_live": {
       "type": "boolean"
