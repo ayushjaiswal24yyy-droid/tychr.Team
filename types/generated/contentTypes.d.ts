@@ -1394,7 +1394,14 @@ export interface ApiCommissionSettingCommissionSetting
     premium_plan_effective_from: Attribute.Date;
     is_premium_plan_active: Attribute.Boolean;
     system_plan: Attribute.Enumeration<
-      ['mentor', 'counsellor', 'recorded_lecture', 'classroom', 'live_lecture']
+      [
+        'mentor',
+        'counsellor',
+        'recorded_lecture',
+        'classroom',
+        'live_lecture',
+        'add_on'
+      ]
     > &
       Attribute.Required;
     createdAt: Attribute.DateTime;
