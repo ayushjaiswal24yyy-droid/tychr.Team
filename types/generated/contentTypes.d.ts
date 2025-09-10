@@ -1865,7 +1865,7 @@ export interface ApiIbProgramIbProgram extends Schema.CollectionType {
     description: '';
   };
   options: {
-    draftAndPublish: true;
+    draftAndPublish: false;
   };
   attributes: {
     name: Attribute.Enumeration<
@@ -1896,7 +1896,6 @@ export interface ApiIbProgramIbProgram extends Schema.CollectionType {
     >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
-    publishedAt: Attribute.DateTime;
     createdBy: Attribute.Relation<
       'api::ib-program.ib-program',
       'oneToOne',
