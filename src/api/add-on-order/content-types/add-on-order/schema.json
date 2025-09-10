@@ -1,0 +1,67 @@
+{
+  "kind": "collectionType",
+  "collectionName": "add_on_orders",
+  "info": {
+    "singularName": "add-on-order",
+    "pluralName": "add-on-orders",
+    "displayName": "Add-On: Orders",
+    "description": ""
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "add_on_content": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::add-on-content.add-on-content",
+      "inversedBy": "orders"
+    },
+    "users_permissions_user": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "plugin::users-permissions.user",
+      "inversedBy": "add_on_orders"
+    },
+    "price": {
+      "type": "decimal"
+    },
+    "purchased_at": {
+      "type": "datetime"
+    },
+    "expires_at": {
+      "type": "datetime"
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true,
+      "required": true
+    },
+    "razorpay_payment_id": {
+      "type": "string"
+    },
+    "razorpay_order_id": {
+      "type": "string"
+    },
+    "razorpay_signature": {
+      "type": "string"
+    },
+    "price_at_purchase": {
+      "type": "decimal",
+      "required": true
+    },
+    "commission_percentage_applied": {
+      "type": "decimal",
+      "required": true
+    },
+    "commission_amount": {
+      "type": "decimal",
+      "required": true
+    },
+    "total_paid": {
+      "type": "decimal",
+      "required": true
+    }
+  }
+}

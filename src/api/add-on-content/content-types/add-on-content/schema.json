@@ -49,6 +49,12 @@
       "relation": "manyToOne",
       "target": "api::add-on.add-on",
       "inversedBy": "add_on_contents"
+    },
+    "orders": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::add-on-order.add-on-order",
+      "mappedBy": "add_on_content"
     }
   }
 }

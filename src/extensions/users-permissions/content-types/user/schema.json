@@ -410,6 +410,12 @@
       "relation": "oneToMany",
       "target": "api::tp-applicant.tp-applicant",
       "mappedBy": "applied_by"
+    },
+    "add_on_orders": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::add-on-order.add-on-order",
+      "mappedBy": "users_permissions_user"
     }
   }
 }
