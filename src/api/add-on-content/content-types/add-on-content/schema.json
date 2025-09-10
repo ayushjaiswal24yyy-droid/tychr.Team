@@ -43,6 +43,12 @@
     },
     "other_information": {
       "type": "text"
+    },
+    "add_on": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::add-on.add-on",
+      "inversedBy": "add_on_contents"
     }
   }
 }

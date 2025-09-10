@@ -26,6 +26,12 @@
     },
     "is_live": {
       "type": "boolean"
+    },
+    "add_on_contents": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::add-on-content.add-on-content",
+      "mappedBy": "add_on"
     }
   }
 }

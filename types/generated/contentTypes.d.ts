@@ -1026,6 +1026,11 @@ export interface ApiAddOnAddOn extends Schema.CollectionType {
     Title: Attribute.String;
     description: Attribute.Text;
     is_live: Attribute.Boolean;
+    add_on_contents: Attribute.Relation<
+      'api::add-on.add-on',
+      'oneToMany',
+      'api::add-on-content.add-on-content'
+    >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
@@ -1063,6 +1068,11 @@ export interface ApiAddOnContentAddOnContent extends Schema.CollectionType {
     contents: Attribute.Media<'images' | 'files' | 'videos' | 'audios', true>;
     validity_in_months: Attribute.Integer;
     other_information: Attribute.Text;
+    add_on: Attribute.Relation<
+      'api::add-on-content.add-on-content',
+      'manyToOne',
+      'api::add-on.add-on'
+    >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     createdBy: Attribute.Relation<
