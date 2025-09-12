@@ -989,6 +989,12 @@ export interface PluginUsersPermissionsUser extends Schema.CollectionType {
       'oneToMany',
       'api::tp-applicant.tp-applicant'
     >;
+    schoolname: Attribute.String;
+    yearOfApplication: Attribute.Integer;
+    prospectiveCareer: Attribute.String;
+    majors: Attribute.String;
+    regions: Attribute.JSON;
+    activities: Attribute.JSON;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     createdBy: Attribute.Relation<

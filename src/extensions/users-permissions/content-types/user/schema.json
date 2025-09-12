@@ -410,6 +410,24 @@
       "relation": "oneToMany",
       "target": "api::tp-applicant.tp-applicant",
       "mappedBy": "applied_by"
+    },
+    "schoolname": {
+      "type": "string"
+    },
+    "yearOfApplication": {
+      "type": "integer"
+    },
+    "prospectiveCareer": {
+      "type": "string"
+    },
+    "majors": {
+      "type": "string"
+    },
+    "regions": {
+      "type": "json"
+    },
+    "activities": {
+      "type": "json"
     }
   }
 }
