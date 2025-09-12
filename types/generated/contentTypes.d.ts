@@ -996,6 +996,11 @@ export interface PluginUsersPermissionsUser extends Schema.CollectionType {
     >;
     extracurricularActivities: Attribute.JSON;
     publications: Attribute.JSON;
+    schoolname: Attribute.String;
+    yearOfApplication: Attribute.Integer;
+    prospectiveCareer: Attribute.String;
+    majors: Attribute.String;
+    activities: Attribute.JSON;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     createdBy: Attribute.Relation<

@@ -422,6 +422,21 @@
     },
     "publications": {
       "type": "json"
+    },
+    "schoolname": {
+      "type": "string"
+    },
+    "yearOfApplication": {
+      "type": "integer"
+    },
+    "prospectiveCareer": {
+      "type": "string"
+    },
+    "majors": {
+      "type": "string"
+    },
+    "activities": {
+      "type": "json"
     }
   }
 }
