@@ -994,6 +994,8 @@ export interface PluginUsersPermissionsUser extends Schema.CollectionType {
       'oneToMany',
       'api::add-on-order.add-on-order'
     >;
+    extracurricularActivities: Attribute.JSON;
+    publications: Attribute.JSON;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     createdBy: Attribute.Relation<
