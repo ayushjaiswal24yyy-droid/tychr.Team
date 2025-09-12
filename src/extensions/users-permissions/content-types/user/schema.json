@@ -411,23 +411,11 @@
       "target": "api::tp-applicant.tp-applicant",
       "mappedBy": "applied_by"
     },
-    "schoolname": {
-      "type": "string"
-    },
-    "yearOfApplication": {
-      "type": "integer"
-    },
-    "prospectiveCareer": {
-      "type": "string"
-    },
-    "majors": {
-      "type": "string"
-    },
-    "regions": {
-      "type": "json"
-    },
-    "activities": {
-      "type": "json"
+    "add_on_orders": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::add-on-order.add-on-order",
+      "mappedBy": "users_permissions_user"
     }
   }
 }

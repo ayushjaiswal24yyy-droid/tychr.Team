@@ -1,0 +1,60 @@
+{
+  "kind": "collectionType",
+  "collectionName": "add_on_contents",
+  "info": {
+    "singularName": "add-on-content",
+    "pluralName": "add-on-contents",
+    "displayName": "add-on-content",
+    "description": ""
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "name": {
+      "type": "string",
+      "required": true
+    },
+    "description": {
+      "type": "text",
+      "required": true
+    },
+    "price": {
+      "type": "decimal"
+    },
+    "is_free": {
+      "type": "boolean",
+      "default": false
+    },
+    "contents": {
+      "type": "media",
+      "multiple": true,
+      "required": false,
+      "allowedTypes": [
+        "images",
+        "files",
+        "videos",
+        "audios"
+      ]
+    },
+    "validity_in_months": {
+      "type": "integer"
+    },
+    "other_information": {
+      "type": "text"
+    },
+    "add_on": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::add-on.add-on",
+      "inversedBy": "add_on_contents"
+    },
+    "orders": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::add-on-order.add-on-order",
+      "mappedBy": "add_on_content"
+    }
+  }
+}

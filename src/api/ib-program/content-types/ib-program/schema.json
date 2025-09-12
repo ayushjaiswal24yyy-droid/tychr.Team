@@ -8,7 +8,7 @@
     "description": ""
   },
   "options": {
-    "draftAndPublish": true
+    "draftAndPublish": false
   },
   "pluginOptions": {},
   "attributes": {
@@ -56,6 +56,12 @@
       "type": "relation",
       "relation": "oneToMany",
       "target": "api::subject-group.subject-group",
+      "mappedBy": "ib_program"
+    },
+    "add_ons": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::add-on.add-on",
       "mappedBy": "ib_program"
     }
   }

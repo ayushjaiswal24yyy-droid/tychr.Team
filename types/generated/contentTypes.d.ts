@@ -989,12 +989,11 @@ export interface PluginUsersPermissionsUser extends Schema.CollectionType {
       'oneToMany',
       'api::tp-applicant.tp-applicant'
     >;
-    schoolname: Attribute.String;
-    yearOfApplication: Attribute.Integer;
-    prospectiveCareer: Attribute.String;
-    majors: Attribute.String;
-    regions: Attribute.JSON;
-    activities: Attribute.JSON;
+    add_on_orders: Attribute.Relation<
+      'plugin::users-permissions.user',
+      'oneToMany',
+      'api::add-on-order.add-on-order'
+    >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     createdBy: Attribute.Relation<
@@ -1005,6 +1004,146 @@ export interface PluginUsersPermissionsUser extends Schema.CollectionType {
       Attribute.Private;
     updatedBy: Attribute.Relation<
       'plugin::users-permissions.user',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+  };
+}
+
+export interface ApiAddOnAddOn extends Schema.CollectionType {
+  collectionName: 'add_ons';
+  info: {
+    singularName: 'add-on';
+    pluralName: 'add-ons';
+    displayName: 'add-on';
+    description: '';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    ib_program: Attribute.Relation<
+      'api::add-on.add-on',
+      'manyToOne',
+      'api::ib-program.ib-program'
+    >;
+    Title: Attribute.String;
+    add_on_contents: Attribute.Relation<
+      'api::add-on.add-on',
+      'oneToMany',
+      'api::add-on-content.add-on-content'
+    >;
+    createdAt: Attribute.DateTime;
+    updatedAt: Attribute.DateTime;
+    publishedAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<
+      'api::add-on.add-on',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+    updatedBy: Attribute.Relation<
+      'api::add-on.add-on',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+  };
+}
+
+export interface ApiAddOnContentAddOnContent extends Schema.CollectionType {
+  collectionName: 'add_on_contents';
+  info: {
+    singularName: 'add-on-content';
+    pluralName: 'add-on-contents';
+    displayName: 'add-on-content';
+    description: '';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    name: Attribute.String & Attribute.Required;
+    description: Attribute.Text & Attribute.Required;
+    price: Attribute.Decimal;
+    is_free: Attribute.Boolean & Attribute.DefaultTo<false>;
+    contents: Attribute.Media<'images' | 'files' | 'videos' | 'audios', true>;
+    validity_in_months: Attribute.Integer;
+    other_information: Attribute.Text;
+    add_on: Attribute.Relation<
+      'api::add-on-content.add-on-content',
+      'manyToOne',
+      'api::add-on.add-on'
+    >;
+    orders: Attribute.Relation<
+      'api::add-on-content.add-on-content',
+      'oneToOne',
+      'api::add-on-order.add-on-order'
+    >;
+    createdAt: Attribute.DateTime;
+    updatedAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<
+      'api::add-on-content.add-on-content',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+    updatedBy: Attribute.Relation<
+      'api::add-on-content.add-on-content',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+  };
+}
+
+export interface ApiAddOnOrderAddOnOrder extends Schema.CollectionType {
+  collectionName: 'add_on_orders';
+  info: {
+    singularName: 'add-on-order';
+    pluralName: 'add-on-orders';
+    displayName: 'Add-On: Orders';
+    description: '';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    add_on_content: Attribute.Relation<
+      'api::add-on-order.add-on-order',
+      'oneToOne',
+      'api::add-on-content.add-on-content'
+    >;
+    users_permissions_user: Attribute.Relation<
+      'api::add-on-order.add-on-order',
+      'manyToOne',
+      'plugin::users-permissions.user'
+    >;
+    price: Attribute.Decimal;
+    purchased_at: Attribute.DateTime;
+    expires_at: Attribute.DateTime;
+    is_active: Attribute.Boolean &
+      Attribute.Required &
+      Attribute.DefaultTo<true>;
+    razorpay_payment_id: Attribute.String;
+    razorpay_order_id: Attribute.String;
+    razorpay_signature: Attribute.String;
+    price_at_purchase: Attribute.Decimal & Attribute.Required;
+    commission_percentage_applied: Attribute.Decimal & Attribute.Required;
+    commission_amount: Attribute.Decimal & Attribute.Required;
+    total_paid: Attribute.Decimal & Attribute.Required;
+    createdAt: Attribute.DateTime;
+    updatedAt: Attribute.DateTime;
+    publishedAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<
+      'api::add-on-order.add-on-order',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+    updatedBy: Attribute.Relation<
+      'api::add-on-order.add-on-order',
       'oneToOne',
       'admin::user'
     > &
@@ -1255,7 +1394,14 @@ export interface ApiCommissionSettingCommissionSetting
     premium_plan_effective_from: Attribute.Date;
     is_premium_plan_active: Attribute.Boolean;
     system_plan: Attribute.Enumeration<
-      ['mentor', 'counsellor', 'recorded_lecture', 'classroom', 'live_lecture']
+      [
+        'mentor',
+        'counsellor',
+        'recorded_lecture',
+        'classroom',
+        'live_lecture',
+        'add_on'
+      ]
     > &
       Attribute.Required;
     createdAt: Attribute.DateTime;
@@ -1825,7 +1971,7 @@ export interface ApiIbProgramIbProgram extends Schema.CollectionType {
     description: '';
   };
   options: {
-    draftAndPublish: true;
+    draftAndPublish: false;
   };
   attributes: {
     name: Attribute.Enumeration<
@@ -1854,9 +2000,13 @@ export interface ApiIbProgramIbProgram extends Schema.CollectionType {
       'oneToMany',
       'api::subject-group.subject-group'
     >;
+    add_ons: Attribute.Relation<
+      'api::ib-program.ib-program',
+      'oneToMany',
+      'api::add-on.add-on'
+    >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
-    publishedAt: Attribute.DateTime;
     createdBy: Attribute.Relation<
       'api::ib-program.ib-program',
       'oneToOne',
@@ -3580,6 +3730,9 @@ declare module '@strapi/types' {
       'plugin::users-permissions.permission': PluginUsersPermissionsPermission;
       'plugin::users-permissions.role': PluginUsersPermissionsRole;
       'plugin::users-permissions.user': PluginUsersPermissionsUser;
+      'api::add-on.add-on': ApiAddOnAddOn;
+      'api::add-on-content.add-on-content': ApiAddOnContentAddOnContent;
+      'api::add-on-order.add-on-order': ApiAddOnOrderAddOnOrder;
       'api::answer.answer': ApiAnswerAnswer;
       'api::article.article': ApiArticleArticle;
       'api::class.class': ApiClassClass;

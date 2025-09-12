@@ -28,7 +28,8 @@
         "counsellor",
         "recorded_lecture",
         "classroom",
-        "live_lecture"
+        "live_lecture",
+        "add_on"
       ],
       "required": true
     }
