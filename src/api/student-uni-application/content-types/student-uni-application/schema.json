@@ -4,7 +4,8 @@
   "info": {
     "singularName": "student-uni-application",
     "pluralName": "student-uni-applications",
-    "displayName": "studentUniApplication"
+    "displayName": "studentUniApplication",
+    "description": ""
   },
   "options": {
     "draftAndPublish": false
@@ -42,6 +43,17 @@
         "Rejected",
         "Waitlisted",
         "Deferred"
+      ]
+    },
+    "Deadline": {
+      "type": "date"
+    },
+    "Category": {
+      "type": "enumeration",
+      "enum": [
+        "Submitted",
+        "In Progress",
+        "Rejected"
       ]
     }
   }

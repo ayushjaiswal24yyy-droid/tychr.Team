@@ -2903,6 +2903,7 @@ export interface ApiStudentUniApplicationStudentUniApplication
     singularName: 'student-uni-application';
     pluralName: 'student-uni-applications';
     displayName: 'studentUniApplication';
+    description: '';
   };
   options: {
     draftAndPublish: false;
@@ -2921,6 +2922,8 @@ export interface ApiStudentUniApplicationStudentUniApplication
     universityDecision: Attribute.Enumeration<
       ['Pending', 'Accepted', 'Rejected', 'Waitlisted', 'Deferred']
     >;
+    Deadline: Attribute.Date;
+    Category: Attribute.Enumeration<['Submitted', 'In Progress', 'Rejected']>;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     createdBy: Attribute.Relation<
