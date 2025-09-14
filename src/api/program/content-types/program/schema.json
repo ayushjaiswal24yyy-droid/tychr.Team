@@ -1,0 +1,62 @@
+{
+  "kind": "collectionType",
+  "collectionName": "programs",
+  "info": {
+    "singularName": "program",
+    "pluralName": "programs",
+    "displayName": "Program",
+    "description": ""
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "program_name": {
+      "type": "string"
+    },
+    "program_type": {
+      "type": "string"
+    },
+    "department": {
+      "type": "string"
+    },
+    "duration": {
+      "type": "string"
+    },
+    "annual_fee": {
+      "type": "string"
+    },
+    "intake": {
+      "type": "string"
+    },
+    "program_overview": {
+      "type": "text"
+    },
+    "career_prospects": {
+      "type": "text"
+    },
+    "application_deadlines": {
+      "type": "component",
+      "repeatable": true,
+      "component": "university.application-cycle-deadline"
+    },
+    "requirement": {
+      "type": "component",
+      "repeatable": true,
+      "component": "college.requirement"
+    },
+    "student_uni_applications": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::student-uni-application.student-uni-application",
+      "mappedBy": "program"
+    },
+    "college": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::college.college",
+      "inversedBy": "program"
+    }
+  }
+}

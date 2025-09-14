@@ -22,6 +22,18 @@
       "type": "component",
       "repeatable": true,
       "component": "college.programs"
+    },
+    "student_uni_applications": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::student-uni-application.student-uni-application",
+      "mappedBy": "college"
+    },
+    "program": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::program.program",
+      "mappedBy": "college"
     }
   }
 }

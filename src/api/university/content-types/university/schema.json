@@ -88,6 +88,12 @@
       "relation": "oneToMany",
       "target": "api::article.article",
       "mappedBy": "university"
+    },
+    "student_uni_applications": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::student-uni-application.student-uni-application",
+      "mappedBy": "university"
     }
   }
 }
