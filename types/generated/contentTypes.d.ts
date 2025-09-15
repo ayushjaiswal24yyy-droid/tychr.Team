@@ -1323,13 +1323,12 @@ export interface ApiCollegeCollege extends Schema.CollectionType {
   attributes: {
     college_name: Attribute.Text;
     college_type: Attribute.String;
-    programs: Attribute.Component<'college.programs', true>;
     student_uni_applications: Attribute.Relation<
       'api::college.college',
       'oneToMany',
       'api::student-uni-application.student-uni-application'
     >;
-    program: Attribute.Relation<
+    programs: Attribute.Relation<
       'api::college.college',
       'oneToMany',
       'api::program.program'
@@ -3013,6 +3012,7 @@ export interface ApiStudentUniApplicationStudentUniApplication
       'images' | 'files' | 'videos' | 'audios',
       true
     >;
+    lor: Attribute.Component<'lor.lor', true>;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     createdBy: Attribute.Relation<

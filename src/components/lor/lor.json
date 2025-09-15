@@ -1,0 +1,19 @@
+{
+  "collectionName": "components_lor_lors",
+  "info": {
+    "displayName": "LOR",
+    "icon": "feather"
+  },
+  "options": {},
+  "attributes": {
+    "facultyname": {
+      "type": "string"
+    },
+    "facultydomain": {
+      "type": "string"
+    },
+    "facultysubject": {
+      "type": "string"
+    }
+  }
+}

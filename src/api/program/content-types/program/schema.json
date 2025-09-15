@@ -56,7 +56,7 @@
       "type": "relation",
       "relation": "manyToOne",
       "target": "api::college.college",
-      "inversedBy": "program"
+      "inversedBy": "programs"
     }
   }
 }
