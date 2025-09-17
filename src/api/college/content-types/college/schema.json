@@ -18,10 +18,17 @@
     "college_type": {
       "type": "string"
     },
+    "student_uni_applications": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::student-uni-application.student-uni-application",
+      "mappedBy": "college"
+    },
     "programs": {
-      "type": "component",
-      "repeatable": true,
-      "component": "college.programs"
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::program.program",
+      "mappedBy": "college"
     }
   }
 }

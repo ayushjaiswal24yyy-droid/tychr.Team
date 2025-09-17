@@ -994,6 +994,13 @@ export interface PluginUsersPermissionsUser extends Schema.CollectionType {
       'oneToMany',
       'api::add-on-order.add-on-order'
     >;
+    extracurricularActivities: Attribute.JSON;
+    publications: Attribute.JSON;
+    schoolname: Attribute.String;
+    yearOfApplication: Attribute.Integer;
+    prospectiveCareer: Attribute.String;
+    majors: Attribute.String;
+    activities: Attribute.JSON;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     createdBy: Attribute.Relation<
@@ -1316,7 +1323,16 @@ export interface ApiCollegeCollege extends Schema.CollectionType {
   attributes: {
     college_name: Attribute.Text;
     college_type: Attribute.String;
-    programs: Attribute.Component<'college.programs', true>;
+    student_uni_applications: Attribute.Relation<
+      'api::college.college',
+      'oneToMany',
+      'api::student-uni-application.student-uni-application'
+    >;
+    programs: Attribute.Relation<
+      'api::college.college',
+      'oneToMany',
+      'api::program.program'
+    >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
@@ -2595,6 +2611,59 @@ export interface ApiPremiumPlanPremiumPlan extends Schema.CollectionType {
   };
 }
 
+export interface ApiProgramProgram extends Schema.CollectionType {
+  collectionName: 'programs';
+  info: {
+    singularName: 'program';
+    pluralName: 'programs';
+    displayName: 'Program';
+    description: '';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    program_name: Attribute.String;
+    program_type: Attribute.String;
+    department: Attribute.String;
+    duration: Attribute.String;
+    annual_fee: Attribute.String;
+    intake: Attribute.String;
+    program_overview: Attribute.Text;
+    career_prospects: Attribute.Text;
+    application_deadlines: Attribute.Component<
+      'university.application-cycle-deadline',
+      true
+    >;
+    requirement: Attribute.Component<'college.requirement', true>;
+    student_uni_applications: Attribute.Relation<
+      'api::program.program',
+      'oneToMany',
+      'api::student-uni-application.student-uni-application'
+    >;
+    college: Attribute.Relation<
+      'api::program.program',
+      'manyToOne',
+      'api::college.college'
+    >;
+    createdAt: Attribute.DateTime;
+    updatedAt: Attribute.DateTime;
+    publishedAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<
+      'api::program.program',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+    updatedBy: Attribute.Relation<
+      'api::program.program',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+  };
+}
+
 export interface ApiProgressProgress extends Schema.CollectionType {
   collectionName: 'progresses';
   info: {
@@ -2896,6 +2965,7 @@ export interface ApiStudentUniApplicationStudentUniApplication
     singularName: 'student-uni-application';
     pluralName: 'student-uni-applications';
     displayName: 'studentUniApplication';
+    description: '';
   };
   options: {
     draftAndPublish: false;
@@ -2906,7 +2976,6 @@ export interface ApiStudentUniApplicationStudentUniApplication
       'manyToOne',
       'plugin::users-permissions.user'
     >;
-    course: Attribute.String;
     status: Attribute.Enumeration<
       ['dream', 'target', 'safety', 'reach', 'others']
     >;
@@ -2914,6 +2983,36 @@ export interface ApiStudentUniApplicationStudentUniApplication
     universityDecision: Attribute.Enumeration<
       ['Pending', 'Accepted', 'Rejected', 'Waitlisted', 'Deferred']
     >;
+    Deadline: Attribute.Date;
+    Category: Attribute.Enumeration<['Submitted', 'In Progress', 'Rejected']>;
+    university: Attribute.Relation<
+      'api::student-uni-application.student-uni-application',
+      'manyToOne',
+      'api::university.university'
+    >;
+    college: Attribute.Relation<
+      'api::student-uni-application.student-uni-application',
+      'manyToOne',
+      'api::college.college'
+    >;
+    applicationcycle: Attribute.Component<
+      'university.application-cycle-deadline',
+      true
+    >;
+    program: Attribute.Relation<
+      'api::student-uni-application.student-uni-application',
+      'manyToOne',
+      'api::program.program'
+    >;
+    personalstatementessay: Attribute.Media<
+      'images' | 'files' | 'videos' | 'audios'
+    >;
+    whyusessay: Attribute.Media<'images' | 'files' | 'videos' | 'audios', true>;
+    activityessay: Attribute.Media<
+      'images' | 'files' | 'videos' | 'audios',
+      true
+    >;
+    lor: Attribute.Component<'lor.lor', true>;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     createdBy: Attribute.Relation<
@@ -3549,6 +3648,11 @@ export interface ApiUniversityUniversity extends Schema.CollectionType {
       'oneToMany',
       'api::article.article'
     >;
+    student_uni_applications: Attribute.Relation<
+      'api::university.university',
+      'oneToMany',
+      'api::student-uni-application.student-uni-application'
+    >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
@@ -3762,6 +3866,7 @@ declare module '@strapi/types' {
       'api::payment.payment': ApiPaymentPayment;
       'api::post.post': ApiPostPost;
       'api::premium-plan.premium-plan': ApiPremiumPlanPremiumPlan;
+      'api::program.program': ApiProgramProgram;
       'api::progress.progress': ApiProgressProgress;
       'api::question-bank.question-bank': ApiQuestionBankQuestionBank;
       'api::recorded-lecture.recorded-lecture': ApiRecordedLectureRecordedLecture;

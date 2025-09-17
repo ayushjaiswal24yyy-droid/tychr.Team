@@ -1,0 +1,38 @@
+{
+  "collectionName": "components_lor_lors",
+  "info": {
+    "displayName": "LOR",
+    "icon": "feather",
+    "description": ""
+  },
+  "options": {},
+  "attributes": {
+    "facultyname": {
+      "type": "string"
+    },
+    "facultydomain": {
+      "type": "string"
+    },
+    "facultysubject": {
+      "type": "string"
+    },
+    "status": {
+      "type": "enumeration",
+      "enum": [
+        "accepted",
+        "rejected",
+        "in progress"
+      ]
+    },
+    "lor": {
+      "allowedTypes": [
+        "images",
+        "files",
+        "videos",
+        "audios"
+      ],
+      "type": "media",
+      "multiple": true
+    }
+  }
+}

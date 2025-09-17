@@ -4,7 +4,8 @@
   "info": {
     "singularName": "student-uni-application",
     "pluralName": "student-uni-applications",
-    "displayName": "studentUniApplication"
+    "displayName": "studentUniApplication",
+    "description": ""
   },
   "options": {
     "draftAndPublish": false
@@ -16,10 +17,6 @@
       "relation": "manyToOne",
       "target": "plugin::users-permissions.user",
       "inversedBy": "student_uni_applications"
-    },
-    "course": {
-      "type": "string",
-      "required": false
     },
     "status": {
       "type": "enumeration",
@@ -43,6 +40,78 @@
         "Waitlisted",
         "Deferred"
       ]
+    },
+    "Deadline": {
+      "type": "date"
+    },
+    "Category": {
+      "type": "enumeration",
+      "enum": [
+        "Submitted",
+        "In Progress",
+        "Rejected"
+      ]
+    },
+    "university": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::university.university",
+      "inversedBy": "student_uni_applications"
+    },
+    "college": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::college.college",
+      "inversedBy": "student_uni_applications"
+    },
+    "applicationcycle": {
+      "type": "component",
+      "repeatable": true,
+      "component": "university.application-cycle-deadline"
+    },
+    "program": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::program.program",
+      "inversedBy": "student_uni_applications"
+    },
+    "personalstatementessay": {
+      "type": "media",
+      "multiple": false,
+      "required": false,
+      "allowedTypes": [
+        "images",
+        "files",
+        "videos",
+        "audios"
+      ]
+    },
+    "whyusessay": {
+      "type": "media",
+      "multiple": true,
+      "required": false,
+      "allowedTypes": [
+        "images",
+        "files",
+        "videos",
+        "audios"
+      ]
+    },
+    "activityessay": {
+      "type": "media",
+      "multiple": true,
+      "required": false,
+      "allowedTypes": [
+        "images",
+        "files",
+        "videos",
+        "audios"
+      ]
+    },
+    "lor": {
+      "type": "component",
+      "repeatable": true,
+      "component": "lor.lor"
     }
   }
 }

@@ -416,6 +416,27 @@
       "relation": "oneToMany",
       "target": "api::add-on-order.add-on-order",
       "mappedBy": "users_permissions_user"
+    },
+    "extracurricularActivities": {
+      "type": "json"
+    },
+    "publications": {
+      "type": "json"
+    },
+    "schoolname": {
+      "type": "string"
+    },
+    "yearOfApplication": {
+      "type": "integer"
+    },
+    "prospectiveCareer": {
+      "type": "string"
+    },
+    "majors": {
+      "type": "string"
+    },
+    "activities": {
+      "type": "json"
     }
   }
 }
