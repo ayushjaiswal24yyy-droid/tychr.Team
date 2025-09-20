@@ -4,7 +4,7 @@
   "info": {
     "singularName": "notification",
     "pluralName": "notifications",
-    "displayName": "Enquiries",
+    "displayName": "Notifications/Enquiries",
     "description": ""
   },
   "options": {
@@ -26,20 +26,12 @@
     },
     "status": {
       "type": "enumeration",
-      "enum": [
-        "Pending",
-        "Converted",
-        "Rejected"
-      ],
+      "enum": ["Pending", "Converted", "Rejected"],
       "default": "Pending"
     },
     "payment_status": {
       "type": "enumeration",
-      "enum": [
-        "Failed",
-        "Success",
-        "Pending"
-      ]
+      "enum": ["Failed", "Success", "Pending"]
     },
     "parent_name": {
       "type": "string"
@@ -49,11 +41,7 @@
     },
     "preferred_classroom_time": {
       "type": "enumeration",
-      "enum": [
-        "Morning",
-        "Afternoon",
-        "Evening"
-      ]
+      "enum": ["Morning", "Afternoon", "Evening"]
     },
     "comment": {
       "type": "text"
@@ -95,24 +83,15 @@
     },
     "enquiry_type": {
       "type": "enumeration",
-      "enum": [
-        "Classroom",
-        "Student Plan"
-      ]
+      "enum": ["Classroom", "Student Plan"]
     },
     "classroom_limit": {
       "type": "enumeration",
-      "enum": [
-        "offline",
-        "online"
-      ]
+      "enum": ["offline", "online"]
     },
     "classroom_type": {
       "type": "enumeration",
-      "enum": [
-        "Offline",
-        "Online"
-      ]
+      "enum": ["Offline", "Online"]
     },
     "parent_location": {
       "type": "string"

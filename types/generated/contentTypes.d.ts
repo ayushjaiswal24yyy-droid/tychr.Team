@@ -2386,7 +2386,7 @@ export interface ApiNotificationNotification extends Schema.CollectionType {
   info: {
     singularName: 'notification';
     pluralName: 'notifications';
-    displayName: 'Enquiries';
+    displayName: 'Notifications/Enquiries';
     description: '';
   };
   options: {

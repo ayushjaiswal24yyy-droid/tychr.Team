@@ -1,13 +1,18 @@
+// path: src/api/student/routes/student.js
+
+'use strict';
+
 module.exports = {
   routes: [
-    // {
-    //  method: 'GET',
-    //  path: '/webhook',
-    //  handler: 'webhook.exampleAction',
-    //  config: {
-    //    policies: [],
-    //    middlewares: [],
-    //  },
-    // },
+    {
+      method: 'POST',
+      path: '/webhook/students',
+      handler: 'webhook.createFromWebhook',
+      config: {
+        auth: false,
+        policies: [],
+        middlewares: [],
+      },
+    },
   ],
 };
