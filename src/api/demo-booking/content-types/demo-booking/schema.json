@@ -17,8 +17,7 @@
       "target": "plugin::users-permissions.user"
     },
     "booking_date": {
-      "type": "datetime",
-      "required": true
+      "type": "datetime"
     },
     "status": {
       "type": "enumeration",
