@@ -16,8 +16,39 @@
       "relation": "oneToOne",
       "target": "plugin::users-permissions.user"
     },
-    "schedule_time": {
-      "type": "datetime"
+    "booking_date": {
+      "type": "datetime",
+      "required": true
+    },
+    "status": {
+      "type": "enumeration",
+      "enum": ["Requested", "Confirmed", "Completed", "Cancelled", "No-show"],
+      "default": "Requested"
+    },
+    "duration": {
+      "type": "integer",
+      "default": 30
+    },
+    "notes": {
+      "type": "text"
+    },
+    "meeting_link": {
+      "type": "string"
+    },
+    "enrollment": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::enrollment.enrollment"
+    },
+    "grade_subject": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::grade-subject.grade-subject"
+    },
+    "created_by": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "plugin::users-permissions.user"
     },
     "tutor": {
       "type": "relation",

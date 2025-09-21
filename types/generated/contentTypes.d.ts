@@ -1601,7 +1601,29 @@ export interface ApiDemoBookingDemoBooking extends Schema.CollectionType {
       'oneToOne',
       'plugin::users-permissions.user'
     >;
-    schedule_time: Attribute.DateTime;
+    booking_date: Attribute.DateTime & Attribute.Required;
+    status: Attribute.Enumeration<
+      ['Requested', 'Confirmed', 'Completed', 'Cancelled', 'No-show']
+    > &
+      Attribute.DefaultTo<'Requested'>;
+    duration: Attribute.Integer & Attribute.DefaultTo<30>;
+    notes: Attribute.Text;
+    meeting_link: Attribute.String;
+    enrollment: Attribute.Relation<
+      'api::demo-booking.demo-booking',
+      'oneToOne',
+      'api::enrollment.enrollment'
+    >;
+    grade_subject: Attribute.Relation<
+      'api::demo-booking.demo-booking',
+      'oneToOne',
+      'api::grade-subject.grade-subject'
+    >;
+    created_by: Attribute.Relation<
+      'api::demo-booking.demo-booking',
+      'oneToOne',
+      'plugin::users-permissions.user'
+    >;
     tutor: Attribute.Relation<
       'api::demo-booking.demo-booking',
       'oneToOne',
@@ -2390,7 +2412,7 @@ export interface ApiNotificationNotification extends Schema.CollectionType {
     description: '';
   };
   options: {
-    draftAndPublish: true;
+    draftAndPublish: false;
   };
   attributes: {
     user: Attribute.Relation<
@@ -2444,7 +2466,6 @@ export interface ApiNotificationNotification extends Schema.CollectionType {
     parent_location: Attribute.String;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
-    publishedAt: Attribute.DateTime;
     createdBy: Attribute.Relation<
       'api::notification.notification',
       'oneToOne',

@@ -1,0 +1,389 @@
+'use strict';
+
+const { createCoreController } = require('@strapi/strapi').factories;
+
+module.exports = createCoreController('api::demo-booking.demo-booking', ({ strapi }) => ({
+  async create(ctx) {
+    try {
+      const { user } = ctx.state;
+      const data = ctx.request.body;
+      
+      // Set created_by to current user
+      data.created_by = user.id;
+      
+      // Check if tutor is available at the requested time
+      if (data.tutor && data.booking_date) {
+        const bookingDate = new Date(data.booking_date);
+        const tutorId = typeof data.tutor === 'object' ? data.tutor.id : data.tutor;
+        
+        const tutor = await strapi.entityService.findOne(
+          'plugin::users-permissions.user',
+          tutorId,
+          { populate: ['mentor_availabilities'] }
+        );
+        
+        if (!tutor) {
+          return ctx.badRequest('Tutor not found');
+        }
+        
+        // Check availability using mentor_availabilities
+        const dayOfWeek = bookingDate.toLocaleDateString('en-US', { weekday: 'long' });
+        const time = bookingDate.toTimeString().slice(0, 5);
+        
+        // Check if tutor has any availability records
+        if (!tutor.mentor_availabilities || tutor.mentor_availabilities.length === 0) {
+          return ctx.badRequest('Tutor has no availability set');
+        }
+        
+        // Check availability for the specific day
+        const isAvailable = await checkTutorAvailability(tutorId, bookingDate);
+        
+        if (!isAvailable) {
+          return ctx.badRequest('Tutor is not available at the requested time');
+        }
+      }
+      
+      // Create the demo booking
+      const demoBooking = await strapi.entityService.create('api::demo-booking.demo-booking', {
+        data: {
+          ...data,
+          student: data.student?.id || data.student,
+          tutor: data.tutor?.id || data.tutor,
+          enrollment: data.enrollment?.id || data.enrollment,
+          grade_subject: data.grade_subject?.id || data.grade_subject,
+          created_by: user.id
+        },
+        populate: ['student', 'tutor', 'enrollment', 'grade_subject', 'created_by']
+      });
+      
+      // Send notification emails
+      await sendDemoBookingEmails(demoBooking);
+      
+      return ctx.send({
+        message: 'Demo booked successfully!',
+        demoBooking
+      });
+    } catch (error) {
+      console.error('Demo booking error:', error);
+      return ctx.badRequest('Failed to create demo booking', { error: error.message });
+    }
+  },
+  
+  async find(ctx) {
+    try {
+      const { query } = ctx;
+      const { user } = ctx.state;
+      
+      // Add filters based on user role
+      if (user.role.type === 'student') {
+        query.filters = { ...query.filters, student: user.id };
+      } else if (user.role.type === 'tutor') {
+        query.filters = { ...query.filters, tutor: user.id };
+      }
+      
+      const demoBookings = await strapi.entityService.findMany('api::demo-booking.demo-booking', {
+        ...query,
+        populate: ['student', 'tutor', 'enrollment', 'grade_subject', 'created_by']
+      });
+      
+      return demoBookings;
+    } catch (error) {
+      return ctx.badRequest('Failed to fetch demo bookings', { error: error.message });
+    }
+  },
+  
+  async getTutorAvailability(ctx) {
+    try {
+      const { tutorId, date } = ctx.params;
+      
+      const tutor = await strapi.entityService.findOne(
+        'plugin::users-permissions.user',
+        tutorId,
+        { populate: ['mentor_availabilities'] }
+      );
+      
+      if (!tutor) {
+        return ctx.notFound('Tutor not found');
+      }
+      
+      // Get existing bookings for the date
+      const startOfDay = new Date(date);
+      startOfDay.setHours(0, 0, 0, 0);
+      
+      const endOfDay = new Date(date);
+      endOfDay.setHours(23, 59, 59, 999);
+      
+      const existingBookings = await strapi.entityService.findMany('api::demo-booking.demo-booking', {
+        filters: {
+          tutor: tutorId,
+          booking_date: {
+            $gte: startOfDay.toISOString(),
+            $lte: endOfDay.toISOString()
+          },
+          status: {
+            $in: ['Requested', 'Confirmed']
+          }
+        }
+      });
+      
+      // Get tutor availability
+      const dayOfWeek = new Date(date).toLocaleDateString('en-US', { weekday: 'long' });
+      const availability = await getTutorDayAvailability(tutorId, dayOfWeek);
+      
+      // Calculate available slots
+      const availableSlots = await calculateAvailableSlots(availability, existingBookings, date);
+      
+      return ctx.send({
+        tutor: {
+          id: tutor.id,
+          fullName: tutor.fullName,
+          avatar: tutor.avatar
+        },
+        date,
+        availability,
+        availableSlots
+      });
+    } catch (error) {
+      return ctx.badRequest('Failed to fetch tutor availability', { error: error.message });
+    }
+  },
+  
+  async updateStatus(ctx) {
+    try {
+      const { id } = ctx.params;
+      const { status, meeting_link } = ctx.request.body;
+      
+      const demoBooking = await strapi.entityService.update('api::demo-booking.demo-booking', id, {
+        data: {
+          status,
+          ...(meeting_link && { meeting_link })
+        },
+        populate: ['student', 'tutor']
+      });
+      
+      // Send status update emails
+      await sendStatusUpdateEmail(demoBooking);
+      
+      return ctx.send({
+        message: 'Demo booking status updated successfully',
+        demoBooking
+      });
+    } catch (error) {
+      return ctx.badRequest('Failed to update demo booking status', { error: error.message });
+    }
+  }
+}));
+
+// Helper function to check tutor availability
+async function checkTutorAvailability(tutorId, bookingDate) {
+  const dayOfWeek = bookingDate.toLocaleDateString('en-US', { weekday: 'long' });
+  
+  // Get tutor's availability for the specific day
+  const tutorAvailability = await strapi.entityService.findMany('api::mentor-availability.mentor-availability', {
+    filters: {
+      mentor: tutorId,
+      'days.day': dayOfWeek,
+      'days.is_available': true
+    },
+    populate: ['days']
+  });
+  
+  if (tutorAvailability.length === 0) {
+    return false;
+  }
+  
+  // Check if the requested time falls within any available slot
+  const bookingTime = bookingDate.toTimeString().slice(0, 5);
+  
+  for (const availability of tutorAvailability) {
+    for (const day of availability.days) {
+      if (day.day === dayOfWeek && day.is_available) {
+        if (bookingTime >= day.start_time && bookingTime <= day.end_time) {
+          return true;
+        }
+      }
+    }
+  }
+  
+  return false;
+}
+
+// Helper function to get tutor's day availability
+async function getTutorDayAvailability(tutorId, dayOfWeek) {
+  const availability = await strapi.entityService.findMany('api::mentor-availability.mentor-availability', {
+    filters: {
+      mentor: tutorId,
+      'days.day': dayOfWeek,
+      'days.is_available': true
+    },
+    populate: ['days']
+  });
+  
+  return availability.flatMap(avail => avail.days.filter(day => day.day === dayOfWeek));
+}
+
+// Helper function to calculate available slots
+async function calculateAvailableSlots(availability, existingBookings, date) {
+  const availableSlots = [];
+  
+  for (const slot of availability) {
+    const startTime = new Date(`1970-01-01T${slot.start_time}`);
+    const endTime = new Date(`1970-01-01T${slot.end_time}`);
+    
+    // Generate 30-minute slots
+    for (let time = new Date(startTime); time < endTime; time.setMinutes(time.getMinutes() + 30)) {
+      const slotTime = time.toTimeString().slice(0, 5);
+      const slotDateTime = new Date(`${date}T${slotTime}`);
+      
+      // Check if slot is already booked
+      const isBooked = existingBookings.some(booking => {
+        const bookingTime = new Date(booking.booking_date);
+        return bookingTime.getHours() === time.getHours() && 
+               bookingTime.getMinutes() === time.getMinutes();
+      });
+      
+      if (!isBooked && slotDateTime > new Date()) {
+        availableSlots.push(slotTime);
+      }
+    }
+  }
+  
+  return availableSlots;
+}
+
+// Helper function to send demo booking emails
+async function sendDemoBookingEmails(demoBooking) {
+  try {
+    const { student, tutor } = demoBooking;
+    
+    // Send email to student
+    await strapi.plugins['email'].services.email.send({
+      to: student.email,
+      from: 'tychr@saralgroups.com',
+      subject: 'Demo Session Confirmation - TyChr',
+      html: `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <style>
+            body { font-family: Arial, sans-serif; line-height: 1.6; }
+            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+            .header { background: #2c3e50; color: white; padding: 20px; text-align: center; }
+            .content { padding: 20px; background: #f9f9f9; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h1>Demo Session Booked!</h1>
+            </div>
+            <div class="content">
+              <p>Hello ${student.fullName},</p>
+              <p>Your demo session has been successfully booked with ${tutor.fullName}.</p>
+              <p><strong>Details:</strong></p>
+              <ul>
+                <li>Date & Time: ${new Date(demoBooking.booking_date).toLocaleString()}</li>
+                <li>Duration: ${demoBooking.duration} minutes</li>
+                <li>Tutor: ${tutor.fullName}</li>
+              </ul>
+              <p>You will receive a meeting link before the session.</p>
+            </div>
+          </div>
+        </body>
+        </html>
+      `
+    });
+    
+    // Send email to tutor
+    await strapi.plugins['email'].services.email.send({
+      to: tutor.email,
+      from: 'tychr@saralgroups.com',
+      subject: 'New Demo Session Booking - TyChr',
+      html: `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <style>
+            body { font-family: Arial, sans-serif; line-height: 1.6; }
+            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+            .header { background: #2c3e50; color: white; padding: 20px; text-align: center; }
+            .content { padding: 20px; background: #f9f9f9; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h1>New Demo Session</h1>
+            </div>
+            <div class="content">
+              <p>Hello ${tutor.fullName},</p>
+              <p>You have a new demo session booking from ${student.fullName}.</p>
+              <p><strong>Details:</strong></p>
+              <ul>
+                <li>Date & Time: ${new Date(demoBooking.booking_date).toLocaleString()}</li>
+                <li>Duration: ${demoBooking.duration} minutes</li>
+                <li>Student: ${student.fullName}</li>
+                <li>Student Email: ${student.email}</li>
+              </ul>
+            </div>
+          </div>
+        </body>
+        </html>
+      `
+    });
+  } catch (error) {
+    console.error('Error sending demo booking emails:', error);
+  }
+}
+
+// Helper function to send status update emails
+async function sendStatusUpdateEmail(demoBooking) {
+  try {
+    const { student, tutor, status } = demoBooking;
+    
+    const emailSubject = {
+      'Confirmed': 'Demo Session Confirmed',
+      'Cancelled': 'Demo Session Cancelled',
+      'Completed': 'Demo Session Completed',
+      'No-show': 'Demo Session Marked as No-show'
+    }[status] || 'Demo Session Status Updated';
+    
+    await strapi.plugins['email'].services.email.send({
+      to: student.email,
+      from: 'tychr@saralgroups.com',
+      subject: `${emailSubject} - TyChr`,
+      html: `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <style>
+            body { font-family: Arial, sans-serif; line-height: 1.6; }
+            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+            .header { background: #2c3e50; color: white; padding: 20px; text-align: center; }
+            .content { padding: 20px; background: #f9f9f9; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h1>${emailSubject}</h1>
+            </div>
+            <div class="content">
+              <p>Hello ${student.fullName},</p>
+              <p>Your demo session with ${tutor.fullName} has been ${status.toLowerCase()}.</p>
+              <p><strong>Details:</strong></p>
+              <ul>
+                <li>Date & Time: ${new Date(demoBooking.booking_date).toLocaleString()}</li>
+                <li>Status: ${status}</li>
+                ${demoBooking.meeting_link ? `<li>Meeting Link: <a href="${demoBooking.meeting_link}">Join Meeting</a></li>` : ''}
+              </ul>
+            </div>
+          </div>
+        </body>
+        </html>
+      `
+    });
+  } catch (error) {
+    console.error('Error sending status update email:', error);
+  }
+}
