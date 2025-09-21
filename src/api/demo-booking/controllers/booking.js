@@ -506,11 +506,12 @@ async function updateNotificationStatus(studentId, newStatus, demoBooking) {
         notification.id,
         {
           data: {
-            tracking_status: newStatus,
+            tracking_status: "Demo Booking", // This will be "Demo Booking"
+            // Keep the conversion_history update if needed
             conversion_history: [
               ...(notification.conversion_history || []),
               {
-                previous_status: previousStatus,
+                previous_status: notification.tracking_status,
                 new_status: newStatus,
                 changed_at: new Date().toISOString(),
                 changed_by: demoBooking.created_by?.id || "system",
