@@ -508,19 +508,19 @@ async function updateNotificationStatus(studentId, newStatus, demoBooking) {
           data: {
             tracking_status: "Demo Booking", // This will be "Demo Booking"
             // Keep the conversion_history update if needed
-            conversion_history: [
-              ...(notification.conversion_history || []),
-              {
-                previous_status: notification.tracking_status,
-                new_status: newStatus,
-                changed_at: new Date().toISOString(),
-                changed_by: demoBooking.created_by?.id || "system",
-                demo_booking: demoBooking.id,
-                notes: `Demo booked with ${
-                  demoBooking.tutor?.fullName || "tutor"
-                } on ${new Date(demoBooking.booking_date).toLocaleString()}`,
-              },
-            ],
+            // conversion_history: [
+            //   ...(notification.conversion_history || []),
+            //   {
+            //     previous_status: notification.tracking_status,
+            //     new_status: newStatus,
+            //     changed_at: new Date().toISOString(),
+            //     changed_by: demoBooking.created_by?.id || "system",
+            //     demo_booking: demoBooking.id,
+            //     notes: `Demo booked with ${
+            //       demoBooking.tutor?.fullName || "tutor"
+            //     } on ${new Date(demoBooking.booking_date).toLocaleString()}`,
+            //   },
+            // ],
           },
         }
       );

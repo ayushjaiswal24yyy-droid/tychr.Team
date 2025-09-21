@@ -1600,7 +1600,8 @@ export interface ApiDemoBookingDemoBooking extends Schema.CollectionType {
       'api::demo-booking.demo-booking',
       'oneToOne',
       'plugin::users-permissions.user'
-    >;
+    > &
+      Attribute.Required;
     booking_date: Attribute.DateTime;
     status: Attribute.Enumeration<
       ['Requested', 'Confirmed', 'Completed', 'Cancelled', 'No-show']
