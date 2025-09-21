@@ -1593,7 +1593,7 @@ export interface ApiDemoBookingDemoBooking extends Schema.CollectionType {
     displayName: 'Demo_Booking';
   };
   options: {
-    draftAndPublish: true;
+    draftAndPublish: false;
   };
   attributes: {
     student: Attribute.Relation<
@@ -1601,7 +1601,7 @@ export interface ApiDemoBookingDemoBooking extends Schema.CollectionType {
       'oneToOne',
       'plugin::users-permissions.user'
     >;
-    booking_date: Attribute.DateTime & Attribute.Required;
+    booking_date: Attribute.DateTime;
     status: Attribute.Enumeration<
       ['Requested', 'Confirmed', 'Completed', 'Cancelled', 'No-show']
     > &
@@ -1631,7 +1631,6 @@ export interface ApiDemoBookingDemoBooking extends Schema.CollectionType {
     >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
-    publishedAt: Attribute.DateTime;
     createdBy: Attribute.Relation<
       'api::demo-booking.demo-booking',
       'oneToOne',

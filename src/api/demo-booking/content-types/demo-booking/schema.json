@@ -7,7 +7,7 @@
     "displayName": "Demo_Booking"
   },
   "options": {
-    "draftAndPublish": true
+    "draftAndPublish": false
   },
   "pluginOptions": {},
   "attributes": {
