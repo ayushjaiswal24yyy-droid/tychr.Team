@@ -231,6 +231,55 @@ module.exports = createCoreController(
         });
       }
     },
+    async findByStudent(ctx) {
+      try {
+        const { studentId } = ctx.params;
+
+        // Validate studentId
+        if (!studentId) {
+          return ctx.badRequest("Student ID is required");
+        }
+
+        const demoBookings = await strapi.entityService.findMany(
+          "api::demo-booking.demo-booking",
+          {
+            filters: {
+              student: studentId,
+            },
+            populate: {
+              student: {
+                fields: ["id", "username", "email", "firstName", "lastName"],
+              },
+              tutor: {
+                fields: ["id", "username", "email", "firstName", "lastName"],
+              },
+              grade_subject: {
+                fields: ["id", "name", "description"],
+              },
+              enrollment: {
+                fields: ["id", "status", "startDate"],
+              },
+              created_by: {
+                fields: ["id", "username", "email"],
+              },
+            },
+            fields: [
+              "id",
+              "booking_date",
+              "status",
+              "duration",
+              "notes",
+              "meeting_link",
+            ],
+            sort: { booking_date: "desc" },
+          }
+        );
+
+        return demoBookings;
+      } catch (error) {
+        ctx.throw(500, error);
+      }
+    },
   })
 );
 
