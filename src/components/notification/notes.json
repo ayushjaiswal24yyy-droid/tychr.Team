@@ -1,0 +1,16 @@
+{
+  "collectionName": "components_notification_notes",
+  "info": {
+    "displayName": "notes",
+    "icon": "arrowUp"
+  },
+  "options": {},
+  "attributes": {
+    "title": {
+      "type": "string"
+    },
+    "description": {
+      "type": "text"
+    }
+  }
+}
