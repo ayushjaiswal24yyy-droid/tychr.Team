@@ -13,6 +13,153 @@ module.exports = (plugin) => {
     } = user;
     return sanitizedUser;
   };
+  const createNotificationForUser = async (user, ctx) => {
+    try {
+      // Extract notification data from request body
+      const {
+        parent_name,
+        parent_phonenumber,
+        preferred_classroom_time,
+        comment,
+        student_plan,
+        grade_subject,
+        enquiry_type,
+        classroom_limit,
+        classroom_type,
+        parent_location,
+      } = ctx.request.body;
+
+      // Create notification entry
+      const notification = await strapi.entityService.create(
+        "api::notification.notification",
+        {
+          data: {
+            user: user.id,
+            status: "Pending",
+            tracking_status: "New Lead",
+            parent_name: parent_name || "",
+            parent_phonenumber: parent_phonenumber || "",
+            preferred_classroom_time: preferred_classroom_time || "Evening",
+            comment: comment || "",
+            student_plan: student_plan || null,
+            // grade_subject: grade_subject || null,
+            // enquiry_type: enquiry_type || "Classroom",
+            classroom_limit: classroom_limit || "online",
+            classroom_type: classroom_type || "Online",
+            parent_location: parent_location || "",
+            publishedAt: new Date(),
+          },
+          populate: ["user", "student_plan", "grade_subject"],
+        }
+      );
+
+      // Send notification email to user
+      await strapi.plugins["email"].services.email.send({
+        to: user.email,
+        from: "tychr@saralgroups.com",
+        subject: " Registration - TyChr",
+        html: `
+          <!DOCTYPE html>
+          <html>
+          <head>
+            <style>
+              body { font-family: Arial, sans-serif; line-height: 1.6; }
+              .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+              .header { background: #2c3e50; color: white; padding: 20px; text-align: center; }
+              .content { padding: 20px; background: #f9f9f9; }
+              .footer { padding: 20px; text-align: center; color: #777; }
+            </style>
+          </head>
+          <body>
+            <div class="container">
+              <div class="header">
+                <h1>Welcome to TyChr!</h1>
+              </div>
+              <div class="content">
+                <p>Hello ${user.fullName || "there"},</p>
+                <p>Thank you for registering as a lead with TyChr. Your enquiry has been received and our team will contact you shortly.</p>
+                <p><strong>Enquiry Details:</strong></p>
+                <ul>
+                  <li>Email: ${user.email}</li>
+                  <li>Password: ${user.password}</li>
+                  ${parent_name ? `<li>Parent Name: ${parent_name}</li>` : ""}
+                  ${
+                    parent_phonenumber
+                      ? `<li>Phone: ${parent_phonenumber}</li>`
+                      : ""
+                  }
+                  ${
+                    enquiry_type ? `<li>Enquiry Type: ${enquiry_type}</li>` : ""
+                  }
+                </ul>
+                <p>We'll be in touch within 24 hours to discuss your requirements.</p>
+              </div>
+              <div class="footer">
+                <p>Best regards,<br>TyChr Team</p>
+              </div>
+            </div>
+          </body>
+          </html>
+        `,
+      });
+
+      // Send admin notification
+      await strapi.plugins["email"].services.email.send({
+        to: "it@tychr.com", // Admin email
+        from: "tychr@saralgroups.com",
+        subject: `New Lead Registration: ${user.email}`,
+        html: `
+          <!DOCTYPE html>
+          <html>
+          <head>
+            <style>
+              body { font-family: Arial, sans-serif; line-height: 1.6; }
+              .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+              .header { background: #e74c3c; color: white; padding: 20px; text-align: center; }
+              .content { padding: 20px; background: #f9f9f9; }
+              .footer { padding: 20px; text-align: center; color: #777; }
+            </style>
+          </head>
+          <body>
+            <div class="container">
+              <div class="header">
+                <h1>New Lead Alert!</h1>
+              </div>
+              <div class="content">
+                <p><strong>New lead registration received:</strong></p>
+                <ul>
+                  <li>Name: ${user.fullName || "N/A"}</li>
+                  <li>Email: ${user.email}</li>
+                  <li>Role: ${user.role?.type || "Lead"}</li>
+                  ${parent_name ? `<li>Parent Name: ${parent_name}</li>` : ""}
+                  ${
+                    parent_phonenumber
+                      ? `<li>Phone: ${parent_phonenumber}</li>`
+                      : ""
+                  }
+                  ${
+                    enquiry_type ? `<li>Enquiry Type: ${enquiry_type}</li>` : ""
+                  }
+                  <li>Registration Time: ${new Date().toLocaleString()}</li>
+                </ul>
+                <p><strong>Action Required:</strong> Please follow up with this lead within 24 hours.</p>
+              </div>
+              <div class="footer">
+                <p>This is an automated notification from TyChr System</p>
+              </div>
+            </div>
+          </body>
+          </html>
+        `,
+      });
+
+      return notification;
+    } catch (error) {
+      console.error("Error creating notification:", error);
+      // Don't throw error here to avoid breaking the registration flow
+    }
+  };
+
   plugin.controllers.auth.register = async (ctx) => {
     const { email, password, username, fullName, role, isCreateByAdmin } =
       ctx.request.body;
@@ -66,6 +213,7 @@ module.exports = (plugin) => {
         isCreateByAdmin,
       },
     });
+
     if (
       role === "assistant" ||
       role === "coach" ||
@@ -84,14 +232,26 @@ module.exports = (plugin) => {
       await strapi.service("api::email.email").sendEmailBasedOnRole(email, otp);
     }
 
+    // Check if type=leads query parameter is present
+    const isLeadRegistration = ctx.query.type === "leads";
+
+    if (isLeadRegistration) {
+      // Create notification and send emails for lead registration
+      await createNotificationForUser(user, ctx);
+    }
+
     const jwt = strapi.plugins["users-permissions"].services.jwt.issue({
       id: user.id,
     });
+
     return ctx.send({
-      message: "User registered. Please verify your email with the OTP sent.",
+      message: isLeadRegistration
+        ? "Lead registered successfully. Our team will contact you shortly."
+        : "User registered. Please verify your email with the OTP sent.",
       uuid: user.uuid,
       jwt,
       user: sanitizeUser(user),
+      isLead: isLeadRegistration,
     });
   };
 

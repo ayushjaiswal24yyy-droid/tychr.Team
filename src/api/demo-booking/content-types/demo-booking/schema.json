@@ -7,17 +7,48 @@
     "displayName": "Demo_Booking"
   },
   "options": {
-    "draftAndPublish": true
+    "draftAndPublish": false
   },
   "pluginOptions": {},
   "attributes": {
     "student": {
       "type": "relation",
       "relation": "oneToOne",
-      "target": "plugin::users-permissions.user"
+      "target": "plugin::users-permissions.user",
+      "required": true
     },
-    "schedule_time": {
+    "booking_date": {
       "type": "datetime"
+    },
+    "status": {
+      "type": "enumeration",
+      "enum": ["Requested", "Confirmed", "Completed", "Cancelled", "No-show"],
+      "default": "Requested"
+    },
+    "duration": {
+      "type": "integer",
+      "default": 30
+    },
+    "notes": {
+      "type": "text"
+    },
+    "meeting_link": {
+      "type": "string"
+    },
+    "enrollment": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::enrollment.enrollment"
+    },
+    "grade_subject": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::grade-subject.grade-subject"
+    },
+    "created_by": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "plugin::users-permissions.user"
     },
     "tutor": {
       "type": "relation",
