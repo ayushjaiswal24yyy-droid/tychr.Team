@@ -26,9 +26,9 @@
     },
     "programs": {
       "type": "relation",
-      "relation": "oneToMany",
+      "relation": "manyToMany",
       "target": "api::program.program",
-      "mappedBy": "college"
+      "mappedBy": "colleges"
     }
   }
 }
