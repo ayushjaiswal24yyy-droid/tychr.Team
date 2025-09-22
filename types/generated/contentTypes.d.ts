@@ -1330,7 +1330,7 @@ export interface ApiCollegeCollege extends Schema.CollectionType {
     >;
     programs: Attribute.Relation<
       'api::college.college',
-      'oneToMany',
+      'manyToMany',
       'api::program.program'
     >;
     createdAt: Attribute.DateTime;
@@ -2662,9 +2662,9 @@ export interface ApiProgramProgram extends Schema.CollectionType {
       'oneToMany',
       'api::student-uni-application.student-uni-application'
     >;
-    college: Attribute.Relation<
+    colleges: Attribute.Relation<
       'api::program.program',
-      'manyToOne',
+      'manyToMany',
       'api::college.college'
     >;
     createdAt: Attribute.DateTime;
@@ -3644,11 +3644,6 @@ export interface ApiUniversityUniversity extends Schema.CollectionType {
   attributes: {
     essays: Attribute.Component<'essays.essay', true>;
     intakes: Attribute.Component<'cycles.cycle', true>;
-    colleges: Attribute.Relation<
-      'api::university.university',
-      'oneToMany',
-      'api::college.college'
-    >;
     basic: Attribute.Component<'university.basic-info'>;
     stats: Attribute.Component<'university.key-stats'>;
     global_ranking: Attribute.Component<'university.global-ranking'>;
@@ -3673,6 +3668,11 @@ export interface ApiUniversityUniversity extends Schema.CollectionType {
       'api::university.university',
       'oneToMany',
       'api::student-uni-application.student-uni-application'
+    >;
+    colleges: Attribute.Relation<
+      'api::university.university',
+      'oneToMany',
+      'api::college.college'
     >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
