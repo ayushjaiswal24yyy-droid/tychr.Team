@@ -116,6 +116,12 @@
     },
     "parent_location": {
       "type": "string"
+    },
+    "enquiryNotes": {
+      "displayName": "notes",
+      "type": "component",
+      "repeatable": true,
+      "component": "notification.notes"
     }
   }
 }

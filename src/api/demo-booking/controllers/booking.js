@@ -231,6 +231,107 @@ module.exports = createCoreController(
         });
       }
     },
+ async findByStudent(ctx) {
+  try {
+    const { studentId } = ctx.params;
+
+    // Validate studentId
+    if (!studentId) {
+      return ctx.badRequest("Student ID is required");
+    }
+
+    // Validate if studentId is a valid number
+    if (isNaN(studentId)) {
+      return ctx.badRequest("Invalid Student ID format");
+    }
+
+    const demoBookings = await strapi.entityService.findMany(
+      "api::demo-booking.demo-booking",
+      {
+        filters: {
+          student: {
+            id: studentId
+          }
+        },
+        populate: {
+          student: {
+            fields: ["id", "username", "email", "firstName", "lastName"],
+            populate: {
+              avatar: {
+                fields: ["url", "formats"]
+              }
+            }
+          },
+          tutor: {
+            fields: ["id", "username", "email", "firstName", "lastName"],
+            populate: {
+              avatar: {
+                fields: ["url", "formats"]
+              }
+            }
+          },
+          grade_subject: {
+            fields: ["id", "name", "level"],
+            populate: {
+              subject: {
+                fields: ["id", "name"]
+              },
+              grade: {
+                fields: ["id", "name"]
+              }
+            }
+          },
+          enrollment: {
+            fields: ["id", "status", "startDate", "classroom_name"],
+            populate: {
+              grade_subject: {
+                fields: ["id", "name"]
+              }
+            }
+          },
+          created_by: {
+            fields: ["id", "username", "email"]
+          }
+        },
+        fields: [
+          "id",
+          "booking_date",
+          "status",
+          "duration",
+          "notes",
+          "meeting_link",
+          "createdAt",
+          "updatedAt"
+        ],
+        sort: { booking_date: "desc" },
+      }
+    );
+
+    // Transform the response to handle any potential issues
+    const transformedBookings = demoBookings.map(booking => ({
+      ...booking,
+      // Ensure dates are properly formatted
+      booking_date: booking.booking_date ? new Date(booking.booking_date).toISOString() : null,
+      // Handle potential null relations
+      student: booking.student || null,
+      tutor: booking.tutor || null,
+      grade_subject: booking.grade_subject || null,
+      enrollment: booking.enrollment || null
+    }));
+
+    return transformedBookings;
+    
+  } catch (error) {
+    console.error("Error in findByStudent:", error);
+    
+    // More detailed error response
+    if (error.message.includes("relation") || error.message.includes("populate")) {
+      return ctx.throw(500, "Database query error: " + error.message);
+    }
+    
+    return ctx.throw(500, "Internal server error while fetching demo bookings");
+  }
+}
   })
 );
 
