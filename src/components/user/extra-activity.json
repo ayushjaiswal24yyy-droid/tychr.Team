@@ -1,0 +1,27 @@
+{
+  "collectionName": "components_user_extra_activities",
+  "info": {
+    "displayName": "ExtraActivity"
+  },
+  "options": {},
+  "attributes": {
+    "ActivityTitle": {
+      "type": "string"
+    },
+    "Position": {
+      "type": "string"
+    },
+    "org_name": {
+      "type": "string"
+    },
+    "start_date": {
+      "type": "date"
+    },
+    "end_date": {
+      "type": "date"
+    },
+    "description": {
+      "type": "text"
+    }
+  }
+}

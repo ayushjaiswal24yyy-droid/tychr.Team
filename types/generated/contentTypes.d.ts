@@ -994,13 +994,14 @@ export interface PluginUsersPermissionsUser extends Schema.CollectionType {
       'oneToMany',
       'api::add-on-order.add-on-order'
     >;
-    extracurricularActivities: Attribute.JSON;
     publications: Attribute.JSON;
     schoolname: Attribute.String;
     yearOfApplication: Attribute.Integer;
     prospectiveCareer: Attribute.String;
     majors: Attribute.String;
     activities: Attribute.JSON;
+    acad: Attribute.Component<'academics.acad-performance'>;
+    extracurricularActivities: Attribute.Component<'user.extra-activity', true>;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     createdBy: Attribute.Relation<

@@ -1,0 +1,24 @@
+{
+  "collectionName": "components_academics_acad_performances",
+  "info": {
+    "displayName": "acad-performance"
+  },
+  "options": {},
+  "attributes": {
+    "GPA": {
+      "type": "integer"
+    },
+    "class_rank": {
+      "type": "integer"
+    },
+    "SAT": {
+      "type": "integer"
+    },
+    "ACT": {
+      "type": "integer"
+    },
+    "IELTS": {
+      "type": "integer"
+    }
+  }
+}

@@ -417,9 +417,6 @@
       "target": "api::add-on-order.add-on-order",
       "mappedBy": "users_permissions_user"
     },
-    "extracurricularActivities": {
-      "type": "json"
-    },
     "publications": {
       "type": "json"
     },
@@ -437,6 +434,16 @@
     },
     "activities": {
       "type": "json"
+    },
+    "acad": {
+      "type": "component",
+      "repeatable": false,
+      "component": "academics.acad-performance"
+    },
+    "extracurricularActivities": {
+      "type": "component",
+      "repeatable": true,
+      "component": "user.extra-activity"
     }
   }
 }
