@@ -5,7 +5,7 @@ module.exports = {
     
     try {
       const gradeSubject = await strapi
-        .service('api::grade-subject.grade-subject')
+        .service('api::grade-subject.custom')
         .findWithTopicsAndSubtopics(id);
       
       return gradeSubject;
