@@ -37,6 +37,16 @@
       "relation": "oneToMany",
       "target": "api::enrollment.enrollment",
       "mappedBy": "topic"
+    },
+    "thumbnail": {
+      "allowedTypes": [
+        "images",
+        "files",
+        "videos",
+        "audios"
+      ],
+      "type": "media",
+      "multiple": false
     }
   }
 }
