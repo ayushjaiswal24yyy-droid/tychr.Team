@@ -293,6 +293,34 @@ export interface SubtopicHeading extends Schema.Component {
   };
 }
 
+export interface SubjectRefrenceBooks extends Schema.Component {
+  collectionName: 'components_subject_refrence_books';
+  info: {
+    displayName: 'Refrence Books';
+    icon: 'book';
+  };
+  attributes: {
+    title: Attribute.String;
+    author: Attribute.String;
+    publication_year: Attribute.Integer;
+  };
+}
+
+export interface RecordedLecturesProgress extends Schema.Component {
+  collectionName: 'components_recorded_lectures_progresses';
+  info: {
+    displayName: 'progress';
+  };
+  attributes: {
+    student: Attribute.Relation<
+      'recorded-lectures.progress',
+      'oneToOne',
+      'plugin::users-permissions.user'
+    >;
+    progress_time: Attribute.Decimal;
+  };
+}
+
 export interface QuestionBankQuestionNAnswer extends Schema.Component {
   collectionName: 'components_question_bank_question_n_answers';
   info: {
@@ -336,34 +364,6 @@ export interface QuestionBankHints extends Schema.Component {
   };
   attributes: {
     hint: Attribute.RichText;
-  };
-}
-
-export interface SubjectRefrenceBooks extends Schema.Component {
-  collectionName: 'components_subject_refrence_books';
-  info: {
-    displayName: 'Refrence Books';
-    icon: 'book';
-  };
-  attributes: {
-    title: Attribute.String;
-    author: Attribute.String;
-    publication_year: Attribute.Integer;
-  };
-}
-
-export interface RecordedLecturesProgress extends Schema.Component {
-  collectionName: 'components_recorded_lectures_progresses';
-  info: {
-    displayName: 'progress';
-  };
-  attributes: {
-    student: Attribute.Relation<
-      'recorded-lectures.progress',
-      'oneToOne',
-      'plugin::users-permissions.user'
-    >;
-    progress_time: Attribute.Decimal;
   };
 }
 
@@ -593,6 +593,40 @@ export interface CollegePrograms extends Schema.Component {
   };
 }
 
+export interface AvailabilityTimeSlot extends Schema.Component {
+  collectionName: 'components_availability_time_slots';
+  info: {
+    displayName: 'timeSlot';
+    description: '';
+  };
+  attributes: {
+    start: Attribute.String;
+    end: Attribute.String;
+  };
+}
+
+export interface AvailabilityDayAvailability extends Schema.Component {
+  collectionName: 'components_availability_day_availabilities';
+  info: {
+    displayName: 'dayAvailability';
+  };
+  attributes: {
+    day: Attribute.Enumeration<
+      [
+        'monday',
+        'tuesday',
+        'wednesday',
+        'thursday',
+        'friday',
+        'saturday',
+        'sunday'
+      ]
+    >;
+    enabled: Attribute.Boolean;
+    slots: Attribute.Component<'availability.time-slot', true>;
+  };
+}
+
 export interface ClassroomResources extends Schema.Component {
   collectionName: 'components_classroom_resources';
   info: {
@@ -642,40 +676,6 @@ export interface AcademicsAcadPerformance extends Schema.Component {
   };
 }
 
-export interface AvailabilityTimeSlot extends Schema.Component {
-  collectionName: 'components_availability_time_slots';
-  info: {
-    displayName: 'timeSlot';
-    description: '';
-  };
-  attributes: {
-    start: Attribute.String;
-    end: Attribute.String;
-  };
-}
-
-export interface AvailabilityDayAvailability extends Schema.Component {
-  collectionName: 'components_availability_day_availabilities';
-  info: {
-    displayName: 'dayAvailability';
-  };
-  attributes: {
-    day: Attribute.Enumeration<
-      [
-        'monday',
-        'tuesday',
-        'wednesday',
-        'thursday',
-        'friday',
-        'saturday',
-        'sunday'
-      ]
-    >;
-    enabled: Attribute.Boolean;
-    slots: Attribute.Component<'availability.time-slot', true>;
-  };
-}
-
 declare module '@strapi/types' {
   export module Shared {
     export interface Components {
@@ -697,11 +697,11 @@ declare module '@strapi/types' {
       'university.additional-costs': UniversityAdditionalCosts;
       'subtopic.qn-a': SubtopicQnA;
       'subtopic.heading': SubtopicHeading;
+      'subject.refrence-books': SubjectRefrenceBooks;
+      'recorded-lectures.progress': RecordedLecturesProgress;
       'question-bank.question-n-answer': QuestionBankQuestionNAnswer;
       'question-bank.parts': QuestionBankParts;
       'question-bank.hints': QuestionBankHints;
-      'subject.refrence-books': SubjectRefrenceBooks;
-      'recorded-lectures.progress': RecordedLecturesProgress;
       'plan.grade-plan': PlanGradePlan;
       'notification.notes': NotificationNotes;
       'notification.history': NotificationHistory;
@@ -717,12 +717,12 @@ declare module '@strapi/types' {
       'cycles.cycle': CyclesCycle;
       'college.requirement': CollegeRequirement;
       'college.programs': CollegePrograms;
+      'availability.time-slot': AvailabilityTimeSlot;
+      'availability.day-availability': AvailabilityDayAvailability;
       'classroom.resources': ClassroomResources;
       'classroom.notices': ClassroomNotices;
       'classroom.days': ClassroomDays;
       'academics.acad-performance': AcademicsAcadPerformance;
-      'availability.time-slot': AvailabilityTimeSlot;
-      'availability.day-availability': AvailabilityDayAvailability;
     }
   }
 }
