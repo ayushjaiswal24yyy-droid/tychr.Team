@@ -3173,6 +3173,7 @@ export interface ApiSubtopicSubtopic extends Schema.CollectionType {
       'oneToMany',
       'api::enrollment.enrollment'
     >;
+    thumbnail: Attribute.Media<'images' | 'files' | 'videos' | 'audios'>;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
