@@ -41,7 +41,7 @@ module.exports = {
         console.error("❌ Missing required fields:", {
           razorpay_order_id: !!razorpay_order_id,
           razorpay_payment_id: !!razorpay_payment_id,
-          razorpay_signature: !!razorpay_signature,
+          // razorpay_signature: !!razorpay_signature,
           add_on_content_id: !!add_on_content_id,
         });
         return ctx.badRequest("Missing required payment fields");
@@ -217,7 +217,7 @@ module.exports = {
         is_active: true,
         razorpay_payment_id,
         razorpay_order_id,
-        razorpay_signature,
+        razorpay_signature: "none", // Storing 'none' as signature is not verified
         price_at_purchase: price,
         commission_percentage_applied: commissionPct,
         commission_amount: commissionAmount,
