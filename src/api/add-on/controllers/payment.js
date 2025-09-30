@@ -51,6 +51,7 @@ module.exports = {
             // razorpay_signature: !razorpay_signature,
             add_on_content_id: !add_on_content_id,
           },
+          received_data: ctx.request.body,
         });
       }
 
@@ -150,7 +151,7 @@ module.exports = {
       // Check if content is free
       if (addOnContent.is_free) {
         console.log("ℹ️ Add-on content is free, processing without payment...");
-        // Handle free content differently 
+        // Handle free content differently
       }
 
       // Get price from the add-on-content - FIXED: single item price
