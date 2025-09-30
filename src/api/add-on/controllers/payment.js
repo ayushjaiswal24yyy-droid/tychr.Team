@@ -15,10 +15,13 @@ try {
 module.exports = {
   async completeAddOnTransaction(ctx) {
     console.log("🚀 Starting completeAddOnTransaction API call");
-    
+
     try {
       // Log incoming request for debugging
-      console.log("📥 Request body:", JSON.stringify(ctx.request.body, null, 2));
+      console.log(
+        "📥 Request body:",
+        JSON.stringify(ctx.request.body, null, 2)
+      );
       console.log("📋 Request headers:", ctx.request.headers);
 
       // Extract required data from request
@@ -30,12 +33,17 @@ module.exports = {
       } = ctx.request.body;
 
       // Validate required fields
-      if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature || !add_on_id) {
+      if (
+        !razorpay_order_id ||
+        !razorpay_payment_id ||
+        !razorpay_signature ||
+        !add_on_id
+      ) {
         console.error("❌ Missing required fields:", {
           razorpay_order_id: !!razorpay_order_id,
           razorpay_payment_id: !!razorpay_payment_id,
           razorpay_signature: !!razorpay_signature,
-          add_on_id: !!add_on_id
+          add_on_id: !!add_on_id,
         });
         return ctx.badRequest("Missing required payment fields");
       }
@@ -50,7 +58,7 @@ module.exports = {
       console.log("📝 Signature comparison:", {
         generated: generatedSignature,
         received: razorpay_signature,
-        match: generatedSignature === razorpay_signature
+        match: generatedSignature === razorpay_signature,
       });
 
       if (generatedSignature !== razorpay_signature) {
@@ -62,14 +70,16 @@ module.exports = {
       // Get user ID from token
       const token = ctx.request.header.authorization?.replace("Bearer ", "");
       console.log("🔑 Token present:", !!token);
-      
+
       if (!token) {
         return ctx.unauthorized("Authorization token missing");
       }
 
       let userId;
       try {
-        const decoded = await strapi.plugins["users-permissions"].services.jwt.verify(token);
+        const decoded = await strapi.plugins[
+          "users-permissions"
+        ].services.jwt.verify(token);
         userId = decoded.id;
         console.log("👤 User ID from token:", userId);
       } catch (jwtError) {
@@ -116,7 +126,14 @@ module.exports = {
             },
           }
         );
-        console.log("✅ Add-on fetched:", addOn ? `"${addOn.Title}" with ${addOn.add_on_contents?.length || 0} contents` : "NOT FOUND");
+        console.log(
+          "✅ Add-on fetched:",
+          addOn
+            ? `"${addOn.Title}" with ${
+                addOn.add_on_contents?.length || 0
+              } contents`
+            : "NOT FOUND"
+        );
       } catch (error) {
         console.error("❌ Add-on fetch error:", error);
         return ctx.badRequest("Invalid add-on ID");
@@ -181,7 +198,7 @@ module.exports = {
       console.log("💸 Commission details:", {
         percentage: commissionPct,
         amount: commissionAmount,
-        totalPaid: totalPaid
+        totalPaid: totalPaid,
       });
 
       // Calculate expiration date (1 year from now)
@@ -191,12 +208,12 @@ module.exports = {
 
       // Create payment record
       const paymentData = {
-        amount: totalPrice,
-        add_on: add_on_id,
-        student: userId,
+        price: totalPrice,
+        add_on_content: add_on_id,
+        users_permissions_user: userId,
         expires_at: expires_at.toISOString(),
         purchased_at: new Date().toISOString(),
-        status: "active",
+        is_active: true,
         razorpay_payment_id,
         razorpay_order_id,
         razorpay_signature,
@@ -211,7 +228,7 @@ module.exports = {
       let payment;
       try {
         payment = await strapi.entityService.create(
-          "api::payment.payment",
+          "api::add-on-order.add-on-order",
           {
             data: paymentData,
           }
@@ -225,7 +242,7 @@ module.exports = {
       // Grant access to all add-on contents for the user
       console.log("🔓 Granting access to add-on contents...");
       const accessRecords = [];
-      
+
       for (const content of addOn.add_on_contents) {
         try {
           console.log(`➡️ Creating access for content ${content.id}...`);
@@ -244,20 +261,23 @@ module.exports = {
           accessRecords.push(accessRecord);
           console.log(`✅ Access granted for content ${content.id}`);
         } catch (accessError) {
-          console.error(`❌ Failed to grant access for content ${content.id}:`, accessError);
+          console.error(
+            `❌ Failed to grant access for content ${content.id}:`,
+            accessError
+          );
           // Continue with other contents even if one fails
         }
       }
 
       console.log("🎉 Add-on transaction completed successfully!");
-      
+
       return {
         success: true,
         payment: {
           id: payment.id,
           amount: payment.amount,
           status: payment.status,
-          razorpay_payment_id: payment.razorpay_payment_id
+          razorpay_payment_id: payment.razorpay_payment_id,
         },
         commission: {
           percentage: commissionPct,
@@ -277,10 +297,12 @@ module.exports = {
       console.error("🔍 Error details:", {
         message: error.message,
         stack: error.stack,
-        name: error.name
+        name: error.name,
       });
-      
-      return ctx.internalServerError("Add-on payment processing failed: " + error.message);
+
+      return ctx.internalServerError(
+        "Add-on payment processing failed: " + error.message
+      );
     }
   },
 };
