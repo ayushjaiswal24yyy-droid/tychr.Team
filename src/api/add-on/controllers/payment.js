@@ -44,7 +44,14 @@ module.exports = {
           // razorpay_signature: !!razorpay_signature,
           add_on_content_id: !!add_on_content_id,
         });
-        return ctx.badRequest("Missing required payment fields");
+        return ctx.badRequest("Missing required payment fields", {
+          missing_fields: {
+            razorpay_order_id: !razorpay_order_id,
+            razorpay_payment_id: !razorpay_payment_id,
+            // razorpay_signature: !razorpay_signature,
+            add_on_content_id: !add_on_content_id,
+          },
+        });
       }
 
       // Verify the payment signature
