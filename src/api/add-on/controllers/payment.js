@@ -22,7 +22,6 @@ module.exports = {
         "📥 Request body:",
         JSON.stringify(ctx.request.body, null, 2)
       );
-      console.log("📋 Request headers:", ctx.request.headers);
 
       // Extract required data from request
       const {
@@ -48,10 +47,10 @@ module.exports = {
         return ctx.badRequest("Missing required payment fields");
       }
 
-      // Verify the payment signature (CRITICAL - Uncomment for production)
+      // Verify the payment signature
       console.log("🔐 Verifying payment signature...");
       const generatedSignature = crypto
-        .createHmac("sha256", process.env.RAZORPAY_SECRET_ID) // Fixed: use RAZORPAY_SECRET_ID
+        .createHmac("sha256", process.env.RAZORPAY_SECRET_ID)
         .update(`${razorpay_order_id}|${razorpay_payment_id}`)
         .digest("hex");
 
@@ -92,8 +91,9 @@ module.exports = {
       }
 
       // Verify user exists
+      let user;
       try {
-        const user = await strapi.entityService.findOne(
+        user = await strapi.entityService.findOne(
           "plugin::users-permissions.user",
           userId
         );
@@ -189,7 +189,7 @@ module.exports = {
       // Calculate commission
       const commissionPct =
         commissionSettings.length > 0
-          ? parseFloat(commissionSettings[0].premium_plan_percentage)
+          ? parseFloat(commissionSettings[0].premium_plan_percentage) || 0
           : 0;
 
       const commissionAmount = (commissionPct / 100) * totalPrice;
@@ -206,46 +206,43 @@ module.exports = {
       expires_at.setFullYear(expires_at.getFullYear() + 1);
       console.log("📅 Expiration date:", expires_at.toISOString());
 
-      // Create payment record
-      const paymentData = {
-        price: totalPrice,
-        add_on_content: add_on_id,
-        users_permissions_user: userId,
-        expires_at: expires_at.toISOString(),
-        purchased_at: new Date().toISOString(),
-        is_active: true,
-        razorpay_payment_id,
-        razorpay_order_id,
-        razorpay_signature,
-        price_at_purchase: totalPrice,
-        commission_percentage_applied: commissionPct,
-        commission_amount: commissionAmount,
-        total_paid: totalPaid,
-        item_type: "add_on",
-      };
-
-      console.log("💳 Creating payment record...");
-      let payment;
-      try {
-        payment = await strapi.entityService.create(
-          "api::add-on-order.add-on-order",
-          {
-            data: paymentData,
-          }
-        );
-        console.log("✅ Payment record created with ID:", payment.id);
-      } catch (paymentError) {
-        console.error("❌ Payment creation failed:", paymentError);
-        return ctx.internalServerError("Failed to create payment record");
-      }
-
-      // Grant access to all add-on contents for the user
-      console.log("🔓 Granting access to add-on contents...");
+      // Create payment record for EACH add-on content (since schema expects one content per order)
+      console.log("💳 Creating payment records for each content...");
+      const paymentRecords = [];
       const accessRecords = [];
 
       for (const content of addOn.add_on_contents) {
         try {
-          console.log(`➡️ Creating access for content ${content.id}...`);
+          const contentPrice = parseFloat(content.price || 0);
+          const contentCommissionAmount = (commissionPct / 100) * contentPrice;
+
+          const paymentData = {
+            price: contentPrice,
+            add_on_content: content.id, // This matches your schema
+            users_permissions_user: userId,
+            expires_at: expires_at.toISOString(),
+            purchased_at: new Date().toISOString(),
+            is_active: true,
+            razorpay_payment_id,
+            razorpay_order_id,
+            razorpay_signature,
+            price_at_purchase: contentPrice,
+            commission_percentage_applied: commissionPct,
+            commission_amount: contentCommissionAmount,
+            total_paid: contentPrice,
+          };
+
+          console.log(`➡️ Creating payment for content ${content.id}...`);
+          const payment = await strapi.entityService.create(
+            "api::add-on-order.add-on-order",
+            {
+              data: paymentData,
+            }
+          );
+          paymentRecords.push(payment);
+
+          // Create access record
+          console.log(`🔓 Creating access for content ${content.id}...`);
           const accessRecord = await strapi.entityService.create(
             "api::user-content-access.user-content-access",
             {
@@ -259,26 +256,32 @@ module.exports = {
             }
           );
           accessRecords.push(accessRecord);
-          console.log(`✅ Access granted for content ${content.id}`);
-        } catch (accessError) {
+          console.log(
+            `✅ Payment and access created for content ${content.id}`
+          );
+        } catch (contentError) {
           console.error(
-            `❌ Failed to grant access for content ${content.id}:`,
-            accessError
+            `❌ Failed to process content ${content.id}:`,
+            contentError
           );
           // Continue with other contents even if one fails
         }
+      }
+
+      if (paymentRecords.length === 0) {
+        console.error("❌ No payment records were created");
+        return ctx.internalServerError("Failed to create any payment records");
       }
 
       console.log("🎉 Add-on transaction completed successfully!");
 
       return {
         success: true,
-        payment: {
-          id: payment.id,
-          amount: payment.amount,
-          status: payment.status,
-          razorpay_payment_id: payment.razorpay_payment_id,
-        },
+        payments: paymentRecords.map((p) => ({
+          id: p.id,
+          price: p.price,
+          razorpay_payment_id: p.razorpay_payment_id,
+        })),
         commission: {
           percentage: commissionPct,
           amount: commissionAmount,
@@ -291,6 +294,7 @@ module.exports = {
         },
         access_granted: accessRecords.length,
         total_contents: addOn.add_on_contents.length,
+        payments_created: paymentRecords.length,
       };
     } catch (error) {
       console.error("💥 Add-on payment processing error:", error);
