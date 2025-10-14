@@ -165,6 +165,12 @@
       "type": "component",
       "repeatable": true,
       "component": "classroom.resources"
+    },
+    "answer": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::answer.answer",
+      "mappedBy": "tutor_classroom"
     }
   }
 }

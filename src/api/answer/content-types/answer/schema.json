@@ -45,6 +45,12 @@
     },
     "tutor_feedback": {
       "type": "text"
+    },
+    "tutor_classroom": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::enrollment.enrollment",
+      "inversedBy": "answer"
     }
   }
 }

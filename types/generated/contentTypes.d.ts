@@ -1115,7 +1115,7 @@ export interface ApiAddOnOrderAddOnOrder extends Schema.CollectionType {
     description: '';
   };
   options: {
-    draftAndPublish: true;
+    draftAndPublish: false;
   };
   attributes: {
     add_on_content: Attribute.Relation<
@@ -1143,7 +1143,6 @@ export interface ApiAddOnOrderAddOnOrder extends Schema.CollectionType {
     total_paid: Attribute.Decimal & Attribute.Required;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
-    publishedAt: Attribute.DateTime;
     createdBy: Attribute.Relation<
       'api::add-on-order.add-on-order',
       'oneToOne',
