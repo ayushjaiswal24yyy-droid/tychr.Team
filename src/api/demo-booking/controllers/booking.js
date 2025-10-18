@@ -434,89 +434,89 @@ async function sendDemoBookingEmails(demoBooking) {
     const { student, tutor } = demoBooking;
 
     // Send email to student
-    await strapi.plugins["email"].services.email.send({
-      to: student.email,
-      from: "tychr@saralgroups.com",
-      subject: "Demo Session Confirmation - TyChr",
-      html: `
-        <!DOCTYPE html>
-        <html>
-        <head>
-          <style>
-            body { font-family: Arial, sans-serif; line-height: 1.6; }
-            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-            .header { background: #2c3e50; color: white; padding: 20px; text-align: center; }
-            .content { padding: 20px; background: #f9f9f9; }
-          </style>
-        </head>
-        <body>
-          <div class="container">
-            <div class="header">
-              <h1>Demo Session Booked!</h1>
-            </div>
-            <div class="content">
-              <p>Hello ${student.fullName},</p>
-              <p>Your demo session has been successfully booked with ${
-                tutor.fullName
-              }.</p>
-              <p><strong>Details:</strong></p>
-              <ul>
-                <li>Date & Time: ${new Date(
-                  demoBooking.booking_date
-                ).toLocaleString()}</li>
-                <li>Duration: ${demoBooking.duration} minutes</li>
-                <li>Tutor: ${tutor.fullName}</li>
-              </ul>
-              <p>You will receive a meeting link before the session.</p>
-              <p>Thank you for choosing TyChr!</p>
-            </div>
-          </div>
-        </body>
-        </html>
-      `,
-    });
+    // await strapi.plugins["email"].services.email.send({
+    //   to: student.email,
+    //   from: "tychr@saralgroups.com",
+    //   subject: "Demo Session Confirmation - TyChr",
+    //   html: `
+    //     <!DOCTYPE html>
+    //     <html>
+    //     <head>
+    //       <style>
+    //         body { font-family: Arial, sans-serif; line-height: 1.6; }
+    //         .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+    //         .header { background: #2c3e50; color: white; padding: 20px; text-align: center; }
+    //         .content { padding: 20px; background: #f9f9f9; }
+    //       </style>
+    //     </head>
+    //     <body>
+    //       <div class="container">
+    //         <div class="header">
+    //           <h1>Demo Session Booked!</h1>
+    //         </div>
+    //         <div class="content">
+    //           <p>Hello ${student.fullName},</p>
+    //           <p>Your demo session has been successfully booked with ${
+    //             tutor.fullName
+    //           }.</p>
+    //           <p><strong>Details:</strong></p>
+    //           <ul>
+    //             <li>Date & Time: ${new Date(
+    //               demoBooking.booking_date
+    //             ).toLocaleString()}</li>
+    //             <li>Duration: ${demoBooking.duration} minutes</li>
+    //             <li>Tutor: ${tutor.fullName}</li>
+    //           </ul>
+    //           <p>You will receive a meeting link before the session.</p>
+    //           <p>Thank you for choosing TyChr!</p>
+    //         </div>
+    //       </div>
+    //     </body>
+    //     </html>
+    //   `,
+    // });
 
     // Send email to tutor
-    await strapi.plugins["email"].services.email.send({
-      to: tutor.email,
-      from: "tychr@saralgroups.com",
-      subject: "New Demo Session Booking - TyChr",
-      html: `
-        <!DOCTYPE html>
-        <html>
-        <head>
-          <style>
-            body { font-family: Arial, sans-serif; line-height: 1.6; }
-            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-            .header { background: #2c3e50; color: white; padding: 20px; text-align: center; }
-            .content { padding: 20px; background: #f9f9f9; }
-          </style>
-        </head>
-        <body>
-          <div class="container">
-            <div class="header">
-              <h1>New Demo Session</h1>
-            </div>
-            <div class="content">
-              <p>Hello ${tutor.fullName},</p>
-              <p>You have a new demo session booking from ${
-                student.fullName
-              }.</p>
-              <p><strong>Details:</strong></p>
-              <ul>
-                <li>Date & Time: ${new Date(
-                  demoBooking.booking_date
-                ).toLocaleString()}</li>
-                <li>Duration: ${demoBooking.duration} minutes</li>
-                <li>Student: ${student.fullName}</li>
-                <li>Student Email: ${student.email}</li>
-              </ul>
-            </div>
-          </div>
-        </body>
-        </html>
-      `,
-    });
+    // await strapi.plugins["email"].services.email.send({
+    //   to: tutor.email,
+    //   from: "tychr@saralgroups.com",
+    //   subject: "New Demo Session Booking - TyChr",
+    //   html: `
+    //     <!DOCTYPE html>
+    //     <html>
+    //     <head>
+    //       <style>
+    //         body { font-family: Arial, sans-serif; line-height: 1.6; }
+    //         .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+    //         .header { background: #2c3e50; color: white; padding: 20px; text-align: center; }
+    //         .content { padding: 20px; background: #f9f9f9; }
+    //       </style>
+    //     </head>
+    //     <body>
+    //       <div class="container">
+    //         <div class="header">
+    //           <h1>New Demo Session</h1>
+    //         </div>
+    //         <div class="content">
+    //           <p>Hello ${tutor.fullName},</p>
+    //           <p>You have a new demo session booking from ${
+    //             student.fullName
+    //           }.</p>
+    //           <p><strong>Details:</strong></p>
+    //           <ul>
+    //             <li>Date & Time: ${new Date(
+    //               demoBooking.booking_date
+    //             ).toLocaleString()}</li>
+    //             <li>Duration: ${demoBooking.duration} minutes</li>
+    //             <li>Student: ${student.fullName}</li>
+    //             <li>Student Email: ${student.email}</li>
+    //           </ul>
+    //         </div>
+    //       </div>
+    //     </body>
+    //     </html>
+    //   `,
+    // });
   } catch (error) {
     console.error("Error sending demo booking emails:", error);
   }

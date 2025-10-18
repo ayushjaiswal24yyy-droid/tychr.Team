@@ -1191,6 +1191,11 @@ export interface ApiAnswerAnswer extends Schema.CollectionType {
       Attribute.DefaultTo<'Need to Evaluate'>;
     student_feedback: Attribute.Text;
     tutor_feedback: Attribute.Text;
+    tutor_classroom: Attribute.Relation<
+      'api::answer.answer',
+      'oneToOne',
+      'api::enrollment.enrollment'
+    >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
@@ -1838,6 +1843,11 @@ export interface ApiEnrollmentEnrollment extends Schema.CollectionType {
       'api::class.class'
     >;
     additional_resources: Attribute.Component<'classroom.resources', true>;
+    answer: Attribute.Relation<
+      'api::enrollment.enrollment',
+      'oneToOne',
+      'api::answer.answer'
+    >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     createdBy: Attribute.Relation<

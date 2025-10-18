@@ -13,7 +13,7 @@ module.exports = ({ env }) => ({
     },
   },
   cron: {
-    enabled: true,
+    enabled: false,
     driver: cron,
     tasks: cronTasks,
   },
