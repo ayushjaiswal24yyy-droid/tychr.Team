@@ -4,11 +4,11 @@
   "info": {
     "singularName": "test-serie",
     "pluralName": "test-series",
-    "displayName": "Test_Serie",
+    "displayName": "Test Series",
     "description": ""
   },
   "options": {
-    "draftAndPublish": true
+    "draftAndPublish": false
   },
   "pluginOptions": {},
   "attributes": {
@@ -72,14 +72,19 @@
       ]
     },
     "instruction_booklet": {
+      "type": "media",
+      "multiple": false,
+      "required": false,
       "allowedTypes": [
         "images",
         "files",
         "videos",
         "audios"
-      ],
-      "type": "media",
-      "multiple": false
+      ]
+    },
+    "is_global": {
+      "type": "boolean",
+      "default": false
     }
   }
 }

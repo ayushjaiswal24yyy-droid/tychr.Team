@@ -556,41 +556,6 @@ export interface CyclesCycle extends Schema.Component {
   };
 }
 
-export interface ClassroomResources extends Schema.Component {
-  collectionName: 'components_classroom_resources';
-  info: {
-    displayName: 'resources';
-    icon: 'apps';
-  };
-  attributes: {
-    url: Attribute.Text;
-    attachment: Attribute.Media<'images' | 'files' | 'videos' | 'audios'>;
-  };
-}
-
-export interface ClassroomNotices extends Schema.Component {
-  collectionName: 'components_classroom_notices';
-  info: {
-    displayName: 'notices';
-  };
-  attributes: {
-    notices: Attribute.RichText;
-  };
-}
-
-export interface ClassroomDays extends Schema.Component {
-  collectionName: 'components_classroom_days';
-  info: {
-    displayName: 'days';
-  };
-  attributes: {
-    days: Attribute.Enumeration<
-      ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday']
-    >;
-    startTime: Attribute.Time;
-  };
-}
-
 export interface CollegeRequirement extends Schema.Component {
   collectionName: 'components_college_requirements';
   info: {
@@ -625,6 +590,41 @@ export interface CollegePrograms extends Schema.Component {
       'university.student-application',
       true
     >;
+  };
+}
+
+export interface ClassroomResources extends Schema.Component {
+  collectionName: 'components_classroom_resources';
+  info: {
+    displayName: 'resources';
+    icon: 'apps';
+  };
+  attributes: {
+    url: Attribute.Text;
+    attachment: Attribute.Media<'images' | 'files' | 'videos' | 'audios'>;
+  };
+}
+
+export interface ClassroomNotices extends Schema.Component {
+  collectionName: 'components_classroom_notices';
+  info: {
+    displayName: 'notices';
+  };
+  attributes: {
+    notices: Attribute.RichText;
+  };
+}
+
+export interface ClassroomDays extends Schema.Component {
+  collectionName: 'components_classroom_days';
+  info: {
+    displayName: 'days';
+  };
+  attributes: {
+    days: Attribute.Enumeration<
+      ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday']
+    >;
+    startTime: Attribute.Time;
   };
 }
 
@@ -715,11 +715,11 @@ declare module '@strapi/types' {
       'essays.tags': EssaysTags;
       'essays.essay': EssaysEssay;
       'cycles.cycle': CyclesCycle;
+      'college.requirement': CollegeRequirement;
+      'college.programs': CollegePrograms;
       'classroom.resources': ClassroomResources;
       'classroom.notices': ClassroomNotices;
       'classroom.days': ClassroomDays;
-      'college.requirement': CollegeRequirement;
-      'college.programs': CollegePrograms;
       'availability.time-slot': AvailabilityTimeSlot;
       'availability.day-availability': AvailabilityDayAvailability;
       'academics.acad-performance': AcademicsAcadPerformance;

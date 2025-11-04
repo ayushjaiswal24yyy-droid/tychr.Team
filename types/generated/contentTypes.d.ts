@@ -1223,7 +1223,7 @@ export interface ApiArticleArticle extends Schema.CollectionType {
     description: '';
   };
   options: {
-    draftAndPublish: true;
+    draftAndPublish: false;
   };
   attributes: {
     description: Attribute.Blocks & Attribute.Required;
@@ -1246,7 +1246,6 @@ export interface ApiArticleArticle extends Schema.CollectionType {
     thumbnail: Attribute.Media<'images' | 'files' | 'videos' | 'audios'>;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
-    publishedAt: Attribute.DateTime;
     createdBy: Attribute.Relation<
       'api::article.article',
       'oneToOne',
@@ -3293,11 +3292,11 @@ export interface ApiTestSerieTestSerie extends Schema.CollectionType {
   info: {
     singularName: 'test-serie';
     pluralName: 'test-series';
-    displayName: 'Test_Serie';
+    displayName: 'Test Series';
     description: '';
   };
   options: {
-    draftAndPublish: true;
+    draftAndPublish: false;
   };
   attributes: {
     grade_subject: Attribute.Relation<
@@ -3325,9 +3324,9 @@ export interface ApiTestSerieTestSerie extends Schema.CollectionType {
     instruction_booklet: Attribute.Media<
       'images' | 'files' | 'videos' | 'audios'
     >;
+    is_global: Attribute.Boolean & Attribute.DefaultTo<false>;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
-    publishedAt: Attribute.DateTime;
     createdBy: Attribute.Relation<
       'api::test-serie.test-serie',
       'oneToOne',
