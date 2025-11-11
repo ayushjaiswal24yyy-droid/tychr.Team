@@ -102,6 +102,9 @@
     },
     "wpseo_desc": {
       "type": "text"
+    },
+    "estimated_reading_time_minutes": {
+      "type": "string"
     }
   }
 }
