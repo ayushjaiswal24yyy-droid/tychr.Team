@@ -66,14 +66,42 @@
       ]
     },
     "thumbnail": {
+      "type": "media",
+      "multiple": false,
+      "required": false,
       "allowedTypes": [
         "images",
         "files",
         "videos",
         "audios"
-      ],
-      "type": "media",
-      "multiple": false
+      ]
+    },
+    "permalink": {
+      "type": "string"
+    },
+    "image_title": {
+      "type": "string"
+    },
+    "image_caption": {
+      "type": "string"
+    },
+    "image_desc": {
+      "type": "string"
+    },
+    "image_alt_text": {
+      "type": "string"
+    },
+    "attachment_url": {
+      "type": "string"
+    },
+    "categories": {
+      "type": "string"
+    },
+    "seo_title": {
+      "type": "string"
+    },
+    "wpseo_desc": {
+      "type": "text"
     }
   }
 }
