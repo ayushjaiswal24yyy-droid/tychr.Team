@@ -32,12 +32,26 @@
       "repeatable": true,
       "component": "question-bank.question-n-answer"
     },
+    "submission_type": {
+      "type": "enumeration",
+      "enum": ["online", "offline_upload"],
+      "default": "online"
+    },
+    "uploaded_answer_sheet": {
+      "type": "media",
+      "multiple": false,
+      "required": false,
+      "allowedTypes": ["images", "files"]
+    },
+    "submission_date": {
+      "type": "datetime"
+    },
+    "time_taken": {
+      "type": "integer"
+    },
     "evaluation_status": {
       "type": "enumeration",
-      "enum": [
-        "Completed",
-        "Need to Evaluate"
-      ],
+      "enum": ["Completed", "Need to Evaluate"],
       "default": "Need to Evaluate"
     },
     "student_feedback": {

@@ -33,23 +33,26 @@
       "target": "api::question-bank.question-bank",
       "inversedBy": "test_series"
     },
+    "test_mode": {
+      "type": "enumeration",
+      "enum": ["online", "offline", "hybrid"],
+      "default": "online"
+    },
     "test_type": {
       "type": "enumeration",
-      "enum": [
-        "Practice Test",
-        "Test Series"
-      ]
+      "enum": ["Practice Test", "Test Series"]
+    },
+    "allowed_question_types": {
+      "type": "json"
+    },
+    "instructions": {
+      "type": "richtext"
     },
     "image": {
       "type": "media",
       "multiple": false,
       "required": false,
-      "allowedTypes": [
-        "images",
-        "files",
-        "videos",
-        "audios"
-      ]
+      "allowedTypes": ["images", "files", "videos", "audios"]
     },
     "year": {
       "type": "integer"
@@ -64,23 +67,13 @@
       "type": "media",
       "multiple": false,
       "required": false,
-      "allowedTypes": [
-        "images",
-        "files",
-        "videos",
-        "audios"
-      ]
+      "allowedTypes": ["images", "files", "videos", "audios"]
     },
     "instruction_booklet": {
       "type": "media",
       "multiple": false,
       "required": false,
-      "allowedTypes": [
-        "images",
-        "files",
-        "videos",
-        "audios"
-      ]
+      "allowedTypes": ["images", "files", "videos", "audios"]
     },
     "is_global": {
       "type": "boolean",

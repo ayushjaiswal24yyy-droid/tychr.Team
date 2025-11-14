@@ -1185,6 +1185,11 @@ export interface ApiAnswerAnswer extends Schema.CollectionType {
       'question-bank.question-n-answer',
       true
     >;
+    submission_type: Attribute.Enumeration<['online', 'offline_upload']> &
+      Attribute.DefaultTo<'online'>;
+    uploaded_answer_sheet: Attribute.Media<'images' | 'files'>;
+    submission_date: Attribute.DateTime;
+    time_taken: Attribute.Integer;
     evaluation_status: Attribute.Enumeration<
       ['Completed', 'Need to Evaluate']
     > &
@@ -3322,7 +3327,11 @@ export interface ApiTestSerieTestSerie extends Schema.CollectionType {
       'manyToMany',
       'api::question-bank.question-bank'
     >;
+    test_mode: Attribute.Enumeration<['online', 'offline', 'hybrid']> &
+      Attribute.DefaultTo<'online'>;
     test_type: Attribute.Enumeration<['Practice Test', 'Test Series']>;
+    allowed_question_types: Attribute.JSON;
+    instructions: Attribute.RichText;
     image: Attribute.Media<'images' | 'files' | 'videos' | 'audios'>;
     year: Attribute.Integer;
     answers: Attribute.Relation<
