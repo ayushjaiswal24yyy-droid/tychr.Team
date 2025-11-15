@@ -1180,19 +1180,17 @@ export interface ApiAnswerAnswer extends Schema.CollectionType {
       'manyToOne',
       'api::test-serie.test-serie'
     >;
+    submission_type: Attribute.Enumeration<['online', 'offline_upload']> &
+      Attribute.DefaultTo<'online'>;
     marks: Attribute.Decimal;
     question_n_answer: Attribute.Component<
       'question-bank.question-n-answer',
       true
     >;
-    submission_type: Attribute.Enumeration<['online', 'offline_upload']> &
-      Attribute.DefaultTo<'online'>;
     uploaded_answer_sheet: Attribute.Media<'images' | 'files'>;
     submission_date: Attribute.DateTime;
     time_taken: Attribute.Integer;
-    evaluation_status: Attribute.Enumeration<
-      ['Completed', 'Need to Evaluate']
-    > &
+    evaluation_status: Attribute.Enumeration<['evaluated', 'pending']> &
       Attribute.DefaultTo<'Need to Evaluate'>;
     student_feedback: Attribute.Text;
     tutor_feedback: Attribute.Text;
@@ -3343,6 +3341,7 @@ export interface ApiTestSerieTestSerie extends Schema.CollectionType {
     instruction_booklet: Attribute.Media<
       'images' | 'files' | 'videos' | 'audios'
     >;
+    test_papers: Attribute.Media<'files' | 'images', true>;
     is_global: Attribute.Boolean & Attribute.DefaultTo<false>;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;

@@ -24,6 +24,11 @@
       "target": "api::test-serie.test-serie",
       "inversedBy": "answers"
     },
+    "submission_type": {
+      "type": "enumeration",
+      "enum": ["online", "offline_upload"],
+      "default": "online"
+    },
     "marks": {
       "type": "decimal"
     },
@@ -31,11 +36,6 @@
       "type": "component",
       "repeatable": true,
       "component": "question-bank.question-n-answer"
-    },
-    "submission_type": {
-      "type": "enumeration",
-      "enum": ["online", "offline_upload"],
-      "default": "online"
     },
     "uploaded_answer_sheet": {
       "type": "media",
@@ -51,8 +51,8 @@
     },
     "evaluation_status": {
       "type": "enumeration",
-      "enum": ["Completed", "Need to Evaluate"],
-      "default": "Need to Evaluate"
+      "enum": ["evaluated", "pending"],
+      "default": "pending"
     },
     "student_feedback": {
       "type": "text"

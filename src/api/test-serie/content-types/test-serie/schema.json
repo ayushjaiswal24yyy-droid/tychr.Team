@@ -75,6 +75,11 @@
       "required": false,
       "allowedTypes": ["images", "files", "videos", "audios"]
     },
+        "test_papers": {
+      "type": "media",
+      "multiple": true,
+      "allowedTypes": ["files", "images"]
+    },
     "is_global": {
       "type": "boolean",
       "default": false
