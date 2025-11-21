@@ -8,20 +8,14 @@
     "description": ""
   },
   "options": {
-    "draftAndPublish": true
+    "draftAndPublish": false
   },
   "pluginOptions": {},
   "attributes": {
-    "marks": {
-      "type": "integer"
-    },
     "parts": {
       "type": "component",
       "repeatable": true,
       "component": "question-bank.parts"
-    },
-    "title": {
-      "type": "string"
     },
     "question": {
       "type": "richtext"
@@ -31,12 +25,6 @@
       "relation": "manyToOne",
       "target": "api::note.note",
       "inversedBy": "question_banks"
-    },
-    "test_series": {
-      "type": "relation",
-      "relation": "manyToMany",
-      "target": "api::test-serie.test-serie",
-      "mappedBy": "question_banks"
     },
     "question_type": {
       "type": "enumeration",
@@ -52,14 +40,24 @@
       "target": "api::topic.topic"
     },
     "attachment": {
+      "type": "media",
+      "multiple": true,
+      "required": false,
       "allowedTypes": [
         "images",
         "files",
         "videos",
         "audios"
-      ],
-      "type": "media",
-      "multiple": true
+      ]
+    },
+    "test_series": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::test-serie.test-serie",
+      "mappedBy": "question_banks"
+    },
+    "marks": {
+      "type": "integer"
     }
   }
 }

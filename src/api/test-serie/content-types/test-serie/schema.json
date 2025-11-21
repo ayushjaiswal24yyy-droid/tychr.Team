@@ -70,16 +70,20 @@
       "inversedBy": "test_series"
     },
     "test_papers": {
+      "type": "media",
+      "multiple": true,
+      "required": false,
       "allowedTypes": [
         "images",
         "files"
-      ],
-      "type": "media",
-      "multiple": true
+      ]
     },
     "is_global": {
       "type": "boolean",
       "default": false
+    },
+    "title": {
+      "type": "string"
     }
   }
 }
