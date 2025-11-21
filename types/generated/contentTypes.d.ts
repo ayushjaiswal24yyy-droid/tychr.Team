@@ -1175,11 +1175,6 @@ export interface ApiAnswerAnswer extends Schema.CollectionType {
       'manyToOne',
       'plugin::users-permissions.user'
     >;
-    test_series: Attribute.Relation<
-      'api::answer.answer',
-      'manyToOne',
-      'api::test-serie.test-serie'
-    >;
     submission_type: Attribute.Enumeration<['online', 'offline_upload']> &
       Attribute.DefaultTo<'online'>;
     marks: Attribute.Decimal;
@@ -1191,7 +1186,7 @@ export interface ApiAnswerAnswer extends Schema.CollectionType {
     submission_date: Attribute.DateTime;
     time_taken: Attribute.Integer;
     evaluation_status: Attribute.Enumeration<['evaluated', 'pending']> &
-      Attribute.DefaultTo<'Need to Evaluate'>;
+      Attribute.DefaultTo<'pending'>;
     student_feedback: Attribute.Text;
     tutor_feedback: Attribute.Text;
     tutor_classroom: Attribute.Relation<
@@ -1199,6 +1194,12 @@ export interface ApiAnswerAnswer extends Schema.CollectionType {
       'oneToOne',
       'api::enrollment.enrollment'
     >;
+    test_sery: Attribute.Relation<
+      'api::answer.answer',
+      'manyToOne',
+      'api::test-serie.test-serie'
+    >;
+    online_answers: Attribute.JSON;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
@@ -1951,11 +1952,6 @@ export interface ApiGradeSubjectGradeSubject extends Schema.CollectionType {
       'oneToMany',
       'api::enrollment.enrollment'
     >;
-    test_series: Attribute.Relation<
-      'api::grade-subject.grade-subject',
-      'oneToMany',
-      'api::test-serie.test-serie'
-    >;
     recorded_lectures: Attribute.Relation<
       'api::grade-subject.grade-subject',
       'oneToMany',
@@ -1981,6 +1977,11 @@ export interface ApiGradeSubjectGradeSubject extends Schema.CollectionType {
       'api::grade-subject.grade-subject',
       'oneToMany',
       'api::user-grade-plan.user-grade-plan'
+    >;
+    test_series: Attribute.Relation<
+      'api::grade-subject.grade-subject',
+      'oneToMany',
+      'api::test-serie.test-serie'
     >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
@@ -2757,22 +2758,15 @@ export interface ApiQuestionBankQuestionBank extends Schema.CollectionType {
     description: '';
   };
   options: {
-    draftAndPublish: true;
+    draftAndPublish: false;
   };
   attributes: {
-    marks: Attribute.Integer;
     parts: Attribute.Component<'question-bank.parts', true>;
-    title: Attribute.String;
     question: Attribute.RichText;
     note: Attribute.Relation<
       'api::question-bank.question-bank',
       'manyToOne',
       'api::note.note'
-    >;
-    test_series: Attribute.Relation<
-      'api::question-bank.question-bank',
-      'manyToMany',
-      'api::test-serie.test-serie'
     >;
     question_type: Attribute.Enumeration<
       ['mcq', 'single_part', 'multiple_part']
@@ -2783,9 +2777,14 @@ export interface ApiQuestionBankQuestionBank extends Schema.CollectionType {
       'api::topic.topic'
     >;
     attachment: Attribute.Media<'images' | 'files' | 'videos' | 'audios', true>;
+    test_series: Attribute.Relation<
+      'api::question-bank.question-bank',
+      'manyToMany',
+      'api::test-serie.test-serie'
+    >;
+    marks: Attribute.Integer;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
-    publishedAt: Attribute.DateTime;
     createdBy: Attribute.Relation<
       'api::question-bank.question-bank',
       'oneToOne',
@@ -3312,37 +3311,36 @@ export interface ApiTestSerieTestSerie extends Schema.CollectionType {
     draftAndPublish: false;
   };
   attributes: {
+    program_type: Attribute.Enumeration<
+      ['IB_PYP', 'IB_MYP', 'IB_DP', 'AP', 'SAT', 'ACT', 'AS_A_LEVELS', 'IGCSE']
+    >;
+    test_mode: Attribute.Enumeration<['online', 'offline', 'hybrid']> &
+      Attribute.Required &
+      Attribute.DefaultTo<'online'>;
+    test_type: Attribute.Enumeration<['Practice Test', 'Test Series']>;
+    year: Attribute.Integer;
+    test_duration: Attribute.Decimal;
+    instructions: Attribute.RichText;
+    allowed_question_types: Attribute.JSON;
     grade_subject: Attribute.Relation<
       'api::test-serie.test-serie',
       'manyToOne',
       'api::grade-subject.grade-subject'
     >;
-    title: Attribute.String;
-    test_duration: Attribute.Integer;
-    pass_mark: Attribute.Integer;
+    pass_mark: Attribute.Decimal;
     question_banks: Attribute.Relation<
       'api::test-serie.test-serie',
       'manyToMany',
       'api::question-bank.question-bank'
     >;
-    test_mode: Attribute.Enumeration<['online', 'offline', 'hybrid']> &
-      Attribute.DefaultTo<'online'>;
-    test_type: Attribute.Enumeration<['Practice Test', 'Test Series']>;
-    allowed_question_types: Attribute.JSON;
-    instructions: Attribute.RichText;
-    image: Attribute.Media<'images' | 'files' | 'videos' | 'audios'>;
-    year: Attribute.Integer;
+    test_papers: Attribute.Media<'images' | 'files', true>;
+    is_global: Attribute.Boolean & Attribute.DefaultTo<false>;
+    title: Attribute.String;
     answers: Attribute.Relation<
       'api::test-serie.test-serie',
       'oneToMany',
       'api::answer.answer'
     >;
-    resource_booklet: Attribute.Media<'images' | 'files' | 'videos' | 'audios'>;
-    instruction_booklet: Attribute.Media<
-      'images' | 'files' | 'videos' | 'audios'
-    >;
-    test_papers: Attribute.Media<'files' | 'images', true>;
-    is_global: Attribute.Boolean & Attribute.DefaultTo<false>;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     createdBy: Attribute.Relation<

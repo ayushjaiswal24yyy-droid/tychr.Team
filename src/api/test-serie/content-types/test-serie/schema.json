@@ -84,6 +84,12 @@
     },
     "title": {
       "type": "string"
+    },
+    "answers": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::answer.answer",
+      "mappedBy": "test_sery"
     }
   }
 }

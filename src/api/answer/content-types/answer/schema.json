@@ -18,15 +18,12 @@
       "target": "plugin::users-permissions.user",
       "inversedBy": "answers"
     },
-    "test_series": {
-      "type": "relation",
-      "relation": "manyToOne",
-      "target": "api::test-serie.test-serie",
-      "inversedBy": "answers"
-    },
     "submission_type": {
       "type": "enumeration",
-      "enum": ["online", "offline_upload"],
+      "enum": [
+        "online",
+        "offline_upload"
+      ],
       "default": "online"
     },
     "marks": {
@@ -41,7 +38,10 @@
       "type": "media",
       "multiple": false,
       "required": false,
-      "allowedTypes": ["images", "files"]
+      "allowedTypes": [
+        "images",
+        "files"
+      ]
     },
     "submission_date": {
       "type": "datetime"
@@ -51,7 +51,10 @@
     },
     "evaluation_status": {
       "type": "enumeration",
-      "enum": ["evaluated", "pending"],
+      "enum": [
+        "evaluated",
+        "pending"
+      ],
       "default": "pending"
     },
     "student_feedback": {
@@ -65,6 +68,15 @@
       "relation": "oneToOne",
       "target": "api::enrollment.enrollment",
       "inversedBy": "answer"
+    },
+    "test_sery": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::test-serie.test-serie",
+      "inversedBy": "answers"
+    },
+    "online_answers": {
+      "type": "json"
     }
   }
 }

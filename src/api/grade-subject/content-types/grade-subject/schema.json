@@ -56,12 +56,6 @@
       "target": "api::enrollment.enrollment",
       "mappedBy": "grade_subject"
     },
-    "test_series": {
-      "type": "relation",
-      "relation": "oneToMany",
-      "target": "api::test-serie.test-serie",
-      "mappedBy": "grade_subject"
-    },
     "recorded_lectures": {
       "type": "relation",
       "relation": "oneToMany",
@@ -94,6 +88,12 @@
       "type": "relation",
       "relation": "oneToMany",
       "target": "api::user-grade-plan.user-grade-plan",
+      "mappedBy": "grade_subject"
+    },
+    "test_series": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::test-serie.test-serie",
       "mappedBy": "grade_subject"
     }
   }
