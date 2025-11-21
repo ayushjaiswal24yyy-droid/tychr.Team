@@ -12,20 +12,56 @@
   },
   "pluginOptions": {},
   "attributes": {
+    "program_type": {
+      "type": "enumeration",
+      "enum": [
+        "IB_PYP",
+        "IB_MYP",
+        "IB_DP",
+        "AP",
+        "SAT",
+        "ACT",
+        "AS_A_LEVELS",
+        "IGCSE"
+      ]
+    },
+    "test_mode": {
+      "type": "enumeration",
+      "enum": [
+        "online",
+        "offline",
+        "hybrid"
+      ],
+      "default": "online",
+      "required": true
+    },
+    "test_type": {
+      "type": "enumeration",
+      "enum": [
+        "Practice Test",
+        "Test Series"
+      ]
+    },
+    "year": {
+      "type": "integer"
+    },
+    "test_duration": {
+      "type": "decimal"
+    },
+    "instructions": {
+      "type": "richtext"
+    },
+    "allowed_question_types": {
+      "type": "json"
+    },
     "grade_subject": {
       "type": "relation",
       "relation": "manyToOne",
       "target": "api::grade-subject.grade-subject",
       "inversedBy": "test_series"
     },
-    "title": {
-      "type": "string"
-    },
-    "test_duration": {
-      "type": "integer"
-    },
     "pass_mark": {
-      "type": "integer"
+      "type": "decimal"
     },
     "question_banks": {
       "type": "relation",
@@ -33,52 +69,13 @@
       "target": "api::question-bank.question-bank",
       "inversedBy": "test_series"
     },
-    "test_mode": {
-      "type": "enumeration",
-      "enum": ["online", "offline", "hybrid"],
-      "default": "online"
-    },
-    "test_type": {
-      "type": "enumeration",
-      "enum": ["Practice Test", "Test Series"]
-    },
-    "allowed_question_types": {
-      "type": "json"
-    },
-    "instructions": {
-      "type": "richtext"
-    },
-    "image": {
+    "test_papers": {
+      "allowedTypes": [
+        "images",
+        "files"
+      ],
       "type": "media",
-      "multiple": false,
-      "required": false,
-      "allowedTypes": ["images", "files", "videos", "audios"]
-    },
-    "year": {
-      "type": "integer"
-    },
-    "answers": {
-      "type": "relation",
-      "relation": "oneToMany",
-      "target": "api::answer.answer",
-      "mappedBy": "test_series"
-    },
-    "resource_booklet": {
-      "type": "media",
-      "multiple": false,
-      "required": false,
-      "allowedTypes": ["images", "files", "videos", "audios"]
-    },
-    "instruction_booklet": {
-      "type": "media",
-      "multiple": false,
-      "required": false,
-      "allowedTypes": ["images", "files", "videos", "audios"]
-    },
-        "test_papers": {
-      "type": "media",
-      "multiple": true,
-      "allowedTypes": ["files", "images"]
+      "multiple": true
     },
     "is_global": {
       "type": "boolean",
