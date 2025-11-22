@@ -4,51 +4,39 @@
   "info": {
     "singularName": "question-bank",
     "pluralName": "question-banks",
-    "displayName": "Question Bank",
-    "description": ""
+    "displayName": "Question Bank"
   },
   "options": {
     "draftAndPublish": false
   },
   "pluginOptions": {},
   "attributes": {
-    "parts": {
-      "type": "component",
-      "repeatable": true,
-      "component": "question-bank.parts"
-    },
     "question": {
-      "type": "richtext"
-    },
-    "note": {
-      "type": "relation",
-      "relation": "manyToOne",
-      "target": "api::note.note",
-      "inversedBy": "question_banks"
+      "type": "richtext",
+      "required": true
     },
     "question_type": {
       "type": "enumeration",
       "enum": [
         "mcq",
-        "single_part",
-        "multiple_part"
-      ]
+        "short_answer",
+        "long_answer",
+        "match_columns",
+        "drag_drop",
+        "ranking",
+        "data_interpretation",
+        "multimedia"
+      ],
+      "required": true
     },
-    "unit": {
-      "type": "relation",
-      "relation": "oneToOne",
-      "target": "api::topic.topic"
+    "marks": {
+      "type": "integer",
+      "required": true
     },
-    "attachment": {
-      "type": "media",
-      "multiple": true,
-      "required": false,
-      "allowedTypes": [
-        "images",
-        "files",
-        "videos",
-        "audios"
-      ]
+    "parts": {
+      "type": "component",
+      "repeatable": true,
+      "component": "question-bank.parts"
     },
     "test_series": {
       "type": "relation",
@@ -56,8 +44,21 @@
       "target": "api::test-serie.test-serie",
       "mappedBy": "question_banks"
     },
-    "marks": {
-      "type": "integer"
+    "unit": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::topic.topic"
+    },
+    "attachments": {
+      "type": "media",
+      "multiple": true,
+      "allowedTypes": ["images", "files", "videos", "audios"]
+    },
+    "note": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::note.note",
+      "inversedBy": "question_banks"
     }
   }
 }

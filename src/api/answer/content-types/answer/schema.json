@@ -69,7 +69,7 @@
       "target": "api::enrollment.enrollment",
       "inversedBy": "answer"
     },
-    "test_sery": {
+    "test_series": {
       "type": "relation",
       "relation": "manyToOne",
       "target": "api::test-serie.test-serie",
@@ -77,6 +77,10 @@
     },
     "online_answers": {
       "type": "json"
+    },
+    "completed": {
+      "type": "boolean",
+      "required": true
     }
   }
 }
