@@ -37,6 +37,7 @@
     "socket.io": "^4.8.1",
     "strapi-location-field-plugin": "^1.2.2",
     "strapi-math-chem": "^1.0.8",
+    "strapi-plugin-entity-relationship-chart": "^4.14.6",
     "strapi-plugin-multi-select": "^1.2.3",
     "styled-components": "5.3.3",
     "uuid": "^10.0.0"

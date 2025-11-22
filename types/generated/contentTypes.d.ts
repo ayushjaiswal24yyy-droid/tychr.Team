@@ -1194,12 +1194,13 @@ export interface ApiAnswerAnswer extends Schema.CollectionType {
       'oneToOne',
       'api::enrollment.enrollment'
     >;
-    test_sery: Attribute.Relation<
+    test_series: Attribute.Relation<
       'api::answer.answer',
       'manyToOne',
       'api::test-serie.test-serie'
     >;
     online_answers: Attribute.JSON;
+    completed: Attribute.Boolean & Attribute.Required;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
@@ -2755,34 +2756,46 @@ export interface ApiQuestionBankQuestionBank extends Schema.CollectionType {
     singularName: 'question-bank';
     pluralName: 'question-banks';
     displayName: 'Question Bank';
-    description: '';
   };
   options: {
     draftAndPublish: false;
   };
   attributes: {
-    parts: Attribute.Component<'question-bank.parts', true>;
-    question: Attribute.RichText;
-    note: Attribute.Relation<
-      'api::question-bank.question-bank',
-      'manyToOne',
-      'api::note.note'
-    >;
+    question: Attribute.RichText & Attribute.Required;
     question_type: Attribute.Enumeration<
-      ['mcq', 'single_part', 'multiple_part']
+      [
+        'mcq',
+        'short_answer',
+        'long_answer',
+        'match_columns',
+        'drag_drop',
+        'ranking',
+        'data_interpretation',
+        'multimedia'
+      ]
+    > &
+      Attribute.Required;
+    marks: Attribute.Integer & Attribute.Required;
+    parts: Attribute.Component<'question-bank.parts', true>;
+    test_series: Attribute.Relation<
+      'api::question-bank.question-bank',
+      'manyToMany',
+      'api::test-serie.test-serie'
     >;
     unit: Attribute.Relation<
       'api::question-bank.question-bank',
       'oneToOne',
       'api::topic.topic'
     >;
-    attachment: Attribute.Media<'images' | 'files' | 'videos' | 'audios', true>;
-    test_series: Attribute.Relation<
-      'api::question-bank.question-bank',
-      'manyToMany',
-      'api::test-serie.test-serie'
+    attachments: Attribute.Media<
+      'images' | 'files' | 'videos' | 'audios',
+      true
     >;
-    marks: Attribute.Integer;
+    note: Attribute.Relation<
+      'api::question-bank.question-bank',
+      'manyToOne',
+      'api::note.note'
+    >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     createdBy: Attribute.Relation<

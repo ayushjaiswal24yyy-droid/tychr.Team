@@ -2,7 +2,6 @@
   "collectionName": "components_question_bank_parts",
   "info": {
     "displayName": "Parts",
-    "icon": "feather",
     "description": ""
   },
   "options": {},
@@ -11,15 +10,21 @@
       "type": "enumeration",
       "enum": [
         "Single Correct",
+        "Multiple Correct",
         "Integer",
-        "Small Text",
-        "Large Text"
+        "Short Text",
+        "Long Text",
+        "Match Columns",
+        "Drag Drop",
+        "Ranking",
+        "Data Interpretation"
       ]
     },
     "marks": {
-      "type": "integer"
+      "type": "integer",
+      "required": true
     },
-    "one_liner": {
+    "question_text": {
       "type": "richtext"
     },
     "options": {
@@ -29,10 +34,14 @@
       "type": "richtext"
     },
     "hints": {
-      "displayName": "hints",
       "type": "component",
       "repeatable": true,
       "component": "question-bank.hints"
+    },
+    "attachments": {
+      "type": "media",
+      "multiple": true,
+      "allowedTypes": ["images", "files", "videos", "audios"]
     }
   }
 }
