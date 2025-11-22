@@ -89,7 +89,7 @@
       "type": "relation",
       "relation": "oneToMany",
       "target": "api::answer.answer",
-      "mappedBy": "test_sery"
+      "mappedBy": "test_series"
     }
   }
 }
