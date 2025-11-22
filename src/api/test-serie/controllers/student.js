@@ -54,7 +54,7 @@ module.exports = createCoreController(
             },
             populate: {
               question_banks: {
-                fields: ["id", "question_type", "title"],
+                fields: ["id", "question_type", "question", "marks"], // Removed 'title', added 'question' and 'marks'
               },
               test_papers: true,
               grade_subject: {
@@ -63,7 +63,6 @@ module.exports = createCoreController(
               answers: {
                 filters: {
                   student: user.id,
-                  completed: true,
                 },
                 fields: [
                   "id",
@@ -89,8 +88,21 @@ module.exports = createCoreController(
           const userAnswers = series.answers || [];
           const hasSubmitted = userAnswers.length > 0;
           const latestAnswer = hasSubmitted
-            ? userAnswers[userAnswers.length - 1]
+            ? userAnswers.reduce((latest, current) => {
+                if (!latest) return current;
+                return new Date(current.submission_date) >
+                  new Date(latest.submission_date)
+                  ? current
+                  : latest;
+              }, null)
             : null;
+
+          const completedAnswers = userAnswers.filter(
+            (answer) => answer.completed
+          );
+          const evaluatedAnswers = completedAnswers.filter(
+            (answer) => answer.evaluation_status === "evaluated"
+          );
 
           return {
             id: series.id,
@@ -106,7 +118,8 @@ module.exports = createCoreController(
             question_banks: series.question_banks?.map((qb) => ({
               id: qb.id,
               question_type: qb.question_type,
-              title: qb.title,
+              question: qb.question, // Using 'question' instead of 'title'
+              marks: qb.marks,
             })),
             test_papers: series.test_papers,
             grade_subject: series.grade_subject
@@ -119,6 +132,8 @@ module.exports = createCoreController(
             answer_status: {
               has_attempted: hasSubmitted,
               total_attempts: userAnswers.length,
+              completed_attempts: completedAnswers.length,
+              evaluated_attempts: evaluatedAnswers.length,
               latest_attempt: latestAnswer
                 ? {
                     id: latestAnswer.id,
@@ -145,6 +160,7 @@ module.exports = createCoreController(
 
         return { data: transformedData };
       } catch (error) {
+        console.error("Error in getStudentTestSeries:", error);
         ctx.throw(500, error.message);
       }
     },
