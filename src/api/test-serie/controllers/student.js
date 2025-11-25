@@ -54,7 +54,7 @@ module.exports = createCoreController(
             },
             populate: {
               question_banks: {
-                fields: ["id", "question_type", "question", "marks"], // Removed 'title', added 'question' and 'marks'
+                fields: ["id", "question_type", "question", "marks"],
               },
               test_papers: true,
               grade_subject: {
