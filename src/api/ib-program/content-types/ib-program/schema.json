@@ -13,16 +13,7 @@
   "pluginOptions": {},
   "attributes": {
     "name": {
-      "type": "enumeration",
-      "enum": [
-        "PYP",
-        "MYP",
-        "DP",
-        "consulting",
-        "IGCSE",
-        "AS/A Levels",
-        "SAT/ACT/AP"
-      ]
+      "type": "string"
     },
     "grade_range": {
       "type": "string"
