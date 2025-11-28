@@ -64,6 +64,13 @@
     },
     "wordpress_url": {
       "type": "string"
+    },
+    "demo_video": {
+      "allowedTypes": [
+        "videos"
+      ],
+      "type": "media",
+      "multiple": false
     }
   }
 }

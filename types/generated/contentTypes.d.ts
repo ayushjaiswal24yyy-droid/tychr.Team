@@ -2036,9 +2036,7 @@ export interface ApiIbProgramIbProgram extends Schema.CollectionType {
     draftAndPublish: false;
   };
   attributes: {
-    name: Attribute.Enumeration<
-      ['PYP', 'MYP', 'DP', 'consulting', 'IGCSE', 'AS/A Levels', 'SAT/ACT/AP']
-    >;
+    name: Attribute.String;
     grade_range: Attribute.String;
     description: Attribute.Text;
     course_plans: Attribute.Relation<
@@ -2417,6 +2415,7 @@ export interface ApiNoteNote extends Schema.CollectionType {
     attachment: Attribute.Media<'images' | 'files' | 'videos' | 'audios', true>;
     note_type: Attribute.Enumeration<['strapi', 'wordpress']>;
     wordpress_url: Attribute.String;
+    demo_video: Attribute.Media<'videos'>;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
