@@ -118,7 +118,7 @@ module.exports = createCoreController(
             question_banks: series.question_banks?.map((qb) => ({
               id: qb.id,
               question_type: qb.question_type,
-              question: qb.question, // Using 'question' instead of 'title'
+              question: qb.question,
               marks: qb.marks,
             })),
             test_papers: series.test_papers,
@@ -128,7 +128,6 @@ module.exports = createCoreController(
                   name: series.grade_subject.name,
                 }
               : null,
-            // Answer related information
             answer_status: {
               has_attempted: hasSubmitted,
               total_attempts: userAnswers.length,
@@ -161,6 +160,113 @@ module.exports = createCoreController(
         return { data: transformedData };
       } catch (error) {
         console.error("Error in getStudentTestSeries:", error);
+        ctx.throw(500, error.message);
+      }
+    },
+
+    async getStudentTestResults(ctx) {
+      try {
+        const { testSeriesId } = ctx.params;
+        const user = ctx.state.user;
+
+        if (!testSeriesId) {
+          return ctx.badRequest("Test Series ID is required");
+        }
+
+        if (!user) {
+          return ctx.unauthorized("User not authenticated");
+        }
+
+        // Get test series with all attempts and detailed question data
+        const testSeries = await strapi.entityService.findOne(
+          "api::test-serie.test-serie",
+          testSeriesId,
+          {
+            populate: {
+              question_banks: {
+                populate: {
+                  parts: true,
+                  attachments: true,
+                },
+              },
+              grade_subject: {
+                fields: ["id", "name"],
+              },
+              answers: {
+                filters: {
+                  student: user.id,
+                },
+                populate: {
+                  question_n_answer: {
+                    populate: {
+                      question: {
+                        populate: ["parts", "attachments"],
+                      },
+                    },
+                  },
+                  uploaded_answer_sheet: true,
+                },
+                sort: { submission_date: "desc" },
+              },
+            },
+          }
+        );
+
+        if (!testSeries) {
+          return ctx.notFound("Test series not found");
+        }
+
+        // Transform the data for frontend
+        const transformedData = {
+          id: testSeries.id,
+          title: testSeries.title,
+          test_type: testSeries.test_type,
+          test_mode: testSeries.test_mode,
+          test_duration: testSeries.test_duration,
+          program_type: testSeries.program_type,
+          grade_subject: testSeries.grade_subject,
+          total_questions: testSeries.question_banks?.length || 0,
+          total_marks: testSeries.question_banks?.reduce(
+            (sum, qb) => sum + (qb.marks || 0),
+            0
+          ),
+          questions: testSeries.question_banks?.map((question) => ({
+            id: question.id,
+            question: question.question,
+            question_type: question.question_type,
+            marks: question.marks,
+            parts: question.parts,
+            attachments: question.attachments,
+          })),
+          attempts: testSeries.answers?.map((attempt) => ({
+            id: attempt.id,
+            submission_date: attempt.submission_date,
+            marks: attempt.marks,
+            evaluation_status: attempt.evaluation_status,
+            time_taken: attempt.time_taken,
+            completed: attempt.completed,
+            submission_type: attempt.submission_type,
+            uploaded_answer_sheet: attempt.uploaded_answer_sheet,
+            student_feedback: attempt.student_feedback,
+            tutor_feedback: attempt.tutor_feedback,
+            question_answers: attempt.question_n_answer?.map((qna) => ({
+              question_id: qna.question?.id,
+              question: qna.question?.question,
+              question_type: qna.question?.question_type,
+              marks: qna.question?.marks,
+              student_answer: qna.answer,
+              correct_answer: qna.question?.parts?.find(
+                (part) => part.is_correct
+              )?.content,
+              evaluated_marks: qna.evaluated_marks,
+              feedback: qna.feedback,
+            })),
+          })),
+        };
+
+        return { data: transformedData };
+      } catch (error) {
+        console.error("Error in getStudentTestResults:", error);
         ctx.throw(500, error.message);
       }
     },
