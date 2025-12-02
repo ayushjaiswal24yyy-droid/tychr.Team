@@ -1175,7 +1175,7 @@ export interface ApiAnswerAnswer extends Schema.CollectionType {
       'manyToOne',
       'plugin::users-permissions.user'
     >;
-    submission_type: Attribute.Enumeration<['online', 'offline_upload']> &
+    submission_type: Attribute.Enumeration<['online', 'offline', 'hybrid']> &
       Attribute.DefaultTo<'online'>;
     marks: Attribute.Decimal;
     question_n_answer: Attribute.Component<
