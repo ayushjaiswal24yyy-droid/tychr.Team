@@ -22,7 +22,8 @@
       "type": "enumeration",
       "enum": [
         "online",
-        "offline_upload"
+        "offline",
+        "hybrid"
       ],
       "default": "online"
     },

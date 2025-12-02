@@ -1191,7 +1191,7 @@ export interface ApiAnswerAnswer extends Schema.CollectionType {
     tutor_feedback: Attribute.Text;
     tutor_classroom: Attribute.Relation<
       'api::answer.answer',
-      'oneToOne',
+      'manyToOne',
       'api::enrollment.enrollment'
     >;
     test_series: Attribute.Relation<
@@ -1857,9 +1857,9 @@ export interface ApiEnrollmentEnrollment extends Schema.CollectionType {
       'api::class.class'
     >;
     additional_resources: Attribute.Component<'classroom.resources', true>;
-    answer: Attribute.Relation<
+    answers: Attribute.Relation<
       'api::enrollment.enrollment',
-      'oneToOne',
+      'oneToMany',
       'api::answer.answer'
     >;
     createdAt: Attribute.DateTime;
