@@ -166,9 +166,9 @@
       "repeatable": true,
       "component": "classroom.resources"
     },
-    "answer": {
+    "answers": {
       "type": "relation",
-      "relation": "oneToOne",
+      "relation": "oneToMany",
       "target": "api::answer.answer",
       "mappedBy": "tutor_classroom"
     }

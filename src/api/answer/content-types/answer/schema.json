@@ -65,9 +65,9 @@
     },
     "tutor_classroom": {
       "type": "relation",
-      "relation": "oneToOne",
+      "relation": "manyToOne",
       "target": "api::enrollment.enrollment",
-      "inversedBy": "answer"
+      "inversedBy": "answers"
     },
     "test_series": {
       "type": "relation",
