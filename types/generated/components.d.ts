@@ -54,18 +54,6 @@ export interface UserExtraActivity extends Schema.Component {
   };
 }
 
-export interface TutorsWebsiteBestOnlineTutors extends Schema.Component {
-  collectionName: 'components_tutors_website_best_online_tutors';
-  info: {
-    displayName: 'best_online_tutors';
-    icon: 'code';
-    description: '';
-  };
-  attributes: {
-    title: Attribute.Text;
-  };
-}
-
 export interface UniversityTutionFees extends Schema.Component {
   collectionName: 'components_university_tution_fees';
   info: {
@@ -274,6 +262,18 @@ export interface UniversityAdditionalCosts extends Schema.Component {
     living_expense_max: Attribute.String;
     insurance_min: Attribute.String;
     insurance_max: Attribute.String;
+  };
+}
+
+export interface TutorsWebsiteBestOnlineTutors extends Schema.Component {
+  collectionName: 'components_tutors_website_best_online_tutors';
+  info: {
+    displayName: 'best_online_tutors';
+    icon: 'code';
+    description: '';
+  };
+  attributes: {
+    title: Attribute.Text;
   };
 }
 
@@ -707,7 +707,6 @@ declare module '@strapi/types' {
       'user.user-experience': UserUserExperience;
       'user.student-plan': UserStudentPlan;
       'user.extra-activity': UserExtraActivity;
-      'tutors-website.best-online-tutors': TutorsWebsiteBestOnlineTutors;
       'university.tution-fees': UniversityTutionFees;
       'university.subject-ranking': UniversitySubjectRanking;
       'university.student-application': UniversityStudentApplication;
@@ -721,6 +720,7 @@ declare module '@strapi/types' {
       'university.application-cycle-deadline': UniversityApplicationCycleDeadline;
       'university.admission-requirements': UniversityAdmissionRequirements;
       'university.additional-costs': UniversityAdditionalCosts;
+      'tutors-website.best-online-tutors': TutorsWebsiteBestOnlineTutors;
       'subtopic.qn-a': SubtopicQnA;
       'subtopic.heading': SubtopicHeading;
       'subject.refrence-books': SubjectRefrenceBooks;

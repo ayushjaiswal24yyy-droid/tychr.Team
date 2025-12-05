@@ -12,7 +12,7 @@
   },
   "pluginOptions": {},
   "attributes": {
-    "slug": {
+    "city": {
       "type": "string"
     },
     "name": {
@@ -29,6 +29,19 @@
     },
     "hero_description": {
       "type": "text"
+    },
+    "tutor_type": {
+      "type": "enumeration",
+      "enum": [
+        "IB",
+        "AP",
+        "SAT",
+        "IGCSE"
+      ]
+    },
+    "is_myp": {
+      "type": "boolean",
+      "default": false
     }
   }
 }

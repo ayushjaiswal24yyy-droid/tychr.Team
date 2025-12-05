@@ -3681,7 +3681,7 @@ export interface ApiTutorsWebsiteTutorsWebsite extends Schema.CollectionType {
     draftAndPublish: true;
   };
   attributes: {
-    slug: Attribute.String;
+    city: Attribute.String;
     name: Attribute.String;
     online_tutors_reason: Attribute.Component<
       'tutors-website.best-online-tutors',
@@ -3689,6 +3689,8 @@ export interface ApiTutorsWebsiteTutorsWebsite extends Schema.CollectionType {
     >;
     hero_title: Attribute.String;
     hero_description: Attribute.Text;
+    tutor_type: Attribute.Enumeration<['IB', 'AP', 'SAT', 'IGCSE']>;
+    is_myp: Attribute.Boolean & Attribute.DefaultTo<false>;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
