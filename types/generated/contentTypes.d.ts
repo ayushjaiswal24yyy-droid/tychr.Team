@@ -3669,6 +3669,41 @@ export interface ApiTutorPlanTutorPlan extends Schema.CollectionType {
   };
 }
 
+export interface ApiTutorsWebsiteTutorsWebsite extends Schema.CollectionType {
+  collectionName: 'tutors_websites';
+  info: {
+    singularName: 'tutors-website';
+    pluralName: 'tutors-websites';
+    displayName: 'tutors-website';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    slug: Attribute.String;
+    name: Attribute.String;
+    online_tutors_reason: Attribute.Component<
+      'tutors-website.best-online-tutors',
+      true
+    >;
+    createdAt: Attribute.DateTime;
+    updatedAt: Attribute.DateTime;
+    publishedAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<
+      'api::tutors-website.tutors-website',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+    updatedBy: Attribute.Relation<
+      'api::tutors-website.tutors-website',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+  };
+}
+
 export interface ApiUniversityUniversity extends Schema.CollectionType {
   collectionName: 'universities';
   info: {
@@ -3945,6 +3980,7 @@ declare module '@strapi/types' {
       'api::tp-applicant.tp-applicant': ApiTpApplicantTpApplicant;
       'api::transaction-out.transaction-out': ApiTransactionOutTransactionOut;
       'api::tutor-plan.tutor-plan': ApiTutorPlanTutorPlan;
+      'api::tutors-website.tutors-website': ApiTutorsWebsiteTutorsWebsite;
       'api::university.university': ApiUniversityUniversity;
       'api::user-grade-plan.user-grade-plan': ApiUserGradePlanUserGradePlan;
       'api::user-plan.user-plan': ApiUserPlanUserPlan;

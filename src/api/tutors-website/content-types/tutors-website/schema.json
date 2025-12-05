@@ -1,0 +1,27 @@
+{
+  "kind": "collectionType",
+  "collectionName": "tutors_websites",
+  "info": {
+    "singularName": "tutors-website",
+    "pluralName": "tutors-websites",
+    "displayName": "tutors-website"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "slug": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "online_tutors_reason": {
+      "displayName": "best_online_tutors",
+      "type": "component",
+      "repeatable": true,
+      "component": "tutors-website.best-online-tutors"
+    }
+  }
+}
