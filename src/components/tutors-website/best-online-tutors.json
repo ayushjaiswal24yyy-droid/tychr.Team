@@ -2,8 +2,13 @@
   "collectionName": "components_tutors_website_best_online_tutors",
   "info": {
     "displayName": "best_online_tutors",
-    "icon": "code"
+    "icon": "code",
+    "description": ""
   },
   "options": {},
-  "attributes": {}
+  "attributes": {
+    "title": {
+      "type": "text"
+    }
+  }
 }

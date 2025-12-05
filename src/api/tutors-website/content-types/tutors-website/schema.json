@@ -4,7 +4,8 @@
   "info": {
     "singularName": "tutors-website",
     "pluralName": "tutors-websites",
-    "displayName": "tutors-website"
+    "displayName": "tutors-website",
+    "description": ""
   },
   "options": {
     "draftAndPublish": true
@@ -22,6 +23,12 @@
       "type": "component",
       "repeatable": true,
       "component": "tutors-website.best-online-tutors"
+    },
+    "hero_title": {
+      "type": "string"
+    },
+    "hero_description": {
+      "type": "text"
     }
   }
 }

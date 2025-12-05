@@ -3675,6 +3675,7 @@ export interface ApiTutorsWebsiteTutorsWebsite extends Schema.CollectionType {
     singularName: 'tutors-website';
     pluralName: 'tutors-websites';
     displayName: 'tutors-website';
+    description: '';
   };
   options: {
     draftAndPublish: true;
@@ -3686,6 +3687,8 @@ export interface ApiTutorsWebsiteTutorsWebsite extends Schema.CollectionType {
       'tutors-website.best-online-tutors',
       true
     >;
+    hero_title: Attribute.String;
+    hero_description: Attribute.Text;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
