@@ -13,6 +13,15 @@ module.exports = {
     },
     {
       method: "GET",
+      path: "/test-series/practice/student/:classroomId",
+      handler: "student.getStudentPracticeSeries",
+      config: {
+        policies: [],
+        middlewares: [],
+      },
+    },
+    {
+      method: "GET",
       path: "/test-series/:testSeriesId/student-results",
       handler: "student.getStudentTestResults",
       config: {
