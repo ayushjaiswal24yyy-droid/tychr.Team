@@ -42,6 +42,9 @@
     "is_myp": {
       "type": "boolean",
       "default": false
+    },
+    "subject": {
+      "type": "string"
     }
   }
 }

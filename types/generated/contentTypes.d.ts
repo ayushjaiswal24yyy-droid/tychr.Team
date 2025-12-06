@@ -3691,6 +3691,7 @@ export interface ApiTutorsWebsiteTutorsWebsite extends Schema.CollectionType {
     hero_description: Attribute.Text;
     tutor_type: Attribute.Enumeration<['IB', 'AP', 'SAT', 'IGCSE']>;
     is_myp: Attribute.Boolean & Attribute.DefaultTo<false>;
+    subject: Attribute.String;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
