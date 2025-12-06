@@ -1,0 +1,28 @@
+{
+  "collectionName": "components_certified_tutors_certified_tutors",
+  "info": {
+    "displayName": "Certified Tutors"
+  },
+  "options": {},
+  "attributes": {
+    "profile_image": {
+      "allowedTypes": [
+        "images",
+        "files",
+        "videos",
+        "audios"
+      ],
+      "type": "media",
+      "multiple": false
+    },
+    "Name": {
+      "type": "string"
+    },
+    "role": {
+      "type": "string"
+    },
+    "years_of_experience": {
+      "type": "string"
+    }
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "collectionName": "components_how_it_works_how_it_works",
+  "info": {
+    "displayName": "How It Works"
+  },
+  "options": {},
+  "attributes": {
+    "title": {
+      "type": "string"
+    },
+    "description": {
+      "type": "text"
+    },
+    "image": {
+      "allowedTypes": [
+        "images",
+        "files",
+        "videos",
+        "audios"
+      ],
+      "type": "media",
+      "multiple": false
+    }
+  }
+}
