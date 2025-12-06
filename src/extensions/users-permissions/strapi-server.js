@@ -161,8 +161,15 @@ module.exports = (plugin) => {
   };
 
   plugin.controllers.auth.register = async (ctx) => {
-    const { email, password, username, fullName, role, isCreateByAdmin } =
-      ctx.request.body;
+    const {
+      email,
+      password,
+      username,
+      fullName,
+      role,
+      phoneNumber,
+      tutor_role,
+    } = ctx.request.body;
 
     // Check if user already exists
     const userExists = await strapi
@@ -172,22 +179,37 @@ module.exports = (plugin) => {
       return ctx.badRequest("Email is already taken");
     }
 
+    // Check if phoneNumber already exists (if provided)
+    if (phoneNumber) {
+      const phoneExists = await strapi
+        .query("plugin::users-permissions.user")
+        .findOne({ where: { phoneNumber } });
+      if (phoneExists) {
+        return ctx.badRequest("Phone number is already taken");
+      }
+    }
+
     // Validate role
-    if (
-      role !== "student" &&
-      role !== "tutor" &&
-      role !== "assistant" &&
-      role !== "third_party_user"
-    ) {
+    const allowedRoles = ["student", "tutor", "assistant", "third_party_user"];
+    if (!allowedRoles.includes(role)) {
       return ctx.badRequest(
-        'Invalid role. Must be either "student" or "tutor" or "Third Party User"'
+        'Invalid role. Must be either "student", "tutor", "assistant", or "third_party_user"'
       );
+    }
+
+    // Additional validation for tutor role
+    if (role === "tutor") {
+      if (!tutor_role || !["tutor", "buddy", "mentor"].includes(tutor_role)) {
+        return ctx.badRequest(
+          'Tutor must have a valid tutor_role: "tutor", "buddy", or "mentor"'
+        );
+      }
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
     // Generate OTP
-    const otp = Math.floor(100000 + Math.random() * 900000).toString(); // 6-digit OTP
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
 
     // Find the role ID based on the role name
     const roleEntity = await strapi
@@ -197,28 +219,35 @@ module.exports = (plugin) => {
     if (!roleEntity) {
       return ctx.badRequest(`Role "${role}" not found`);
     }
+
     const uuid = crypto.randomUUID();
-    console.log(uuid);
+
+    // Prepare user data based on schema
+    const userData = {
+      fullName,
+      email,
+      role: roleEntity.id,
+      password: hashedPassword,
+      username: username || email.toLowerCase(),
+      uuid,
+      otp,
+      confirmed: false,
+      phoneNumber: phoneNumber || null,
+    };
+
+    // Add role-specific fields
+    if (role === "tutor") {
+      userData.tutor_role = tutor_role;
+      userData.tutor_status = "Pending"; // Default status
+    }
+
     // Create user
     const user = await strapi.query("plugin::users-permissions.user").create({
-      data: {
-        fullName,
-        email,
-        role: roleEntity.id,
-        password: hashedPassword,
-        username,
-        uuid: uuid,
-        otp,
-        confirmed: false,
-        isCreateByAdmin,
-      },
+      data: userData,
     });
 
-    if (
-      role === "assistant" ||
-      role === "coach" ||
-      (role === "tutor" && isCreateByAdmin)
-    ) {
+    // Send email based on role
+    if (role === "assistant" || role === "coach") {
       await strapi
         .plugin("email")
         .service("email")
@@ -229,7 +258,14 @@ module.exports = (plugin) => {
           text: `Your account has been created. Here are your login details:\n\nEmail: ${email}\nPassword: ${password}\n\nPlease make sure to change your password after logging in.`,
         });
     } else {
-      await strapi.service("api::email.email").sendEmailBasedOnRole(email, otp);
+      try {
+        await strapi
+          .service("api::email.email")
+          .sendEmailBasedOnRole(email, otp);
+      } catch (emailError) {
+        console.error("Email sending failed:", emailError);
+        // Don't fail registration if email fails
+      }
     }
 
     // Check if type=leads query parameter is present
