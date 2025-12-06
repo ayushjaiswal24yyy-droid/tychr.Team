@@ -1231,6 +1231,8 @@ export interface ApiArticleArticle extends Schema.CollectionType {
     draftAndPublish: false;
   };
   attributes: {
+    titlew: Attribute.String;
+    cowntent: Attribute.RichText;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     createdBy: Attribute.Relation<
@@ -3641,6 +3643,47 @@ export interface ApiTutorPlanTutorPlan extends Schema.CollectionType {
   };
 }
 
+export interface ApiTutorsTutors extends Schema.SingleType {
+  collectionName: 'dynamic_tutors';
+  info: {
+    singularName: 'tutors';
+    pluralName: 'dynamic-tutors';
+    displayName: 'Dynamic tutors';
+    description: '';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    hero_description: Attribute.Text;
+    Why_Tychr: Attribute.Component<'why-tychr.why-tychr'>;
+    result_year: Attribute.String;
+    stand_out: Attribute.Component<'stand-out.stand-out'>;
+    certified_tutors: Attribute.Component<'certified-tutors.certified-tutors'>;
+    best_online_tutors: Attribute.Component<'online-tutors.best-online-tutors'>;
+    best_online_tutors_description: Attribute.Text;
+    how_it_works: Attribute.Component<'how-it-works.how-it-works'>;
+    finest_tutors: Attribute.Component<'finest-tutors.finest-tutors'>;
+    faq: Attribute.Component<'faq-section.faq'>;
+    blog: Attribute.Component<'blog-section.blog'>;
+    createdAt: Attribute.DateTime;
+    updatedAt: Attribute.DateTime;
+    publishedAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<
+      'api::tutors.tutors',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+    updatedBy: Attribute.Relation<
+      'api::tutors.tutors',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+  };
+}
+
 export interface ApiTutorsWebsiteTutorsWebsite extends Schema.CollectionType {
   collectionName: 'tutors_websites';
   info: {
@@ -3958,6 +4001,7 @@ declare module '@strapi/types' {
       'api::tp-applicant.tp-applicant': ApiTpApplicantTpApplicant;
       'api::transaction-out.transaction-out': ApiTransactionOutTransactionOut;
       'api::tutor-plan.tutor-plan': ApiTutorPlanTutorPlan;
+      'api::tutors.tutors': ApiTutorsTutors;
       'api::tutors-website.tutors-website': ApiTutorsWebsiteTutorsWebsite;
       'api::university.university': ApiUniversityUniversity;
       'api::user-grade-plan.user-grade-plan': ApiUserGradePlanUserGradePlan;

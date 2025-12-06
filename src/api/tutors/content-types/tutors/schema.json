@@ -1,0 +1,73 @@
+{
+  "kind": "singleType",
+  "collectionName": "dynamic_tutors",
+  "info": {
+    "singularName": "tutors",
+    "pluralName": "dynamic-tutors",
+    "displayName": "Dynamic tutors",
+    "description": ""
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "hero_description": {
+      "type": "text"
+    },
+    "Why_Tychr": {
+      "displayName": "why_tychr",
+      "type": "component",
+      "repeatable": false,
+      "component": "why-tychr.why-tychr"
+    },
+    "result_year": {
+      "type": "string"
+    },
+    "stand_out": {
+      "displayName": "Stand_Out",
+      "type": "component",
+      "repeatable": false,
+      "component": "stand-out.stand-out"
+    },
+    "certified_tutors": {
+      "displayName": "Certified Tutors",
+      "type": "component",
+      "repeatable": false,
+      "component": "certified-tutors.certified-tutors"
+    },
+    "best_online_tutors": {
+      "displayName": "Best Online Tutors",
+      "type": "component",
+      "repeatable": false,
+      "component": "online-tutors.best-online-tutors"
+    },
+    "best_online_tutors_description": {
+      "type": "text"
+    },
+    "how_it_works": {
+      "displayName": "How It Works",
+      "type": "component",
+      "repeatable": false,
+      "component": "how-it-works.how-it-works"
+    },
+    "finest_tutors": {
+      "displayName": "Finest Tutors",
+      "type": "component",
+      "repeatable": false,
+      "component": "finest-tutors.finest-tutors"
+    },
+    "faq": {
+      "displayName": "FAQ",
+      "type": "component",
+      "repeatable": false,
+      "component": "faq-section.faq"
+    },
+    "blog": {
+      "displayName": "Blog",
+      "type": "component",
+      "repeatable": false,
+      "component": "blog-section.blog"
+    }
+  }
+}

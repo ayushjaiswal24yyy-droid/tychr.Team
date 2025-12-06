@@ -1,0 +1,25 @@
+{
+  "collectionName": "components_online_tutors_best_online_tutors",
+  "info": {
+    "displayName": "Best Online Tutors"
+  },
+  "options": {},
+  "attributes": {
+    "title": {
+      "type": "string"
+    },
+    "subtitle": {
+      "type": "text"
+    },
+    "icon": {
+      "allowedTypes": [
+        "images",
+        "files",
+        "videos",
+        "audios"
+      ],
+      "type": "media",
+      "multiple": false
+    }
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "collectionName": "components_finest_tutors_finest_tutors",
+  "info": {
+    "displayName": "Finest Tutors"
+  },
+  "options": {},
+  "attributes": {
+    "icon": {
+      "allowedTypes": [
+        "images",
+        "files",
+        "videos",
+        "audios"
+      ],
+      "type": "media",
+      "multiple": false
+    },
+    "title": {
+      "type": "string"
+    },
+    "description": {
+      "type": "text"
+    }
+  }
+}
