@@ -68,11 +68,11 @@ module.exports = createCoreController("api::enrollment.enrollment", () => ({
       <p>Best regards,<br/>Tychr Team</p>
     `;
 
-    await strapi.plugins["email"].services.email.send({
-      to: userDetails.email,
-      subject: `Payment Required for ${classDetails.classroom_name}`,
-      html: emailContent,
-    });
+    // await strapi.plugins["email"].services.email.send({
+    //   to: userDetails.email,
+    //   subject: `Payment Required for ${classDetails.classroom_name}`,
+    //   html: emailContent,
+    // });
 
     ctx.send({ message: "Payment link email sent to the student!" });
   },

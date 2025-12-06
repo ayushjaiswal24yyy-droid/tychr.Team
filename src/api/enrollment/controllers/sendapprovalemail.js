@@ -28,14 +28,15 @@ module.exports = createCoreController("api::enrollment.enrollment", () => ({
 <p>Best regards,</p>
 <p>The Tychr Team</p>
       `;
-    await strapi.plugins["email"].services.email.send({
-      to: user.email,
-      subject:
-        status === "accepted"
-          ? "Congratulations! Your Classroom Creation Request Has Been Approved"
-          : "Update on Your Classroom Creation Request",
-      html: emailContent,
-    });
+    // await strapi.plugins["email"].services.email.send({
+    //   to: user.email,
+    //   subject:
+    //     status === "accepted"
+    //       ? "Congratulations! Your Classroom Creation Request Has Been Approved"
+    //       : "Update on Your Classroom Creation Request",
+    //   html: emailContent,
+    // });
+
     ctx.send({ message: "Approval email sent!" });
   },
 }));

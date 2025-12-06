@@ -29,11 +29,11 @@ module.exports = {
     `;
 
     try {
-      await strapi.plugins["email"].services.email.send({
-        to: email,
-        subject: "Thank You for Your Interest – Here's Your Brochure",
-        html: emailContent,
-      });
+      // await strapi.plugins["email"].services.email.send({
+      //   to: email,
+      //   subject: "Thank You for Your Interest – Here's Your Brochure",
+      //   html: emailContent,
+      // });
 
       ctx.send({ message: "Brochure email sent successfully!" });
     } catch (error) {

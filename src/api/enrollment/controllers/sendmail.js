@@ -28,11 +28,11 @@ module.exports = createCoreController("api::enrollment.enrollment", () => ({
         <p><a href="${adminLink}">Click here to review the enrollment</a></p>
 
       `;
-    await strapi.plugins["email"].services.email.send({
-      to: "it@tychr.com",
-      subject: `New Enrollment Inquiry for ${classDetails.classroom_name}`,
-      html: emailContent,
-    });
+    // await strapi.plugins["email"].services.email.send({
+    //   to: "it@tychr.com",
+    //   subject: `New Enrollment Inquiry for ${classDetails.classroom_name}`,
+    //   html: emailContent,
+    // });
     ctx.send({ message: "Enrollment inquiry email sent to admin!" });
   },
 }));

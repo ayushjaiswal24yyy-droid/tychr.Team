@@ -86,7 +86,7 @@ module.exports = createCoreController(
         );
 
         // Send notification emails
-        await sendDemoBookingEmails(demoBooking);
+        // await sendDemoBookingEmails(demoBooking);
 
         return ctx.send({
           message: "Demo booked successfully!",
@@ -219,7 +219,7 @@ module.exports = createCoreController(
         );
 
         // Send status update emails
-        await sendStatusUpdateEmail(demoBooking);
+        // await sendStatusUpdateEmail(demoBooking);
 
         return ctx.send({
           message: "Demo booking status updated successfully",
