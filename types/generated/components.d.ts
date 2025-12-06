@@ -562,6 +562,18 @@ export interface FinestTutorsFinestTutors extends Schema.Component {
   };
 }
 
+export interface FinestTutorsFinestTutors extends Schema.Component {
+  collectionName: 'components_finest_tutors_finest_tutors';
+  info: {
+    displayName: 'Finest Tutors';
+  };
+  attributes: {
+    icon: Attribute.Media<'images' | 'files' | 'videos' | 'audios'>;
+    title: Attribute.String;
+    description: Attribute.Text;
+  };
+}
+
 export interface EssaysTags extends Schema.Component {
   collectionName: 'components_essays_tags';
   info: {
@@ -658,6 +670,20 @@ export interface ExternalUsersFounder extends Schema.Component {
   };
 }
 
+export interface CyclesCycle extends Schema.Component {
+  collectionName: 'components_cycles_cycles';
+  info: {
+    displayName: 'cycle';
+    description: '';
+  };
+  attributes: {
+    name: Attribute.String;
+    early_decision: Attribute.String;
+    regular_decision: Attribute.String;
+    early_action: Attribute.String;
+  };
+}
+
 export interface CollegeRequirement extends Schema.Component {
   collectionName: 'components_college_requirements';
   info: {
@@ -692,6 +718,65 @@ export interface CollegePrograms extends Schema.Component {
       'university.student-application',
       true
     >;
+  };
+}
+
+export interface EssaysTags extends Schema.Component {
+  collectionName: 'components_essays_tags';
+  info: {
+    displayName: 'tags';
+    icon: 'check';
+  };
+  attributes: {
+    name: Attribute.String;
+  };
+}
+
+export interface EssaysEssay extends Schema.Component {
+  collectionName: 'components_essays_essays';
+  info: {
+    displayName: 'Essay';
+    description: '';
+  };
+  attributes: {
+    prompt: Attribute.String;
+    word_count: Attribute.Integer;
+    title: Attribute.String;
+  };
+}
+
+export interface ClassroomResources extends Schema.Component {
+  collectionName: 'components_classroom_resources';
+  info: {
+    displayName: 'resources';
+    icon: 'apps';
+  };
+  attributes: {
+    url: Attribute.Text;
+    attachment: Attribute.Media<'images' | 'files' | 'videos' | 'audios'>;
+  };
+}
+
+export interface ClassroomNotices extends Schema.Component {
+  collectionName: 'components_classroom_notices';
+  info: {
+    displayName: 'notices';
+  };
+  attributes: {
+    notices: Attribute.RichText;
+  };
+}
+
+export interface ClassroomDays extends Schema.Component {
+  collectionName: 'components_classroom_days';
+  info: {
+    displayName: 'days';
+  };
+  attributes: {
+    days: Attribute.Enumeration<
+      ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday']
+    >;
+    startTime: Attribute.Time;
   };
 }
 
@@ -842,21 +927,19 @@ declare module '@strapi/types' {
       'notification.demo-booking-time': NotificationDemoBookingTime;
       'online-tutors.best-online-tutors': OnlineTutorsBestOnlineTutors;
       'lectures.lecture-header': LecturesLectureHeader;
-      'faq-section.faq': FaqSectionFaq;
       'how-it-works.how-it-works': HowItWorksHowItWorks;
-      'finest-tutors.finest-tutors': FinestTutorsFinestTutors;
-      'essays.tags': EssaysTags;
-      'essays.essay': EssaysEssay;
+      'faq-section.faq': FaqSectionFaq;
+      'external-users.position': ExternalUsersPosition;
+      'external-users.org-details': ExternalUsersOrgDetails;
+      'external-users.founder': ExternalUsersFounder;
       'cycles.cycle': CyclesCycle;
       'external-users.position': ExternalUsersPosition;
       'external-users.org-details': ExternalUsersOrgDetails;
       'external-users.founder': ExternalUsersFounder;
       'college.requirement': CollegeRequirement;
       'college.programs': CollegePrograms;
-      'certified-tutors.certified-tutors': CertifiedTutorsCertifiedTutors;
-      'academics.acad-performance': AcademicsAcadPerformance;
-      'availability.time-slot': AvailabilityTimeSlot;
-      'availability.day-availability': AvailabilityDayAvailability;
+      'essays.tags': EssaysTags;
+      'essays.essay': EssaysEssay;
       'classroom.resources': ClassroomResources;
       'classroom.notices': ClassroomNotices;
       'classroom.days': ClassroomDays;
