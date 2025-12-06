@@ -1231,34 +1231,6 @@ export interface ApiArticleArticle extends Schema.CollectionType {
     draftAndPublish: false;
   };
   attributes: {
-    description: Attribute.Blocks & Attribute.Required;
-    title: Attribute.String;
-    written_by: Attribute.Relation<
-      'api::article.article',
-      'manyToOne',
-      'plugin::users-permissions.user'
-    >;
-    university: Attribute.Relation<
-      'api::article.article',
-      'manyToOne',
-      'api::university.university'
-    >;
-    subTitle: Attribute.Text;
-    readingTime: Attribute.Integer;
-    tags: Attribute.Component<'essays.tags', true>;
-    primaryImage: Attribute.Media<'images' | 'files' | 'videos' | 'audios'>;
-    videos: Attribute.Media<'images' | 'files' | 'videos' | 'audios'>;
-    thumbnail: Attribute.Media<'images' | 'files' | 'videos' | 'audios'>;
-    permalink: Attribute.String;
-    image_title: Attribute.String;
-    image_caption: Attribute.String;
-    image_desc: Attribute.String;
-    image_alt_text: Attribute.String;
-    attachment_url: Attribute.String;
-    categories: Attribute.String;
-    seo_title: Attribute.String;
-    wpseo_desc: Attribute.Text;
-    estimated_reading_time_minutes: Attribute.String;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     createdBy: Attribute.Relation<
