@@ -12,11 +12,99 @@
   },
   "pluginOptions": {},
   "attributes": {
-    "titlew": {
+    "description": {
+      "type": "blocks",
+      "required": true
+    },
+    "title": {
       "type": "string"
     },
-    "cowntent": {
-      "type": "richtext"
+    "written_by": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "plugin::users-permissions.user",
+      "inversedBy": "written_articles"
+    },
+    "university": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::university.university",
+      "inversedBy": "university_articles"
+    },
+    "subTitle": {
+      "type": "text"
+    },
+    "readingTime": {
+      "type": "integer"
+    },
+    "tags": {
+      "displayName": "tags",
+      "type": "component",
+      "repeatable": true,
+      "component": "essays.tags"
+    },
+    "primaryImage": {
+      "type": "media",
+      "multiple": false,
+      "required": false,
+      "allowedTypes": [
+        "images",
+        "files",
+        "videos",
+        "audios"
+      ]
+    },
+    "videos": {
+      "type": "media",
+      "multiple": false,
+      "required": false,
+      "allowedTypes": [
+        "images",
+        "files",
+        "videos",
+        "audios"
+      ]
+    },
+    "thumbnail": {
+      "type": "media",
+      "multiple": false,
+      "required": false,
+      "allowedTypes": [
+        "images",
+        "files",
+        "videos",
+        "audios"
+      ]
+    },
+    "permalink": {
+      "type": "string"
+    },
+    "image_title": {
+      "type": "string"
+    },
+    "image_caption": {
+      "type": "string"
+    },
+    "image_desc": {
+      "type": "string"
+    },
+    "image_alt_text": {
+      "type": "string"
+    },
+    "attachment_url": {
+      "type": "string"
+    },
+    "categories": {
+      "type": "string"
+    },
+    "seo_title": {
+      "type": "string"
+    },
+    "wpseo_desc": {
+      "type": "text"
+    },
+    "estimated_reading_time_minutes": {
+      "type": "string"
     }
   }
 }

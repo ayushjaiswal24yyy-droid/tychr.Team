@@ -27,11 +27,22 @@
     "question_text": {
       "type": "richtext"
     },
+    "original_question_text": {
+      "type": "text"
+    },
+    "content_format": {
+      "type": "enumeration",
+      "enum": ["html", "markdown", "plain_text"],
+      "default": "html"
+    },
     "options": {
       "type": "richtext"
     },
     "correct_answer": {
       "type": "richtext"
+    },
+    "original_correct_answer": {
+      "type": "text"
     },
     "hints": {
       "type": "component",

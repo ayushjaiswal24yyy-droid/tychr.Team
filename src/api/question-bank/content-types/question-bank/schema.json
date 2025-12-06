@@ -15,6 +15,11 @@
       "type": "richtext",
       "required": true
     },
+    "content_format": {
+      "type": "enumeration",
+      "enum": ["html", "markdown", "plain_text"],
+      "default": "plain_text"
+    },
     "question_type": {
       "type": "enumeration",
       "enum": [
@@ -52,12 +57,7 @@
     "attachments": {
       "type": "media",
       "multiple": true,
-      "allowedTypes": [
-        "images",
-        "files",
-        "videos",
-        "audios"
-      ]
+      "allowedTypes": ["images", "files", "videos", "audios"]
     },
     "note": {
       "type": "relation",
