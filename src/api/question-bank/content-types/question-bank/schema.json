@@ -17,8 +17,8 @@
     },
     "content_format": {
       "type": "enumeration",
-      "enum": ["html", "markdown", "plain_text"],
-      "default": "plain_text"
+      "enum": ["html", "markdown", "richtext"],
+      "default": "richtext"
     },
     "question_type": {
       "type": "enumeration",
