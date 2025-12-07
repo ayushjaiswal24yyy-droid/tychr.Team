@@ -25,7 +25,7 @@
       "required": true
     },
     "question_text": {
-      "type": "json"
+      "type": "richtext"
     },
     "original_question_text": {
       "type": "text"
@@ -36,11 +36,10 @@
       "default": "plain_text"
     },
     "options": {
-      "type": "json"
+      "type": "richtext"
     },
-
     "correct_answer": {
-      "type": "json"
+      "type": "richtext"
     },
     "original_correct_answer": {
       "type": "text"
