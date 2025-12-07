@@ -25,7 +25,7 @@
       "required": true
     },
     "question_text": {
-      "type": "richtext"
+      "type": "json"
     },
     "original_question_text": {
       "type": "text"
@@ -33,13 +33,14 @@
     "content_format": {
       "type": "enumeration",
       "enum": ["html", "markdown", "plain_text"],
-      "default": "html"
+      "default": "plain_text"
     },
     "options": {
-      "type": "richtext"
+      "type": "json"
     },
+
     "correct_answer": {
-      "type": "richtext"
+      "type": "json"
     },
     "original_correct_answer": {
       "type": "text"
