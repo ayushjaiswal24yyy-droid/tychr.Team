@@ -3684,16 +3684,22 @@ export interface ApiTutorsTutors extends Schema.SingleType {
   };
   attributes: {
     hero_description: Attribute.Text;
-    Why_Tychr: Attribute.Component<'why-tychr.why-tychr'>;
+    Why_Tychr: Attribute.Component<'why-tychr.why-tychr', true>;
     result_year: Attribute.String;
-    stand_out: Attribute.Component<'stand-out.stand-out'>;
-    certified_tutors: Attribute.Component<'certified-tutors.certified-tutors'>;
-    best_online_tutors: Attribute.Component<'online-tutors.best-online-tutors'>;
+    stand_out: Attribute.Component<'stand-out.stand-out', true>;
+    certified_tutors: Attribute.Component<
+      'certified-tutors.certified-tutors',
+      true
+    >;
+    best_online_tutors: Attribute.Component<
+      'online-tutors.best-online-tutors',
+      true
+    >;
     best_online_tutors_description: Attribute.Text;
-    how_it_works: Attribute.Component<'how-it-works.how-it-works'>;
-    finest_tutors: Attribute.Component<'finest-tutors.finest-tutors'>;
-    faq: Attribute.Component<'faq-section.faq'>;
-    blog: Attribute.Component<'blog-section.blog'>;
+    how_it_works: Attribute.Component<'how-it-works.how-it-works', true>;
+    finest_tutors: Attribute.Component<'finest-tutors.finest-tutors', true>;
+    faq: Attribute.Component<'faq-section.faq', true>;
+    blog: Attribute.Component<'blog-section.blog', true>;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
