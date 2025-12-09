@@ -18,12 +18,6 @@
     "name": {
       "type": "string"
     },
-    "online_tutors_reason": {
-      "displayName": "best_online_tutors",
-      "type": "component",
-      "repeatable": true,
-      "component": "tutors-website.best-online-tutors"
-    },
     "hero_title": {
       "type": "string"
     },

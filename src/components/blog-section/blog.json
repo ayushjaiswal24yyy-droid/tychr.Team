@@ -1,7 +1,8 @@
 {
   "collectionName": "components_blog_section_blogs",
   "info": {
-    "displayName": "Blog"
+    "displayName": "Blog",
+    "description": ""
   },
   "options": {},
   "attributes": {
@@ -19,6 +20,12 @@
     },
     "description": {
       "type": "text"
+    },
+    "bgcolor": {
+      "type": "string"
+    },
+    "category": {
+      "type": "string"
     }
   }
 }

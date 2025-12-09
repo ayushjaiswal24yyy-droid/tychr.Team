@@ -30,20 +30,11 @@
       "repeatable": true,
       "component": "stand-out.stand-out"
     },
-    "certified_tutors": {
+    "tutors": {
       "displayName": "Certified Tutors",
       "type": "component",
       "repeatable": true,
       "component": "certified-tutors.certified-tutors"
-    },
-    "best_online_tutors": {
-      "displayName": "Best Online Tutors",
-      "type": "component",
-      "repeatable": true,
-      "component": "online-tutors.best-online-tutors"
-    },
-    "best_online_tutors_description": {
-      "type": "text"
     },
     "how_it_works": {
       "displayName": "How It Works",
@@ -68,6 +59,39 @@
       "type": "component",
       "repeatable": true,
       "component": "blog-section.blog"
+    },
+    "stats": {
+      "displayName": "Stats",
+      "type": "component",
+      "repeatable": true,
+      "component": "stats.stats"
+    },
+    "achievers": {
+      "displayName": "Achiever",
+      "type": "component",
+      "repeatable": true,
+      "component": "achievers.achiever"
+    },
+    "results_data": {
+      "displayName": "Results_Data",
+      "type": "component",
+      "repeatable": true,
+      "component": "results-data.results-data"
+    },
+    "best_tutors_heading": {
+      "type": "string"
+    },
+    "best_tutors_description": {
+      "type": "text"
+    },
+    "best_tutors_data": {
+      "displayName": "best_tutors_data",
+      "type": "component",
+      "repeatable": false,
+      "component": "best-tutors-data.best-tutors-data"
+    },
+    "why_choose_heading": {
+      "type": "string"
     }
   }
 }
