@@ -3697,8 +3697,12 @@ export interface ApiTutorsTutors extends Schema.SingleType {
     results_data: Attribute.Component<'results-data.results-data', true>;
     best_tutors_heading: Attribute.String;
     best_tutors_description: Attribute.Text;
-    best_tutors_data: Attribute.Component<'best-tutors-data.best-tutors-data'>;
+    best_tutors_data: Attribute.Component<
+      'best-tutors-data.best-tutors-data',
+      true
+    >;
     why_choose_heading: Attribute.String;
+    WhyChooseData: Attribute.Component<'why-choose-data.why-choose-data', true>;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
@@ -3736,6 +3740,8 @@ export interface ApiTutorsWebsiteTutorsWebsite extends Schema.CollectionType {
     tutor_type: Attribute.Enumeration<['IB', 'AP', 'SAT', 'IGCSE']>;
     is_myp: Attribute.Boolean & Attribute.DefaultTo<false>;
     subject: Attribute.String;
+    ap_future: Attribute.Component<'ap-future.ap-future'>;
+    ap_colleges: Attribute.Component<'ap-colleges.ap-colleges', true>;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;

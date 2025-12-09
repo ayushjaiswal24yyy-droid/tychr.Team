@@ -39,6 +39,17 @@
     },
     "subject": {
       "type": "string"
+    },
+    "ap_future": {
+      "type": "component",
+      "repeatable": false,
+      "component": "ap-future.ap-future"
+    },
+    "ap_colleges": {
+      "displayName": "AP Colleges",
+      "type": "component",
+      "repeatable": true,
+      "component": "ap-colleges.ap-colleges"
     }
   }
 }

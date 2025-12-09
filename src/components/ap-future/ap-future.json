@@ -1,0 +1,15 @@
+{
+  "collectionName": "components_ap_future_ap_futures",
+  "info": {
+    "displayName": "AP Future"
+  },
+  "options": {},
+  "attributes": {
+    "future_category": {
+      "displayName": "Future Category",
+      "type": "component",
+      "repeatable": true,
+      "component": "futute-category.future-category"
+    }
+  }
+}

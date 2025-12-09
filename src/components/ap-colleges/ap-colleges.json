@@ -1,0 +1,21 @@
+{
+  "collectionName": "components_ap_colleges_ap_colleges",
+  "info": {
+    "displayName": "AP Colleges"
+  },
+  "options": {},
+  "attributes": {
+    "heading": {
+      "type": "string"
+    },
+    "subheading": {
+      "type": "text"
+    },
+    "colleges": {
+      "displayName": "colleges",
+      "type": "component",
+      "repeatable": true,
+      "component": "colleges.colleges"
+    }
+  }
+}

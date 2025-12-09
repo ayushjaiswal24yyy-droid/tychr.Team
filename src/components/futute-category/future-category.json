@@ -1,0 +1,22 @@
+{
+  "collectionName": "components_futute_category_future_categories",
+  "info": {
+    "displayName": "Future Category",
+    "description": ""
+  },
+  "options": {},
+  "attributes": {
+    "title": {
+      "type": "string"
+    },
+    "items": {
+      "type": "blocks"
+    },
+    "heading": {
+      "type": "string"
+    },
+    "subheading": {
+      "type": "text"
+    }
+  }
+}
