@@ -1,0 +1,25 @@
+{
+  "collectionName": "components_best_tutors_data_best_tutors_data",
+  "info": {
+    "displayName": "best_tutors_data"
+  },
+  "options": {},
+  "attributes": {
+    "icon": {
+      "allowedTypes": [
+        "images",
+        "files",
+        "videos",
+        "audios"
+      ],
+      "type": "media",
+      "multiple": false
+    },
+    "title": {
+      "type": "string"
+    },
+    "description": {
+      "type": "text"
+    }
+  }
+}

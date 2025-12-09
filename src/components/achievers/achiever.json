@@ -1,0 +1,22 @@
+{
+  "collectionName": "components_achievers_achievers",
+  "info": {
+    "displayName": "Achiever"
+  },
+  "options": {},
+  "attributes": {
+    "src": {
+      "allowedTypes": [
+        "images",
+        "files",
+        "videos",
+        "audios"
+      ],
+      "type": "media",
+      "multiple": false
+    },
+    "alt": {
+      "type": "string"
+    }
+  }
+}

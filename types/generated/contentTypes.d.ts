@@ -3687,19 +3687,18 @@ export interface ApiTutorsTutors extends Schema.SingleType {
     Why_Tychr: Attribute.Component<'why-tychr.why-tychr', true>;
     result_year: Attribute.String;
     stand_out: Attribute.Component<'stand-out.stand-out', true>;
-    certified_tutors: Attribute.Component<
-      'certified-tutors.certified-tutors',
-      true
-    >;
-    best_online_tutors: Attribute.Component<
-      'online-tutors.best-online-tutors',
-      true
-    >;
-    best_online_tutors_description: Attribute.Text;
+    tutors: Attribute.Component<'certified-tutors.certified-tutors', true>;
     how_it_works: Attribute.Component<'how-it-works.how-it-works', true>;
     finest_tutors: Attribute.Component<'finest-tutors.finest-tutors', true>;
     faq: Attribute.Component<'faq-section.faq', true>;
     blog: Attribute.Component<'blog-section.blog', true>;
+    stats: Attribute.Component<'stats.stats', true>;
+    achievers: Attribute.Component<'achievers.achiever', true>;
+    results_data: Attribute.Component<'results-data.results-data', true>;
+    best_tutors_heading: Attribute.String;
+    best_tutors_description: Attribute.Text;
+    best_tutors_data: Attribute.Component<'best-tutors-data.best-tutors-data'>;
+    why_choose_heading: Attribute.String;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
@@ -3732,10 +3731,6 @@ export interface ApiTutorsWebsiteTutorsWebsite extends Schema.CollectionType {
   attributes: {
     city: Attribute.String;
     name: Attribute.String;
-    online_tutors_reason: Attribute.Component<
-      'tutors-website.best-online-tutors',
-      true
-    >;
     hero_title: Attribute.String;
     hero_description: Attribute.Text;
     tutor_type: Attribute.Enumeration<['IB', 'AP', 'SAT', 'IGCSE']>;
