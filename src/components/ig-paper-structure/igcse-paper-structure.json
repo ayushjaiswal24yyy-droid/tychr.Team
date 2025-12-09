@@ -1,0 +1,21 @@
+{
+  "collectionName": "components_ig_paper_structure_igcse_paper_structures",
+  "info": {
+    "displayName": "IGCSE Paper Structure"
+  },
+  "options": {},
+  "attributes": {
+    "description": {
+      "type": "text"
+    },
+    "requirement": {
+      "type": "string"
+    },
+    "prediction": {
+      "type": "string"
+    },
+    "number": {
+      "type": "integer"
+    }
+  }
+}

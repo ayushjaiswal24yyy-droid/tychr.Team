@@ -1,20 +1,11 @@
 {
   "collectionName": "components_colleges_colleges",
   "info": {
-    "displayName": "colleges"
+    "displayName": "colleges",
+    "description": ""
   },
   "options": {},
   "attributes": {
-    "image": {
-      "allowedTypes": [
-        "images",
-        "files",
-        "videos",
-        "audios"
-      ],
-      "type": "media",
-      "multiple": true
-    },
     "name": {
       "type": "string"
     },

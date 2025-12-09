@@ -1610,6 +1610,7 @@ export interface ApiDemoBookingDemoBooking extends Schema.CollectionType {
     singularName: 'demo-booking';
     pluralName: 'demo-bookings';
     displayName: 'Demo_Booking';
+    description: 'This content type is used to manage demo bookings made by students. It allows students to book demo sessions with tutors, providing details such as booking date, status, duration, and notes. The booking can be linked to a specific enrollment and grade subject.';
   };
   options: {
     draftAndPublish: false;
@@ -1672,7 +1673,7 @@ export interface ApiDemoVideoDemoVideo extends Schema.CollectionType {
     singularName: 'demo-video';
     pluralName: 'demo-videos';
     displayName: 'Turor: Demo Video';
-    description: '';
+    description: ' This content type is used to manage demo videos created by tutors. It allows tutors to upload videos related to specific topics, providing students with additional resources for learning.';
   };
   options: {
     draftAndPublish: true;
@@ -1725,7 +1726,7 @@ export interface ApiDoubtSectionDoubtSection extends Schema.CollectionType {
     singularName: 'doubt-section';
     pluralName: 'doubt-sections';
     displayName: 'Student: Doubt Section';
-    description: '';
+    description: 'This content type is used to manage student doubts related to topics. It allows students to ask questions, attach relevant files, and link their doubts to specific topics for better organization and tracking.';
   };
   options: {
     draftAndPublish: true;
@@ -3741,7 +3742,10 @@ export interface ApiTutorsWebsiteTutorsWebsite extends Schema.CollectionType {
     is_myp: Attribute.Boolean & Attribute.DefaultTo<false>;
     subject: Attribute.String;
     ap_future: Attribute.Component<'ap-future.ap-future'>;
-    ap_colleges: Attribute.Component<'ap-colleges.ap-colleges', true>;
+    ap_top_colleges: Attribute.Component<'ap-colleges.ap-colleges', true>;
+    top_colleges: Attribute.Component<'top-colleges.top-colleges', true>;
+    ig_paper_structure: Attribute.Component<'ig-paper-structure.igcse-paper-structure'>;
+    semesters: Attribute.Component<'semesters.semesters', true>;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;

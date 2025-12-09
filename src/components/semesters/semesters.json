@@ -1,0 +1,18 @@
+{
+  "collectionName": "components_semesters_semesters",
+  "info": {
+    "displayName": "semesters"
+  },
+  "options": {},
+  "attributes": {
+    "label": {
+      "type": "string"
+    },
+    "steps": {
+      "displayName": "steps",
+      "type": "component",
+      "repeatable": true,
+      "component": "steps.steps"
+    }
+  }
+}

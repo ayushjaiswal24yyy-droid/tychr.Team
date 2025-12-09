@@ -11,12 +11,6 @@
     },
     "items": {
       "type": "blocks"
-    },
-    "heading": {
-      "type": "string"
-    },
-    "subheading": {
-      "type": "text"
     }
   }
 }
