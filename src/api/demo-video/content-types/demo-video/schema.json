@@ -5,7 +5,7 @@
     "singularName": "demo-video",
     "pluralName": "demo-videos",
     "displayName": "Turor: Demo Video",
-    "description": ""
+    "description": " This content type is used to manage demo videos created by tutors. It allows tutors to upload videos related to specific topics, providing students with additional resources for learning."
   },
   "options": {
     "draftAndPublish": true

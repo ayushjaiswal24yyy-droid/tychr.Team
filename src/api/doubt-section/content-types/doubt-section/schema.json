@@ -5,7 +5,7 @@
     "singularName": "doubt-section",
     "pluralName": "doubt-sections",
     "displayName": "Student: Doubt Section",
-    "description": ""
+    "description": "This content type is used to manage student doubts related to topics. It allows students to ask questions, attach relevant files, and link their doubts to specific topics for better organization and tracking."
   },
   "options": {
     "draftAndPublish": true

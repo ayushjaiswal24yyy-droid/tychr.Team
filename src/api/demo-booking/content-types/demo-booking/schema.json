@@ -4,7 +4,8 @@
   "info": {
     "singularName": "demo-booking",
     "pluralName": "demo-bookings",
-    "displayName": "Demo_Booking"
+    "displayName": "Demo_Booking",
+    "description": "This content type is used to manage demo bookings made by students. It allows students to book demo sessions with tutors, providing details such as booking date, status, duration, and notes. The booking can be linked to a specific enrollment and grade subject."
   },
   "options": {
     "draftAndPublish": false
