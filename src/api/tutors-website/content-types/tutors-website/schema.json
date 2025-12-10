@@ -39,6 +39,35 @@
     },
     "subject": {
       "type": "string"
+    },
+    "ap_future": {
+      "type": "component",
+      "repeatable": false,
+      "component": "ap-future.ap-future"
+    },
+    "ap_top_colleges": {
+      "displayName": "AP Colleges",
+      "type": "component",
+      "repeatable": false,
+      "component": "ap-colleges.ap-colleges"
+    },
+    "top_colleges": {
+      "displayName": "top_colleges",
+      "type": "component",
+      "repeatable": true,
+      "component": "top-colleges.top-colleges"
+    },
+    "ig_paper_structure": {
+      "displayName": "IGCSE Paper Structure",
+      "type": "component",
+      "repeatable": false,
+      "component": "ig-paper-structure.igcse-paper-structure"
+    },
+    "semesters": {
+      "displayName": "semesters",
+      "type": "component",
+      "repeatable": true,
+      "component": "semesters.semesters"
     }
   }
 }

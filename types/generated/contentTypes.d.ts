@@ -1245,10 +1245,6 @@ export interface ApiArticleArticle extends Schema.CollectionType {
     >;
     subTitle: Attribute.Text;
     readingTime: Attribute.Integer;
-    tags: Attribute.Component<'essays.tags', true>;
-    primaryImage: Attribute.Media<'images' | 'files' | 'videos' | 'audios'>;
-    videos: Attribute.Media<'images' | 'files' | 'videos' | 'audios'>;
-    thumbnail: Attribute.Media<'images' | 'files' | 'videos' | 'audios'>;
     permalink: Attribute.String;
     image_title: Attribute.String;
     image_caption: Attribute.String;
@@ -1259,6 +1255,11 @@ export interface ApiArticleArticle extends Schema.CollectionType {
     seo_title: Attribute.String;
     wpseo_desc: Attribute.Text;
     estimated_reading_time_minutes: Attribute.String;
+    primaryImage: Attribute.JSON;
+    videos: Attribute.JSON;
+    thumbnail: Attribute.String;
+    tags: Attribute.JSON;
+    date: Attribute.Date;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     createdBy: Attribute.Relation<
@@ -3698,8 +3699,12 @@ export interface ApiTutorsTutors extends Schema.SingleType {
     results_data: Attribute.Component<'results-data.results-data', true>;
     best_tutors_heading: Attribute.String;
     best_tutors_description: Attribute.Text;
-    best_tutors_data: Attribute.Component<'best-tutors-data.best-tutors-data'>;
+    best_tutors_data: Attribute.Component<
+      'best-tutors-data.best-tutors-data',
+      true
+    >;
     why_choose_heading: Attribute.String;
+    WhyChooseData: Attribute.Component<'why-choose-data.why-choose-data', true>;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
@@ -3737,6 +3742,11 @@ export interface ApiTutorsWebsiteTutorsWebsite extends Schema.CollectionType {
     tutor_type: Attribute.Enumeration<['IB', 'AP', 'SAT', 'IGCSE']>;
     is_myp: Attribute.Boolean & Attribute.DefaultTo<false>;
     subject: Attribute.String;
+    ap_future: Attribute.Component<'ap-future.ap-future'>;
+    ap_top_colleges: Attribute.Component<'ap-colleges.ap-colleges'>;
+    top_colleges: Attribute.Component<'top-colleges.top-colleges', true>;
+    ig_paper_structure: Attribute.Component<'ig-paper-structure.igcse-paper-structure'>;
+    semesters: Attribute.Component<'semesters.semesters', true>;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;

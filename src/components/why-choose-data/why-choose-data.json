@@ -1,0 +1,12 @@
+{
+  "collectionName": "components_why_choose_data_why_choose_data",
+  "info": {
+    "displayName": "why_choose_data"
+  },
+  "options": {},
+  "attributes": {
+    "string": {
+      "type": "text"
+    }
+  }
+}

@@ -87,11 +87,17 @@
     "best_tutors_data": {
       "displayName": "best_tutors_data",
       "type": "component",
-      "repeatable": false,
+      "repeatable": true,
       "component": "best-tutors-data.best-tutors-data"
     },
     "why_choose_heading": {
       "type": "string"
+    },
+    "WhyChooseData": {
+      "displayName": "why_choose_data",
+      "type": "component",
+      "repeatable": true,
+      "component": "why-choose-data.why-choose-data"
     }
   }
 }

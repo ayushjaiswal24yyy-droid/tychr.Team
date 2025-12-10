@@ -1,0 +1,16 @@
+{
+  "collectionName": "components_colleges_colleges",
+  "info": {
+    "displayName": "colleges",
+    "description": ""
+  },
+  "options": {},
+  "attributes": {
+    "name": {
+      "type": "string"
+    },
+    "description": {
+      "type": "text"
+    }
+  }
+}
