@@ -3742,7 +3742,7 @@ export interface ApiTutorsWebsiteTutorsWebsite extends Schema.CollectionType {
     is_myp: Attribute.Boolean & Attribute.DefaultTo<false>;
     subject: Attribute.String;
     ap_future: Attribute.Component<'ap-future.ap-future'>;
-    ap_top_colleges: Attribute.Component<'ap-colleges.ap-colleges', true>;
+    ap_top_colleges: Attribute.Component<'ap-colleges.ap-colleges'>;
     top_colleges: Attribute.Component<'top-colleges.top-colleges', true>;
     ig_paper_structure: Attribute.Component<'ig-paper-structure.igcse-paper-structure'>;
     semesters: Attribute.Component<'semesters.semesters', true>;

@@ -48,7 +48,7 @@
     "ap_top_colleges": {
       "displayName": "AP Colleges",
       "type": "component",
-      "repeatable": true,
+      "repeatable": false,
       "component": "ap-colleges.ap-colleges"
     },
     "top_colleges": {
