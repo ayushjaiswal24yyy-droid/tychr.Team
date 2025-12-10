@@ -1245,10 +1245,6 @@ export interface ApiArticleArticle extends Schema.CollectionType {
     >;
     subTitle: Attribute.Text;
     readingTime: Attribute.Integer;
-    tags: Attribute.Component<'essays.tags', true>;
-    primaryImage: Attribute.Media<'images' | 'files' | 'videos' | 'audios'>;
-    videos: Attribute.Media<'images' | 'files' | 'videos' | 'audios'>;
-    thumbnail: Attribute.Media<'images' | 'files' | 'videos' | 'audios'>;
     permalink: Attribute.String;
     image_title: Attribute.String;
     image_caption: Attribute.String;
@@ -1259,6 +1255,11 @@ export interface ApiArticleArticle extends Schema.CollectionType {
     seo_title: Attribute.String;
     wpseo_desc: Attribute.Text;
     estimated_reading_time_minutes: Attribute.String;
+    primaryImage: Attribute.JSON;
+    videos: Attribute.JSON;
+    thumbnail: Attribute.String;
+    tags: Attribute.JSON;
+    date: Attribute.Date;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     createdBy: Attribute.Relation<

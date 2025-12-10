@@ -37,45 +37,6 @@
     "readingTime": {
       "type": "integer"
     },
-    "tags": {
-      "displayName": "tags",
-      "type": "component",
-      "repeatable": true,
-      "component": "essays.tags"
-    },
-    "primaryImage": {
-      "type": "media",
-      "multiple": false,
-      "required": false,
-      "allowedTypes": [
-        "images",
-        "files",
-        "videos",
-        "audios"
-      ]
-    },
-    "videos": {
-      "type": "media",
-      "multiple": false,
-      "required": false,
-      "allowedTypes": [
-        "images",
-        "files",
-        "videos",
-        "audios"
-      ]
-    },
-    "thumbnail": {
-      "type": "media",
-      "multiple": false,
-      "required": false,
-      "allowedTypes": [
-        "images",
-        "files",
-        "videos",
-        "audios"
-      ]
-    },
     "permalink": {
       "type": "string"
     },
@@ -105,6 +66,21 @@
     },
     "estimated_reading_time_minutes": {
       "type": "string"
+    },
+    "primaryImage": {
+      "type": "json"
+    },
+    "videos": {
+      "type": "json"
+    },
+    "thumbnail": {
+      "type": "string"
+    },
+    "tags": {
+      "type": "json"
+    },
+    "date": {
+      "type": "date"
     }
   }
 }
