@@ -9,80 +9,88 @@ module.exports = {
         return ctx.badRequest("studentId and classroomId are required");
       }
 
+      // OPTIMIZED: Get only test series (not practice tests) with single query
+      const answers = await strapi.entityService.findMany(
+        "api::answer.answer",
+        {
+          filters: {
+            student: studentId,
+            tutor_classroom: classroomId,
+            test_series: {
+              test_type: "Test Series", // ✅ FILTER: Only Test Series
+            },
+          },
+          populate: {
+            test_series: {
+              fields: ["id", "title", "test_type"],
+            },
+          },
+          sort: "submission_date:asc",
+        }
+      );
+
+      if (!answers.length) {
+        return {
+          yearlyData: [],
+          overallStats: {
+            totalYears: 0,
+            overallAverage: 0,
+            totalTests: 0,
+            improvementRate: "0%",
+            currentRank: "N/A",
+          },
+        };
+      }
+
       // Get enrollment date
       const enrollment = await strapi.entityService.findOne(
         "api::enrollment.enrollment",
         classroomId,
-        {
-          populate: {
-            students: {
-              filters: { id: studentId },
-            },
-            grade_subject: {
-              populate: {
-                test_series: {
-                  populate: {
-                    answers: {
-                      filters: { student: studentId },
-                      sort: "submission_date:asc",
-                    },
-                  },
-                },
-              },
-            },
-          },
-        }
+        { fields: ["enrollment_date"] }
       );
 
-      if (!enrollment) {
-        return ctx.notFound("Classroom not found");
-      }
-
-      const enrollmentYear = new Date(enrollment.enrollment_date).getFullYear();
+      const enrollmentYear = new Date(
+        enrollment?.enrollment_date || new Date()
+      ).getFullYear();
       const currentYear = new Date().getFullYear();
 
-      const yearlyData = [];
+      // Get first attempts only
+      const firstAttempts = this.getFirstAttempts(answers);
 
-      // Process each year
-      for (let year = enrollmentYear; year <= currentYear; year++) {
-        const yearStart = new Date(year, 0, 1);
-        const yearEnd = new Date(year, 11, 31);
+      // Group by year
+      const yearlyMap = {};
 
-        const yearAnswers = [];
+      firstAttempts.forEach((attempt) => {
+        if (!attempt.submission_date) return;
 
-        // Get first attempts for each test series in this year
-        if (enrollment.grade_subject?.test_series) {
-          enrollment.grade_subject.test_series.forEach((test) => {
-            const firstAttempt = test.answers?.find((attempt) => {
-              if (!attempt.submission_date) return false;
-              const attemptDate = new Date(attempt.submission_date);
-              return attemptDate >= yearStart && attemptDate <= yearEnd;
-            });
-
-            if (firstAttempt) {
-              yearAnswers.push({
-                testId: test.id,
-                testTitle: test.title,
-                score: firstAttempt.marks,
-                date: firstAttempt.submission_date,
-                isFirstAttempt: true,
-              });
-            }
-          });
+        const year = new Date(attempt.submission_date).getFullYear();
+        if (!yearlyMap[year]) {
+          yearlyMap[year] = {
+            scores: [],
+            tests: [],
+          };
         }
+        yearlyMap[year].scores.push(parseFloat(attempt.marks || 0));
+        yearlyMap[year].tests.push({
+          testId: attempt.test_series?.id,
+          testTitle: attempt.test_series?.title || "Unknown Test",
+          score: attempt.marks,
+          date: attempt.submission_date,
+        });
+      });
 
-        if (yearAnswers.length > 0) {
-          const scores = yearAnswers.map((a) => parseFloat(a.score || 0));
+      // Build yearly data array
+      const yearlyData = [];
+      for (let year = enrollmentYear; year <= currentYear; year++) {
+        if (yearlyMap[year]) {
+          const scores = yearlyMap[year].scores;
           yearlyData.push({
             year,
-            totalTests: yearAnswers.length,
-            averageScore:
-              scores.length > 0
-                ? scores.reduce((a, b) => a + b, 0) / scores.length
-                : 0,
-            highestScore: scores.length > 0 ? Math.max(...scores) : 0,
-            lowestScore: scores.length > 0 ? Math.min(...scores) : 0,
-            testsTaken: yearAnswers,
+            totalTests: scores.length,
+            averageScore: scores.reduce((a, b) => a + b, 0) / scores.length,
+            highestScore: Math.max(...scores),
+            lowestScore: Math.min(...scores),
+            testsTaken: yearlyMap[year].tests,
           });
         }
       }
@@ -118,97 +126,121 @@ module.exports = {
         return ctx.badRequest("studentId and classroomId are required");
       }
 
-      // Get all answers for this student and classroom
+      // OPTIMIZED: Get only test series answers with minimal data
       const answers = await strapi.entityService.findMany(
         "api::answer.answer",
         {
           filters: {
             student: studentId,
             tutor_classroom: classroomId,
+            test_series: {
+              test_type: "Test Series", // ✅ FILTER: Only Test Series
+            },
           },
           populate: {
             test_series: {
               populate: {
                 question_banks: {
                   populate: {
-                    unit: true,
+                    unit: {
+                      fields: ["id", "name"],
+                    },
                   },
+                  fields: ["id", "marks"],
                 },
               },
+              fields: ["id"],
             },
-            question_n_answer: true,
           },
           sort: "submission_date:asc",
         }
       );
 
-      // Group by test series, take first attempt
+      // Get first attempts only
       const firstAttempts = this.getFirstAttempts(answers);
+
+      // OPTIMIZED: Get question_n_answer in batch
+      const answerIds = firstAttempts.map((a) => a.id);
+      const answersWithQNA = await strapi.entityService.findMany(
+        "api::answer.answer",
+        {
+          filters: {
+            id: { $in: answerIds },
+          },
+          fields: ["id"],
+          populate: {
+            question_n_answer: true,
+          },
+        }
+      );
+
+      // Create map for quick lookup
+      const qnaMap = {};
+      answersWithQNA.forEach((ans) => {
+        qnaMap[ans.id] = ans.question_n_answer || [];
+      });
 
       // Analyze unit-wise performance
       const unitPerformance = {};
 
       firstAttempts.forEach((attempt) => {
-        if (attempt.question_n_answer && attempt.test_series?.question_banks) {
-          attempt.question_n_answer.forEach((qna, index) => {
-            const question = attempt.test_series.question_banks[index];
-            if (question?.unit) {
-              const unitId = question.unit.id;
-              if (!unitPerformance[unitId]) {
-                unitPerformance[unitId] = {
-                  unitId,
-                  unitName: question.unit.name,
-                  totalQuestions: 0,
-                  correctAnswers: 0,
-                  totalMarks: 0,
-                  obtainedMarks: 0,
-                  questions: [],
-                };
-              }
+        const questionNAnswer = qnaMap[attempt.id] || [];
+        const questionBanks = attempt.test_series?.question_banks || [];
 
-              unitPerformance[unitId].totalQuestions++;
-              unitPerformance[unitId].totalMarks += question.marks || 0;
-
-              // Check if answer is correct
-              const isCorrect = this.checkAnswerCorrectness(qna);
-              if (isCorrect) {
-                unitPerformance[unitId].correctAnswers++;
-                unitPerformance[unitId].obtainedMarks += question.marks || 0;
-              }
-
-              unitPerformance[unitId].questions.push({
-                questionId: question.id,
-                marks: question.marks || 0,
-                obtainedMarks: isCorrect ? question.marks || 0 : 0,
-                isCorrect,
-              });
+        questionNAnswer.forEach((qna, index) => {
+          const question = questionBanks[index];
+          if (question?.unit) {
+            const unitId = question.unit.id;
+            if (!unitPerformance[unitId]) {
+              unitPerformance[unitId] = {
+                unitId,
+                unitName: question.unit.name,
+                totalQuestions: 0,
+                correctAnswers: 0,
+                totalMarks: 0,
+                obtainedMarks: 0,
+              };
             }
-          });
-        }
+
+            unitPerformance[unitId].totalQuestions++;
+            unitPerformance[unitId].totalMarks += question.marks || 0;
+
+            const isCorrect = this.checkAnswerCorrectness(qna);
+            if (isCorrect) {
+              unitPerformance[unitId].correctAnswers++;
+              unitPerformance[unitId].obtainedMarks += question.marks || 0;
+            }
+          }
+        });
       });
 
-      // Convert to array and calculate percentages
-      const unitAnalysis = await Promise.all(
-        Object.values(unitPerformance).map(async (unit) => ({
-          ...unit,
-          percentage:
-            unit.totalQuestions > 0
-              ? (unit.correctAnswers / unit.totalQuestions) * 100
-              : 0,
-          classAverage: await this.getClassAverage(unit.unitId, classroomId),
-          accuracy:
-            unit.totalQuestions > 0
-              ? (unit.correctAnswers / unit.totalQuestions) * 100
-              : 0,
-        }))
+      // Convert to array
+      const unitAnalysis = Object.values(unitPerformance).map((unit) => ({
+        ...unit,
+        percentage:
+          unit.totalQuestions > 0
+            ? (unit.correctAnswers / unit.totalQuestions) * 100
+            : 0,
+      }));
+
+      // Get class averages in parallel (optimized)
+      const classAverages = await Promise.all(
+        unitAnalysis.map((unit) =>
+          this.getClassAverage(unit.unitId, classroomId)
+        )
       );
+
+      // Add class averages to unit analysis
+      unitAnalysis.forEach((unit, index) => {
+        unit.classAverage = classAverages[index];
+      });
 
       // Generate recommendations
       const recommendations = this.generateRecommendations(unitAnalysis);
 
       return {
         unitAnalysis,
-        recommendations: recommendations || [],
+        recommendations,
         summary: {
           totalUnits: unitAnalysis.length,
           strongUnits: unitAnalysis
@@ -238,20 +270,26 @@ module.exports = {
         return ctx.badRequest("studentId and classroomId are required");
       }
 
+      // OPTIMIZED: Get only test series with single query
       const answers = await strapi.entityService.findMany(
         "api::answer.answer",
         {
           filters: {
             student: studentId,
             tutor_classroom: classroomId,
+            test_series: {
+              test_type: "Test Series", // ✅ FILTER: Only Test Series
+            },
           },
           populate: {
             test_series: {
+              fields: ["id", "title", "program_type"],
               populate: {
-                grade_subject: true,
                 question_banks: {
                   populate: {
-                    unit: true,
+                    unit: {
+                      fields: ["name"],
+                    },
                   },
                 },
               },
@@ -265,39 +303,46 @@ module.exports = {
       const firstAttempts = this.getFirstAttempts(answers);
 
       // Take last 5
-      const lastFive = await Promise.all(
-        firstAttempts.slice(0, 5).map(async (attempt) => ({
-          testId: attempt.test_series?.id,
-          testTitle: attempt.test_series?.title || "Unknown Test",
-          score: attempt.marks || 0,
-          date: attempt.submission_date,
-          programType: attempt.test_series?.program_type || "N/A",
-          unit: this.getMainUnit(attempt.test_series?.question_banks || []),
-          classAverage: await this.getTestAverage(attempt.test_series?.id),
-          percentile: await this.getPercentile(
-            attempt.marks,
-            attempt.test_series?.id
-          ),
-        }))
+      const lastFive = firstAttempts.slice(0, 5);
+
+      // Get averages and percentiles in parallel
+      const enrichedAttempts = await Promise.all(
+        lastFive.map(async (attempt) => {
+          const [classAverage, percentile] = await Promise.all([
+            this.getTestAverage(attempt.test_series?.id),
+            this.getPercentile(attempt.marks, attempt.test_series?.id),
+          ]);
+
+          return {
+            testId: attempt.test_series?.id,
+            testTitle: attempt.test_series?.title || "Unknown Test",
+            score: attempt.marks || 0,
+            date: attempt.submission_date,
+            programType: attempt.test_series?.program_type || "N/A",
+            unit: this.getMainUnit(attempt.test_series?.question_banks || []),
+            classAverage,
+            percentile,
+          };
+        })
       );
 
-      const validLastFive = lastFive.filter((item) => item.testId);
+      const validAttempts = enrichedAttempts.filter((item) => item.testId);
 
       return {
-        attempts: validLastFive,
+        attempts: validAttempts,
         summary: {
           averageScore:
-            validLastFive.length > 0
-              ? validLastFive.reduce(
+            validAttempts.length > 0
+              ? validAttempts.reduce(
                   (sum, a) => sum + parseFloat(a.score || 0),
                   0
-                ) / validLastFive.length
+                ) / validAttempts.length
               : 0,
           trend: this.calculateTrend(
-            validLastFive.map((a) => parseFloat(a.score || 0))
+            validAttempts.map((a) => parseFloat(a.score || 0))
           ),
-          bestSubject: this.findBestSubject(validLastFive),
-          recentImprovement: this.calculateRecentImprovement(validLastFive),
+          bestSubject: this.findBestSubject(validAttempts),
+          recentImprovement: this.calculateRecentImprovement(validAttempts),
         },
       };
     } catch (err) {
@@ -315,29 +360,28 @@ module.exports = {
       }
 
       const yearNum = parseInt(year);
-      const currentYear = new Date().getFullYear();
-
-      if (yearNum > currentYear) {
+      if (yearNum > new Date().getFullYear()) {
         return ctx.badRequest("Year cannot be in the future");
       }
 
-      // Get all answers for this student and classroom in the given year
+      // OPTIMIZED: Filter by year and test type in single query
       const answers = await strapi.entityService.findMany(
         "api::answer.answer",
         {
           filters: {
             student: studentId,
             tutor_classroom: classroomId,
+            test_series: {
+              test_type: "Test Series", // ✅ FILTER: Only Test Series
+            },
             submission_date: {
-              $gte: `${yearNum}-01-01`,
-              $lte: `${yearNum}-12-31`,
+              $gte: `${yearNum}-01-01T00:00:00.000Z`,
+              $lte: `${yearNum}-12-31T23:59:59.999Z`,
             },
           },
           populate: {
             test_series: {
-              populate: {
-                grade_subject: true,
-              },
+              fields: ["title"],
             },
           },
           sort: "submission_date:asc",
@@ -348,19 +392,17 @@ module.exports = {
       const firstAttempts = this.getFirstAttempts(answers);
 
       // Group by month
-      const monthlyData = {};
-
-      for (let month = 0; month < 12; month++) {
-        monthlyData[month] = {
-          month: month,
+      const monthlyData = Array(12)
+        .fill()
+        .map((_, month) => ({
+          month,
           monthName: new Date(yearNum, month, 1).toLocaleString("default", {
             month: "short",
           }),
           tests: [],
           totalScore: 0,
           count: 0,
-        };
-      }
+        }));
 
       // Populate monthly data
       firstAttempts.forEach((attempt) => {
@@ -380,52 +422,44 @@ module.exports = {
         }
       });
 
-      // Calculate monthly averages and prepare chart data
-      const chartData = [];
-      const monthlyStats = [];
-
-      for (let month = 0; month < 12; month++) {
-        const monthData = monthlyData[month];
-        const averageScore =
-          monthData.count > 0 ? monthData.totalScore / monthData.count : 0;
-
-        chartData.push({
-          month: monthData.monthName,
-          averageScore: parseFloat(averageScore.toFixed(2)),
-          testsTaken: monthData.count,
-        });
-
-        monthlyStats.push({
-          month: monthData.monthName,
-          totalTests: monthData.count,
-          averageScore: parseFloat(averageScore.toFixed(2)),
-          totalScore: monthData.totalScore,
-          tests: monthData.tests,
-        });
-      }
+      // Calculate statistics
+      const monthsWithData = monthlyData.filter((m) => m.count > 0);
+      const yearAverage =
+        monthsWithData.length > 0
+          ? monthsWithData.reduce(
+              (sum, month) => sum + month.totalScore / month.count,
+              0
+            ) / monthsWithData.length
+          : 0;
 
       return {
         year: yearNum,
-        monthlyStats,
-        chartData,
-        summary: {
-          yearAverage:
-            monthlyStats.filter((m) => m.totalTests > 0).length > 0
-              ? monthlyStats
-                  .filter((m) => m.totalTests > 0)
-                  .reduce((sum, month) => sum + month.averageScore, 0) /
-                monthlyStats.filter((m) => m.totalTests > 0).length
+        monthlyStats: monthlyData.map((month) => ({
+          month: month.monthName,
+          totalTests: month.count,
+          averageScore:
+            month.count > 0
+              ? parseFloat((month.totalScore / month.count).toFixed(2))
               : 0,
-          totalTestsYear: monthlyStats.reduce(
-            (sum, month) => sum + month.totalTests,
+          totalScore: month.totalScore,
+          tests: month.tests,
+        })),
+        summary: {
+          yearAverage: parseFloat(yearAverage.toFixed(2)),
+          totalTestsYear: monthlyData.reduce(
+            (sum, month) => sum + month.count,
             0
           ),
-          bestMonth: chartData.reduce(
-            (best, current) =>
-              current.averageScore > best.averageScore ? current : best,
-            { averageScore: -Infinity }
+          bestMonth: monthlyData.reduce(
+            (best, current) => {
+              const currentAvg =
+                current.count > 0 ? current.totalScore / current.count : 0;
+              const bestAvg = best.count > 0 ? best.totalScore / best.count : 0;
+              return currentAvg > bestAvg ? current : best;
+            },
+            { count: 0, totalScore: 0 }
           ),
-          monthlyTrend: this.calculateMonthlyTrend(chartData),
+          monthlyTrend: this.calculateMonthlyTrend(monthlyData),
         },
       };
     } catch (err) {
@@ -446,7 +480,6 @@ module.exports = {
       if (!attemptsByTest[testId]) {
         attemptsByTest[testId] = answer;
       } else {
-        // Keep only the earliest attempt
         const currentDate = new Date(answer.submission_date || 0);
         const storedDate = new Date(
           attemptsByTest[testId].submission_date || 0
@@ -460,6 +493,86 @@ module.exports = {
 
     return Object.values(attemptsByTest);
   },
+
+  async getClassAverage(unitId, classroomId) {
+    try {
+      // OPTIMIZED: Only get test series answers
+      const answers = await strapi.entityService.findMany(
+        "api::answer.answer",
+        {
+          filters: {
+            tutor_classroom: classroomId,
+            test_series: {
+              test_type: "Test Series", // ✅ FILTER: Only Test Series
+            },
+          },
+          populate: {
+            test_series: {
+              populate: {
+                question_banks: {
+                  filters: { unit: unitId },
+                  fields: ["marks"],
+                },
+              },
+            },
+            question_n_answer: true,
+          },
+          limit: 100, // Limit for performance
+        }
+      );
+
+      let totalQuestions = 0;
+      let correctAnswers = 0;
+
+      answers.forEach((answer) => {
+        if (answer.question_n_answer && answer.test_series?.question_banks) {
+          answer.question_n_answer.forEach((qna, index) => {
+            const question = answer.test_series.question_banks[index];
+            if (question && this.checkAnswerCorrectness(qna)) {
+              totalQuestions++;
+              correctAnswers++;
+            }
+          });
+        }
+      });
+
+      return totalQuestions > 0 ? (correctAnswers / totalQuestions) * 100 : 0;
+    } catch (err) {
+      console.error("Error calculating class average:", err);
+      return 0;
+    }
+  },
+
+  async getTestAverage(testSeriesId) {
+    try {
+      if (!testSeriesId) return 0;
+
+      // OPTIMIZED: Direct aggregation
+      const answers = await strapi.entityService.findMany(
+        "api::answer.answer",
+        {
+          filters: {
+            test_series: testSeriesId,
+          },
+          fields: ["marks"],
+        }
+      );
+
+      if (answers.length === 0) return 0;
+
+      const total = answers.reduce(
+        (sum, answer) => sum + parseFloat(answer.marks || 0),
+        0
+      );
+      return parseFloat((total / answers.length).toFixed(2));
+    } catch (err) {
+      console.error("Error calculating test average:", err);
+      return 0;
+    }
+  },
+
+  // ==================== HELPER METHODS ====================
+
 
   checkAnswerCorrectness(qna) {
     // This is a placeholder - adjust based on your question_n_answer structure
@@ -484,82 +597,7 @@ module.exports = {
     return false;
   },
 
-  async getClassAverage(unitId, classroomId) {
-    try {
-      // Get all answers in this classroom
-      const answers = await strapi.entityService.findMany(
-        "api::answer.answer",
-        {
-          filters: {
-            tutor_classroom: classroomId,
-          },
-          populate: {
-            test_series: {
-              populate: {
-                question_banks: {
-                  filters: {
-                    unit: unitId,
-                  },
-                },
-              },
-            },
-            question_n_answer: true,
-          },
-        }
-      );
 
-      let totalMarks = 0;
-      let totalQuestions = 0;
-      let correctAnswers = 0;
-
-      answers.forEach((answer) => {
-        if (answer.question_n_answer && answer.test_series?.question_banks) {
-          answer.question_n_answer.forEach((qna, index) => {
-            const question = answer.test_series.question_banks[index];
-            if (question?.unit?.id === unitId) {
-              totalQuestions++;
-              totalMarks += question.marks || 0;
-
-              if (this.checkAnswerCorrectness(qna)) {
-                correctAnswers++;
-              }
-            }
-          });
-        }
-      });
-
-      return totalQuestions > 0 ? (correctAnswers / totalQuestions) * 100 : 0;
-    } catch (err) {
-      console.error("Error calculating class average:", err);
-      return 0;
-    }
-  },
-
-  async getTestAverage(testSeriesId) {
-    try {
-      if (!testSeriesId) return 0;
-
-      const answers = await strapi.entityService.findMany(
-        "api::answer.answer",
-        {
-          filters: {
-            test_series: testSeriesId,
-          },
-        }
-      );
-
-      if (answers.length === 0) return 0;
-
-      const total = answers.reduce(
-        (sum, answer) => sum + parseFloat(answer.marks || 0),
-        0
-      );
-      return parseFloat((total / answers.length).toFixed(2));
-    } catch (err) {
-      console.error("Error calculating test average:", err);
-      return 0;
-    }
-  },
 
   async getPercentile(score, testSeriesId) {
     try {
