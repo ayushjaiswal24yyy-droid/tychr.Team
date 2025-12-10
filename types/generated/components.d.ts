@@ -23,60 +23,6 @@ export interface WhyChooseDataWhyChooseData extends Schema.Component {
   };
 }
 
-export interface UserUserExperience extends Schema.Component {
-  collectionName: 'components_user_user_experiences';
-  info: {
-    displayName: 'userExperience';
-    icon: 'bulletList';
-  };
-  attributes: {
-    company_name: Attribute.String;
-    company_type: Attribute.Enumeration<['private', 'government']>;
-    position: Attribute.String;
-    start_date: Attribute.Date;
-    end_date: Attribute.Date;
-    employment_type: Attribute.Enumeration<
-      ['Full time', 'Part time', 'Contract', 'Internship', 'Freelance']
-    >;
-    description: Attribute.Text;
-    responsibilities: Attribute.JSON;
-  };
-}
-
-export interface UserStudentPlan extends Schema.Component {
-  collectionName: 'components_user_student_plans';
-  info: {
-    displayName: 'student_plan';
-  };
-  attributes: {
-    course_plan: Attribute.Relation<
-      'user.student-plan',
-      'oneToOne',
-      'api::course-plan.course-plan'
-    >;
-    grade_subject: Attribute.Relation<
-      'user.student-plan',
-      'oneToOne',
-      'api::grade-subject.grade-subject'
-    >;
-  };
-}
-
-export interface UserExtraActivity extends Schema.Component {
-  collectionName: 'components_user_extra_activities';
-  info: {
-    displayName: 'ExtraActivity';
-  };
-  attributes: {
-    ActivityTitle: Attribute.String;
-    Position: Attribute.String;
-    org_name: Attribute.String;
-    start_date: Attribute.Date;
-    end_date: Attribute.Date;
-    description: Attribute.Text;
-  };
-}
-
 export interface UniversityTutionFees extends Schema.Component {
   collectionName: 'components_university_tution_fees';
   info: {
@@ -285,6 +231,60 @@ export interface UniversityAdditionalCosts extends Schema.Component {
     living_expense_max: Attribute.String;
     insurance_min: Attribute.String;
     insurance_max: Attribute.String;
+  };
+}
+
+export interface UserUserExperience extends Schema.Component {
+  collectionName: 'components_user_user_experiences';
+  info: {
+    displayName: 'userExperience';
+    icon: 'bulletList';
+  };
+  attributes: {
+    company_name: Attribute.String;
+    company_type: Attribute.Enumeration<['private', 'government']>;
+    position: Attribute.String;
+    start_date: Attribute.Date;
+    end_date: Attribute.Date;
+    employment_type: Attribute.Enumeration<
+      ['Full time', 'Part time', 'Contract', 'Internship', 'Freelance']
+    >;
+    description: Attribute.Text;
+    responsibilities: Attribute.JSON;
+  };
+}
+
+export interface UserStudentPlan extends Schema.Component {
+  collectionName: 'components_user_student_plans';
+  info: {
+    displayName: 'student_plan';
+  };
+  attributes: {
+    course_plan: Attribute.Relation<
+      'user.student-plan',
+      'oneToOne',
+      'api::course-plan.course-plan'
+    >;
+    grade_subject: Attribute.Relation<
+      'user.student-plan',
+      'oneToOne',
+      'api::grade-subject.grade-subject'
+    >;
+  };
+}
+
+export interface UserExtraActivity extends Schema.Component {
+  collectionName: 'components_user_extra_activities';
+  info: {
+    displayName: 'ExtraActivity';
+  };
+  attributes: {
+    ActivityTitle: Attribute.String;
+    Position: Attribute.String;
+    org_name: Attribute.String;
+    start_date: Attribute.Date;
+    end_date: Attribute.Date;
+    description: Attribute.Text;
   };
 }
 
@@ -590,19 +590,6 @@ export interface LorLor extends Schema.Component {
     facultysubject: Attribute.String;
     status: Attribute.Enumeration<['accepted', 'rejected', 'in progress']>;
     lor: Attribute.Media<'images' | 'files' | 'videos' | 'audios', true>;
-  };
-}
-
-export interface IgPaperStructureIgcsePaperStructure extends Schema.Component {
-  collectionName: 'components_ig_paper_structure_igcse_paper_structures';
-  info: {
-    displayName: 'IGCSE Paper Structure';
-  };
-  attributes: {
-    description: Attribute.Text;
-    requirement: Attribute.String;
-    prediction: Attribute.String;
-    number: Attribute.Integer;
   };
 }
 
@@ -995,9 +982,6 @@ declare module '@strapi/types' {
     export interface Components {
       'why-tychr.why-tychr': WhyTychrWhyTychr;
       'why-choose-data.why-choose-data': WhyChooseDataWhyChooseData;
-      'user.user-experience': UserUserExperience;
-      'user.student-plan': UserStudentPlan;
-      'user.extra-activity': UserExtraActivity;
       'university.tution-fees': UniversityTutionFees;
       'university.subject-ranking': UniversitySubjectRanking;
       'university.student-application': UniversityStudentApplication;
@@ -1011,6 +995,9 @@ declare module '@strapi/types' {
       'university.application-cycle-deadline': UniversityApplicationCycleDeadline;
       'university.admission-requirements': UniversityAdmissionRequirements;
       'university.additional-costs': UniversityAdditionalCosts;
+      'user.user-experience': UserUserExperience;
+      'user.student-plan': UserStudentPlan;
+      'user.extra-activity': UserExtraActivity;
       'tutors-website.best-online-tutors': TutorsWebsiteBestOnlineTutors;
       'top-colleges.top-colleges': TopCollegesTopColleges;
       'tags.tags': TagsTags;
@@ -1033,6 +1020,7 @@ declare module '@strapi/types' {
       'notification.demo-booking-time': NotificationDemoBookingTime;
       'mentor.mentor-questions': MentorMentorQuestions;
       'lor.lor': LorLor;
+      'lectures.lecture-header': LecturesLectureHeader;
       'ig-paper-structure.igcse-paper-structure': IgPaperStructureIgcsePaperStructure;
       'lectures.lecture-header': LecturesLectureHeader;
       'how-it-works.how-it-works': HowItWorksHowItWorks;

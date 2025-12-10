@@ -2511,8 +2511,8 @@ export interface ApiPaymentPayment extends Schema.CollectionType {
   info: {
     singularName: 'payment';
     pluralName: 'payments';
-    displayName: '\u2B50Student: Payment';
-    description: '';
+    displayName: 'Student Class: Payment';
+    description: 'This content type is used to manage payments made by students for classrooms (enrollments), live and recorded lectures. It tracks payment details, status, and associations with specific lectures and classrooms.';
   };
   options: {
     draftAndPublish: false;

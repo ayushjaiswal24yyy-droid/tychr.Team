@@ -20,11 +20,7 @@
     },
     "submission_type": {
       "type": "enumeration",
-      "enum": [
-        "online",
-        "offline",
-        "hybrid"
-      ],
+      "enum": ["online", "offline", "hybrid"],
       "default": "online"
     },
     "marks": {
@@ -39,10 +35,7 @@
       "type": "media",
       "multiple": false,
       "required": false,
-      "allowedTypes": [
-        "images",
-        "files"
-      ]
+      "allowedTypes": ["images", "files"]
     },
     "submission_date": {
       "type": "datetime"
@@ -52,10 +45,7 @@
     },
     "evaluation_status": {
       "type": "enumeration",
-      "enum": [
-        "evaluated",
-        "pending"
-      ],
+      "enum": ["evaluated", "pending"],
       "default": "pending"
     },
     "student_feedback": {
