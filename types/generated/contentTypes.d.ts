@@ -1231,7 +1231,6 @@ export interface ApiArticleArticle extends Schema.CollectionType {
     draftAndPublish: false;
   };
   attributes: {
-    description: Attribute.Blocks & Attribute.Required;
     title: Attribute.String;
     written_by: Attribute.Relation<
       'api::article.article',
@@ -1246,7 +1245,6 @@ export interface ApiArticleArticle extends Schema.CollectionType {
     subTitle: Attribute.Text;
     readingTime: Attribute.Integer;
     permalink: Attribute.String;
-    image_title: Attribute.String;
     image_caption: Attribute.String;
     image_desc: Attribute.String;
     image_alt_text: Attribute.String;
@@ -1260,6 +1258,7 @@ export interface ApiArticleArticle extends Schema.CollectionType {
     thumbnail: Attribute.String;
     tags: Attribute.JSON;
     date: Attribute.Date;
+    image_title: Attribute.JSON;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     createdBy: Attribute.Relation<

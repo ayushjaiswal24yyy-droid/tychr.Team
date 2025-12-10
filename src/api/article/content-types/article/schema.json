@@ -12,10 +12,6 @@
   },
   "pluginOptions": {},
   "attributes": {
-    "description": {
-      "type": "blocks",
-      "required": true
-    },
     "title": {
       "type": "string"
     },
@@ -38,9 +34,6 @@
       "type": "integer"
     },
     "permalink": {
-      "type": "string"
-    },
-    "image_title": {
       "type": "string"
     },
     "image_caption": {
@@ -81,6 +74,9 @@
     },
     "date": {
       "type": "date"
+    },
+    "image_title": {
+      "type": "json"
     }
   }
 }
