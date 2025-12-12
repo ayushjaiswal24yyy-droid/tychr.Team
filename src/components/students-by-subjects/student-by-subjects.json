@@ -1,0 +1,18 @@
+{
+  "collectionName": "components_students_by_subjects_student_by_subjects",
+  "info": {
+    "displayName": "Student By Subjects"
+  },
+  "options": {},
+  "attributes": {
+    "category": {
+      "type": "string"
+    },
+    "student_data": {
+      "displayName": "Student Data",
+      "type": "component",
+      "repeatable": true,
+      "component": "student-data.student-data"
+    }
+  }
+}

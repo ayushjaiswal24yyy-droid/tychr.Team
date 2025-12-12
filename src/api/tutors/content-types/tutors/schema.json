@@ -98,6 +98,30 @@
       "type": "component",
       "repeatable": true,
       "component": "why-choose-data.why-choose-data"
+    },
+    "free_resources": {
+      "displayName": "Free Resourced",
+      "type": "component",
+      "repeatable": false,
+      "component": "free-resources.free-resourced"
+    },
+    "subject_excellence": {
+      "displayName": "Subject Excellence",
+      "type": "component",
+      "repeatable": false,
+      "component": "subject-excellence.subject-excellence"
+    },
+    "students_by_subjects": {
+      "displayName": "Student By Subjects",
+      "type": "component",
+      "repeatable": true,
+      "component": "students-by-subjects.student-by-subjects"
+    },
+    "claims": {
+      "displayName": "claims",
+      "type": "component",
+      "repeatable": true,
+      "component": "claims.claims"
     }
   }
 }

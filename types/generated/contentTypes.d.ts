@@ -3704,6 +3704,13 @@ export interface ApiTutorsTutors extends Schema.SingleType {
     >;
     why_choose_heading: Attribute.String;
     WhyChooseData: Attribute.Component<'why-choose-data.why-choose-data', true>;
+    free_resources: Attribute.Component<'free-resources.free-resourced'>;
+    subject_excellence: Attribute.Component<'subject-excellence.subject-excellence'>;
+    students_by_subjects: Attribute.Component<
+      'students-by-subjects.student-by-subjects',
+      true
+    >;
+    claims: Attribute.Component<'claims.claims', true>;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;

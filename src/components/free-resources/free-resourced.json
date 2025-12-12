@@ -1,0 +1,24 @@
+{
+  "collectionName": "components_free_resources_free_resourceds",
+  "info": {
+    "displayName": "Free Resourced"
+  },
+  "options": {},
+  "attributes": {
+    "heading": {
+      "type": "string"
+    },
+    "subheading": {
+      "type": "string"
+    },
+    "categories": {
+      "type": "json"
+    },
+    "resources": {
+      "displayName": "Resources",
+      "type": "component",
+      "repeatable": true,
+      "component": "resources.resources"
+    }
+  }
+}
