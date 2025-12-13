@@ -32,7 +32,7 @@
       "required": true,
       "default": "announcement"
     },
-    "users_permissions_user": {
+    "student": {
       "type": "relation",
       "relation": "manyToOne",
       "target": "plugin::users-permissions.user",
@@ -71,12 +71,7 @@
     },
     "priority": {
       "type": "enumeration",
-      "enum": [
-        "low",
-        "medium",
-        "high",
-        "urgent"
-      ]
+      "enum": ["low", "medium", "high", "urgent"]
     }
   }
 }

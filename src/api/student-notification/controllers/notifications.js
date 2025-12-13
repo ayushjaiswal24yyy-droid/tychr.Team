@@ -14,6 +14,8 @@ module.exports = createCoreController(
           return ctx.unauthorized("You must be logged in");
         }
 
+        console.log("Fetching notifications for user:", user.id, user.username);
+
         const {
           type,
           is_read,
@@ -82,209 +84,11 @@ module.exports = createCoreController(
           }
         );
 
+        console.log(
+          `Found ${notifications.length} notifications for user ${user.id}`
+        );
+
         // Count unread notifications
-        const unreadCount = await strapi.entityService.count(
-          "api::student-notification.student-notification",
-          {
-            filters: {
-              ...filters,
-              is_read: false,
-              is_archived: false,
-            },
-          }
-        );
-
-        // Count by type
-        const typeCounts = await Promise.all(
-          [
-            "class_schedule",
-            "new_content",
-            "announcement",
-            "grade_update",
-            "assignment",
-            "reminder",
-            "system",
-          ].map(async (type) => {
-            const count = await strapi.entityService.count(
-              "api::student-notification.student-notification",
-              {
-                filters: {
-                  ...filters,
-                  type,
-                  is_read: false,
-                  is_archived: false,
-                },
-              }
-            );
-            return { type, count };
-          })
-        );
-
-        return {
-          data: notifications,
-          meta: {
-            total: notifications.length,
-            unreadCount,
-            typeCounts: typeCounts.reduce((acc, curr) => {
-              acc[curr.type] = curr.count;
-              return acc;
-            }, {}),
-            page: parseInt(page),
-            pageSize: parseInt(limit),
-          },
-        };
-      } catch (error) {
-        console.error("Error fetching student notifications:", error);
-        return ctx.badRequest("Error fetching notifications");
-      }
-    },
-
-    // Mark notification as read
-    async markAsRead(ctx) {
-      try {
-        const { id } = ctx.params;
-        const user = ctx.state.user;
-
-        if (!user) {
-          return ctx.unauthorized("You must be logged in");
-        }
-
-        // Check if notification belongs to user
-        const existingNotification = await strapi.entityService.findOne(
-          "api::student-notification.student-notification",
-          id,
-          {
-            populate: ["student"],
-          }
-        );
-
-        if (!existingNotification) {
-          return ctx.notFound("Notification not found");
-        }
-
-        if (existingNotification.student.id !== user.id) {
-          return ctx.forbidden("You can only update your own notifications");
-        }
-
-        const updatedNotification = await strapi.entityService.update(
-          "api::student-notification.student-notification",
-          id,
-          {
-            data: {
-              is_read: true,
-            },
-            populate: ["classroom", "student"],
-          }
-        );
-
-        return { data: updatedNotification };
-      } catch (error) {
-        console.error("Error marking notification as read:", error);
-        return ctx.badRequest("Error updating notification");
-      }
-    },
-
-    // Mark all as read
-    async markAllAsRead(ctx) {
-      try {
-        const user = ctx.state.user;
-
-        if (!user) {
-          return ctx.unauthorized("You must be logged in");
-        }
-
-        // Find all unread notifications for user
-        const unreadNotifications = await strapi.entityService.findMany(
-          "api::student-notification.student-notification",
-          {
-            filters: {
-              student: user.id,
-              is_read: false,
-              is_archived: false,
-            },
-            fields: ["id"],
-          }
-        );
-
-        // Update each notification
-        const updatePromises = unreadNotifications.map((notification) =>
-          strapi.entityService.update(
-            "api::student-notification.student-notification",
-            notification.id,
-            {
-              data: {
-                is_read: true,
-              },
-            }
-          )
-        );
-
-        await Promise.all(updatePromises);
-
-        return {
-          success: true,
-          message: `${unreadNotifications.length} notifications marked as read`,
-          count: unreadNotifications.length,
-        };
-      } catch (error) {
-        console.error("Error marking all as read:", error);
-        return ctx.badRequest("Error marking notifications as read");
-      }
-    },
-
-    // Archive notification
-    async archive(ctx) {
-      try {
-        const { id } = ctx.params;
-        const user = ctx.state.user;
-
-        if (!user) {
-          return ctx.unauthorized("You must be logged in");
-        }
-
-        const existingNotification = await strapi.entityService.findOne(
-          "api::student-notification.student-notification",
-          id,
-          {
-            populate: ["student"],
-          }
-        );
-
-        if (!existingNotification) {
-          return ctx.notFound("Notification not found");
-        }
-
-        if (existingNotification.student.id !== user.id) {
-          return ctx.forbidden("You can only archive your own notifications");
-        }
-
-        const updatedNotification = await strapi.entityService.update(
-          "api::student-notification.student-notification",
-          id,
-          {
-            data: {
-              is_archived: true,
-              is_read: true,
-            },
-          }
-        );
-
-        return { data: updatedNotification };
-      } catch (error) {
-        console.error("Error archiving notification:", error);
-        return ctx.badRequest("Error archiving notification");
-      }
-    },
-
-    // Get notification counts for badge
-    async getCounts(ctx) {
-      try {
-        const user = ctx.state.user;
-
-        if (!user) {
-          return ctx.unauthorized("You must be logged in");
-        }
-
         const unreadCount = await strapi.entityService.count(
           "api::student-notification.student-notification",
           {
@@ -332,14 +136,246 @@ module.exports = createCoreController(
         );
 
         return {
+          data: notifications,
+          meta: {
+            total: notifications.length,
+            unreadCount,
+            urgentCount,
+            todayScheduleCount,
+            page: parseInt(page),
+            pageSize: parseInt(limit),
+          },
+        };
+      } catch (error) {
+        console.error("Error fetching student notifications:", error);
+        return ctx.badRequest("Error fetching notifications");
+      }
+    },
+
+    // Mark notification as read
+    async markAsRead(ctx) {
+      try {
+        const { id } = ctx.params;
+        const user = ctx.state.user;
+
+        if (!user) {
+          return ctx.unauthorized("You must be logged in");
+        }
+
+        console.log(`Marking notification ${id} as read for user ${user.id}`);
+
+        // Check if notification belongs to user
+        const existingNotification = await strapi.entityService.findOne(
+          "api::student-notification.student-notification",
+          id,
+          {
+            populate: ["student"],
+          }
+        );
+
+        if (!existingNotification) {
+          console.log(`Notification ${id} not found`);
+          return ctx.notFound("Notification not found");
+        }
+
+        console.log(
+          "Existing notification student ID:",
+          existingNotification.student?.id
+        );
+        console.log("Current user ID:", user.id);
+
+        if (existingNotification.student?.id !== user.id) {
+          console.log(
+            `User ${user.id} cannot update notification ${id} belonging to ${existingNotification.student?.id}`
+          );
+          return ctx.forbidden("You can only update your own notifications");
+        }
+
+        const updatedNotification = await strapi.entityService.update(
+          "api::student-notification.student-notification",
+          id,
+          {
+            data: {
+              is_read: true,
+            },
+          }
+        );
+
+        console.log(`Successfully marked notification ${id} as read`);
+        return { data: updatedNotification };
+      } catch (error) {
+        console.error("Error marking notification as read:", error);
+        return ctx.internalServerError("Error updating notification");
+      }
+    },
+
+    // Mark all as read
+    async markAllAsRead(ctx) {
+      try {
+        const user = ctx.state.user;
+
+        if (!user) {
+          return ctx.unauthorized("You must be logged in");
+        }
+
+        console.log(`Marking all notifications as read for user ${user.id}`);
+
+        // Find all unread notifications for user
+        const unreadNotifications = await strapi.entityService.findMany(
+          "api::student-notification.student-notification",
+          {
+            filters: {
+              student: user.id,
+              is_read: false,
+              is_archived: false,
+            },
+            fields: ["id"],
+          }
+        );
+
+        console.log(`Found ${unreadNotifications.length} unread notifications`);
+
+        // Update each notification
+        const updatePromises = unreadNotifications.map((notification) =>
+          strapi.entityService.update(
+            "api::student-notification.student-notification",
+            notification.id,
+            {
+              data: {
+                is_read: true,
+              },
+            }
+          )
+        );
+
+        await Promise.all(updatePromises);
+
+        return {
+          success: true,
+          message: `${unreadNotifications.length} notifications marked as read`,
+          count: unreadNotifications.length,
+        };
+      } catch (error) {
+        console.error("Error marking all as read:", error);
+        return ctx.internalServerError("Error marking notifications as read");
+      }
+    },
+
+    // Archive notification
+    async archive(ctx) {
+      try {
+        const { id } = ctx.params;
+        const user = ctx.state.user;
+
+        if (!user) {
+          return ctx.unauthorized("You must be logged in");
+        }
+
+        console.log(`Archiving notification ${id} for user ${user.id}`);
+
+        const existingNotification = await strapi.entityService.findOne(
+          "api::student-notification.student-notification",
+          id,
+          {
+            populate: ["student"],
+          }
+        );
+
+        if (!existingNotification) {
+          return ctx.notFound("Notification not found");
+        }
+
+        if (existingNotification.student?.id !== user.id) {
+          return ctx.forbidden("You can only archive your own notifications");
+        }
+
+        const updatedNotification = await strapi.entityService.update(
+          "api::student-notification.student-notification",
+          id,
+          {
+            data: {
+              is_archived: true,
+              is_read: true,
+            },
+          }
+        );
+
+        return { data: updatedNotification };
+      } catch (error) {
+        console.error("Error archiving notification:", error);
+        return ctx.internalServerError("Error archiving notification");
+      }
+    },
+
+    // Get notification counts for badge
+    async getCounts(ctx) {
+      try {
+        const user = ctx.state.user;
+
+        if (!user) {
+          return ctx.unauthorized("You must be logged in");
+        }
+
+        console.log("Getting notification counts for user:", user.id);
+
+        const unreadCount = await strapi.entityService.count(
+          "api::student-notification.student-notification",
+          {
+            filters: {
+              student: user.id,
+              is_read: false,
+              is_archived: false,
+            },
+          }
+        );
+
+        // Count urgent notifications
+        const urgentCount = await strapi.entityService.count(
+          "api::student-notification.student-notification",
+          {
+            filters: {
+              student: user.id,
+              priority: "urgent",
+              is_read: false,
+              is_archived: false,
+            },
+          }
+        );
+
+        // Count today's class schedule notifications
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const tomorrow = new Date(today);
+        tomorrow.setDate(tomorrow.getDate() + 1);
+
+        const todayScheduleCount = await strapi.entityService.count(
+          "api::student-notification.student-notification",
+          {
+            filters: {
+              student: user.id,
+              type: "class_schedule",
+              is_read: false,
+              is_archived: false,
+              createdAt: {
+                $gte: today.toISOString(),
+                $lt: tomorrow.toISOString(),
+              },
+            },
+          }
+        );
+
+        const counts = {
           unread: unreadCount,
           urgent: urgentCount,
           todaySchedule: todayScheduleCount,
           total: unreadCount,
         };
+
+        console.log("Counts for user", user.id, ":", counts);
+        return counts;
       } catch (error) {
         console.error("Error getting notification counts:", error);
-        return ctx.badRequest("Error getting notification counts");
+        return ctx.internalServerError("Error getting notification counts");
       }
     },
 
@@ -387,13 +423,17 @@ module.exports = createCoreController(
           }
 
           // Check if student is enrolled in classroom
-          const isEnrolled = await strapi.entityService
-            .findOne("api::enrollment.enrollment", classroom_id, {
+          const classroomWithStudents = await strapi.entityService.findOne(
+            "api::enrollment.enrollment",
+            classroom_id,
+            {
               populate: ["students"],
-            })
-            .then((classroom) =>
-              classroom.students.some((s) => s.id === parseInt(student_id))
-            );
+            }
+          );
+
+          const isEnrolled = classroomWithStudents?.students?.some(
+            (s) => s.id === parseInt(student_id)
+          );
 
           if (!isEnrolled) {
             return ctx.badRequest("Student is not enrolled in this classroom");
@@ -418,18 +458,15 @@ module.exports = createCoreController(
           "api::student-notification.student-notification",
           {
             data: notificationData,
-            populate: ["student", "classroom"],
           }
         );
 
         return { data: notification };
       } catch (error) {
         console.error("Error creating notification:", error);
-        return ctx.badRequest("Error creating notification");
+        return ctx.internalServerError("Error creating notification");
       }
     },
-
-    // Bulk create notifications for classroom
     async createClassroomNotification(ctx) {
       try {
         const user = ctx.state.user;
@@ -503,7 +540,75 @@ module.exports = createCoreController(
         };
       } catch (error) {
         console.error("Error creating classroom notifications:", error);
-        return ctx.badRequest("Error creating notifications");
+        return ctx.internalServerError("Error creating notifications");
+      }
+    },
+
+    async createTestNotifications(ctx) {
+      try {
+        const user = ctx.state.user;
+
+        if (!user) {
+          return ctx.unauthorized("You must be logged in");
+        }
+
+        console.log("Creating test notifications for user:", user.id);
+
+        // Create test notifications
+        const testNotifications = [
+          {
+            title: "Test: Math Class Reminder",
+            message: "Your Algebra class starts in 15 minutes",
+            type: "class_schedule",
+            priority: "urgent",
+            metadata: { test: true },
+          },
+          {
+            title: "Test: New Assignment",
+            message: "Chapter 5: Quadratic Equations - Due Friday",
+            type: "assignment",
+            priority: "high",
+            metadata: { test: true },
+          },
+          {
+            title: "Test: Grade Updated",
+            message: "Your Physics mid-term grade is now A (92%)",
+            type: "grade_update",
+            priority: "medium",
+            metadata: { test: true },
+          },
+          {
+            title: "Test: New Study Material",
+            message: "Trigonometry formulas uploaded",
+            type: "new_content",
+            priority: "medium",
+            metadata: { test: true },
+          },
+        ];
+
+        const createdNotifications = [];
+
+        for (const notificationData of testNotifications) {
+          const notification = await strapi.entityService.create(
+            "api::student-notification.student-notification",
+            {
+              data: {
+                ...notificationData,
+                student: user.id,
+              },
+            }
+          );
+          createdNotifications.push(notification);
+        }
+
+        return {
+          success: true,
+          message: `Created ${createdNotifications.length} test notifications`,
+          notifications: createdNotifications,
+        };
+      } catch (error) {
+        console.error("Error creating test notifications:", error);
+        return ctx.internalServerError("Error creating test notifications");
       }
     },
   })

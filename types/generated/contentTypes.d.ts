@@ -3054,7 +3054,7 @@ export interface ApiStudentNotificationStudentNotification
     > &
       Attribute.Required &
       Attribute.DefaultTo<'announcement'>;
-    users_permissions_user: Attribute.Relation<
+    student: Attribute.Relation<
       'api::student-notification.student-notification',
       'manyToOne',
       'plugin::users-permissions.user'
