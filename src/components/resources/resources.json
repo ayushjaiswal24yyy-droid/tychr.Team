@@ -1,0 +1,15 @@
+{
+  "collectionName": "components_resources_resources",
+  "info": {
+    "displayName": "Resources"
+  },
+  "options": {},
+  "attributes": {
+    "category": {
+      "type": "string"
+    },
+    "resource_item": {
+      "type": "json"
+    }
+  }
+}

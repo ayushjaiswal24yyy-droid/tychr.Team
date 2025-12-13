@@ -1,0 +1,24 @@
+{
+  "collectionName": "components_subject_excellence_subject_excellences",
+  "info": {
+    "displayName": "Subject Excellence"
+  },
+  "options": {},
+  "attributes": {
+    "heading": {
+      "type": "string"
+    },
+    "subheading": {
+      "type": "string"
+    },
+    "stats": {
+      "displayName": "stats",
+      "type": "component",
+      "repeatable": true,
+      "component": "excellence-stats.stats"
+    },
+    "subjects": {
+      "type": "json"
+    }
+  }
+}
