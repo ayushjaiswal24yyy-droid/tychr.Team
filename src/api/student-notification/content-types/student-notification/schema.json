@@ -1,0 +1,82 @@
+{
+  "kind": "collectionType",
+  "collectionName": "student_notifications",
+  "info": {
+    "singularName": "student-notification",
+    "pluralName": "student-notifications",
+    "displayName": "student-notification",
+    "description": ""
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "title": {
+      "type": "string"
+    },
+    "message": {
+      "type": "text"
+    },
+    "type": {
+      "type": "enumeration",
+      "enum": [
+        "class_schedule",
+        "new_content",
+        "announcement",
+        "grade_update",
+        "assignment",
+        "reminder",
+        "system"
+      ],
+      "required": true,
+      "default": "announcement"
+    },
+    "users_permissions_user": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "plugin::users-permissions.user",
+      "inversedBy": "student_notifications"
+    },
+    "classroom": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::enrollment.enrollment",
+      "inversedBy": "student_notifications"
+    },
+    "related_entity": {
+      "type": "string"
+    },
+    "related_entity_id": {
+      "type": "string"
+    },
+    "is_read": {
+      "type": "boolean",
+      "default": false,
+      "required": true
+    },
+    "is_archived": {
+      "type": "boolean",
+      "default": false,
+      "required": true
+    },
+    "action_url": {
+      "type": "string"
+    },
+    "metadata": {
+      "type": "json"
+    },
+    "scheduled_time": {
+      "type": "datetime"
+    },
+    "priority": {
+      "type": "enumeration",
+      "enum": [
+        "low",
+        "medium",
+        "high",
+        "urgent"
+      ]
+    }
+  }
+}

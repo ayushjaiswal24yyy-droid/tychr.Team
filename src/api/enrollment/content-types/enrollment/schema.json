@@ -171,6 +171,12 @@
       "relation": "oneToMany",
       "target": "api::answer.answer",
       "mappedBy": "tutor_classroom"
+    },
+    "student_notifications": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::student-notification.student-notification",
+      "mappedBy": "classroom"
     }
   }
 }

@@ -444,6 +444,12 @@
       "type": "component",
       "repeatable": true,
       "component": "user.extra-activity"
+    },
+    "student_notifications": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::student-notification.student-notification",
+      "mappedBy": "users_permissions_user"
     }
   }
 }

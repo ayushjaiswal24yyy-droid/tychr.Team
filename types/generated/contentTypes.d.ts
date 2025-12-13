@@ -1002,6 +1002,11 @@ export interface PluginUsersPermissionsUser extends Schema.CollectionType {
     activities: Attribute.JSON;
     acad: Attribute.Component<'academics.acad-performance'>;
     extracurricularActivities: Attribute.Component<'user.extra-activity', true>;
+    student_notifications: Attribute.Relation<
+      'plugin::users-permissions.user',
+      'oneToMany',
+      'api::student-notification.student-notification'
+    >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     createdBy: Attribute.Relation<
@@ -1863,6 +1868,11 @@ export interface ApiEnrollmentEnrollment extends Schema.CollectionType {
       'api::enrollment.enrollment',
       'oneToMany',
       'api::answer.answer'
+    >;
+    student_notifications: Attribute.Relation<
+      'api::enrollment.enrollment',
+      'oneToMany',
+      'api::student-notification.student-notification'
     >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
@@ -3017,6 +3027,74 @@ export interface ApiStudentMeetingStudentMeeting extends Schema.CollectionType {
   };
 }
 
+export interface ApiStudentNotificationStudentNotification
+  extends Schema.CollectionType {
+  collectionName: 'student_notifications';
+  info: {
+    singularName: 'student-notification';
+    pluralName: 'student-notifications';
+    displayName: 'student-notification';
+    description: '';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    title: Attribute.String;
+    message: Attribute.Text;
+    type: Attribute.Enumeration<
+      [
+        'class_schedule',
+        'new_content',
+        'announcement',
+        'grade_update',
+        'assignment',
+        'reminder',
+        'system'
+      ]
+    > &
+      Attribute.Required &
+      Attribute.DefaultTo<'announcement'>;
+    users_permissions_user: Attribute.Relation<
+      'api::student-notification.student-notification',
+      'manyToOne',
+      'plugin::users-permissions.user'
+    >;
+    classroom: Attribute.Relation<
+      'api::student-notification.student-notification',
+      'manyToOne',
+      'api::enrollment.enrollment'
+    >;
+    related_entity: Attribute.String;
+    related_entity_id: Attribute.String;
+    is_read: Attribute.Boolean &
+      Attribute.Required &
+      Attribute.DefaultTo<false>;
+    is_archived: Attribute.Boolean &
+      Attribute.Required &
+      Attribute.DefaultTo<false>;
+    action_url: Attribute.String;
+    metadata: Attribute.JSON;
+    scheduled_time: Attribute.DateTime;
+    priority: Attribute.Enumeration<['low', 'medium', 'high', 'urgent']>;
+    createdAt: Attribute.DateTime;
+    updatedAt: Attribute.DateTime;
+    publishedAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<
+      'api::student-notification.student-notification',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+    updatedBy: Attribute.Relation<
+      'api::student-notification.student-notification',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+  };
+}
+
 export interface ApiStudentUniApplicationStudentUniApplication
   extends Schema.CollectionType {
   collectionName: 'student_uni_applications';
@@ -4028,6 +4106,7 @@ declare module '@strapi/types' {
       'api::recorded-lecture.recorded-lecture': ApiRecordedLectureRecordedLecture;
       'api::resource.resource': ApiResourceResource;
       'api::student-meeting.student-meeting': ApiStudentMeetingStudentMeeting;
+      'api::student-notification.student-notification': ApiStudentNotificationStudentNotification;
       'api::student-uni-application.student-uni-application': ApiStudentUniApplicationStudentUniApplication;
       'api::subject.subject': ApiSubjectSubject;
       'api::subject-group.subject-group': ApiSubjectGroupSubjectGroup;
