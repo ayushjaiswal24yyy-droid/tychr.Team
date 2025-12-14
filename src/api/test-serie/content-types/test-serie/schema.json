@@ -90,6 +90,16 @@
       "relation": "oneToMany",
       "target": "api::answer.answer",
       "mappedBy": "test_series"
+    },
+    "formula_booklet": {
+      "allowedTypes": [
+        "images",
+        "files",
+        "videos",
+        "audios"
+      ],
+      "type": "media",
+      "multiple": true
     }
   }
 }

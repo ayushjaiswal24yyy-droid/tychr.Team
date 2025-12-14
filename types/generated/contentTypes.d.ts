@@ -3434,6 +3434,10 @@ export interface ApiTestSerieTestSerie extends Schema.CollectionType {
       'oneToMany',
       'api::answer.answer'
     >;
+    formula_booklet: Attribute.Media<
+      'images' | 'files' | 'videos' | 'audios',
+      true
+    >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     createdBy: Attribute.Relation<
