@@ -78,27 +78,6 @@
       "repeatable": true,
       "component": "results-data.results-data"
     },
-    "best_tutors_heading": {
-      "type": "string"
-    },
-    "best_tutors_description": {
-      "type": "text"
-    },
-    "best_tutors_data": {
-      "displayName": "best_tutors_data",
-      "type": "component",
-      "repeatable": true,
-      "component": "best-tutors-data.best-tutors-data"
-    },
-    "why_choose_heading": {
-      "type": "string"
-    },
-    "WhyChooseData": {
-      "displayName": "why_choose_data",
-      "type": "component",
-      "repeatable": true,
-      "component": "why-choose-data.why-choose-data"
-    },
     "free_resources": {
       "displayName": "Free Resourced",
       "type": "component",
@@ -119,6 +98,22 @@
     },
     "claims": {
       "displayName": "claims",
+      "type": "component",
+      "repeatable": true,
+      "component": "claims.claims"
+    },
+    "best_tutors": {
+      "displayName": "Best Tutors",
+      "type": "component",
+      "repeatable": false,
+      "component": "best-tutors.best-tutors"
+    },
+    "elite_tutors": {
+      "type": "component",
+      "repeatable": true,
+      "component": "claims.claims"
+    },
+    "learn_and_repeat": {
       "type": "component",
       "repeatable": true,
       "component": "claims.claims"
