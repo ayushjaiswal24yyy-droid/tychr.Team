@@ -2788,6 +2788,7 @@ export interface ApiQuestionBankQuestionBank extends Schema.CollectionType {
     > &
       Attribute.Required;
     marks: Attribute.Integer & Attribute.Required;
+    is_offline: Attribute.Boolean & Attribute.DefaultTo<false>;
     parts: Attribute.Component<'question-bank.parts', true>;
     test_series: Attribute.Relation<
       'api::question-bank.question-bank',

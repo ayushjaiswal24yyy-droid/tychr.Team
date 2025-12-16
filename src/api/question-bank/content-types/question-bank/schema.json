@@ -17,11 +17,7 @@
     },
     "content_format": {
       "type": "enumeration",
-      "enum": [
-        "html",
-        "markdown",
-        "richtext"
-      ],
+      "enum": ["html", "markdown", "richtext"],
       "default": "richtext"
     },
     "question_type": {
@@ -42,6 +38,10 @@
       "type": "integer",
       "required": true
     },
+    "is_offline": {
+      "type": "boolean",
+      "default": false
+    },
     "parts": {
       "type": "component",
       "repeatable": true,
@@ -61,12 +61,7 @@
     "attachments": {
       "type": "media",
       "multiple": true,
-      "allowedTypes": [
-        "images",
-        "files",
-        "videos",
-        "audios"
-      ]
+      "allowedTypes": ["images", "files", "videos", "audios"]
     },
     "note": {
       "type": "relation",
