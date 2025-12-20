@@ -44,6 +44,9 @@
     "original_correct_answer": {
       "type": "text"
     },
+    "multiple_correct_answers": {
+      "type": "json"
+    },
     "hints": {
       "type": "component",
       "repeatable": true,
