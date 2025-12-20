@@ -32,7 +32,11 @@
     },
     "content_format": {
       "type": "enumeration",
-      "enum": ["html", "markdown", "richtext"],
+      "enum": [
+        "html",
+        "markdown",
+        "richtext"
+      ],
       "default": "richtext"
     },
     "options": {
@@ -55,7 +59,28 @@
     "attachments": {
       "type": "media",
       "multiple": true,
-      "allowedTypes": ["images", "files", "videos", "audios"]
+      "required": false,
+      "allowedTypes": [
+        "images",
+        "files",
+        "videos",
+        "audios"
+      ]
+    },
+    "correctMatchingPairs": {
+      "type": "json"
+    },
+    "left_items": {
+      "displayName": "leftItemsSection",
+      "type": "component",
+      "repeatable": true,
+      "component": "question-bank.left-items-section"
+    },
+    "right_items": {
+      "displayName": "RightItemsSection ",
+      "type": "component",
+      "repeatable": true,
+      "component": "question-bank.right-items-section"
     }
   }
 }

@@ -1,0 +1,25 @@
+{
+  "collectionName": "components_question_bank_left_items_sections",
+  "info": {
+    "displayName": "leftItemsSection"
+  },
+  "options": {},
+  "attributes": {
+    "itemId": {
+      "type": "string"
+    },
+    "content": {
+      "type": "richtext"
+    },
+    "image": {
+      "allowedTypes": [
+        "images",
+        "files",
+        "videos",
+        "audios"
+      ],
+      "type": "media",
+      "multiple": false
+    }
+  }
+}

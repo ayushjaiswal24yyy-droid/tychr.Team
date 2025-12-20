@@ -4,7 +4,8 @@
   "info": {
     "singularName": "question-bank",
     "pluralName": "question-banks",
-    "displayName": "Question Bank"
+    "displayName": "Question Bank",
+    "description": ""
   },
   "options": {
     "draftAndPublish": false
@@ -17,7 +18,11 @@
     },
     "content_format": {
       "type": "enumeration",
-      "enum": ["html", "markdown", "richtext"],
+      "enum": [
+        "html",
+        "markdown",
+        "richtext"
+      ],
       "default": "richtext"
     },
     "question_type": {
@@ -62,7 +67,13 @@
     "attachments": {
       "type": "media",
       "multiple": true,
-      "allowedTypes": ["images", "files", "videos", "audios"]
+      "required": false,
+      "allowedTypes": [
+        "images",
+        "files",
+        "videos",
+        "audios"
+      ]
     },
     "note": {
       "type": "relation",

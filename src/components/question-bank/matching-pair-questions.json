@@ -1,0 +1,13 @@
+{
+  "collectionName": "components_question_bank_matching_pair_questions",
+  "info": {
+    "displayName": "matchingPairQuestions",
+    "icon": "file"
+  },
+  "options": {},
+  "attributes": {
+    "title": {
+      "type": "string"
+    }
+  }
+}

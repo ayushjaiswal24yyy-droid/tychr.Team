@@ -1,0 +1,26 @@
+{
+  "collectionName": "components_question_bank_right_items_section_s",
+  "info": {
+    "displayName": "RightItemsSection ",
+    "icon": "collapse"
+  },
+  "options": {},
+  "attributes": {
+    "item_id": {
+      "type": "string"
+    },
+    "content": {
+      "type": "richtext"
+    },
+    "image": {
+      "allowedTypes": [
+        "images",
+        "files",
+        "videos",
+        "audios"
+      ],
+      "type": "media",
+      "multiple": false
+    }
+  }
+}
