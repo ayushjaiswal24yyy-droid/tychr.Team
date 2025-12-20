@@ -3777,14 +3777,6 @@ export interface ApiTutorsTutors extends Schema.SingleType {
     stats: Attribute.Component<'stats.stats', true>;
     achievers: Attribute.Component<'achievers.achiever', true>;
     results_data: Attribute.Component<'results-data.results-data', true>;
-    best_tutors_heading: Attribute.String;
-    best_tutors_description: Attribute.Text;
-    best_tutors_data: Attribute.Component<
-      'best-tutors-data.best-tutors-data',
-      true
-    >;
-    why_choose_heading: Attribute.String;
-    WhyChooseData: Attribute.Component<'why-choose-data.why-choose-data', true>;
     free_resources: Attribute.Component<'free-resources.free-resourced'>;
     subject_excellence: Attribute.Component<'subject-excellence.subject-excellence'>;
     students_by_subjects: Attribute.Component<
@@ -3792,6 +3784,9 @@ export interface ApiTutorsTutors extends Schema.SingleType {
       true
     >;
     claims: Attribute.Component<'claims.claims', true>;
+    best_tutors: Attribute.Component<'best-tutors.best-tutors'>;
+    elite_tutors: Attribute.Component<'claims.claims', true>;
+    learn_and_repeat: Attribute.Component<'claims.claims', true>;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
@@ -3832,7 +3827,10 @@ export interface ApiTutorsWebsiteTutorsWebsite extends Schema.CollectionType {
     ap_future: Attribute.Component<'ap-future.ap-future'>;
     ap_top_colleges: Attribute.Component<'ap-colleges.ap-colleges'>;
     top_colleges: Attribute.Component<'top-colleges.top-colleges', true>;
-    ig_paper_structure: Attribute.Component<'ig-paper-structure.igcse-paper-structure'>;
+    ig_paper_structure: Attribute.Component<
+      'ig-paper-structure.igcse-paper-structure',
+      true
+    >;
     semesters: Attribute.Component<'semesters.semesters', true>;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;

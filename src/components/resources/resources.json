@@ -1,14 +1,28 @@
 {
   "collectionName": "components_resources_resources",
   "info": {
-    "displayName": "Resources"
+    "displayName": "Resources",
+    "description": ""
   },
   "options": {},
   "attributes": {
     "category": {
       "type": "string"
     },
-    "resource_item": {
+    "Subject": {
+      "type": "string"
+    },
+    "Icon": {
+      "allowedTypes": [
+        "images",
+        "files",
+        "videos",
+        "audios"
+      ],
+      "type": "media",
+      "multiple": false
+    },
+    "Boards": {
       "type": "json"
     }
   }

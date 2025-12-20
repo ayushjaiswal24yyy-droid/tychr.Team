@@ -1,0 +1,26 @@
+{
+  "collectionName": "components_best_tutors_best_tutors",
+  "info": {
+    "displayName": "Best Tutors"
+  },
+  "options": {},
+  "attributes": {
+    "heading": {
+      "type": "string"
+    },
+    "description": {
+      "type": "text"
+    },
+    "best_tutors_data": {
+      "type": "component",
+      "repeatable": true,
+      "component": "best-tutors-data.best-tutors-data"
+    },
+    "why_choose_heading": {
+      "type": "string"
+    },
+    "why_choose_data": {
+      "type": "json"
+    }
+  }
+}

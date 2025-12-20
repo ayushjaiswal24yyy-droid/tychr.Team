@@ -60,7 +60,7 @@
     "ig_paper_structure": {
       "displayName": "IGCSE Paper Structure",
       "type": "component",
-      "repeatable": false,
+      "repeatable": true,
       "component": "ig-paper-structure.igcse-paper-structure"
     },
     "semesters": {
