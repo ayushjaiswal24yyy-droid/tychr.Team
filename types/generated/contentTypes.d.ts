@@ -2777,6 +2777,7 @@ export interface ApiQuestionBankQuestionBank extends Schema.CollectionType {
     question_type: Attribute.Enumeration<
       [
         'mcq',
+        'mcq_multiple',
         'short_answer',
         'long_answer',
         'match_columns',

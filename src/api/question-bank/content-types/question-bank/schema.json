@@ -24,6 +24,7 @@
       "type": "enumeration",
       "enum": [
         "mcq",
+        "mcq_multiple",
         "short_answer",
         "long_answer",
         "match_columns",
