@@ -62,6 +62,9 @@
     "cancellation_reason": {
       "type": "text"
     },
+    "is_resheduled": {
+      "type": "boolean"
+    },
     "allow_reschedule": {
       "type": "boolean",
       "default": true
