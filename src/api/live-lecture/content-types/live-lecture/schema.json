@@ -79,7 +79,12 @@
     },
     "lecture_status": {
       "type": "enumeration",
-      "enum": ["scheduled", "rescheduled", "cancelled", "completed"],
+      "enum": [
+        "scheduled",
+        "rescheduled",
+        "cancelled",
+        "completed"
+      ],
       "default": "scheduled"
     },
     "status_history": {

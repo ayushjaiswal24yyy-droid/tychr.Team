@@ -25,11 +25,11 @@
     "payment_date": {
       "type": "date"
     },
-    "tutors": {
+    "tutor": {
       "type": "relation",
-      "relation": "manyToMany",
+      "relation": "manyToOne",
       "target": "plugin::users-permissions.user",
-      "mappedBy": "teaching"
+      "inversedBy": "teachings"
     },
     "students": {
       "type": "relation",
@@ -122,11 +122,11 @@
       "type": "boolean",
       "default": false
     },
-    "assistant": {
+    "assistants": {
       "type": "relation",
-      "relation": "oneToOne",
+      "relation": "manyToMany",
       "target": "plugin::users-permissions.user",
-      "inversedBy": "classroom"
+      "inversedBy": "classrooms"
     },
     "notices": {
       "displayName": "notices",

@@ -817,11 +817,6 @@ export interface PluginUsersPermissionsUser extends Schema.CollectionType {
       'manyToOne',
       'api::class.class'
     >;
-    teaching: Attribute.Relation<
-      'plugin::users-permissions.user',
-      'manyToMany',
-      'api::enrollment.enrollment'
-    >;
     studying: Attribute.Relation<
       'plugin::users-permissions.user',
       'manyToMany',
@@ -905,11 +900,6 @@ export interface PluginUsersPermissionsUser extends Schema.CollectionType {
       'plugin::users-permissions.user',
       'oneToMany',
       'api::answer.answer'
-    >;
-    classroom: Attribute.Relation<
-      'plugin::users-permissions.user',
-      'oneToOne',
-      'api::enrollment.enrollment'
     >;
     student_plan: Attribute.Component<'user.student-plan', true>;
     isCreateByAdmin: Attribute.Boolean & Attribute.DefaultTo<false>;
@@ -1016,6 +1006,17 @@ export interface PluginUsersPermissionsUser extends Schema.CollectionType {
       'plugin::users-permissions.user',
       'oneToMany',
       'api::support-ticket.support-ticket'
+    >;
+    is_test_user: Attribute.Boolean & Attribute.DefaultTo<false>;
+    teachings: Attribute.Relation<
+      'plugin::users-permissions.user',
+      'oneToMany',
+      'api::enrollment.enrollment'
+    >;
+    classrooms: Attribute.Relation<
+      'plugin::users-permissions.user',
+      'manyToMany',
+      'api::enrollment.enrollment'
     >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
@@ -1848,9 +1849,9 @@ export interface ApiEnrollmentEnrollment extends Schema.CollectionType {
     isPaid: Attribute.Boolean & Attribute.DefaultTo<true>;
     price: Attribute.Decimal;
     payment_date: Attribute.Date;
-    tutors: Attribute.Relation<
+    tutor: Attribute.Relation<
       'api::enrollment.enrollment',
-      'manyToMany',
+      'manyToOne',
       'plugin::users-permissions.user'
     >;
     students: Attribute.Relation<
@@ -1896,9 +1897,9 @@ export interface ApiEnrollmentEnrollment extends Schema.CollectionType {
     group_limit: Attribute.Integer & Attribute.DefaultTo<10>;
     days: Attribute.Component<'classroom.days', true>;
     isAssist: Attribute.Boolean & Attribute.DefaultTo<false>;
-    assistant: Attribute.Relation<
+    assistants: Attribute.Relation<
       'api::enrollment.enrollment',
-      'oneToOne',
+      'manyToMany',
       'plugin::users-permissions.user'
     >;
     notices: Attribute.Component<'classroom.notices', true>;
@@ -3165,6 +3166,11 @@ export interface ApiStudentNotificationStudentNotification
     metadata: Attribute.JSON;
     scheduled_time: Attribute.DateTime;
     priority: Attribute.Enumeration<['low', 'medium', 'high', 'urgent']>;
+    users_permissions_user: Attribute.Relation<
+      'api::student-notification.student-notification',
+      'manyToOne',
+      'plugin::users-permissions.user'
+    >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;

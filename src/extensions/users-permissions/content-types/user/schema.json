@@ -107,12 +107,6 @@
       "target": "api::class.class",
       "inversedBy": "users"
     },
-    "teaching": {
-      "type": "relation",
-      "relation": "manyToMany",
-      "target": "api::enrollment.enrollment",
-      "inversedBy": "tutors"
-    },
     "studying": {
       "type": "relation",
       "relation": "manyToMany",
@@ -282,12 +276,6 @@
       "relation": "oneToMany",
       "target": "api::answer.answer",
       "mappedBy": "student"
-    },
-    "classroom": {
-      "type": "relation",
-      "relation": "oneToOne",
-      "target": "api::enrollment.enrollment",
-      "mappedBy": "assistant"
     },
     "student_plan": {
       "displayName": "student_plan",
@@ -467,6 +455,18 @@
       "type": "boolean",
       "default": false,
       "required": false
+    },
+    "teachings": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::enrollment.enrollment",
+      "mappedBy": "tutor"
+    },
+    "classrooms": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::enrollment.enrollment",
+      "mappedBy": "assistants"
     }
   }
 }
