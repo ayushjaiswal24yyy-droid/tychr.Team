@@ -450,6 +450,12 @@
       "relation": "oneToMany",
       "target": "api::student-notification.student-notification",
       "mappedBy": "users_permissions_user"
+    },
+    "class_requests": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::class-request.class-request",
+      "mappedBy": "tutor"
     }
   }
 }

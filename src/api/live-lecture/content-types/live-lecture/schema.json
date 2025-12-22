@@ -48,6 +48,27 @@
       "relation": "manyToMany",
       "target": "api::enrollment.enrollment",
       "inversedBy": "live_lectures"
+    },
+    "class_requests": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::class-request.class-request",
+      "mappedBy": "live_lecture"
+    },
+    "is_cancelled": {
+      "type": "boolean",
+      "default": false
+    },
+    "cancellation_reason": {
+      "type": "text"
+    },
+    "allow_reschedule": {
+      "type": "boolean",
+      "default": true
+    },
+    "reschedule_deadline_hours": {
+      "type": "integer",
+      "default": 24
     }
   }
 }

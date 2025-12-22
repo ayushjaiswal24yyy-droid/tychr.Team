@@ -1,0 +1,59 @@
+{
+  "kind": "collectionType",
+  "collectionName": "class_requests",
+  "info": {
+    "singularName": "class-request",
+    "pluralName": "class-requests",
+    "displayName": "class_requests"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "request_type": {
+      "type": "enumeration",
+      "enum": ["reschedule", "cancellation"],
+      "required": true
+    },
+    "status": {
+      "type": "enumeration",
+      "enum": ["pending", "approved", "rejected", "cancelled"],
+      "default": "pending"
+    },
+    "reason": {
+      "type": "text"
+    },
+    "new_schedule": {
+      "type": "datetime"
+    },
+    "live_lecture": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::live-lecture.live-lecture",
+      "inversedBy": "class_requests"
+    },
+    "tutor": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "plugin::users-permissions.user",
+      "inversedBy": "class_requests"
+    },
+    "classroom": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::enrollment.enrollment",
+      "inversedBy": "class_schedule_requests"
+    },
+    "processed_at": {
+      "type": "datetime"
+    },
+    "admin_notes": {
+      "type": "text"
+    },
+    "notification_sent": {
+      "type": "boolean",
+      "default": false
+    }
+  }
+}

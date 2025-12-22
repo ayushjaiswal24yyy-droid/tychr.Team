@@ -177,6 +177,12 @@
       "relation": "oneToMany",
       "target": "api::student-notification.student-notification",
       "mappedBy": "classroom"
+    },
+    "class_schedule_requests": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::class-request.class-request",
+      "mappedBy": "classroom"
     }
   }
 }

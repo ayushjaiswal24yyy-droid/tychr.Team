@@ -1007,6 +1007,11 @@ export interface PluginUsersPermissionsUser extends Schema.CollectionType {
       'oneToMany',
       'api::student-notification.student-notification'
     >;
+    class_requests: Attribute.Relation<
+      'plugin::users-permissions.user',
+      'oneToMany',
+      'api::class-request.class-request'
+    >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     createdBy: Attribute.Relation<
@@ -1326,6 +1331,61 @@ export interface ApiClassClass extends Schema.CollectionType {
       Attribute.Private;
     updatedBy: Attribute.Relation<
       'api::class.class',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+  };
+}
+
+export interface ApiClassRequestClassRequest extends Schema.CollectionType {
+  collectionName: 'class_requests';
+  info: {
+    singularName: 'class-request';
+    pluralName: 'class-requests';
+    displayName: 'class_requests';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    request_type: Attribute.Enumeration<['reschedule', 'cancellation']> &
+      Attribute.Required;
+    status: Attribute.Enumeration<
+      ['pending', 'approved', 'rejected', 'cancelled']
+    > &
+      Attribute.DefaultTo<'pending'>;
+    reason: Attribute.Text;
+    new_schedule: Attribute.DateTime;
+    live_lecture: Attribute.Relation<
+      'api::class-request.class-request',
+      'manyToOne',
+      'api::live-lecture.live-lecture'
+    >;
+    tutor: Attribute.Relation<
+      'api::class-request.class-request',
+      'manyToOne',
+      'plugin::users-permissions.user'
+    >;
+    classroom: Attribute.Relation<
+      'api::class-request.class-request',
+      'manyToOne',
+      'api::enrollment.enrollment'
+    >;
+    processed_at: Attribute.DateTime;
+    admin_notes: Attribute.Text;
+    notification_sent: Attribute.Boolean & Attribute.DefaultTo<false>;
+    createdAt: Attribute.DateTime;
+    updatedAt: Attribute.DateTime;
+    publishedAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<
+      'api::class-request.class-request',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+    updatedBy: Attribute.Relation<
+      'api::class-request.class-request',
       'oneToOne',
       'admin::user'
     > &
@@ -1873,6 +1933,11 @@ export interface ApiEnrollmentEnrollment extends Schema.CollectionType {
       'oneToMany',
       'api::student-notification.student-notification'
     >;
+    class_schedule_requests: Attribute.Relation<
+      'api::enrollment.enrollment',
+      'oneToMany',
+      'api::class-request.class-request'
+    >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     createdBy: Attribute.Relation<
@@ -2170,6 +2235,15 @@ export interface ApiLiveLectureLiveLecture extends Schema.CollectionType {
       'manyToMany',
       'api::enrollment.enrollment'
     >;
+    class_requests: Attribute.Relation<
+      'api::live-lecture.live-lecture',
+      'oneToMany',
+      'api::class-request.class-request'
+    >;
+    is_cancelled: Attribute.Boolean & Attribute.DefaultTo<false>;
+    cancellation_reason: Attribute.Text;
+    allow_reschedule: Attribute.Boolean & Attribute.DefaultTo<true>;
+    reschedule_deadline_hours: Attribute.Integer & Attribute.DefaultTo<24>;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
@@ -2766,6 +2840,7 @@ export interface ApiQuestionBankQuestionBank extends Schema.CollectionType {
     singularName: 'question-bank';
     pluralName: 'question-banks';
     displayName: 'Question Bank';
+    description: '';
   };
   options: {
     draftAndPublish: false;
@@ -4081,6 +4156,7 @@ declare module '@strapi/types' {
       'api::answer.answer': ApiAnswerAnswer;
       'api::article.article': ApiArticleArticle;
       'api::class.class': ApiClassClass;
+      'api::class-request.class-request': ApiClassRequestClassRequest;
       'api::college.college': ApiCollegeCollege;
       'api::comment.comment': ApiCommentComment;
       'api::commission-setting.commission-setting': ApiCommissionSettingCommissionSetting;
