@@ -3382,6 +3382,57 @@ export interface ApiSubtopicSubtopic extends Schema.CollectionType {
   };
 }
 
+export interface ApiSupportTicketSupportTicket extends Schema.CollectionType {
+  collectionName: 'support_tickets';
+  info: {
+    singularName: 'support-ticket';
+    pluralName: 'support-tickets';
+    displayName: 'Support Ticket';
+    description: '';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    title: Attribute.String;
+    description: Attribute.Text;
+    media: Attribute.Media<'images' | 'files' | 'videos' | 'audios'>;
+    type: Attribute.Enumeration<['technical', 'non-technical']>;
+    admin_message: Attribute.Text;
+    status: Attribute.Enumeration<
+      [
+        'New',
+        'Open',
+        'In Progress',
+        'Waiting on Customer',
+        'Resolved',
+        'Closed'
+      ]
+    >;
+    admin_media: Attribute.Media<'images' | 'files' | 'videos' | 'audios'>;
+    user: Attribute.Relation<
+      'api::support-ticket.support-ticket',
+      'oneToOne',
+      'plugin::users-permissions.user'
+    >;
+    createdAt: Attribute.DateTime;
+    updatedAt: Attribute.DateTime;
+    publishedAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<
+      'api::support-ticket.support-ticket',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+    updatedBy: Attribute.Relation<
+      'api::support-ticket.support-ticket',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+  };
+}
+
 export interface ApiTaskTask extends Schema.CollectionType {
   collectionName: 'tasks';
   info: {
@@ -4194,6 +4245,7 @@ declare module '@strapi/types' {
       'api::subject.subject': ApiSubjectSubject;
       'api::subject-group.subject-group': ApiSubjectGroupSubjectGroup;
       'api::subtopic.subtopic': ApiSubtopicSubtopic;
+      'api::support-ticket.support-ticket': ApiSupportTicketSupportTicket;
       'api::task.task': ApiTaskTask;
       'api::test.test': ApiTestTest;
       'api::test-serie.test-serie': ApiTestSerieTestSerie;
