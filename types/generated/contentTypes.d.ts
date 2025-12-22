@@ -2242,6 +2242,7 @@ export interface ApiLiveLectureLiveLecture extends Schema.CollectionType {
     >;
     is_cancelled: Attribute.Boolean & Attribute.DefaultTo<false>;
     cancellation_reason: Attribute.Text;
+    is_resheduled: Attribute.Boolean;
     allow_reschedule: Attribute.Boolean & Attribute.DefaultTo<true>;
     reschedule_deadline_hours: Attribute.Integer & Attribute.DefaultTo<24>;
     createdAt: Attribute.DateTime;
