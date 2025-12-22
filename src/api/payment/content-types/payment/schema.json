@@ -41,7 +41,11 @@
     },
     "status": {
       "type": "enumeration",
-      "enum": ["active", "expired", "used_up"],
+      "enum": [
+        "active",
+        "expired",
+        "used_up"
+      ],
       "default": "active"
     },
     "razorpay_payment_id": {

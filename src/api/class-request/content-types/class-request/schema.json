@@ -13,12 +13,20 @@
   "attributes": {
     "request_type": {
       "type": "enumeration",
-      "enum": ["reschedule", "cancellation"],
+      "enum": [
+        "reschedule",
+        "cancellation"
+      ],
       "required": true
     },
     "status": {
       "type": "enumeration",
-      "enum": ["pending", "approved", "rejected", "cancelled"],
+      "enum": [
+        "pending",
+        "approved",
+        "rejected",
+        "cancelled"
+      ],
       "default": "pending"
     },
     "reason": {

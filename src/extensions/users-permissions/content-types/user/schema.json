@@ -462,6 +462,11 @@
       "relation": "oneToMany",
       "target": "api::support-ticket.support-ticket",
       "mappedBy": "user"
+    },
+    "is_test_user": {
+      "type": "boolean",
+      "default": false,
+      "required": false
     }
   }
 }
