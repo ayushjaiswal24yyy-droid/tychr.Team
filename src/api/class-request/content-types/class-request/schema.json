@@ -48,7 +48,7 @@
     "processed_at": {
       "type": "datetime"
     },
-    "admin_notes": {
+    "tutor_note": {
       "type": "text"
     },
     "notification_sent": {

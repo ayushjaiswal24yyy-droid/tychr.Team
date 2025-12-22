@@ -1012,6 +1012,11 @@ export interface PluginUsersPermissionsUser extends Schema.CollectionType {
       'oneToMany',
       'api::class-request.class-request'
     >;
+    support_tickets: Attribute.Relation<
+      'plugin::users-permissions.user',
+      'oneToMany',
+      'api::support-ticket.support-ticket'
+    >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     createdBy: Attribute.Relation<
@@ -1373,7 +1378,7 @@ export interface ApiClassRequestClassRequest extends Schema.CollectionType {
       'api::enrollment.enrollment'
     >;
     processed_at: Attribute.DateTime;
-    admin_notes: Attribute.Text;
+    tutor_note: Attribute.Text;
     notification_sent: Attribute.Boolean & Attribute.DefaultTo<false>;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
@@ -2243,8 +2248,14 @@ export interface ApiLiveLectureLiveLecture extends Schema.CollectionType {
     is_cancelled: Attribute.Boolean & Attribute.DefaultTo<false>;
     cancellation_reason: Attribute.Text;
     is_resheduled: Attribute.Boolean;
+    reschedule_count: Attribute.Integer & Attribute.DefaultTo<0>;
     allow_reschedule: Attribute.Boolean & Attribute.DefaultTo<true>;
     reschedule_deadline_hours: Attribute.Integer & Attribute.DefaultTo<24>;
+    lecture_status: Attribute.Enumeration<
+      ['scheduled', 'rescheduled', 'cancelled', 'completed']
+    > &
+      Attribute.DefaultTo<'scheduled'>;
+    status_history: Attribute.JSON;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
@@ -3383,6 +3394,57 @@ export interface ApiSubtopicSubtopic extends Schema.CollectionType {
   };
 }
 
+export interface ApiSupportTicketSupportTicket extends Schema.CollectionType {
+  collectionName: 'support_tickets';
+  info: {
+    singularName: 'support-ticket';
+    pluralName: 'support-tickets';
+    displayName: 'Support Ticket';
+    description: '';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    title: Attribute.String;
+    description: Attribute.Text;
+    media: Attribute.Media<'images' | 'files' | 'videos' | 'audios'>;
+    type: Attribute.Enumeration<['technical', 'non-technical']>;
+    admin_message: Attribute.Text;
+    status: Attribute.Enumeration<
+      [
+        'New',
+        'Open',
+        'In Progress',
+        'Waiting on Customer',
+        'Resolved',
+        'Closed'
+      ]
+    >;
+    admin_media: Attribute.Media<'images' | 'files' | 'videos' | 'audios'>;
+    user: Attribute.Relation<
+      'api::support-ticket.support-ticket',
+      'manyToOne',
+      'plugin::users-permissions.user'
+    >;
+    createdAt: Attribute.DateTime;
+    updatedAt: Attribute.DateTime;
+    publishedAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<
+      'api::support-ticket.support-ticket',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+    updatedBy: Attribute.Relation<
+      'api::support-ticket.support-ticket',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+  };
+}
+
 export interface ApiTaskTask extends Schema.CollectionType {
   collectionName: 'tasks';
   info: {
@@ -4195,6 +4257,7 @@ declare module '@strapi/types' {
       'api::subject.subject': ApiSubjectSubject;
       'api::subject-group.subject-group': ApiSubjectGroupSubjectGroup;
       'api::subtopic.subtopic': ApiSubtopicSubtopic;
+      'api::support-ticket.support-ticket': ApiSupportTicketSupportTicket;
       'api::task.task': ApiTaskTask;
       'api::test.test': ApiTestTest;
       'api::test-serie.test-serie': ApiTestSerieTestSerie;

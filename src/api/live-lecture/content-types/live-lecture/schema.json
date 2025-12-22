@@ -65,6 +65,10 @@
     "is_resheduled": {
       "type": "boolean"
     },
+    "reschedule_count": {
+      "type": "integer",
+      "default": 0
+    },
     "allow_reschedule": {
       "type": "boolean",
       "default": true
@@ -72,6 +76,14 @@
     "reschedule_deadline_hours": {
       "type": "integer",
       "default": 24
+    },
+    "lecture_status": {
+      "type": "enumeration",
+      "enum": ["scheduled", "rescheduled", "cancelled", "completed"],
+      "default": "scheduled"
+    },
+    "status_history": {
+      "type": "json"
     }
   }
 }
