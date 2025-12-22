@@ -456,6 +456,12 @@
       "relation": "oneToMany",
       "target": "api::class-request.class-request",
       "mappedBy": "tutor"
+    },
+    "support_tickets": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::support-ticket.support-ticket",
+      "mappedBy": "user"
     }
   }
 }

@@ -1012,6 +1012,11 @@ export interface PluginUsersPermissionsUser extends Schema.CollectionType {
       'oneToMany',
       'api::class-request.class-request'
     >;
+    support_tickets: Attribute.Relation<
+      'plugin::users-permissions.user',
+      'oneToMany',
+      'api::support-ticket.support-ticket'
+    >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     createdBy: Attribute.Relation<
@@ -3412,7 +3417,7 @@ export interface ApiSupportTicketSupportTicket extends Schema.CollectionType {
     admin_media: Attribute.Media<'images' | 'files' | 'videos' | 'audios'>;
     user: Attribute.Relation<
       'api::support-ticket.support-ticket',
-      'oneToOne',
+      'manyToOne',
       'plugin::users-permissions.user'
     >;
     createdAt: Attribute.DateTime;
