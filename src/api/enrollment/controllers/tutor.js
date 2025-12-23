@@ -126,7 +126,7 @@ module.exports = createCoreController(
             data.group_limit > 10
           ) {
             return ctx.badRequest(
-              "Group classes must have a limit between 2 and 10 students"
+              "Group classes must have a limit between 2 and 50 students"
             );
           }
         } else if (data.classroom_type === "one-on-one") {
@@ -386,6 +386,359 @@ module.exports = createCoreController(
         return ctx.badRequest(error.message);
       }
     },
-    
+    async updateCustomClassroom(ctx) {
+      try {
+        const { id } = ctx.params;
+        const { data } = ctx.request.body;
+
+        if (!id) {
+          return ctx.badRequest("Classroom ID is required");
+        }
+
+        if (!data) {
+          return ctx.badRequest("No data provided for update");
+        }
+
+        const user = ctx.state.user;
+        if (!user) {
+          return ctx.unauthorized(
+            "You must be logged in to update a classroom"
+          );
+        }
+
+        // 1. Get the existing classroom
+        const existingClassroom = await strapi.entityService.findOne(
+          "api::enrollment.enrollment",
+          id,
+          {
+            populate: [
+              "status",
+              "tutor",
+              "grade_subject",
+              "topic",
+              "grade",
+              "ib_program",
+            ],
+          }
+        );
+
+        //  Check if user is the tutor or has admin rights
+        if (existingClassroom.tutor?.id !== user.id) {
+          return ctx.forbidden("You can only update your own classrooms");
+        }
+        if (!existingClassroom) {
+          return ctx.notFound("Classroom not found");
+        }
+
+        // 2. Prevent updates if status is "Approved" (except certain fields)
+        const editableStatuses = ["Requested", "Requested Demo", "Responded"];
+        if (
+          existingClassroom.status === "Approved" &&
+          !editableStatuses.includes(data.status)
+        ) {
+          // For approved classrooms, only allow updates to specific fields
+          const allowedFields = [
+            "notices",
+            "additional_resources",
+            "recorded_lectures",
+          ];
+
+          const attemptedUpdates = Object.keys(data);
+          const disallowedUpdates = attemptedUpdates.filter(
+            (field) => !allowedFields.includes(field)
+          );
+
+          if (disallowedUpdates.length > 0) {
+            return ctx.badRequest(
+              `Cannot update ${disallowedUpdates.join(
+                ", "
+              )} for approved classrooms. ` +
+                "Only notices and additional resources can be updated."
+            );
+          }
+        }
+
+        // 3. Validate topic if being updated
+        if (data.topic) {
+          const topic = await strapi.entityService.findOne(
+            "api::subtopic.subtopic",
+            data.topic,
+            {
+              populate: ["topic.grade_subject"],
+            }
+          );
+
+          if (!topic) {
+            return ctx.badRequest("Invalid topic selected");
+          }
+
+          // Check if topic's grade_subject matches the classroom's grade_subject
+          if (
+            existingClassroom.grade_subject?.id &&
+            topic.topic?.grade_subject?.id !==
+              existingClassroom.grade_subject.id
+          ) {
+            return ctx.badRequest(
+              "Topic does not belong to the classroom's garde subject"
+            );
+          }
+        }
+
+        // 4. Validate grade_subject if being updated
+        if (data.grade_subject) {
+          const gradeSubject = await strapi.entityService.findOne(
+            "api::grade-subject.grade-subject",
+            data.grade_subject,
+            {
+              populate: ["grade"],
+            }
+          );
+
+          if (!gradeSubject) {
+            return ctx.badRequest("Invalid grade subject selected");
+          }
+
+          // Check if grade matches existing grade
+          if (
+            existingClassroom.grade?.id &&
+            gradeSubject.grade?.id !== existingClassroom.grade.id
+          ) {
+            return ctx.badRequest(
+              "Grade subject does not belong to the classroom's grade subject"
+            );
+          }
+        }
+
+        // 5. Validate grade if being updated
+        if (data.grade) {
+          const grade = await strapi.entityService.findOne(
+            "api::class.class",
+            data.grade
+          );
+          if (!grade) {
+            return ctx.badRequest("Invalid grade selected");
+          }
+        }
+
+        // 6. Validate IB program if being updated
+        if (data.ib_program) {
+          const ibProgram = await strapi.entityService.findOne(
+            "api::ib-program.ib-program",
+            data.ib_program,
+            {
+              populate: ["grades"],
+            }
+          );
+
+          if (!ibProgram) {
+            return ctx.badRequest("Invalid IB program selected");
+          }
+
+          // Check if grade is in the IB program
+          const currentGradeId = data.grade || existingClassroom.grade?.id;
+          if (currentGradeId) {
+            const hasGrade = ibProgram.grades?.some(
+              (g) => g.id === parseInt(currentGradeId)
+            );
+            if (!hasGrade) {
+              return ctx.badRequest(
+                "Selected grade is not available in this IB program"
+              );
+            }
+          }
+        }
+
+        // 7. Validate classroom type specific rules
+        if (data.classroom_type) {
+          if (data.classroom_type === "group") {
+            if (
+              !data.group_limit ||
+              data.group_limit < 2 ||
+              data.group_limit > 50
+            ) {
+              return ctx.badRequest(
+                "Group classes must have a limit between 2 and 50 students"
+              );
+            }
+          } else if (data.classroom_type === "one-on-one") {
+            data.group_limit = null;
+          }
+        }
+
+        // 8. Validate date range if dates are being updated
+        if (data.startDate || data.endDate) {
+          const startDate = new Date(
+            data.startDate || existingClassroom.startDate
+          );
+          const endDate = new Date(data.endDate || existingClassroom.endDate);
+
+          if (startDate >= endDate) {
+            return ctx.badRequest("End date must be after start date");
+          }
+        }
+
+        // 9. Validate duration if being updated
+        if (data.duration && data.duration < 30) {
+          return ctx.badRequest("Duration must be at least 30 minutes");
+        }
+
+        // 10. Validate days if being updated
+        if (data.days) {
+          if (!Array.isArray(data.days) || data.days.length === 0) {
+            return ctx.badRequest("At least one day must be selected");
+          }
+
+          const validDays = [
+            "monday",
+            "tuesday",
+            "wednesday",
+            "thursday",
+            "friday",
+            "saturday",
+            "sunday",
+          ];
+          for (const day of data.days) {
+            if (!day.day || !validDays.includes(day.day.toLowerCase())) {
+              return ctx.badRequest(
+                `Invalid day: ${day.day}. Must be one of: ${validDays.join(
+                  ", "
+                )}`
+              );
+            }
+            if (
+              !day.time ||
+              !/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/.test(day.time)
+            ) {
+              return ctx.badRequest(
+                `Invalid time format for ${day.day}. Use HH:MM format`
+              );
+            }
+          }
+        }
+
+        // 11. Validate price if being updated
+        if (data.price !== undefined && data.price < 0) {
+          return ctx.badRequest("Price must be a positive number");
+        }
+
+        // 12. Validate assistant if isAssist is being updated
+        // if (data.isAssist !== undefined) {
+        //   if (data.isAssist && data.assistant) {
+        //     const assistant = await strapi.entityService.findOne(
+        //       "plugin::users-permissions.user",
+        //       data.assistant
+        //     );
+        //     if (!assistant) {
+        //       return ctx.badRequest("Invalid assistant selected");
+        //     }
+
+        //     const assistantRole = assistant.role?.name;
+        //     if (!["tutor", "assistant", "admin"].includes(assistantRole)) {
+        //       return ctx.badRequest(
+        //         "Selected assistant does not have appropriate permissions"
+        //       );
+        //     }
+        //   } else if (
+        //     data.isAssist &&
+        //     !data.assistant &&
+        //     !existingClassroom.assistant
+        //   ) {
+        //     return ctx.badRequest(
+        //       "Assistant is required when assistant is enabled"
+        //     );
+        //   }
+        // }
+
+        // 15. Prepare update data with proper transformations
+        const updateData = {
+          ...data,
+          // Ensure proper data types
+          ...(data.price !== undefined && { price: parseFloat(data.price) }),
+          ...(data.duration !== undefined && {
+            duration: parseInt(data.duration),
+          }),
+          ...(data.startDate && {
+            startDate: new Date(data.startDate).toISOString().split("T")[0],
+          }),
+          ...(data.endDate && {
+            endDate: new Date(data.endDate).toISOString().split("T")[0],
+          }),
+          // Convert days component properly
+          ...(data.days && {
+            days: data.days.map((day) => ({
+              day: day.day.toLowerCase(),
+              time: day.time,
+            })),
+          }),
+          // Handle assistant properly
+          ...(data.isAssist === false && { assistant: null }),
+        };
+
+        // 16. Update the classroom
+        const updatedClassroom = await strapi.entityService.update(
+          "api::enrollment.enrollment",
+          id,
+          {
+            data: updateData,
+            populate: [
+              "tutor",
+              "grade_subject",
+              "topic",
+              "grade",
+              "ib_program",
+              "assistant",
+              "students",
+            ],
+          }
+        );
+
+        // 17. Log the update for audit trail
+        // await strapi.service("api::audit-log.audit-log").create({
+        //   data: {
+        //     action: "CLASSROOM_UPDATE",
+        //     user: user.id,
+        //     target_type: "classroom",
+        //     target_id: id,
+        //     details: JSON.stringify({
+        //       updated_fields: Object.keys(data),
+        //       previous_values: existingClassroom,
+        //       new_values: updateData,
+        //     }),
+        //     ip_address: ctx.request.ip,
+        //   },
+        // });
+
+        // 18. Send notification if significant changes were made
+        // if (
+        //   ["status", "startDate", "endDate", "days", "price"].some(
+        //     (field) => data[field]
+        //   )
+        // ) {
+        //   try {
+        //     await strapi
+        //       .service("api::notification.notification")
+        //       .sendClassroomUpdateNotification({
+        //         classroom: updatedClassroom,
+        //         tutor: user,
+        //         changes: Object.keys(data),
+        //       });
+        //   } catch (notificationError) {
+        //     strapi.log.error("Failed to send notification:", notificationError);
+        //   }
+        // }
+
+        return {
+          success: true,
+          data: updatedClassroom,
+          message: "Classroom updated successfully",
+        };
+      } catch (error) {
+        strapi.log.error("Error updating classroom:", error);
+        return ctx.badRequest(
+          error.message || "An error occurred while updating the classroom"
+        );
+      }
+    },
+  
   })
 );

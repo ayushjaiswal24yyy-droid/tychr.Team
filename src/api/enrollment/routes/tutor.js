@@ -20,5 +20,11 @@ module.exports = {
         middlewares: [],
       },
     },
+    {
+      method: "PUT",
+      path: "/enrollments/:id/update",
+      handler: "tutor.updateCustomClassroom",
+
+    },
   ],
 };
