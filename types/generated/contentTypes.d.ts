@@ -1017,6 +1017,7 @@ export interface PluginUsersPermissionsUser extends Schema.CollectionType {
       'oneToMany',
       'api::support-ticket.support-ticket'
     >;
+    is_test_user: Attribute.Boolean & Attribute.DefaultTo<false>;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     createdBy: Attribute.Relation<
@@ -3165,6 +3166,11 @@ export interface ApiStudentNotificationStudentNotification
     metadata: Attribute.JSON;
     scheduled_time: Attribute.DateTime;
     priority: Attribute.Enumeration<['low', 'medium', 'high', 'urgent']>;
+    users_permissions_user: Attribute.Relation<
+      'api::student-notification.student-notification',
+      'manyToOne',
+      'plugin::users-permissions.user'
+    >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
