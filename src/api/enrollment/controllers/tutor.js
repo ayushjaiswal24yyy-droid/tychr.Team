@@ -675,15 +675,7 @@ module.exports = createCoreController(
                 )}`
               );
             }
-            // FIXED: Check startTime field (not time)
-            if (
-              !day.startTime ||
-              !/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/.test(day.startTime)
-            ) {
-              return ctx.badRequest(
-                `Invalid time format for ${day.days}. Use HH:MM format`
-              );
-            }
+           
           }
         }
 
@@ -705,6 +697,9 @@ module.exports = createCoreController(
               days: day.days, // Keep uppercase as per enum
               startTime: day.startTime, // Keep startTime field
             })),
+          }),
+          ...(data.additional_resources && {
+            additional_resources: data.additional_resources,
           }),
           // Handle assistant properly
         };
@@ -732,40 +727,6 @@ module.exports = createCoreController(
           }
         );
 
-        // 17. Log the update for audit trail
-        // await strapi.service("api::audit-log.audit-log").create({
-        //   data: {
-        //     action: "CLASSROOM_UPDATE",
-        //     user: user.id,
-        //     target_type: "classroom",
-        //     target_id: id,
-        //     details: JSON.stringify({
-        //       updated_fields: Object.keys(data),
-        //       previous_values: existingClassroom,
-        //       new_values: updateData,
-        //     }),
-        //     ip_address: ctx.request.ip,
-        //   },
-        // });
-
-        // 18. Send notification if significant changes were made
-        // if (
-        //   ["status", "startDate", "endDate", "days", "price"].some(
-        //     (field) => data[field]
-        //   )
-        // ) {
-        //   try {
-        //     await strapi
-        //       .service("api::notification.notification")
-        //       .sendClassroomUpdateNotification({
-        //         classroom: updatedClassroom,
-        //         tutor: user,
-        //         changes: Object.keys(data),
-        //       });
-        //   } catch (notificationError) {
-        //     strapi.log.error("Failed to send notification:", notificationError);
-        //   }
-        // }
 
         return {
           success: true,
