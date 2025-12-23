@@ -1768,7 +1768,7 @@ export interface ApiDemoVideoDemoVideo extends Schema.CollectionType {
     >;
     classroom: Attribute.Relation<
       'api::demo-video.demo-video',
-      'oneToOne',
+      'manyToOne',
       'api::enrollment.enrollment'
     >;
     title: Attribute.Text;
@@ -1946,6 +1946,11 @@ export interface ApiEnrollmentEnrollment extends Schema.CollectionType {
       'api::class-request.class-request'
     >;
     notices: Attribute.JSON;
+    classroom_demo_videos: Attribute.Relation<
+      'api::enrollment.enrollment',
+      'oneToMany',
+      'api::demo-video.demo-video'
+    >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     createdBy: Attribute.Relation<
@@ -2222,10 +2227,10 @@ export interface ApiLiveLectureLiveLecture extends Schema.CollectionType {
     draftAndPublish: true;
   };
   attributes: {
-    title: Attribute.String;
+    title: Attribute.String & Attribute.Required;
     description: Attribute.Text;
-    zoom_url: Attribute.String;
-    schedule: Attribute.DateTime;
+    zoom_url: Attribute.String & Attribute.Required;
+    schedule: Attribute.DateTime & Attribute.Required;
     isFree: Attribute.Boolean & Attribute.DefaultTo<false>;
     price: Attribute.Decimal;
     payments: Attribute.Relation<

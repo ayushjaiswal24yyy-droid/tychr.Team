@@ -186,6 +186,12 @@
     },
     "notices": {
       "type": "json"
+    },
+    "classroom_demo_videos": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::demo-video.demo-video",
+      "mappedBy": "classroom"
     }
   }
 }

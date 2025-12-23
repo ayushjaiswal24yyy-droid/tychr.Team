@@ -40,8 +40,9 @@
     },
     "classroom": {
       "type": "relation",
-      "relation": "oneToOne",
-      "target": "api::enrollment.enrollment"
+      "relation": "manyToOne",
+      "target": "api::enrollment.enrollment",
+      "inversedBy": "classroom_demo_videos"
     },
     "title": {
       "type": "text"

@@ -13,16 +13,19 @@
   "pluginOptions": {},
   "attributes": {
     "title": {
-      "type": "string"
+      "type": "string",
+      "required": true
     },
     "description": {
       "type": "text"
     },
     "zoom_url": {
-      "type": "string"
+      "type": "string",
+      "required": true
     },
     "schedule": {
-      "type": "datetime"
+      "type": "datetime",
+      "required": true
     },
     "isFree": {
       "type": "boolean",
