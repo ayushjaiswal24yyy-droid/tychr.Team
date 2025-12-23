@@ -1896,7 +1896,7 @@ export interface ApiEnrollmentEnrollment extends Schema.CollectionType {
     >;
     classroom_type: Attribute.Enumeration<['one-on-one', 'group']> &
       Attribute.Required;
-    group_limit: Attribute.Integer & Attribute.DefaultTo<10>;
+    group_limit: Attribute.Integer & Attribute.DefaultTo<2>;
     days: Attribute.Component<'classroom.days', true> & Attribute.Required;
     isAssist: Attribute.Boolean & Attribute.DefaultTo<false>;
     assistant: Attribute.Relation<
