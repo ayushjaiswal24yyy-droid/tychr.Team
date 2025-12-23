@@ -13,28 +13,23 @@
   "pluginOptions": {},
   "attributes": {
     "title": {
-      "type": "string"
+      "type": "string",
+      "required": true
     },
     "description": {
-      "type": "text"
+      "type": "text",
+      "required": true
     },
     "media": {
       "type": "media",
       "multiple": false,
       "required": false,
-      "allowedTypes": [
-        "images",
-        "files",
-        "videos",
-        "audios"
-      ]
+      "allowedTypes": ["images", "files", "videos", "audios"]
     },
     "type": {
       "type": "enumeration",
-      "enum": [
-        "technical",
-        "non-technical"
-      ]
+      "enum": ["technical", "non-technical"],
+      "required": true
     },
     "admin_message": {
       "type": "text"
@@ -48,18 +43,15 @@
         "Waiting on Customer",
         "Resolved",
         "Closed"
-      ]
+      ],
+      "required": true,
+      "default": "New"
     },
     "admin_media": {
       "type": "media",
       "multiple": false,
       "required": false,
-      "allowedTypes": [
-        "images",
-        "files",
-        "videos",
-        "audios"
-      ]
+      "allowedTypes": ["images", "files", "videos", "audios"]
     },
     "user": {
       "type": "relation",

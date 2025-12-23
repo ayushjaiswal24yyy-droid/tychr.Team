@@ -1847,7 +1847,7 @@ export interface ApiEnrollmentEnrollment extends Schema.CollectionType {
   attributes: {
     enrollment_date: Attribute.Date;
     isPaid: Attribute.Boolean & Attribute.DefaultTo<true>;
-    price: Attribute.Decimal;
+    price: Attribute.Decimal & Attribute.Required;
     payment_date: Attribute.Date;
     tutor: Attribute.Relation<
       'api::enrollment.enrollment',
@@ -1881,21 +1881,23 @@ export interface ApiEnrollmentEnrollment extends Schema.CollectionType {
       'manyToOne',
       'api::subtopic.subtopic'
     >;
-    startDate: Attribute.Date;
-    endDate: Attribute.Date;
+    startDate: Attribute.Date & Attribute.Required;
+    endDate: Attribute.Date & Attribute.Required;
     duration: Attribute.Integer;
     image: Attribute.Media<'images', true>;
     status: Attribute.Enumeration<
       ['Requested', 'Approved', 'Responded', 'Requested Demo']
-    >;
+    > &
+      Attribute.DefaultTo<'Requested'>;
     grade_subject: Attribute.Relation<
       'api::enrollment.enrollment',
       'manyToOne',
       'api::grade-subject.grade-subject'
     >;
-    classroom_type: Attribute.Enumeration<['one-on-one', 'group']>;
+    classroom_type: Attribute.Enumeration<['one-on-one', 'group']> &
+      Attribute.Required;
     group_limit: Attribute.Integer & Attribute.DefaultTo<10>;
-    days: Attribute.Component<'classroom.days', true>;
+    days: Attribute.Component<'classroom.days', true> & Attribute.Required;
     isAssist: Attribute.Boolean & Attribute.DefaultTo<false>;
     assistant: Attribute.Relation<
       'api::enrollment.enrollment',
@@ -3412,10 +3414,11 @@ export interface ApiSupportTicketSupportTicket extends Schema.CollectionType {
     draftAndPublish: true;
   };
   attributes: {
-    title: Attribute.String;
-    description: Attribute.Text;
+    title: Attribute.String & Attribute.Required;
+    description: Attribute.Text & Attribute.Required;
     media: Attribute.Media<'images' | 'files' | 'videos' | 'audios'>;
-    type: Attribute.Enumeration<['technical', 'non-technical']>;
+    type: Attribute.Enumeration<['technical', 'non-technical']> &
+      Attribute.Required;
     admin_message: Attribute.Text;
     status: Attribute.Enumeration<
       [
@@ -3426,7 +3429,9 @@ export interface ApiSupportTicketSupportTicket extends Schema.CollectionType {
         'Resolved',
         'Closed'
       ]
-    >;
+    > &
+      Attribute.Required &
+      Attribute.DefaultTo<'New'>;
     admin_media: Attribute.Media<'images' | 'files' | 'videos' | 'audios'>;
     user: Attribute.Relation<
       'api::support-ticket.support-ticket',

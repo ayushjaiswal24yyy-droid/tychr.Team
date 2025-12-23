@@ -20,7 +20,8 @@
       "default": true
     },
     "price": {
-      "type": "decimal"
+      "type": "decimal",
+      "required": true
     },
     "payment_date": {
       "type": "date"
@@ -70,10 +71,12 @@
       "inversedBy": "classrooms"
     },
     "startDate": {
-      "type": "date"
+      "type": "date",
+      "required": true
     },
     "endDate": {
-      "type": "date"
+      "type": "date",
+      "required": true
     },
     "duration": {
       "type": "integer"
@@ -93,7 +96,8 @@
         "Approved",
         "Responded",
         "Requested Demo"
-      ]
+      ],
+      "default": "Requested"
     },
     "grade_subject": {
       "type": "relation",
@@ -106,7 +110,8 @@
       "enum": [
         "one-on-one",
         "group"
-      ]
+      ],
+      "required": true
     },
     "group_limit": {
       "type": "integer",
@@ -116,7 +121,8 @@
       "displayName": "days",
       "type": "component",
       "repeatable": true,
-      "component": "classroom.days"
+      "component": "classroom.days",
+      "required": true
     },
     "isAssist": {
       "type": "boolean",
