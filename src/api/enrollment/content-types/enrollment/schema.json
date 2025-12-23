@@ -183,6 +183,12 @@
       "relation": "oneToMany",
       "target": "api::class-request.class-request",
       "mappedBy": "classroom"
+    },
+    "tutors": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "plugin::users-permissions.user",
+      "inversedBy": "tutor_classrooms"
     }
   }
 }

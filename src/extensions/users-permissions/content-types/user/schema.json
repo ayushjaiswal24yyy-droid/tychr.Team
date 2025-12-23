@@ -467,6 +467,12 @@
       "relation": "manyToMany",
       "target": "api::enrollment.enrollment",
       "mappedBy": "assistants"
+    },
+    "tutor_classrooms": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::enrollment.enrollment",
+      "mappedBy": "tutors"
     }
   }
 }

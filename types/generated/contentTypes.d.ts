@@ -1018,6 +1018,11 @@ export interface PluginUsersPermissionsUser extends Schema.CollectionType {
       'manyToMany',
       'api::enrollment.enrollment'
     >;
+    tutor_classrooms: Attribute.Relation<
+      'plugin::users-permissions.user',
+      'manyToMany',
+      'api::enrollment.enrollment'
+    >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     createdBy: Attribute.Relation<
@@ -1943,6 +1948,11 @@ export interface ApiEnrollmentEnrollment extends Schema.CollectionType {
       'api::enrollment.enrollment',
       'oneToMany',
       'api::class-request.class-request'
+    >;
+    tutors: Attribute.Relation<
+      'api::enrollment.enrollment',
+      'manyToMany',
+      'plugin::users-permissions.user'
     >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
