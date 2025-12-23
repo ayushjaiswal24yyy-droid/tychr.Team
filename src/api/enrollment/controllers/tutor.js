@@ -583,6 +583,7 @@ module.exports = createCoreController(
         }
 
         // 10. Validate days if being updated
+       
         if (data.days) {
           if (!Array.isArray(data.days) || data.days.length === 0) {
             return ctx.badRequest("At least one day must be selected");
@@ -594,8 +595,6 @@ module.exports = createCoreController(
             "Wednesday",
             "Thursday",
             "Friday",
-            "Saturday",
-            "Sunday",
           ];
 
           for (const day of data.days) {
@@ -606,10 +605,10 @@ module.exports = createCoreController(
                 )}`
               );
             }
-            // ACCEPT both HH:mm and HH:mm:ss.SSS formats
+            // ACCEPT HH:mm:ss.SSS format (what you're sending from frontend)
             if (
               !day.startTime ||
-              !/^([0-1]?[0-9]|2[0-3]):[0-5][0-9](:[0-5][0-9](\.[0-9]{1,3})?)?$/.test(
+              !/^([01]\d|2[0-3]):([0-5]\d)(:([0-5]\d)(\.\d{3})?)?$/.test(
                 day.startTime
               )
             ) {
