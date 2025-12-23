@@ -94,7 +94,7 @@ module.exports = {
 
       return {
         order,
-        key: process.env.RAZORPAY_KEY_ID, // Send key to frontend
+        // key: process.env.RAZORPAY_KEY_ID, // Send key to frontend
       };
     } catch (error) {
       console.error("❌ RAZORPAY ORDER CREATION ERROR:");
