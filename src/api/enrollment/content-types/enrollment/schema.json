@@ -134,12 +134,6 @@
       "target": "plugin::users-permissions.user",
       "inversedBy": "classroom"
     },
-    "notices": {
-      "displayName": "notices",
-      "type": "component",
-      "repeatable": true,
-      "component": "classroom.notices"
-    },
     "notifications": {
       "type": "relation",
       "relation": "manyToMany",
@@ -189,6 +183,9 @@
       "relation": "oneToMany",
       "target": "api::class-request.class-request",
       "mappedBy": "classroom"
+    },
+    "notices": {
+      "type": "json"
     }
   }
 }

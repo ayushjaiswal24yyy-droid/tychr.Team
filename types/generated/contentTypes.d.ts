@@ -1904,7 +1904,6 @@ export interface ApiEnrollmentEnrollment extends Schema.CollectionType {
       'oneToOne',
       'plugin::users-permissions.user'
     >;
-    notices: Attribute.Component<'classroom.notices', true>;
     notifications: Attribute.Relation<
       'api::enrollment.enrollment',
       'manyToMany',
@@ -1946,6 +1945,7 @@ export interface ApiEnrollmentEnrollment extends Schema.CollectionType {
       'oneToMany',
       'api::class-request.class-request'
     >;
+    notices: Attribute.JSON;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     createdBy: Attribute.Relation<
