@@ -25,11 +25,11 @@
     "payment_date": {
       "type": "date"
     },
-    "tutors": {
+    "tutor": {
       "type": "relation",
-      "relation": "manyToMany",
+      "relation": "manyToOne",
       "target": "plugin::users-permissions.user",
-      "mappedBy": "teaching"
+      "inversedBy": "teaching"
     },
     "students": {
       "type": "relation",

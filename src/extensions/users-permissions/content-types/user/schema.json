@@ -107,12 +107,6 @@
       "target": "api::class.class",
       "inversedBy": "users"
     },
-    "teaching": {
-      "type": "relation",
-      "relation": "manyToMany",
-      "target": "api::enrollment.enrollment",
-      "inversedBy": "tutors"
-    },
     "studying": {
       "type": "relation",
       "relation": "manyToMany",
@@ -467,6 +461,12 @@
       "type": "boolean",
       "default": false,
       "required": false
+    },
+    "teaching": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::enrollment.enrollment",
+      "mappedBy": "tutor"
     }
   }
 }

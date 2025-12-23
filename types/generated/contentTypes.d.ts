@@ -817,11 +817,6 @@ export interface PluginUsersPermissionsUser extends Schema.CollectionType {
       'manyToOne',
       'api::class.class'
     >;
-    teaching: Attribute.Relation<
-      'plugin::users-permissions.user',
-      'manyToMany',
-      'api::enrollment.enrollment'
-    >;
     studying: Attribute.Relation<
       'plugin::users-permissions.user',
       'manyToMany',
@@ -1018,6 +1013,11 @@ export interface PluginUsersPermissionsUser extends Schema.CollectionType {
       'api::support-ticket.support-ticket'
     >;
     is_test_user: Attribute.Boolean & Attribute.DefaultTo<false>;
+    teaching: Attribute.Relation<
+      'plugin::users-permissions.user',
+      'oneToMany',
+      'api::enrollment.enrollment'
+    >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     createdBy: Attribute.Relation<
@@ -1849,9 +1849,9 @@ export interface ApiEnrollmentEnrollment extends Schema.CollectionType {
     isPaid: Attribute.Boolean & Attribute.DefaultTo<true>;
     price: Attribute.Decimal;
     payment_date: Attribute.Date;
-    tutors: Attribute.Relation<
+    tutor: Attribute.Relation<
       'api::enrollment.enrollment',
-      'manyToMany',
+      'manyToOne',
       'plugin::users-permissions.user'
     >;
     students: Attribute.Relation<
