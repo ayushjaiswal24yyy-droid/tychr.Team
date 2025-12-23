@@ -594,6 +594,8 @@ module.exports = createCoreController(
             "Wednesday",
             "Thursday",
             "Friday",
+            "Saturday",
+            "Sunday",
           ];
 
           for (const day of data.days) {
@@ -604,13 +606,15 @@ module.exports = createCoreController(
                 )}`
               );
             }
-            // FIXED: Check startTime field (not time)
+            // ACCEPT both HH:mm and HH:mm:ss.SSS formats
             if (
               !day.startTime ||
-              !/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/.test(day.startTime)
+              !/^([0-1]?[0-9]|2[0-3]):[0-5][0-9](:[0-5][0-9](\.[0-9]{1,3})?)?$/.test(
+                day.startTime
+              )
             ) {
               return ctx.badRequest(
-                `Invalid time format for ${day.days}. Use HH:MM format`
+                `Invalid time format for ${day.days}. Use HH:mm or HH:mm:ss.SSS format`
               );
             }
           }
