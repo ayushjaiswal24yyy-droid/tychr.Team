@@ -589,28 +589,28 @@ module.exports = createCoreController(
           }
 
           const validDays = [
-            "monday",
-            "tuesday",
-            "wednesday",
-            "thursday",
-            "friday",
-            "saturday",
-            "sunday",
+            "Monday",
+            "Tuesday",
+            "Wednesday",
+            "Thursday",
+            "Friday",
           ];
+
           for (const day of data.days) {
-            if (!day.day || !validDays.includes(day.day.toLowerCase())) {
+            if (!day.days || !validDays.includes(day.days)) {
               return ctx.badRequest(
-                `Invalid day: ${day.day}. Must be one of: ${validDays.join(
+                `Invalid day: ${day.days}. Must be one of: ${validDays.join(
                   ", "
                 )}`
               );
             }
+            // FIXED: Check startTime field (not time)
             if (
-              !day.time ||
-              !/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/.test(day.time)
+              !day.startTime ||
+              !/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/.test(day.startTime)
             ) {
               return ctx.badRequest(
-                `Invalid time format for ${day.day}. Use HH:MM format`
+                `Invalid time format for ${day.days}. Use HH:MM format`
               );
             }
           }
@@ -650,9 +650,43 @@ module.exports = createCoreController(
         // }
 
         // 15. Prepare update data with proper transformations
+        // 10. Validate days if being updated - FIXED VERSION
+        if (data.days) {
+          if (!Array.isArray(data.days) || data.days.length === 0) {
+            return ctx.badRequest("At least one day must be selected");
+          }
+
+          const validDays = [
+            "Monday",
+            "Tuesday",
+            "Wednesday",
+            "Thursday",
+            "Friday",
+          ];
+
+          for (const day of data.days) {
+            if (!day.days || !validDays.includes(day.days)) {
+              return ctx.badRequest(
+                `Invalid day: ${day.days}. Must be one of: ${validDays.join(
+                  ", "
+                )}`
+              );
+            }
+            // FIXED: Check startTime field (not time)
+            if (
+              !day.startTime ||
+              !/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/.test(day.startTime)
+            ) {
+              return ctx.badRequest(
+                `Invalid time format for ${day.days}. Use HH:MM format`
+              );
+            }
+          }
+        }
+
+        // 15. Prepare update data with proper transformations - FIXED VERSION
         const updateData = {
           ...data,
-          // Ensure proper data types
           ...(data.price !== undefined && { price: parseFloat(data.price) }),
           ...(data.duration !== undefined && {
             duration: parseInt(data.duration),
@@ -663,16 +697,19 @@ module.exports = createCoreController(
           ...(data.endDate && {
             endDate: new Date(data.endDate).toISOString().split("T")[0],
           }),
-          // Convert days component properly
           ...(data.days && {
             days: data.days.map((day) => ({
-              day: day.day.toLowerCase(),
-              time: day.time,
+              days: day.days, // Keep uppercase as per enum
+              startTime: day.startTime, // Keep startTime field
             })),
           }),
           // Handle assistant properly
-          ...(data.isAssist === false && { assistant: null }),
         };
+
+        delete updateData.grade_subject;
+        delete updateData.topic;
+        delete updateData.ib_program;
+        delete updateData.grade;
 
         // 16. Update the classroom
         const updatedClassroom = await strapi.entityService.update(
@@ -739,6 +776,5 @@ module.exports = createCoreController(
         );
       }
     },
-  
   })
 );
