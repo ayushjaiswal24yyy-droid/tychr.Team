@@ -7,23 +7,133 @@ const razorpay = new Razorpay({
 });
 
 module.exports = {
+  // async createOrder(ctx) {
+  //   try {
+  //     const { amount } = ctx.request.body;
+
+  //     if (!amount) {
+  //       return ctx.badRequest("Amount is required");
+  //     }
+
+  //     const order = await razorpay.orders.create({
+  //       amount: amount * 100, // Convert to paise
+  //       currency: "INR",
+  //     });
+
+  //     return { order };
+  //   } catch (error) {
+  //     console.error(error);
+  //     return ctx.internalServerError("Payment failed");
+  //   }
+  // },
   async createOrder(ctx) {
     try {
-      const { amount } = ctx.request.body;
+      const { amount, receipt, notes } = ctx.request.body;
+
+      console.log("=== CREATE ORDER REQUEST ===");
+      console.log("Amount:", amount);
+      console.log("Receipt:", receipt);
+      console.log("Notes:", notes);
+      console.log("Razorpay Key ID:", process.env.RAZORPAY_KEY_ID);
+      console.log(
+        "Razorpay Key Secret present:",
+        !!process.env.RAZORPAY_KEY_SECRET
+      );
 
       if (!amount) {
+        console.error("❌ Amount is required");
         return ctx.badRequest("Amount is required");
       }
 
-      const order = await razorpay.orders.create({
-        amount: amount * 100, // Convert to paise
+      // Validate amount is a number and positive
+      const amountNum = parseFloat(amount);
+      if (isNaN(amountNum) || amountNum <= 0) {
+        console.error("❌ Invalid amount:", amount);
+        return ctx.badRequest("Amount must be a positive number");
+      }
+
+      // Minimum amount validation (Razorpay requires min 1 INR = 100 paise)
+      if (amountNum < 1) {
+        console.error("❌ Amount too low:", amount);
+        return ctx.badRequest("Minimum amount is 1 INR");
+      }
+
+      const orderData = {
+        amount: Math.round(amountNum * 100), // Convert to paise (integer)
         currency: "INR",
+        receipt: receipt || `receipt_${Date.now()}`,
+        notes: notes || {},
+        payment_capture: 1, // Auto capture payment
+      };
+
+      console.log("Order data being sent to Razorpay:", orderData);
+
+      // Test Razorpay connection first
+      try {
+        const testResponse = await razorpay.orders.all({ count: 1 });
+        console.log("✅ Razorpay connection test successful");
+      } catch (testError) {
+        console.error("❌ Razorpay connection failed:", testError);
+        console.error("Error details:", {
+          message: testError.message,
+          statusCode: testError.statusCode,
+          error: testError.error,
+        });
+        return ctx.internalServerError("Payment gateway connection failed");
+      }
+
+      // Create order
+      const order = await razorpay.orders.create(orderData);
+
+      console.log("✅ Order created successfully:", {
+        orderId: order.id,
+        amount: order.amount,
+        currency: order.currency,
+        status: order.status,
       });
 
-      return { order };
+      return {
+        order,
+        key: process.env.RAZORPAY_KEY_ID, // Send key to frontend
+      };
     } catch (error) {
-      console.error(error);
-      return ctx.internalServerError("Payment failed");
+      console.error("❌ RAZORPAY ORDER CREATION ERROR:");
+      console.error("Error name:", error.name);
+      console.error("Error message:", error.message);
+      console.error("Error status code:", error.statusCode);
+      console.error("Error details:", error.error);
+      console.error("Full error object:", JSON.stringify(error, null, 2));
+
+      // Handle specific Razorpay errors
+      if (error.error) {
+        const razorpayError = error.error;
+
+        if (razorpayError.code === "BAD_REQUEST_ERROR") {
+          return ctx.badRequest(
+            razorpayError.description || "Invalid request to payment gateway"
+          );
+        }
+
+        if (razorpayError.code === "GATEWAY_ERROR") {
+          return ctx.internalServerError(
+            "Payment gateway error. Please try again."
+          );
+        }
+
+        if (error.statusCode === 401) {
+          return ctx.unauthorized(
+            "Invalid Razorpay credentials. Check API keys."
+          );
+        }
+      }
+
+      // Return more specific error messages
+      const errorMessage =
+        error.error?.description ||
+        error.message ||
+        "Failed to create payment order";
+
+      return ctx.internalServerError(errorMessage);
     }
   },
 
