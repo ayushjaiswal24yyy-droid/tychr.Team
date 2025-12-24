@@ -236,7 +236,7 @@ module.exports = createCoreController(
               error: {
                 status: 500,
                 name: "InternalServerError",
-                message: "Failed to create class and notify students",
+                message: "Failed to wuejksdnok",
                 details:
                   process.env.NODE_ENV === "development"
                     ? error.message
