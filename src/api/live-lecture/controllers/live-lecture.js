@@ -66,6 +66,7 @@ module.exports = createCoreController(
       async create(ctx) {
         let classroom = null;
         let students = [];
+        let response = null;
         let notificationResult = {
           attempted: [],
           succeeded: [],
@@ -74,7 +75,7 @@ module.exports = createCoreController(
 
         try {
           // First, create the live lecture
-          const response = await super.create(ctx);
+          response = await super.create(ctx);
           
           const { title, description, zoom_url, schedule, topic, classrooms } =
             ctx.request.body.data;
