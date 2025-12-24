@@ -19,15 +19,30 @@ module.exports = createCoreController(
       formattedSchedule,
       tutor,
     }) => {
+      const notificationResult = {
+        attempted: [],
+        succeeded: [],
+        failed: [],
+      };
+
       try {
         if (!students || students.length === 0) {
           strapi.log.info("No students to notify");
-          return;
+          return notificationResult;
         }
 
-        const emailPromises = students.map((student) => {
+        const emailPromises = students.map((student, index) => {
           if (!student.email) {
-            strapi.log.warn(`Student ${student.id} has no email`);
+            const errorMsg = `Student ${student.id} has no email`;
+            strapi.log.warn(errorMsg);
+
+            notificationResult.attempted.push({
+              email: null,
+              studentId: student.id,
+              status: "failed",
+              reason: "No email address",
+            });
+            notificationResult.failed.push(null); // null for no email
             return Promise.resolve();
           }
 
@@ -52,46 +67,68 @@ module.exports = createCoreController(
             `,
           };
 
-          return strapi.plugins["email"].services.email.send({
-            to: student.email,
-            from: "tychr@saralgroups.com",
-            subject: emailContent.subject,
-            text: emailContent.text,
-            html: emailContent.html,
+          // Track this attempt
+          notificationResult.attempted.push({
+            email: student.email,
+            studentId: student.id,
+            status: "pending",
           });
+
+          return strapi.plugins["email"].services.email
+            .send({
+              to: student.email,
+              from: "tychr@saralgroups.com",
+              subject: emailContent.subject,
+              text: emailContent.text,
+              html: emailContent.html,
+            })
+            .then(() => {
+              // Update to success
+              notificationResult.attempted[index].status = "success";
+              notificationResult.succeeded.push(student.email);
+              strapi.log.info(`Email sent successfully to: ${student.email}`);
+            })
+            .catch((error) => {
+              // Update to failed
+              const errorMsg = error.message || "Unknown email error";
+              notificationResult.attempted[index].status = "failed";
+              notificationResult.attempted[index].reason = errorMsg;
+              notificationResult.failed.push(student.email);
+              strapi.log.error(
+                `Failed to send email to ${student.email}:`,
+                error
+              );
+            });
         });
 
         // Send all emails
-        const results = await Promise.allSettled(emailPromises);
+        await Promise.allSettled(emailPromises);
 
-        // Log results
-        const fulfilled = results.filter(
-          (r) => r.status === "fulfilled"
-        ).length;
-        const rejected = results.filter((r) => r.status === "rejected").length;
-
+        // Log summary
+        strapi.log.info(`Notification Summary:`);
+        strapi.log.info(`  Total students: ${students.length}`);
         strapi.log.info(
-          `Sent live lecture notifications: ${fulfilled} successful, ${rejected} failed`
+          `  Attempted emails: ${
+            notificationResult.attempted.filter((a) => a.email).length
+          }`
         );
-
-        // Log any errors
-        results.forEach((result, index) => {
-          if (result.status === "rejected") {
-            strapi.log.error(
-              `Failed to send email to student ${students[index]?.email}:`,
-              result.reason
-            );
-          }
-        });
+        strapi.log.info(`  Succeeded: ${notificationResult.succeeded.length}`);
+        strapi.log.info(`  Failed: ${notificationResult.failed.length}`);
       } catch (error) {
         strapi.log.error("Error in sendLectureNotifications:", error);
-        // Don't rethrow - we don't want to affect the main request
       }
+
+      return notificationResult;
     };
 
     return {
       async create(ctx) {
         strapi.log.info("Creating live lecture...");
+        let notificationResult = {
+          attempted: [],
+          succeeded: [],
+          failed: [],
+        };
 
         try {
           // Validate required fields
@@ -170,6 +207,7 @@ module.exports = createCoreController(
               message:
                 "Live lecture created (but failed to fetch classroom details)",
               data: response.data || response,
+              notification: notificationResult,
             });
           }
 
@@ -178,6 +216,7 @@ module.exports = createCoreController(
             return ctx.send({
               message: "Live lecture created (classroom not found)",
               data: response.data || response,
+              notification: notificationResult,
             });
           }
 
@@ -201,7 +240,7 @@ module.exports = createCoreController(
               `Sending notifications to ${students.length} students`
             );
 
-            sendLectureNotifications({
+            notificationResult = await sendLectureNotifications({
               students,
               title,
               description: description || "",
@@ -211,15 +250,34 @@ module.exports = createCoreController(
               tutor: classroom.tutors?.[0] || null,
             }).catch((err) => {
               strapi.log.error("Failed to send email notifications:", err);
+              return notificationResult; // Return empty result
             });
           } else {
             strapi.log.info("No students to notify");
           }
 
-          // Return success response immediately
+          // Return success response with notification details
           return ctx.send({
             message: "Live lecture created successfully",
             data: response.data || response,
+            notification: {
+              status:
+                notificationResult.failed.length === 0
+                  ? "success"
+                  : notificationResult.succeeded.length === 0
+                  ? "failed"
+                  : "partial",
+              summary: {
+                totalStudents: students.length,
+                attempted: notificationResult.attempted.filter((a) => a.email)
+                  .length,
+                succeeded: notificationResult.succeeded.length,
+                failed: notificationResult.failed.length,
+              },
+              attempted: notificationResult.attempted,
+              succeeded: notificationResult.succeeded,
+              failed: notificationResult.failed,
+            },
           });
         } catch (error) {
           strapi.log.error("Error creating live lecture:", error);
@@ -229,19 +287,18 @@ module.exports = createCoreController(
             body: ctx.request.body,
           });
 
-          // Return the exact error that should appear in frontend
+          // Return error with notification results if available
           return ctx.send(
             {
               data: null,
               error: {
                 status: 500,
                 name: "InternalServerError",
-                message: "Failed to wuejksdnok",
-                details:
-                  process.env.NODE_ENV === "development"
-                    ? error.message
-                    : undefined,
+                message: "Failed to create live lecture",
+                details: error.message
+                    ,
               },
+              notification: notificationResult,
             },
             500
           );
