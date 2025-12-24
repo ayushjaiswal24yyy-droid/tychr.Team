@@ -249,7 +249,7 @@ module.exports = createCoreController(
             tutor: user.id, // Set the tutor
             enrollment_date: new Date().toISOString().split("T")[0], // Today's date
             status: "Requested", // Default status
-            isPaid: false, // Default to not paid
+            isPaid: true, 
             payment_date: null,
             // Set default values for optional fields
             isAssist: data.isAssist || false,
