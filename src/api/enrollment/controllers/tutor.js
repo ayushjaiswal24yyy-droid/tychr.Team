@@ -152,7 +152,11 @@ module.exports = createCoreController(
         }
 
         // Validate each day object
-        const validDays = [
+        if (!Array.isArray(data.days) || data.days.length === 0) {
+          return ctx.badRequest("At least one day must be selected");
+        }
+
+        const VALID_DAYS = [
           "monday",
           "tuesday",
           "wednesday",
@@ -161,21 +165,22 @@ module.exports = createCoreController(
           "saturday",
           "sunday",
         ];
-        for (const day of data.days) {
-          if (!day.day || !validDays.includes(day.day.toLowerCase())) {
-            return ctx.badRequest(
-              `Invalid day: ${day.day}. Must be one of: ${validDays.join(", ")}`
-            );
+
+        for (const d of data.days) {
+          if (!VALID_DAYS.includes(d.days)) {
+            return ctx.badRequest(`Invalid day: ${d.days}`);
           }
+
           if (
-            !day.time ||
-            !/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/.test(day.time)
+            !d.startTime ||
+            !/^([01]\d|2[0-3]):[0-5]\d$/.test(d.startTime)
           ) {
             return ctx.badRequest(
-              `Invalid time format for ${day.day}. Use HH:MM format`
+              `Invalid time format for ${d.days}. Use HH:mm`
             );
           }
         }
+
 
         // 10. Validate price
         if (data.price < 0) {
@@ -249,7 +254,7 @@ module.exports = createCoreController(
             tutor: user.id, // Set the tutor
             enrollment_date: new Date().toISOString().split("T")[0], // Today's date
             status: "Requested", // Default status
-            isPaid: true, 
+            isPaid: true,
             payment_date: null,
             // Set default values for optional fields
             isAssist: data.isAssist || false,
@@ -453,7 +458,7 @@ module.exports = createCoreController(
               `Cannot update ${disallowedUpdates.join(
                 ", "
               )} for approved classrooms. ` +
-                "Only notices and additional resources can be updated."
+              "Only notices and additional resources can be updated."
             );
           }
         }
@@ -476,7 +481,7 @@ module.exports = createCoreController(
           if (
             existingClassroom.grade_subject?.id &&
             topic.topic?.grade_subject?.id !==
-              existingClassroom.grade_subject.id
+            existingClassroom.grade_subject.id
           ) {
             return ctx.badRequest(
               "Topic does not belong to the classroom's garde subject"
@@ -583,7 +588,7 @@ module.exports = createCoreController(
         }
 
         // 10. Validate days if being updated
-       
+
         if (data.days) {
           if (!Array.isArray(data.days) || data.days.length === 0) {
             return ctx.badRequest("At least one day must be selected");
@@ -675,7 +680,7 @@ module.exports = createCoreController(
                 )}`
               );
             }
-           
+
           }
         }
 
