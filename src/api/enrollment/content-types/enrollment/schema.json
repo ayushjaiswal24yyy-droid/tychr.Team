@@ -85,9 +85,7 @@
       "type": "media",
       "multiple": true,
       "required": false,
-      "allowedTypes": [
-        "images"
-      ]
+      "allowedTypes": ["images"]
     },
     "status": {
       "type": "enumeration",
@@ -95,9 +93,13 @@
         "Requested",
         "Approved",
         "Responded",
-        "Requested Demo"
+        "Requested Demo",
+        "Rejected"
       ],
       "default": "Requested"
+    },
+    "rejection_feedback": {
+      "type": "string"
     },
     "grade_subject": {
       "type": "relation",
@@ -107,10 +109,7 @@
     },
     "classroom_type": {
       "type": "enumeration",
-      "enum": [
-        "one-on-one",
-        "group"
-      ],
+      "enum": ["one-on-one", "group"],
       "required": true
     },
     "group_limit": {
