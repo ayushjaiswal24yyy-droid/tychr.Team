@@ -221,6 +221,7 @@ module.exports = createCoreController(
         return ctx.badRequest(error.message || "Failed to create classroom");
       }
     }
+
     ,
 
     // Optional: Add a validation endpoint for frontend
@@ -289,6 +290,7 @@ module.exports = createCoreController(
         return ctx.badRequest(error.message);
       }
     }
+
     ,
     async updateCustomClassroom(ctx) {
       try {
