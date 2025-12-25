@@ -263,8 +263,8 @@ module.exports = createCoreController(
             endDate: new Date(data.endDate).toISOString().split("T")[0],
             // Convert days component properly
             days: data.days.map((day) => ({
-              day: day.day.toLowerCase(),
-              time: day.time,
+              days: day.day.toLowerCase(),
+              startTime: day.time,
             })),
           },
         };
