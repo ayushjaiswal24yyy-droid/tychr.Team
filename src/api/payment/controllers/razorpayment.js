@@ -316,14 +316,14 @@ module.exports = {
       // Fetch GST data with fallback
       let gstRate = 0;
       try {
-        const gstData = await strapi.entityService.findMany("api::gst.gst", {
+        const gstData = await strapi.entityService.findOne("api::gst.gst", {
           filters: { is_active: true },
-          limit: 1,
         });
-        gstRate = gstData.length > 0 ? parseFloat(gstData[0].gst_rate) : 0;
+        gstRate = gstData ? parseFloat(gstData.gst_rate) : 0;
         console.log("GST Rate:", gstRate);
       } catch (gstError) {
         console.warn("⚠️ Could not fetch GST, using 0:", gstError.message);
+        gstRate = 0;
       }
 
       // Fetch commission data with fallback - ONLY FOR LIVE LECTURES
