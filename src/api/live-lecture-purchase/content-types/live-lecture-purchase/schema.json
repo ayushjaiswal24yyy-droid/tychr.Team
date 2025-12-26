@@ -1,0 +1,49 @@
+{
+  "kind": "collectionType",
+  "collectionName": "live_lecture_purchases",
+  "info": {
+    "singularName": "live-lecture-purchase",
+    "pluralName": "live-lecture-purchases",
+    "displayName": "live_lecture_purchases",
+    "description": ""
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "lectures_purchased": {
+      "type": "json"
+    },
+    "purchase_date": {
+      "type": "datetime"
+    },
+    "valid_from": {
+      "type": "date"
+    },
+    "valid_until": {
+      "type": "date"
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true
+    },
+    "payment": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::payment.payment"
+    },
+    "users_permissions_user": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "plugin::users-permissions.user",
+      "inversedBy": "live_lecture_purchases"
+    },
+    "tutor_classroom": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::enrollment.enrollment",
+      "inversedBy": "live_lecture_purchases"
+    }
+  }
+}

@@ -199,6 +199,18 @@
     },
     "base_price": {
       "type": "decimal"
+    },
+    "live_lecture_purchases": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::live-lecture-purchase.live-lecture-purchase",
+      "mappedBy": "tutor_classroom"
+    },
+    "payments": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::payment.payment",
+      "mappedBy": "tutor_classroom"
     }
   }
 }

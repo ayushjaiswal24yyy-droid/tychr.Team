@@ -2,8 +2,8 @@ module.exports = {
   routes: [
     {
       method: "POST",
-      path: "/payment/razorpayment",
-      handler: "razorpayment.createOrder",
+      path: "/payment/create-classroom-order",
+      handler: "razorpayment.createClassroomOrder",
       config: {
         policies: [],
         middlewares: [],
@@ -11,7 +11,16 @@ module.exports = {
     },
     {
       method: "POST",
-      path: "/payment/verify-payment",
+      path: "/payment/create-live-lectures-order",
+      handler: "razorpayment.createLiveLecturesOrder",
+      config: {
+        policies: [],
+        middlewares: [],
+      },
+    },
+    {
+      method: "POST",
+      path: "/payment/verify",
       handler: "razorpayment.verifyPayment",
       config: {
         policies: [],
@@ -19,33 +28,22 @@ module.exports = {
       },
     },
     {
-      method: "POST",
-      path: "/payment/enrollments-purchases/verify-payment", //
-      handler: "razorpayment.completeTransaction",
+      method: "GET",
+      path: "/payment/access-status/:enrollment_id",
+      handler: "razorpayment.checkAccessStatus",
+      config: {
+        policies: [],
+        middlewares: [],
+      },
+    },
+    {
+      method: "GET",
+      path: "/payment/upcoming-lectures/:enrollment_id",
+      handler: "razorpayment.getUpcomingLiveLectures",
       config: {
         policies: [],
         middlewares: [],
       },
     },
   ],
-  //   routes: [
-  //   {
-  //     method: 'POST',
-  //     path: '/payments/create-order',
-  //     handler: 'payment.createOrder',
-  //     config: {
-  //       policies: [],
-  //       middlewares: [],
-  //     },
-  //   },
-  //   {
-  //     method: 'POST',
-  //     path: '/payments/verify',
-  //     handler: 'payment.verifyPayment',
-  //     config: {
-  //       policies: [],
-  //       middlewares: [],
-  //     },
-  //   },
-  // ],
 };

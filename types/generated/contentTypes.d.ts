@@ -1018,6 +1018,11 @@ export interface PluginUsersPermissionsUser extends Schema.CollectionType {
       'oneToMany',
       'api::enrollment.enrollment'
     >;
+    live_lecture_purchases: Attribute.Relation<
+      'plugin::users-permissions.user',
+      'oneToMany',
+      'api::live-lecture-purchase.live-lecture-purchase'
+    >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     createdBy: Attribute.Relation<
@@ -1508,9 +1513,7 @@ export interface ApiCommissionSettingCommissionSetting
     commission_percentage: Attribute.Decimal;
     effective_from: Attribute.Date;
     is_active: Attribute.Boolean;
-    system_plan: Attribute.Enumeration<
-      ['mentor', 'counsellor', 'recorded_lecture', 'classroom']
-    > &
+    system_plan: Attribute.Enumeration<['mentor', 'classroom']> &
       Attribute.Required;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
@@ -1955,6 +1958,16 @@ export interface ApiEnrollmentEnrollment extends Schema.CollectionType {
       'api::demo-video.demo-video'
     >;
     base_price: Attribute.Decimal;
+    live_lecture_purchases: Attribute.Relation<
+      'api::enrollment.enrollment',
+      'oneToMany',
+      'api::live-lecture-purchase.live-lecture-purchase'
+    >;
+    payments: Attribute.Relation<
+      'api::enrollment.enrollment',
+      'oneToMany',
+      'api::payment.payment'
+    >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     createdBy: Attribute.Relation<
@@ -2279,6 +2292,57 @@ export interface ApiLiveLectureLiveLecture extends Schema.CollectionType {
       Attribute.Private;
     updatedBy: Attribute.Relation<
       'api::live-lecture.live-lecture',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+  };
+}
+
+export interface ApiLiveLecturePurchaseLiveLecturePurchase
+  extends Schema.CollectionType {
+  collectionName: 'live_lecture_purchases';
+  info: {
+    singularName: 'live-lecture-purchase';
+    pluralName: 'live-lecture-purchases';
+    displayName: 'live_lecture_purchases';
+    description: '';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    lectures_purchased: Attribute.JSON;
+    purchase_date: Attribute.DateTime;
+    valid_from: Attribute.Date;
+    valid_until: Attribute.Date;
+    is_active: Attribute.Boolean & Attribute.DefaultTo<true>;
+    payment: Attribute.Relation<
+      'api::live-lecture-purchase.live-lecture-purchase',
+      'oneToOne',
+      'api::payment.payment'
+    >;
+    users_permissions_user: Attribute.Relation<
+      'api::live-lecture-purchase.live-lecture-purchase',
+      'manyToOne',
+      'plugin::users-permissions.user'
+    >;
+    tutor_classroom: Attribute.Relation<
+      'api::live-lecture-purchase.live-lecture-purchase',
+      'manyToOne',
+      'api::enrollment.enrollment'
+    >;
+    createdAt: Attribute.DateTime;
+    updatedAt: Attribute.DateTime;
+    publishedAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<
+      'api::live-lecture-purchase.live-lecture-purchase',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+    updatedBy: Attribute.Relation<
+      'api::live-lecture-purchase.live-lecture-purchase',
       'oneToOne',
       'admin::user'
     > &
@@ -2619,36 +2683,47 @@ export interface ApiPaymentPayment extends Schema.CollectionType {
   info: {
     singularName: 'payment';
     pluralName: 'payments';
-    displayName: 'Student Class: Payment';
-    description: 'This content type is used to manage payments made by students for classrooms (enrollments), live and recorded lectures. It tracks payment details, status, and associations with specific lectures and classrooms.';
+    displayName: 'Payment';
+    description: 'Manage payments for classrooms and live lectures';
   };
   options: {
     draftAndPublish: false;
   };
   attributes: {
-    amount: Attribute.Decimal;
-    live_lecture: Attribute.Relation<
-      'api::payment.payment',
-      'manyToOne',
-      'api::live-lecture.live-lecture'
-    >;
-    classroom: Attribute.Relation<
-      'api::payment.payment',
-      'oneToOne',
-      'api::enrollment.enrollment'
-    >;
-    purchased_at: Attribute.DateTime;
-    razorpay_payment_id: Attribute.String;
-    razorpay_order_id: Attribute.String;
-    razorpay_signature: Attribute.String;
-    price_at_purchase: Attribute.Decimal & Attribute.Required;
-    commission_percentage_applied: Attribute.Decimal & Attribute.Required;
-    commission_amount: Attribute.Decimal & Attribute.Required;
-    total_paid: Attribute.Decimal & Attribute.Required;
+    payment_type: Attribute.Enumeration<
+      ['classroom_only', 'classroom_with_live', 'live_only']
+    > &
+      Attribute.Required &
+      Attribute.DefaultTo<'classroom_only'>;
+    amount: Attribute.Decimal & Attribute.Required;
+    status: Attribute.Enumeration<
+      ['pending', 'completed', 'failed', 'refunded']
+    > &
+      Attribute.DefaultTo<'pending'>;
     student: Attribute.Relation<
       'api::payment.payment',
       'manyToOne',
       'plugin::users-permissions.user'
+    >;
+    razorpay_payment_id: Attribute.String;
+    razorpay_order_id: Attribute.String & Attribute.Unique;
+    razorpay_signature: Attribute.String;
+    purchased_at: Attribute.DateTime;
+    completed_at: Attribute.DateTime;
+    price_at_purchase: Attribute.Decimal;
+    commission_percentage_applied: Attribute.Decimal & Attribute.DefaultTo<0>;
+    commission_amount: Attribute.Decimal & Attribute.DefaultTo<0>;
+    gst_amount: Attribute.Decimal & Attribute.DefaultTo<0>;
+    total_amount_paid: Attribute.Decimal & Attribute.Required;
+    live_lectures_included: Attribute.Boolean & Attribute.DefaultTo<false>;
+    live_lectures_price: Attribute.Decimal & Attribute.DefaultTo<0>;
+    number_of_live_lectures: Attribute.Integer & Attribute.DefaultTo<0>;
+    purchased_lectures: Attribute.JSON;
+    metadata: Attribute.JSON;
+    classroom: Attribute.Relation<
+      'api::payment.payment',
+      'manyToOne',
+      'api::enrollment.enrollment'
     >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
@@ -4248,6 +4323,7 @@ declare module '@strapi/types' {
       'api::ib-program.ib-program': ApiIbProgramIbProgram;
       'api::individual-user.individual-user': ApiIndividualUserIndividualUser;
       'api::live-lecture.live-lecture': ApiLiveLectureLiveLecture;
+      'api::live-lecture-purchase.live-lecture-purchase': ApiLiveLecturePurchaseLiveLecturePurchase;
       'api::live-lectures-meeting.live-lectures-meeting': ApiLiveLecturesMeetingLiveLecturesMeeting;
       'api::log.log': ApiLogLog;
       'api::mentor-application.mentor-application': ApiMentorApplicationMentorApplication;

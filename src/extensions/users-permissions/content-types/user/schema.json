@@ -467,6 +467,12 @@
       "relation": "oneToMany",
       "target": "api::enrollment.enrollment",
       "mappedBy": "tutor"
+    },
+    "live_lecture_purchases": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::live-lecture-purchase.live-lecture-purchase",
+      "mappedBy": "users_permissions_user"
     }
   }
 }

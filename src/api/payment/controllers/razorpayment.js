@@ -1,378 +1,136 @@
+"use strict";
+
 const Razorpay = require("razorpay");
 const crypto = require("crypto");
 
 const razorpay = new Razorpay({
   key_id: process.env.RAZORPAY_KEY_ID,
-  key_secret: process.env.RAZORPAY_SECRET_ID,
+  key_secret: process.env.RAZORPAY_KEY_SECRET,
 });
 
+// Helper function to count weekdays between dates
+const countWeekdaysBetweenDates = (startDate, endDate, weekdays) => {
+  let count = 0;
+  const dayMap = {
+    Sunday: 0,
+    Monday: 1,
+    Tuesday: 2,
+    Wednesday: 3,
+    Thursday: 4,
+    Friday: 5,
+    Saturday: 6,
+  };
+
+  const targetDays = weekdays.map((day) => dayMap[day]);
+  const currentDate = new Date(startDate);
+
+  while (currentDate <= endDate) {
+    if (targetDays.includes(currentDate.getDay())) {
+      count++;
+    }
+    currentDate.setDate(currentDate.getDate() + 1);
+  }
+
+  return count;
+};
+
 module.exports = {
-  // async createOrder(ctx) {
-  //   try {
-  //     const { amount } = ctx.request.body;
-
-  //     if (!amount) {
-  //       return ctx.badRequest("Amount is required");
-  //     }
-
-  //     const order = await razorpay.orders.create({
-  //       amount: amount * 100, // Convert to paise
-  //       currency: "INR",
-  //     });
-
-  //     return { order };
-  //   } catch (error) {
-  //     console.error(error);
-  //     return ctx.internalServerError("Payment failed");
-  //   }
-  // },
-  async createOrder(ctx) {
+  // 1. Create classroom order (with or without live lectures)
+  async createClassroomOrder(ctx) {
     try {
-      const { amount, receipt, notes } = ctx.request.body;
+      const { enrollment_id, include_live_lectures = false } = ctx.request.body;
 
-      console.log("=== CREATE ORDER REQUEST ===");
-      console.log("Amount:", amount);
-      console.log("Receipt:", receipt);
-      console.log("Notes:", notes);
-      console.log("Razorpay Key ID:", process.env.RAZORPAY_KEY_ID);
-      console.log(
-        "Razorpay Key Secret present:",
-        !!process.env.RAZORPAY_KEY_SECRET
-      );
+      console.log("=== CREATE CLASSROOM ORDER ===");
+      console.log("Enrollment ID:", enrollment_id);
+      console.log("Include Live Lectures:", include_live_lectures);
 
-      if (!amount) {
-        console.error("❌ Amount is required");
-        return ctx.badRequest("Amount is required");
+      if (!enrollment_id) {
+        return ctx.badRequest("Enrollment ID is required");
       }
 
-      // Validate amount is a number and positive
-      const amountNum = parseFloat(amount);
-      if (isNaN(amountNum) || amountNum <= 0) {
-        console.error("❌ Invalid amount:", amount);
-        return ctx.badRequest("Amount must be a positive number");
-      }
-
-      // Minimum amount validation (Razorpay requires min 1 INR = 100 paise)
-      if (amountNum < 1) {
-        console.error("❌ Amount too low:", amount);
-        return ctx.badRequest("Minimum amount is 1 INR");
-      }
-
-      const orderData = {
-        amount: Math.round(amountNum * 100), // Convert to paise (integer)
-        currency: "INR",
-        receipt: receipt || `receipt_${Date.now()}`,
-        notes: notes || {},
-        payment_capture: 1, // Auto capture payment
-      };
-
-      console.log("Order data being sent to Razorpay:", orderData);
-
-      // Test Razorpay connection first
-      try {
-        const testResponse = await razorpay.orders.all({ count: 1 });
-        console.log("✅ Razorpay connection test successful");
-      } catch (testError) {
-        console.error("❌ Razorpay connection failed:", testError);
-        console.error("Error details:", {
-          message: testError.message,
-          statusCode: testError.statusCode,
-          error: testError.error,
-        });
-        return ctx.internalServerError("Payment gateway connection failed");
-      }
-
-      // Create order
-      const order = await razorpay.orders.create(orderData);
-
-      console.log("✅ Order created successfully:", {
-        orderId: order.id,
-        amount: order.amount,
-        currency: order.currency,
-        status: order.status,
-      });
-
-      return {
-        order,
-        // key: process.env.RAZORPAY_KEY_ID, // Send key to frontend
-      };
-    } catch (error) {
-      console.error("❌ RAZORPAY ORDER CREATION ERROR:");
-      console.error("Error name:", error.name);
-      console.error("Error message:", error.message);
-      console.error("Error status code:", error.statusCode);
-      console.error("Error details:", error.error);
-      console.error("Full error object:", JSON.stringify(error, null, 2));
-
-      // Handle specific Razorpay errors
-      if (error.error) {
-        const razorpayError = error.error;
-
-        if (razorpayError.code === "BAD_REQUEST_ERROR") {
-          return ctx.badRequest(
-            razorpayError.description || "Invalid request to payment gateway"
-          );
-        }
-
-        if (razorpayError.code === "GATEWAY_ERROR") {
-          return ctx.internalServerError(
-            "Payment gateway error. Please try again."
-          );
-        }
-
-        if (error.statusCode === 401) {
-          return ctx.unauthorized(
-            "Invalid Razorpay credentials. Check API keys."
-          );
-        }
-      }
-
-      // Return more specific error messages
-      const errorMessage =
-        error.error?.description ||
-        error.message ||
-        "Failed to create payment order";
-
-      return ctx.internalServerError(errorMessage);
-    }
-  },
-
-  async verifyPayment(ctx) {
-    try {
-      // Extract required data from request
-      const {
-        razorpay_order_id,
-        razorpay_payment_id,
-        planId,
-        mentorOrCounsellorId,
-      } = ctx.request.body;
-
-      // const expires_at = new Date(
-      //   Date.now() + plan_duration_days * 24 * 60 * 60 * 1000
-      // ).toISOString();
-
-      //  Create the signature
-      // const generatedSignature = crypto
-      //   .createHmac("sha256", process.env.RAZORPAY_SECRET_ID)
-      //   .update(`${razorpay_order_id}|${razorpay_payment_id}`)
-      //   .digest("hex");
-
-      //  Verify signature matches
-      // if (generatedSignature !== razorpay_signature) {
-      //   return ctx.badRequest("Payment verification failed");
-      // }
-
-      const token = ctx.request.header.authorization?.replace("Bearer ", "");
-      let userId = null;
-      // if (!token) {
-      //   // If no token, try to get userId from session
-      //   const session = ctx.state.user;
-      //   if (session && session.id) {
-      //     userId = session.id;
-      //   }
-      // }
-
-      if (token) {
-        const { id } = await strapi.plugins[
-          "users-permissions"
-        ].services.jwt.verify(token);
-        userId = id;
-      }
-      if (!userId) {
-        return ctx.badRequest("Student (user) not identified");
-      }
-
-      const purchased_at = new Date().toISOString();
-
-      // Fetch the premium plan (to get its price and owner info if needed)
-      const plan = await strapi.entityService.findOne(
-        "api::premium-plan.premium-plan",
-        planId,
-        {
-          populate: [], // expand if you need creator or other relations
-        }
-      );
-
-      if (!plan) {
-        return ctx.badRequest("Invalid premium plan");
-      }
-
-      const now = new Date().toISOString();
-      let commissionPct = 0; // default to zero if none set
-
-      console.log("plan tye:", plan.type);
-
-      const commissionSettings = await strapi.entityService.findMany(
-        "api::commission-setting.commission-setting",
-        {
-          filters: {
-            system_plan: plan?.type === "mentor" ? "mentor" : "counsellor",
-            is_active: true,
-            effective_from: { $lte: now },
-          },
-          sort: { effective_from: "desc" },
-          limit: 1,
-        }
-      );
-      if (commissionSettings.length > 0) {
-        commissionPct =
-          parseFloat(commissionSettings[0].commission_percentage) || 0;
-      }
-
-      // Compute commission amount (what system admin gets)
-      const commissionAmount = (commissionPct / 100) * plan.price;
-      const totalPaid = plan.price; // if taxes/fees, add here
-
-      // Log payment details
-      console.log(
-        "Processing payment verification for order:",
-        razorpay_order_id
-      );
-      console.log({
-        userId,
-        mentorOrCounsellorId,
-        planId,
-        razorpay_order_id,
-        razorpay_payment_id,
-      });
-
-      // Create user plan record
-      try {
-        const userPlan = await strapi.entityService.create(
-          "api::user-plan.user-plan",
-          {
-            data: {
-              razorpay_order_id,
-              razorpay_payment_id,
-              status: "active",
-              purchased_at,
-              remaining_hours: plan.hours_included || 0,
-              student: userId,
-              premium_plan: planId,
-              price_at_purchase: plan.price,
-              commission_percentage_applied: commissionPct,
-              commission_amount: commissionAmount.toFixed(2),
-              total_paid: totalPaid,
-            },
-          }
-        );
-
-        console.log("Successfully created user plan:", userPlan.id);
-        return { verified: true, userPlan, userid: userId };
-      } catch (error) {
-        console.error("Error creating user plan:", error);
-        throw new Error("Failed to create user plan record");
-      }
-    } catch (error) {
-      console.error("Payment verification error:", error);
-      return ctx.internalServerError("Payment verification failed");
-    }
-  },
-  async completeTransaction(ctx) {
-    try {
-      // Extract required data from request
-      const {
-        razorpay_order_id,
-        razorpay_payment_id,
-        razorpay_signature,
-        item_id, // ID of the item being purchased (live_lecture, recorded_lecture, or classroom)
-        item_type, // 'live_lecture', 'recorded_lecture', or 'classroom'
-      } = ctx.request.body;
-
-      // Verify the payment signature (uncomment when ready)
-      // const generatedSignature = crypto
-      //   .createHmac("sha256", process.env.RAZORPAY_SECRET)
-      //   .update(`${razorpay_order_id}|${razorpay_payment_id}`)
-      //   .digest("hex");
-
-      // if (generatedSignature !== razorpay_signature) {
-      //   return ctx.badRequest("Payment verification failed");
-      // }
-
-      // Get user ID from token
+      // Get user from token
       const token = ctx.request.header.authorization?.replace("Bearer ", "");
       if (!token) {
         return ctx.unauthorized("Authorization token missing");
       }
 
-      const { id: userId } = await strapi.plugins[
+      const { id: studentId } = await strapi.plugins[
         "users-permissions"
       ].services.jwt.verify(token);
-      if (!userId) {
-        return ctx.badRequest("Student (user) not identified");
-      }
 
-      // Validate item type
-      const validItemTypes = ["live_lecture", "recorded_lecture", "classroom"];
-      if (!validItemTypes.includes(item_type)) {
-        return ctx.badRequest("Invalid item type");
-      }
-
-      let item;
-      try {
-        const apiName =
-          item_type === "classroom"
-            ? "enrollment"
-            : item_type.replace("_", "-");
-        item = await strapi.entityService.findOne(
-          `api::${apiName}.${apiName}`,
-          item_id,
-          {
-            populate: ["price", "creator"],
-          }
-        );
-      } catch (error) {
-        return ctx.badRequest("Invalid item ID or type");
-      }
-
-      if (!item) {
-        return ctx.badRequest("Item not found");
-      }
-
-      // Get current commission settings for this item type
-      const now = new Date().toISOString();
-      const commissionSettings = await strapi.entityService.findMany(
-        "api::commission-setting.commission-setting",
+      // Fetch enrollment details
+      const enrollment = await strapi.entityService.findOne(
+        "api::enrollment.enrollment",
+        enrollment_id,
         {
-          filters: {
-            system_plan: item_type,
-            is_active: true,
-            effective_from: { $lte: now },
-          },
-          sort: { effective_from: "desc" },
-          limit: 1,
+          populate: ["students", "days", "live_lectures"],
         }
       );
 
-      // Calculate commission
-      const commissionPct =
-        commissionSettings.length > 0
-          ? parseFloat(commissionSettings[0].commission_percentage)
-          : 0;
+      if (!enrollment) {
+        return ctx.badRequest("Enrollment not found");
+      }
 
-      const price = parseFloat(item.price);
-      const commissionAmount = (commissionPct / 100) * price;
-      const totalPaid = price;
+      // Check if already enrolled
+      const existingStudents = enrollment.students || [];
+      if (existingStudents.some((student) => student.id === studentId)) {
+        return ctx.badRequest("You are already enrolled in this classroom");
+      }
 
-      // Calculate expiration date (example: 1 year from now)
-      const expires_at = new Date();
-      expires_at.setDate(expires_at.getDate() + 365);
+      // Calculate price
+      const calculation = await this.calculateClassroomPrice(
+        enrollment_id,
+        include_live_lectures,
+        studentId
+      );
 
-      // Create payment record
+      console.log("Price Calculation:", calculation);
+
+      // Create Razorpay order
+      const orderData = {
+        amount: Math.round(calculation.totalAmount * 100),
+        currency: "INR",
+        receipt: `classroom_${enrollment_id}_${Date.now()}`,
+        notes: {
+          type: include_live_lectures
+            ? "classroom_with_live"
+            : "classroom_only",
+          enrollment_id,
+          student_id: studentId,
+          calculation: calculation,
+        },
+        payment_capture: 1,
+      };
+
+      console.log("Order data to Razorpay:", orderData);
+
+      const order = await razorpay.orders.create(orderData);
+
+      console.log("✅ Classroom order created:", order.id);
+
+      // Save pending payment record
       const paymentData = {
-        amount: price,
-        [item_type]: item_id, // dynamic field based on item_type
-        student: userId,
-        expires_at: expires_at.toISOString(),
-        purchased_at: new Date().toISOString(),
-        status: "active",
-        razorpay_payment_id,
-        razorpay_order_id,
-        razorpay_signature,
-        price_at_purchase: price,
-        commission_percentage_applied: commissionPct,
-        commission_amount: commissionAmount,
-        total_paid: totalPaid,
+        payment_type: include_live_lectures
+          ? "classroom_with_live"
+          : "classroom_only",
+        amount: calculation.totalAmount,
+        classroom: enrollment_id,
+        student: studentId,
+        status: "pending",
+        razorpay_order_id: order.id,
+        price_at_purchase: calculation.totalAmount,
+        commission_percentage_applied: calculation.commissionRate,
+        commission_amount: calculation.commissionAmount,
+        gst_amount: calculation.gstAmount,
+        total_amount_paid: calculation.totalAmount,
+        live_lectures_included: include_live_lectures,
+        live_lectures_price: calculation.liveLecturesPrice,
+        number_of_live_lectures: calculation.numberOfLectures,
+        purchased_lectures: calculation.lectures,
+        metadata: {
+          calculation,
+          purchase_date: new Date().toISOString(),
+        },
       };
 
       const payment = await strapi.entityService.create(
@@ -382,32 +140,608 @@ module.exports = {
         }
       );
 
-      // Additional logic based on item type
-      if (item_type === "classroom") {
+      console.log("✅ Payment record created:", payment.id);
+
+      return {
+        success: true,
+        order,
+        calculation,
+        payment_id: payment.id,
+      };
+    } catch (error) {
+      console.error("❌ CREATE CLASSROOM ORDER ERROR:", error);
+      return ctx.internalServerError(error.message || "Failed to create order");
+    }
+  },
+
+  // 2. Create live lectures only order (after classroom purchase)
+  async createLiveLecturesOrder(ctx) {
+    try {
+      const { enrollment_id } = ctx.request.body;
+
+      console.log("=== CREATE LIVE LECTURES ORDER ===");
+      console.log("Enrollment ID:", enrollment_id);
+
+      if (!enrollment_id) {
+        return ctx.badRequest("Enrollment ID is required");
+      }
+
+      // Get user from token
+      const token = ctx.request.header.authorization?.replace("Bearer ", "");
+      if (!token) {
+        return ctx.unauthorized("Authorization token missing");
+      }
+
+      const { id: studentId } = await strapi.plugins[
+        "users-permissions"
+      ].services.jwt.verify(token);
+
+      // Check if student has classroom access
+      const hasClassroomAccess = await this.checkClassroomAccess(
+        enrollment_id,
+        studentId
+      );
+      if (!hasClassroomAccess) {
+        return ctx.badRequest("You must enroll in the classroom first");
+      }
+
+      // Check if already has live lecture access
+      const hasLiveAccess = await this.checkLiveLectureAccess(
+        enrollment_id,
+        studentId
+      );
+      if (hasLiveAccess) {
+        return ctx.badRequest("You already have live lecture access");
+      }
+
+      // Calculate price for remaining live lectures
+      const calculation = await this.calculateRemainingLiveLectures(
+        enrollment_id,
+        studentId
+      );
+
+      if (calculation.numberOfLectures === 0) {
+        return ctx.badRequest(
+          "No upcoming live lectures available for purchase"
+        );
+      }
+
+      console.log("Live Lectures Calculation:", calculation);
+
+      // Create Razorpay order
+      const orderData = {
+        amount: Math.round(calculation.totalAmount * 100),
+        currency: "INR",
+        receipt: `live_${enrollment_id}_${Date.now()}`,
+        notes: {
+          type: "live_only",
+          enrollment_id,
+          student_id: studentId,
+          calculation: calculation,
+        },
+        payment_capture: 1,
+      };
+
+      console.log("Live Order data to Razorpay:", orderData);
+
+      const order = await razorpay.orders.create(orderData);
+
+      console.log("✅ Live lectures order created:", order.id);
+
+      // Save pending payment record
+      const paymentData = {
+        payment_type: "live_only",
+        amount: calculation.totalAmount,
+        classroom: enrollment_id,
+        student: studentId,
+        status: "pending",
+        razorpay_order_id: order.id,
+        price_at_purchase: calculation.totalAmount,
+        commission_percentage_applied: calculation.commissionRate,
+        commission_amount: calculation.commissionAmount,
+        gst_amount: calculation.gstAmount,
+        total_amount_paid: calculation.totalAmount,
+        live_lectures_included: true,
+        live_lectures_price: calculation.liveLecturesPrice,
+        number_of_live_lectures: calculation.numberOfLectures,
+        purchased_lectures: calculation.lectures,
+        metadata: {
+          calculation,
+          purchase_date: new Date().toISOString(),
+        },
+      };
+
+      const payment = await strapi.entityService.create(
+        "api::payment.payment",
+        {
+          data: paymentData,
+        }
+      );
+
+      console.log("✅ Live payment record created:", payment.id);
+
+      return {
+        success: true,
+        order,
+        calculation,
+        payment_id: payment.id,
+      };
+    } catch (error) {
+      console.error("❌ CREATE LIVE LECTURES ORDER ERROR:", error);
+      return ctx.internalServerError(error.message || "Failed to create order");
+    }
+  },
+
+  // 3. Calculate classroom price
+  async calculateClassroomPrice(enrollmentId, includeLiveLectures, studentId) {
+    const enrollment = await strapi.entityService.findOne(
+      "api::enrollment.enrollment",
+      enrollmentId,
+      {
+        populate: ["days", "live_lectures"],
+      }
+    );
+
+    const basePrice = parseFloat(enrollment.base_price) || 0;
+
+    let liveLecturesPrice = 0;
+    let numberOfLectures = 0;
+    let lectures = [];
+
+    if (includeLiveLectures) {
+      // Get upcoming lectures from today
+      const today = new Date();
+      const upcomingLectures =
+        enrollment.live_lectures?.filter(
+          (lecture) => new Date(lecture.scheduled_at) > today
+        ) || [];
+
+      numberOfLectures = upcomingLectures.length;
+      const lecturePrice = parseFloat(enrollment.lecture_price) || 0;
+      liveLecturesPrice = numberOfLectures * lecturePrice;
+      lectures = upcomingLectures.map((l) => ({
+        id: l.id,
+        title: l.title,
+        scheduled_at: l.scheduled_at,
+        price: lecturePrice,
+      }));
+    }
+
+    // Fetch GST data
+    const gstData = await strapi.entityService.findMany("api::gst.gst", {
+      filters: { is_active: true },
+      limit: 1,
+    });
+
+    const gstRate = gstData.length > 0 ? parseFloat(gstData[0].gst_rate) : 0;
+
+    // Fetch commission data
+    const commissionData = await strapi.entityService.findMany(
+      "api::commission-setting.commission-setting",
+      {
+        filters: {
+          system_plan: "classroom",
+          is_active: true,
+        },
+        sort: { effective_from: "desc" },
+        limit: 1,
+      }
+    );
+
+    const commissionRate =
+      commissionData.length > 0
+        ? parseFloat(commissionData[0].commission_percentage)
+        : 0;
+
+    // Calculate amounts
+    const taxableAmount = basePrice + liveLecturesPrice;
+    const gstAmount = (taxableAmount * gstRate) / 100;
+    const commissionAmount = (liveLecturesPrice * commissionRate) / 100;
+    const totalAmount =
+      basePrice + liveLecturesPrice + commissionAmount + gstAmount;
+
+    return {
+      basePrice,
+      liveLecturesPrice,
+      numberOfLectures,
+      lectures,
+      gstRate,
+      gstAmount,
+      commissionRate,
+      commissionAmount,
+      totalAmount,
+      includeLiveLectures,
+    };
+  },
+
+  // 4. Calculate remaining live lectures
+  async calculateRemainingLiveLectures(enrollmentId, studentId) {
+    const enrollment = await strapi.entityService.findOne(
+      "api::enrollment.enrollment",
+      enrollmentId,
+      {
+        populate: ["live_lectures", "days"],
+      }
+    );
+
+    const today = new Date();
+
+    // Get all upcoming lectures
+    const allUpcomingLectures =
+      enrollment.live_lectures?.filter(
+        (lecture) => new Date(lecture.scheduled_at) > today
+      ) || [];
+
+    // Get lectures student already has access to
+    const existingPurchase = await strapi.db
+      .query("api::live-lecture-purchase.live-lecture-purchase")
+      .findOne({
+        where: {
+          enrollment: enrollmentId,
+          student: studentId,
+          is_active: true,
+        },
+      });
+
+    const alreadyPurchasedLectureIds =
+      existingPurchase?.lectures_purchased?.map((l) => l.id) || [];
+
+    // Filter out already purchased lectures
+    const lecturesToPurchase = allUpcomingLectures.filter(
+      (lecture) => !alreadyPurchasedLectureIds.includes(lecture.id)
+    );
+
+    const lecturePrice = parseFloat(enrollment.lecture_price) || 0;
+    const liveLecturesPrice = lecturesToPurchase.length * lecturePrice;
+
+    // Fetch GST data
+    const gstData = await strapi.entityService.findMany("api::gst.gst", {
+      filters: { is_active: true },
+      limit: 1,
+    });
+
+    const gstRate = gstData.length > 0 ? parseFloat(gstData[0].gst_rate) : 0;
+
+    // Fetch commission data
+    const commissionData = await strapi.entityService.findMany(
+      "api::commission-setting.commission-setting",
+      {
+        filters: {
+          system_plan: "classroom",
+          is_active: true,
+        },
+        sort: { effective_from: "desc" },
+        limit: 1,
+      }
+    );
+
+    const commissionRate =
+      commissionData.length > 0
+        ? parseFloat(commissionData[0].commission_percentage)
+        : 0;
+
+    // Calculate amounts
+    const gstAmount = (liveLecturesPrice * gstRate) / 100;
+    const commissionAmount = (liveLecturesPrice * commissionRate) / 100;
+    const totalAmount = liveLecturesPrice + commissionAmount + gstAmount;
+
+    return {
+      liveLecturesPrice,
+      numberOfLectures: lecturesToPurchase.length,
+      lectures: lecturesToPurchase.map((l) => ({
+        id: l.id,
+        title: l.title,
+        scheduled_at: l.scheduled_at,
+        price: lecturePrice,
+      })),
+      gstRate,
+      gstAmount,
+      commissionRate,
+      commissionAmount,
+      totalAmount,
+    };
+  },
+
+  // 5. Verify payment (common for both)
+  async verifyPayment(ctx) {
+    try {
+      const {
+        razorpay_order_id,
+        razorpay_payment_id,
+        razorpay_signature,
+        payment_type = "classroom_only",
+      } = ctx.request.body;
+
+      console.log("=== VERIFY PAYMENT ===");
+      console.log("Payment ID:", razorpay_payment_id);
+      console.log("Order ID:", razorpay_order_id);
+      console.log("Payment Type:", payment_type);
+
+      // Verify signature
+      const generatedSignature = crypto
+        .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
+        .update(`${razorpay_order_id}|${razorpay_payment_id}`)
+        .digest("hex");
+
+      if (generatedSignature !== razorpay_signature) {
+        console.error("❌ Signature verification failed");
+        return ctx.badRequest("Payment verification failed");
+      }
+
+      // Get payment record
+      const payment = await strapi.db.query("api::payment.payment").findOne({
+        where: { razorpay_order_id },
+        populate: ["classroom", "student"],
+      });
+
+      if (!payment) {
+        return ctx.badRequest("Payment record not found");
+      }
+
+      // Update payment status
+      const updatedPayment = await strapi.entityService.update(
+        "api::payment.payment",
+        payment.id,
+        {
+          data: {
+            status: "completed",
+            razorpay_payment_id,
+            razorpay_signature,
+            purchased_at: new Date().toISOString(),
+            completed_at: new Date().toISOString(),
+          },
+        }
+      );
+
+      // Handle based on payment type
+      if (
+        payment_type === "classroom_only" ||
+        payment_type === "classroom_with_live"
+      ) {
+        // Enroll student in classroom
         await strapi.entityService.update(
           "api::enrollment.enrollment",
-          item_id,
+          payment.classroom.id,
           {
             data: {
               students: {
-                connect: [userId], // This will add the user without removing others
+                connect: [payment.student.id],
               },
             },
           }
         );
+
+        console.log(
+          `✅ Student ${payment.student.id} enrolled in classroom ${payment.classroom.id}`
+        );
+
+        // If live lectures included, grant access
+        if (
+          payment_type === "classroom_with_live" &&
+          payment.live_lectures_included
+        ) {
+          await this.grantLiveLectureAccess(payment);
+        }
+      } else if (payment_type === "live_only") {
+        // Grant access to live lectures
+        await this.grantLiveLectureAccess(payment);
+      }
+
+      console.log("✅ Payment verified and processed successfully");
+
+      return {
+        success: true,
+        payment: updatedPayment,
+        message: "Payment verified successfully",
+      };
+    } catch (error) {
+      console.error("❌ PAYMENT VERIFICATION ERROR:", error);
+      return ctx.internalServerError("Payment verification failed");
+    }
+  },
+
+  // 6. Grant live lecture access
+  async grantLiveLectureAccess(payment) {
+    // Create live lecture purchase record
+    const livePurchaseData = {
+      enrollment: payment.classroom.id,
+      student: payment.student.id,
+      payment: payment.id,
+      lectures_purchased: payment.purchased_lectures || [],
+      purchase_date: new Date().toISOString(),
+      valid_from: new Date().toISOString(),
+      valid_until: new Date(
+        new Date().setFullYear(new Date().getFullYear() + 1)
+      ).toISOString(),
+      is_active: true,
+    };
+
+    const livePurchase = await strapi.entityService.create(
+      "api::live-lecture-purchase.live-lecture-purchase",
+      {
+        data: livePurchaseData,
+      }
+    );
+
+    console.log(
+      `✅ Live lecture access granted for student ${payment.student.id}`
+    );
+    return livePurchase;
+  },
+
+  // 7. Check student's access status
+  async checkAccessStatus(ctx) {
+    try {
+      const { enrollment_id } = ctx.params;
+
+      // Get user from token
+      const token = ctx.request.header.authorization?.replace("Bearer ", "");
+      if (!token) {
+        return ctx.unauthorized("Authorization token missing");
+      }
+
+      const { id: studentId } = await strapi.plugins[
+        "users-permissions"
+      ].services.jwt.verify(token);
+
+      // Check classroom access
+      const enrollment = await strapi.entityService.findOne(
+        "api::enrollment.enrollment",
+        enrollment_id,
+        {
+          populate: ["students"],
+        }
+      );
+
+      const classroomAccess =
+        enrollment?.students?.some((student) => student.id === studentId) ||
+        false;
+
+      // Check live lecture access
+      const liveLecturePurchase = await strapi.db
+        .query("api::live-lecture-purchase.live-lecture-purchase")
+        .findOne({
+          where: {
+            enrollment: enrollment_id,
+            student: studentId,
+            is_active: true,
+          },
+        });
+
+      const liveLectureAccess = !!liveLecturePurchase;
+
+      // Check if can purchase live lectures
+      let canPurchaseLive = false;
+      if (classroomAccess && !liveLectureAccess) {
+        const remainingLectures = await this.calculateRemainingLiveLectures(
+          enrollment_id,
+          studentId
+        );
+        canPurchaseLive = remainingLectures.numberOfLectures > 0;
       }
 
       return {
         success: true,
-        payment,
-        commission: {
-          percentage: commissionPct,
-          amount: commissionAmount,
+        data: {
+          classroom_access: classroomAccess,
+          live_lecture_access: liveLectureAccess,
+          live_lectures: liveLecturePurchase?.lectures_purchased || [],
+          can_purchase_live: canPurchaseLive,
+          student_id: studentId,
+          enrollment_id: enrollment_id,
         },
       };
     } catch (error) {
-      console.error("Payment processing error:", error);
-      return ctx.internalServerError("Payment processing failed");
+      console.error("Check access status error:", error);
+      return ctx.internalServerError(error.message);
+    }
+  },
+
+  // 8. Helper: Check classroom access
+  async checkClassroomAccess(enrollmentId, studentId) {
+    const enrollment = await strapi.entityService.findOne(
+      "api::enrollment.enrollment",
+      enrollmentId,
+      {
+        populate: ["students"],
+      }
+    );
+
+    return (
+      enrollment?.students?.some((student) => student.id === studentId) || false
+    );
+  },
+
+  // 9. Helper: Check live lecture access
+  async checkLiveLectureAccess(enrollmentId, studentId) {
+    const livePurchase = await strapi.db
+      .query("api::live-lecture-purchase.live-lecture-purchase")
+      .findOne({
+        where: {
+          enrollment: enrollmentId,
+          student: studentId,
+          is_active: true,
+        },
+      });
+
+    return !!livePurchase;
+  },
+
+  // 10. Get upcoming live lectures for student
+  async getUpcomingLiveLectures(ctx) {
+    try {
+      const { enrollment_id } = ctx.params;
+
+      // Get user from token
+      const token = ctx.request.header.authorization?.replace("Bearer ", "");
+      if (!token) {
+        return ctx.unauthorized("Authorization token missing");
+      }
+
+      const { id: studentId } = await strapi.plugins[
+        "users-permissions"
+      ].services.jwt.verify(token);
+
+      // Check classroom access first
+      const hasClassroomAccess = await this.checkClassroomAccess(
+        enrollment_id,
+        studentId
+      );
+      if (!hasClassroomAccess) {
+        return ctx.badRequest("You must enroll in the classroom first");
+      }
+
+      // Get all upcoming lectures
+      const enrollment = await strapi.entityService.findOne(
+        "api::enrollment.enrollment",
+        enrollment_id,
+        {
+          populate: ["live_lectures"],
+        }
+      );
+
+      const today = new Date();
+      const allUpcomingLectures =
+        enrollment.live_lectures?.filter(
+          (lecture) => new Date(lecture.scheduled_at) > today
+        ) || [];
+
+      // Get purchased lecture IDs
+      const livePurchase = await strapi.db
+        .query("api::live-lecture-purchase.live-lecture-purchase")
+        .findOne({
+          where: {
+            enrollment: enrollment_id,
+            student: studentId,
+            is_active: true,
+          },
+        });
+
+      const purchasedLectureIds =
+        livePurchase?.lectures_purchased?.map((l) => l.id) || [];
+
+      // Separate purchased and available lectures
+      const purchasedLectures = allUpcomingLectures.filter((lecture) =>
+        purchasedLectureIds.includes(lecture.id)
+      );
+
+      const availableLectures = allUpcomingLectures.filter(
+        (lecture) => !purchasedLectureIds.includes(lecture.id)
+      );
+
+      return {
+        success: true,
+        data: {
+          purchased_lectures: purchasedLectures,
+          available_lectures: availableLectures,
+          total_upcoming: allUpcomingLectures.length,
+          has_live_access: !!livePurchase,
+          lecture_price: enrollment.lecture_price || 0,
+        },
+      };
+    } catch (error) {
+      console.error("Get upcoming lectures error:", error);
+      return ctx.internalServerError(error.message);
     }
   },
 };
