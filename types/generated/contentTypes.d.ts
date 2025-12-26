@@ -1350,12 +1350,15 @@ export interface ApiClassRequestClassRequest extends Schema.CollectionType {
     singularName: 'class-request';
     pluralName: 'class-requests';
     displayName: 'class_requests';
+    description: '';
   };
   options: {
     draftAndPublish: true;
   };
   attributes: {
-    request_type: Attribute.Enumeration<['reschedule', 'cancellation']> &
+    request_type: Attribute.Enumeration<
+      ['reschedule', 'cancellation', 'extra_class']
+    > &
       Attribute.Required;
     status: Attribute.Enumeration<
       ['pending', 'approved', 'rejected', 'cancelled']
@@ -1381,6 +1384,12 @@ export interface ApiClassRequestClassRequest extends Schema.CollectionType {
     processed_at: Attribute.DateTime;
     tutor_note: Attribute.Text;
     notification_sent: Attribute.Boolean & Attribute.DefaultTo<false>;
+    requested_by: Attribute.Component<'requested-by.requested-by'>;
+    topic: Attribute.Relation<
+      'api::class-request.class-request',
+      'oneToOne',
+      'api::topic.topic'
+    >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;

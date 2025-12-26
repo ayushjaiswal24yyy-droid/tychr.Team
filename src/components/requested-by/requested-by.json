@@ -1,0 +1,21 @@
+{
+  "collectionName": "components_requested_by_requested_bies",
+  "info": {
+    "displayName": "requested_by"
+  },
+  "options": {},
+  "attributes": {
+    "role": {
+      "type": "enumeration",
+      "enum": [
+        "Student",
+        "Tutor"
+      ]
+    },
+    "user": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "plugin::users-permissions.user"
+    }
+  }
+}
