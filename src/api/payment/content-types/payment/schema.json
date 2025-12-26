@@ -21,32 +21,14 @@
       "target": "api::live-lecture.live-lecture",
       "inversedBy": "payments"
     },
-    "recorded_lecture": {
-      "type": "relation",
-      "relation": "manyToOne",
-      "target": "api::recorded-lecture.recorded-lecture",
-      "inversedBy": "payments"
-    },
     "classroom": {
       "type": "relation",
       "relation": "oneToOne",
       "target": "api::enrollment.enrollment"
     },
-    "expires_at": {
-      "type": "datetime"
-    },
     "purchased_at": {
       "type": "datetime",
       "required": false
-    },
-    "status": {
-      "type": "enumeration",
-      "enum": [
-        "active",
-        "expired",
-        "used_up"
-      ],
-      "default": "active"
     },
     "razorpay_payment_id": {
       "type": "string"
