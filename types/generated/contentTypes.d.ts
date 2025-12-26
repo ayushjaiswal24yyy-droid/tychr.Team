@@ -1886,9 +1886,10 @@ export interface ApiEnrollmentEnrollment extends Schema.CollectionType {
     duration: Attribute.Integer;
     image: Attribute.Media<'images', true>;
     status: Attribute.Enumeration<
-      ['Requested', 'Approved', 'Responded', 'Requested Demo']
+      ['Requested', 'Approved', 'Responded', 'Requested Demo', 'Rejected']
     > &
       Attribute.DefaultTo<'Requested'>;
+    rejection_feedback: Attribute.String;
     grade_subject: Attribute.Relation<
       'api::enrollment.enrollment',
       'manyToOne',
@@ -2628,20 +2629,12 @@ export interface ApiPaymentPayment extends Schema.CollectionType {
       'manyToOne',
       'api::live-lecture.live-lecture'
     >;
-    recorded_lecture: Attribute.Relation<
-      'api::payment.payment',
-      'manyToOne',
-      'api::recorded-lecture.recorded-lecture'
-    >;
     classroom: Attribute.Relation<
       'api::payment.payment',
       'oneToOne',
       'api::enrollment.enrollment'
     >;
-    expires_at: Attribute.DateTime;
     purchased_at: Attribute.DateTime;
-    status: Attribute.Enumeration<['active', 'expired', 'used_up']> &
-      Attribute.DefaultTo<'active'>;
     razorpay_payment_id: Attribute.String;
     razorpay_order_id: Attribute.String;
     razorpay_signature: Attribute.String;
