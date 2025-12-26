@@ -8,12 +8,17 @@ module.exports = createCoreController(
     async createCustomClassroom(ctx) {
       try {
         const { data } = ctx.request.body;
+        const user = ctx.state.user;
+
+        if (!user) {
+          return ctx.unauthorized("You must be logged in to create a classroom");
+        }
 
         if (!data) {
           return ctx.badRequest("No data provided");
         }
 
-        // 1. Validate required fields from your schema
+        // 1. Required fields
         const requiredFields = [
           "classroom_name",
           "startDate",
@@ -29,111 +34,88 @@ module.exports = createCoreController(
         ];
 
         const missingFields = requiredFields.filter(
-          (field) => !data[field] && data[field] !== 0
+          (field) => data[field] === undefined || data[field] === null
         );
 
-        if (missingFields.length > 0) {
+        if (missingFields.length) {
           return ctx.badRequest(
             `Missing required fields: ${missingFields.join(", ")}`
           );
         }
 
-        // 2. Validate topic exists and belongs to correct grade_subject
-        if (data.topic) {
-          const topic = await strapi.entityService.findOne(
-            "api::subtopic.subtopic",
-            data.topic,
-            {
-              populate: ["topic.grade_subject"],
-            }
-          );
+        // 2. Topic validation
+        const topic = await strapi.entityService.findOne(
+          "api::subtopic.subtopic",
+          data.topic,
+          { populate: ["topic.grade_subject"] }
+        );
 
-          if (!topic) {
-            return ctx.badRequest("Invalid topic selected");
-          }
-
-          // Check if topic's grade_subject matches the provided grade_subject
-          if (topic.topic?.grade_subject?.id !== parseInt(data.grade_subject)) {
-            return ctx.badRequest(
-              "Topic does not belong to the selected subject"
-            );
-          }
+        if (!topic) {
+          return ctx.badRequest("Invalid topic selected");
         }
 
-        // 3. Validate grade_subject exists
-        if (data.grade_subject) {
-          const gradeSubject = await strapi.entityService.findOne(
-            "api::grade-subject.grade-subject",
-            data.grade_subject,
-            {
-              populate: ["grade", "subject"],
-            }
-          );
-
-          if (!gradeSubject) {
-            return ctx.badRequest("Invalid subject selected");
-          }
-
-          // Check if grade matches
-          if (gradeSubject.grade?.id !== parseInt(data.grade)) {
-            return ctx.badRequest(
-              "Subject does not belong to the selected grade"
-            );
-          }
+        if (topic.topic?.grade_subject?.id !== Number(data.grade_subject)) {
+          return ctx.badRequest("Topic does not belong to the selected subject");
         }
 
-        // 4. Validate grade exists
-        if (data.grade) {
-          const grade = await strapi.entityService.findOne(
-            "api::class.class",
-            data.grade
-          );
-          if (!grade) {
-            return ctx.badRequest("Invalid grade selected");
-          }
+        // 3. Grade subject validation
+        const gradeSubject = await strapi.entityService.findOne(
+          "api::grade-subject.grade-subject",
+          data.grade_subject,
+          { populate: ["grade"] }
+        );
+
+        if (!gradeSubject) {
+          return ctx.badRequest("Invalid subject selected");
         }
 
-        // 5. Validate IB program exists and contains the grade
-        if (data.ib_program) {
-          const ibProgram = await strapi.entityService.findOne(
-            "api::ib-program.ib-program",
-            data.ib_program,
-            {
-              populate: ["grades"],
-            }
-          );
-
-          if (!ibProgram) {
-            return ctx.badRequest("Invalid IB program selected");
-          }
-
-          // Check if grade is in the IB program
-          const hasGrade = ibProgram.grades?.some(
-            (g) => g.id === parseInt(data.grade)
-          );
-          if (!hasGrade) {
-            return ctx.badRequest(
-              "Selected grade is not available in this IB program"
-            );
-          }
+        if (gradeSubject.grade?.id !== Number(data.grade)) {
+          return ctx.badRequest("Subject does not belong to the selected grade");
         }
 
-        // 6. Validate classroom type specific rules
+        // 4. Grade validation
+        const grade = await strapi.entityService.findOne(
+          "api::class.class",
+          data.grade
+        );
+
+        if (!grade) {
+          return ctx.badRequest("Invalid grade selected");
+        }
+
+        // 5. IB program validation
+        const ibProgram = await strapi.entityService.findOne(
+          "api::ib-program.ib-program",
+          data.ib_program,
+          { populate: ["grades"] }
+        );
+
+        if (!ibProgram) {
+          return ctx.badRequest("Invalid IB program selected");
+        }
+
+        const hasGrade = ibProgram.grades?.some(
+          (g) => g.id === Number(data.grade)
+        );
+
+        if (!hasGrade) {
+          return ctx.badRequest(
+            "Selected grade is not available in this IB program"
+          );
+        }
+
+        // 6. Classroom type rules
         if (data.classroom_type === "group") {
-          if (
-            !data.group_limit ||
-            data.group_limit < 2 ||
-            data.group_limit > 10
-          ) {
+          if (!data.group_limit || data.group_limit < 2 || data.group_limit > 50) {
             return ctx.badRequest(
               "Group classes must have a limit between 2 and 50 students"
             );
           }
-        } else if (data.classroom_type === "one-on-one") {
-          data.group_limit = null; // Clear group limit for one-on-one
+        } else {
+          data.group_limit = null;
         }
 
-        // 7. Validate date range
+        // 7. Date range
         const startDate = new Date(data.startDate);
         const endDate = new Date(data.endDate);
 
@@ -141,21 +123,12 @@ module.exports = createCoreController(
           return ctx.badRequest("End date must be after start date");
         }
 
-        // 8. Validate duration
+        // 8. Duration
         if (data.duration < 30 || data.duration > 180) {
           return ctx.badRequest("Duration must be between 30 and 180 minutes");
         }
 
-        // 9. Validate days structure
-        if (!Array.isArray(data.days) || data.days.length === 0) {
-          return ctx.badRequest("At least one day must be selected");
-        }
-
-        // Validate each day object
-        if (!Array.isArray(data.days) || data.days.length === 0) {
-          return ctx.badRequest("At least one day must be selected");
-        }
-
+        // 9. Days validation (SINGLE SOURCE OF TRUTH)
         const VALID_DAYS = [
           "monday",
           "tuesday",
@@ -166,8 +139,12 @@ module.exports = createCoreController(
           "sunday",
         ];
 
+        if (!Array.isArray(data.days) || data.days.length === 0) {
+          return ctx.badRequest("At least one day must be selected");
+        }
+
         for (const d of data.days) {
-          if (!VALID_DAYS.includes(d.days)) {
+          if (!d.days || !VALID_DAYS.includes(d.days.toLowerCase())) {
             return ctx.badRequest(`Invalid day: ${d.days}`);
           }
 
@@ -181,117 +158,58 @@ module.exports = createCoreController(
           }
         }
 
-
-        // 10. Validate price
+        // 10. Price
         if (data.price < 0) {
           return ctx.badRequest("Price must be a positive number");
         }
 
-        // 11. Validate assistant if isAssist is true
-        if (data.isAssist && data.assistant) {
-          const assistant = await strapi.entityService.findOne(
-            "plugin::users-permissions.user",
-            data.assistant
-          );
-          if (!assistant) {
-            return ctx.badRequest("Invalid assistant selected");
-          }
+        // 11. Tutor classroom limit
+        const tutorProfile = await strapi.entityService.findOne(
+          "plugin::users-permissions.user",
+          user.id,
+          { populate: ["tutor_profile"] }
+        );
 
-          // Check if assistant has appropriate role (optional)
-          const assistantRole = assistant.role?.name;
-          if (!["tutor", "assistant", "admin"].includes(assistantRole)) {
-            return ctx.badRequest(
-              "Selected assistant does not have appropriate permissions"
-            );
-          }
-        } else if (data.isAssist && !data.assistant) {
-          return ctx.badRequest(
-            "Assistant is required when assistant is enabled"
-          );
-        }
+        const classroomLimit =
+          tutorProfile?.tutor_profile?.classroom_limit || 5;
 
-        // 12. Get current user (tutor) from context
-        const user = ctx.state.user;
-        if (!user) {
-          return ctx.unauthorized(
-            "You must be logged in to create a classroom"
-          );
-        }
-
-        // 13. Check if tutor has reached classroom limit
-        const tutorClassrooms = await strapi.entityService.findMany(
+        const existingClassrooms = await strapi.entityService.findMany(
           "api::enrollment.enrollment",
           {
             filters: {
               tutor: user.id,
-              $or: [{ status: "Approved" }, { status: "Requested" }],
+              status: { $in: ["Approved", "Requested"] },
             },
           }
         );
 
-        // Get tutor's classroom limit from user profile (adjust based on your user schema)
-        const tutorProfile = await strapi.entityService.findOne(
-          "plugin::users-permissions.user",
-          user.id,
-          {
-            populate: ["tutor_profile"],
-          }
-        );
-
-        const classroomLimit =
-          tutorProfile?.tutor_profile?.classroom_limit || 5; // Default to 5 if not set
-
-        if (tutorClassrooms.length >= classroomLimit) {
+        if (existingClassrooms.length >= classroomLimit) {
           return ctx.badRequest(
-            `You have reached your classroom limit of ${classroomLimit}. Please upgrade your plan or contact support.`
+            `You have reached your classroom limit of ${classroomLimit}`
           );
         }
 
-        // 14. Prepare the classroom data
-        const classroomData = {
-          data: {
-            ...data,
-            tutor: user.id, // Set the tutor
-            enrollment_date: new Date().toISOString().split("T")[0], // Today's date
-            status: "Requested", // Default status
-            isPaid: true,
-            payment_date: null,
-            // Set default values for optional fields
-            isAssist: data.isAssist || false,
-            assistant: data.isAssist ? data.assistant : null,
-            group_limit:
-              data.classroom_type === "group" ? data.group_limit : null,
-            // Ensure proper data types
-            price: parseFloat(data.price),
-            duration: parseInt(data.duration),
-            startDate: new Date(data.startDate).toISOString().split("T")[0],
-            endDate: new Date(data.endDate).toISOString().split("T")[0],
-            // Convert days component properly
-            days: data.days.map((day) => ({
-              days: day.day.toLowerCase(),
-              startTime: day.time,
-            })),
-          },
-        };
-
-        // 15. Create the classroom
+        // 12. Create classroom
         const classroom = await strapi.entityService.create(
           "api::enrollment.enrollment",
-          classroomData
+          {
+            data: {
+              ...data,
+              tutor: user.id,
+              status: "Requested",
+              isPaid: true,
+              enrollment_date: new Date().toISOString().split("T")[0],
+              price: Number(data.price),
+              duration: Number(data.duration),
+              startDate: startDate.toISOString().split("T")[0],
+              endDate: endDate.toISOString().split("T")[0],
+              days: data.days.map((d) => ({
+                days: d.days.toLowerCase(),
+                startTime: d.startTime,
+              })),
+            },
+          }
         );
-
-        // 16. Send notification (optional)
-        try {
-          await strapi
-            .service("api::notification.notification")
-            .sendClassroomCreationNotification({
-              classroom,
-              tutor: user,
-            });
-        } catch (notificationError) {
-          // Don't fail if notification fails
-          strapi.log.error("Failed to send notification:", notificationError);
-        }
 
         return {
           success: true,
@@ -299,98 +217,81 @@ module.exports = createCoreController(
           message: "Classroom created successfully and submitted for approval",
         };
       } catch (error) {
-        strapi.log.error("Error creating classroom:", error);
-        return ctx.badRequest(
-          error.message || "An error occurred while creating the classroom"
-        );
+        strapi.log.error("Create classroom error:", error);
+        return ctx.badRequest(error.message || "Failed to create classroom");
       }
-    },
+    }
+
+    ,
 
     // Optional: Add a validation endpoint for frontend
     async validateClassroomData(ctx) {
       try {
         const { data } = ctx.request.body;
+        const errors = [];
 
         if (!data) {
           return ctx.badRequest("No data provided");
         }
 
-        const validationErrors = [];
-
-        // Validate topic
-        if (data.topic) {
+        if (data.topic && data.grade_subject) {
           const topic = await strapi.entityService.findOne(
             "api::subtopic.subtopic",
             data.topic,
-            {
-              populate: ["topic.grade_subject"],
-            }
+            { populate: ["topic.grade_subject"] }
           );
 
           if (!topic) {
-            validationErrors.push("Invalid topic selected");
+            errors.push("Invalid topic selected");
           } else if (
-            data.grade_subject &&
-            topic.topic?.grade_subject?.id !== parseInt(data.grade_subject)
+            topic.topic?.grade_subject?.id !== Number(data.grade_subject)
           ) {
-            validationErrors.push(
-              "Topic does not belong to the selected subject"
-            );
+            errors.push("Topic does not belong to the selected subject");
           }
         }
 
-        // Validate grade_subject
-        if (data.grade_subject) {
+        if (data.grade_subject && data.grade) {
           const gradeSubject = await strapi.entityService.findOne(
             "api::grade-subject.grade-subject",
             data.grade_subject,
-            {
-              populate: ["grade"],
-            }
+            { populate: ["grade"] }
           );
 
           if (!gradeSubject) {
-            validationErrors.push("Invalid subject selected");
-          } else if (
-            data.grade &&
-            gradeSubject.grade?.id !== parseInt(data.grade)
-          ) {
-            validationErrors.push(
-              "Subject does not belong to the selected grade"
-            );
+            errors.push("Invalid subject selected");
+          } else if (gradeSubject.grade?.id !== Number(data.grade)) {
+            errors.push("Subject does not belong to the selected grade");
           }
         }
 
-        // Validate IB program and grade compatibility
         if (data.ib_program && data.grade) {
           const ibProgram = await strapi.entityService.findOne(
             "api::ib-program.ib-program",
             data.ib_program,
-            {
-              populate: ["grades"],
-            }
+            { populate: ["grades"] }
           );
 
-          if (ibProgram) {
-            const hasGrade = ibProgram.grades?.some(
-              (g) => g.id === parseInt(data.grade)
+          const hasGrade = ibProgram?.grades?.some(
+            (g) => g.id === Number(data.grade)
+          );
+
+          if (!hasGrade) {
+            errors.push(
+              "Selected grade is not available in this IB program"
             );
-            if (!hasGrade) {
-              validationErrors.push(
-                "Selected grade is not available in this IB program"
-              );
-            }
           }
         }
 
         return {
-          valid: validationErrors.length === 0,
-          errors: validationErrors,
+          valid: errors.length === 0,
+          errors,
         };
       } catch (error) {
         return ctx.badRequest(error.message);
       }
-    },
+    }
+
+    ,
     async updateCustomClassroom(ctx) {
       try {
         const { id } = ctx.params;

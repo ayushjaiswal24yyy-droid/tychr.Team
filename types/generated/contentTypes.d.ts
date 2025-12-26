@@ -1847,7 +1847,7 @@ export interface ApiEnrollmentEnrollment extends Schema.CollectionType {
   attributes: {
     enrollment_date: Attribute.Date;
     isPaid: Attribute.Boolean & Attribute.DefaultTo<true>;
-    price: Attribute.Decimal & Attribute.Required;
+    lecture_price: Attribute.Decimal & Attribute.Required;
     payment_date: Attribute.Date;
     tutor: Attribute.Relation<
       'api::enrollment.enrollment',
@@ -1952,6 +1952,7 @@ export interface ApiEnrollmentEnrollment extends Schema.CollectionType {
       'oneToMany',
       'api::demo-video.demo-video'
     >;
+    base_price: Attribute.Decimal;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     createdBy: Attribute.Relation<

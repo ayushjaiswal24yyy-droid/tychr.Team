@@ -19,7 +19,7 @@
       "type": "boolean",
       "default": true
     },
-    "price": {
+    "lecture_price": {
       "type": "decimal",
       "required": true
     },
@@ -85,7 +85,9 @@
       "type": "media",
       "multiple": true,
       "required": false,
-      "allowedTypes": ["images"]
+      "allowedTypes": [
+        "images"
+      ]
     },
     "status": {
       "type": "enumeration",
@@ -109,7 +111,10 @@
     },
     "classroom_type": {
       "type": "enumeration",
-      "enum": ["one-on-one", "group"],
+      "enum": [
+        "one-on-one",
+        "group"
+      ],
       "required": true
     },
     "group_limit": {
@@ -191,6 +196,9 @@
       "relation": "oneToMany",
       "target": "api::demo-video.demo-video",
       "mappedBy": "classroom"
+    },
+    "base_price": {
+      "type": "decimal"
     }
   }
 }
