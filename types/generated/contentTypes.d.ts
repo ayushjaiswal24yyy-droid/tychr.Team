@@ -1385,7 +1385,7 @@ export interface ApiClassRequestClassRequest extends Schema.CollectionType {
     tutor_note: Attribute.Text;
     notification_sent: Attribute.Boolean & Attribute.DefaultTo<false>;
     requested_by: Attribute.Component<'requested-by.requested-by'>;
-    lectures_unit: Attribute.Relation<
+    topic: Attribute.Relation<
       'api::class-request.class-request',
       'oneToOne',
       'api::topic.topic'

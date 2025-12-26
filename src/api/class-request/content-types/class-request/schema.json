@@ -71,7 +71,7 @@
       "repeatable": false,
       "component": "requested-by.requested-by"
     },
-    "lectures_unit": {
+    "topic": {
       "type": "relation",
       "relation": "oneToOne",
       "target": "api::topic.topic"

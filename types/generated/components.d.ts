@@ -13,6 +13,16 @@ export interface WhyTychrWhyTychr extends Schema.Component {
   };
 }
 
+export interface WhyChooseDataWhyChooseData extends Schema.Component {
+  collectionName: 'components_why_choose_data_why_choose_data';
+  info: {
+    displayName: 'why_choose_data';
+  };
+  attributes: {
+    string: Attribute.Text;
+  };
+}
+
 export interface UserUserExperience extends Schema.Component {
   collectionName: 'components_user_user_experiences';
   info: {
@@ -64,16 +74,6 @@ export interface UserExtraActivity extends Schema.Component {
     start_date: Attribute.Date;
     end_date: Attribute.Date;
     description: Attribute.Text;
-  };
-}
-
-export interface WhyChooseDataWhyChooseData extends Schema.Component {
-  collectionName: 'components_why_choose_data_why_choose_data';
-  info: {
-    displayName: 'why_choose_data';
-  };
-  attributes: {
-    string: Attribute.Text;
   };
 }
 
@@ -352,6 +352,19 @@ export interface SubtopicHeading extends Schema.Component {
   };
 }
 
+export interface SubjectExcellenceSubjectExcellence extends Schema.Component {
+  collectionName: 'components_subject_excellence_subject_excellences';
+  info: {
+    displayName: 'Subject Excellence';
+  };
+  attributes: {
+    heading: Attribute.String;
+    subheading: Attribute.String;
+    stats: Attribute.Component<'excellence-stats.stats', true>;
+    subjects: Attribute.JSON;
+  };
+}
+
 export interface SubjectRefrenceBooks extends Schema.Component {
   collectionName: 'components_subject_refrence_books';
   info: {
@@ -388,19 +401,6 @@ export interface StudentDataStudentData extends Schema.Component {
   };
 }
 
-export interface SubjectExcellenceSubjectExcellence extends Schema.Component {
-  collectionName: 'components_subject_excellence_subject_excellences';
-  info: {
-    displayName: 'Subject Excellence';
-  };
-  attributes: {
-    heading: Attribute.String;
-    subheading: Attribute.String;
-    stats: Attribute.Component<'excellence-stats.stats', true>;
-    subjects: Attribute.JSON;
-  };
-}
-
 export interface StepsSteps extends Schema.Component {
   collectionName: 'components_steps_steps';
   info: {
@@ -410,6 +410,17 @@ export interface StepsSteps extends Schema.Component {
     number: Attribute.String;
     title: Attribute.String;
     desc: Attribute.Text;
+  };
+}
+
+export interface StatsStats extends Schema.Component {
+  collectionName: 'components_stats_stats';
+  info: {
+    displayName: 'Stats';
+  };
+  attributes: {
+    statNumber: Attribute.String;
+    statDescription: Attribute.String;
   };
 }
 
@@ -423,17 +434,6 @@ export interface StandOutStandOut extends Schema.Component {
     title: Attribute.String;
     description: Attribute.Text;
     link_text: Attribute.String;
-  };
-}
-
-export interface StatsStats extends Schema.Component {
-  collectionName: 'components_stats_stats';
-  info: {
-    displayName: 'Stats';
-  };
-  attributes: {
-    statNumber: Attribute.String;
-    statDescription: Attribute.String;
   };
 }
 
@@ -636,6 +636,52 @@ export interface OnlineTutorsBestOnlineTutors extends Schema.Component {
   };
 }
 
+export interface NotificationNotes extends Schema.Component {
+  collectionName: 'components_notification_notes';
+  info: {
+    displayName: 'notes';
+    icon: 'arrowUp';
+  };
+  attributes: {
+    title: Attribute.String;
+    description: Attribute.Text;
+  };
+}
+
+export interface NotificationHistory extends Schema.Component {
+  collectionName: 'components_notification_histories';
+  info: {
+    displayName: 'history';
+    description: '';
+  };
+  attributes: {
+    history: Attribute.Text;
+    time_stamp: Attribute.Date;
+  };
+}
+
+export interface NotificationDemoBookingTime extends Schema.Component {
+  collectionName: 'components_notification_demo_booking_times';
+  info: {
+    displayName: 'demo_booking_time';
+    description: '';
+  };
+  attributes: {
+    schedule_time: Attribute.DateTime;
+  };
+}
+
+export interface MentorMentorQuestions extends Schema.Component {
+  collectionName: 'components_mentor_mentor_questions';
+  info: {
+    displayName: 'Mentor Questions';
+  };
+  attributes: {
+    question: Attribute.Text;
+    answer: Attribute.Text;
+  };
+}
+
 export interface LorLor extends Schema.Component {
   collectionName: 'components_lor_lors';
   info: {
@@ -681,18 +727,6 @@ export interface IgPaperStructureIgcsePaperStructure extends Schema.Component {
   };
 }
 
-export interface FututeCategoryFutureCategory extends Schema.Component {
-  collectionName: 'components_futute_category_future_categories';
-  info: {
-    displayName: 'Future Category';
-    description: '';
-  };
-  attributes: {
-    title: Attribute.String;
-    items: Attribute.Blocks;
-  };
-}
-
 export interface HowItWorksHowItWorks extends Schema.Component {
   collectionName: 'components_how_it_works_how_it_works';
   info: {
@@ -705,52 +739,6 @@ export interface HowItWorksHowItWorks extends Schema.Component {
     image: Attribute.Media<'images' | 'files' | 'videos' | 'audios'>;
     step: Attribute.String;
     position: Attribute.Enumeration<['left', 'right']>;
-  };
-}
-
-export interface MentorMentorQuestions extends Schema.Component {
-  collectionName: 'components_mentor_mentor_questions';
-  info: {
-    displayName: 'Mentor Questions';
-  };
-  attributes: {
-    question: Attribute.Text;
-    answer: Attribute.Text;
-  };
-}
-
-export interface NotificationNotes extends Schema.Component {
-  collectionName: 'components_notification_notes';
-  info: {
-    displayName: 'notes';
-    icon: 'arrowUp';
-  };
-  attributes: {
-    title: Attribute.String;
-    description: Attribute.Text;
-  };
-}
-
-export interface NotificationHistory extends Schema.Component {
-  collectionName: 'components_notification_histories';
-  info: {
-    displayName: 'history';
-    description: '';
-  };
-  attributes: {
-    history: Attribute.Text;
-    time_stamp: Attribute.Date;
-  };
-}
-
-export interface NotificationDemoBookingTime extends Schema.Component {
-  collectionName: 'components_notification_demo_booking_times';
-  info: {
-    displayName: 'demo_booking_time';
-    description: '';
-  };
-  attributes: {
-    schedule_time: Attribute.DateTime;
   };
 }
 
@@ -777,17 +765,6 @@ export interface FutureCategoryFutureCategory extends Schema.Component {
   };
 }
 
-export interface FaqSectionFaq extends Schema.Component {
-  collectionName: 'components_faq_section_faqs';
-  info: {
-    displayName: 'FAQ';
-  };
-  attributes: {
-    question: Attribute.Text;
-    answer: Attribute.Text;
-  };
-}
-
 export interface FreeResourcesFreeResourced extends Schema.Component {
   collectionName: 'components_free_resources_free_resourceds';
   info: {
@@ -810,6 +787,17 @@ export interface FinestTutorsFinestTutors extends Schema.Component {
     icon: Attribute.Media<'images' | 'files' | 'videos' | 'audios'>;
     title: Attribute.String;
     description: Attribute.Text;
+  };
+}
+
+export interface FaqSectionFaq extends Schema.Component {
+  collectionName: 'components_faq_section_faqs';
+  info: {
+    displayName: 'FAQ';
+  };
+  attributes: {
+    question: Attribute.Text;
+    answer: Attribute.Text;
   };
 }
 
@@ -882,18 +870,6 @@ export interface ExcellenceStatsStats extends Schema.Component {
   };
 }
 
-export interface CollegesColleges extends Schema.Component {
-  collectionName: 'components_colleges_colleges';
-  info: {
-    displayName: 'colleges';
-    description: '';
-  };
-  attributes: {
-    name: Attribute.String;
-    description: Attribute.Text;
-  };
-}
-
 export interface EssaysTags extends Schema.Component {
   collectionName: 'components_essays_tags';
   info: {
@@ -929,6 +905,18 @@ export interface CyclesCycle extends Schema.Component {
     early_decision: Attribute.String;
     regular_decision: Attribute.String;
     early_action: Attribute.String;
+  };
+}
+
+export interface CollegesColleges extends Schema.Component {
+  collectionName: 'components_colleges_colleges';
+  info: {
+    displayName: 'colleges';
+    description: '';
+  };
+  attributes: {
+    name: Attribute.String;
+    description: Attribute.Text;
   };
 }
 
@@ -1014,6 +1002,32 @@ export interface ClassroomDays extends Schema.Component {
   };
 }
 
+export interface ClaimsClaims extends Schema.Component {
+  collectionName: 'components_claims_claims';
+  info: {
+    displayName: 'claims';
+  };
+  attributes: {
+    title: Attribute.String;
+    description: Attribute.Text;
+    highlight: Attribute.Text;
+    image: Attribute.Media<'images' | 'files' | 'videos' | 'audios', true>;
+  };
+}
+
+export interface CertifiedTutorsCertifiedTutors extends Schema.Component {
+  collectionName: 'components_certified_tutors_certified_tutors';
+  info: {
+    displayName: 'Certified Tutors';
+  };
+  attributes: {
+    profile_image: Attribute.Media<'images' | 'files' | 'videos' | 'audios'>;
+    Name: Attribute.String;
+    role: Attribute.String;
+    years_of_experience: Attribute.String;
+  };
+}
+
 export interface BlogSectionBlog extends Schema.Component {
   collectionName: 'components_blog_section_blogs';
   info: {
@@ -1031,19 +1045,6 @@ export interface BlogSectionBlog extends Schema.Component {
   };
 }
 
-export interface ClaimsClaims extends Schema.Component {
-  collectionName: 'components_claims_claims';
-  info: {
-    displayName: 'claims';
-  };
-  attributes: {
-    title: Attribute.String;
-    description: Attribute.Text;
-    highlight: Attribute.Text;
-    image: Attribute.Media<'images' | 'files' | 'videos' | 'audios', true>;
-  };
-}
-
 export interface BestTutorsDataBestTutorsData extends Schema.Component {
   collectionName: 'components_best_tutors_data_best_tutors_data';
   info: {
@@ -1053,19 +1054,6 @@ export interface BestTutorsDataBestTutorsData extends Schema.Component {
     icon: Attribute.Media<'images' | 'files' | 'videos' | 'audios'>;
     title: Attribute.String;
     description: Attribute.Text;
-  };
-}
-
-export interface CertifiedTutorsCertifiedTutors extends Schema.Component {
-  collectionName: 'components_certified_tutors_certified_tutors';
-  info: {
-    displayName: 'Certified Tutors';
-  };
-  attributes: {
-    profile_image: Attribute.Media<'images' | 'files' | 'videos' | 'audios'>;
-    Name: Attribute.String;
-    role: Attribute.String;
-    years_of_experience: Attribute.String;
   };
 }
 
@@ -1086,6 +1074,40 @@ export interface BestTutorsBestTutors extends Schema.Component {
   };
 }
 
+export interface AvailabilityTimeSlot extends Schema.Component {
+  collectionName: 'components_availability_time_slots';
+  info: {
+    displayName: 'timeSlot';
+    description: '';
+  };
+  attributes: {
+    start: Attribute.String;
+    end: Attribute.String;
+  };
+}
+
+export interface AvailabilityDayAvailability extends Schema.Component {
+  collectionName: 'components_availability_day_availabilities';
+  info: {
+    displayName: 'dayAvailability';
+  };
+  attributes: {
+    day: Attribute.Enumeration<
+      [
+        'monday',
+        'tuesday',
+        'wednesday',
+        'thursday',
+        'friday',
+        'saturday',
+        'sunday'
+      ]
+    >;
+    enabled: Attribute.Boolean;
+    slots: Attribute.Component<'availability.time-slot', true>;
+  };
+}
+
 export interface ApFutureApFuture extends Schema.Component {
   collectionName: 'components_ap_future_ap_futures';
   info: {
@@ -1102,17 +1124,6 @@ export interface ApFutureApFuture extends Schema.Component {
   };
 }
 
-export interface AchieversAchiever extends Schema.Component {
-  collectionName: 'components_achievers_achievers';
-  info: {
-    displayName: 'Achiever';
-  };
-  attributes: {
-    src: Attribute.Media<'images' | 'files' | 'videos' | 'audios'>;
-    alt: Attribute.String;
-  };
-}
-
 export interface ApCollegesApColleges extends Schema.Component {
   collectionName: 'components_ap_colleges_ap_colleges';
   info: {
@@ -1122,71 +1133,6 @@ export interface ApCollegesApColleges extends Schema.Component {
   attributes: {
     heading: Attribute.String;
     subheading: Attribute.Text;
-  };
-}
-
-export interface ApFutureApFuture extends Schema.Component {
-  collectionName: 'components_ap_future_ap_futures';
-  info: {
-    displayName: 'timeSlot';
-    description: '';
-  };
-  attributes: {
-    future_category: Attribute.Component<
-      'futute-category.future-category',
-      true
-    >;
-    heading: Attribute.String;
-    subheading: Attribute.Text;
-  };
-}
-
-export interface AchieversAchiever extends Schema.Component {
-  collectionName: 'components_achievers_achievers';
-  info: {
-    displayName: 'Achiever';
-  };
-  attributes: {
-    src: Attribute.Media<'images' | 'files' | 'videos' | 'audios'>;
-    alt: Attribute.String;
-  };
-}
-
-export interface AcademicsAcadPerformance extends Schema.Component {
-  collectionName: 'components_academics_acad_performances';
-  info: {
-    displayName: 'acad-performance';
-  };
-  attributes: {
-    future_category: Attribute.Component<
-      'futute-category.future-category',
-      true
-    >;
-    heading: Attribute.String;
-    subheading: Attribute.Text;
-  };
-}
-
-export interface AvailabilityTimeSlot extends Schema.Component {
-  collectionName: 'components_availability_time_slots';
-  info: {
-    displayName: 'timeSlot';
-    description: '';
-  };
-  attributes: {
-    start: Attribute.String;
-    end: Attribute.String;
-  };
-}
-
-export interface AchieversAchiever extends Schema.Component {
-  collectionName: 'components_achievers_achievers';
-  info: {
-    displayName: 'Achiever';
-  };
-  attributes: {
-    src: Attribute.Media<'images' | 'files' | 'videos' | 'audios'>;
-    alt: Attribute.String;
   };
 }
 
@@ -1204,14 +1150,25 @@ export interface AcademicsAcadPerformance extends Schema.Component {
   };
 }
 
+export interface AchieversAchiever extends Schema.Component {
+  collectionName: 'components_achievers_achievers';
+  info: {
+    displayName: 'Achiever';
+  };
+  attributes: {
+    src: Attribute.Media<'images' | 'files' | 'videos' | 'audios'>;
+    alt: Attribute.String;
+  };
+}
+
 declare module '@strapi/types' {
   export module Shared {
     export interface Components {
       'why-tychr.why-tychr': WhyTychrWhyTychr;
+      'why-choose-data.why-choose-data': WhyChooseDataWhyChooseData;
       'user.user-experience': UserUserExperience;
       'user.student-plan': UserStudentPlan;
       'user.extra-activity': UserExtraActivity;
-      'why-choose-data.why-choose-data': WhyChooseDataWhyChooseData;
       'university.tution-fees': UniversityTutionFees;
       'university.subject-ranking': UniversitySubjectRanking;
       'university.student-application': UniversityStudentApplication;
@@ -1230,13 +1187,13 @@ declare module '@strapi/types' {
       'tags.tags': TagsTags;
       'subtopic.qn-a': SubtopicQnA;
       'subtopic.heading': SubtopicHeading;
+      'subject-excellence.subject-excellence': SubjectExcellenceSubjectExcellence;
       'subject.refrence-books': SubjectRefrenceBooks;
       'students-by-subjects.student-by-subjects': StudentsBySubjectsStudentBySubjects;
       'student-data.student-data': StudentDataStudentData;
-      'subject-excellence.subject-excellence': SubjectExcellenceSubjectExcellence;
       'steps.steps': StepsSteps;
-      'stand-out.stand-out': StandOutStandOut;
       'stats.stats': StatsStats;
+      'stand-out.stand-out': StandOutStandOut;
       'semesters.semesters': SemestersSemesters;
       'results-data.results-data': ResultsDataResultsData;
       'resources.resources': ResourcesResources;
@@ -1250,43 +1207,41 @@ declare module '@strapi/types' {
       'question-bank.hints': QuestionBankHints;
       'plan.grade-plan': PlanGradePlan;
       'online-tutors.best-online-tutors': OnlineTutorsBestOnlineTutors;
+      'notification.notes': NotificationNotes;
+      'notification.history': NotificationHistory;
+      'notification.demo-booking-time': NotificationDemoBookingTime;
+      'mentor.mentor-questions': MentorMentorQuestions;
       'lor.lor': LorLor;
       'lectures.lecture-header': LecturesLectureHeader;
       'ig-paper-structure.igcse-paper-structure': IgPaperStructureIgcsePaperStructure;
       'how-it-works.how-it-works': HowItWorksHowItWorks;
-      'mentor.mentor-questions': MentorMentorQuestions;
-      'notification.notes': NotificationNotes;
-      'notification.history': NotificationHistory;
-      'notification.demo-booking-time': NotificationDemoBookingTime;
       'futute-category.future-category': FututeCategoryFutureCategory;
-      'how-it-works.how-it-works': HowItWorksHowItWorks;
       'future-category.future-category': FutureCategoryFutureCategory;
-      'faq-section.faq': FaqSectionFaq;
       'free-resources.free-resourced': FreeResourcesFreeResourced;
       'finest-tutors.finest-tutors': FinestTutorsFinestTutors;
+      'faq-section.faq': FaqSectionFaq;
       'external-users.position': ExternalUsersPosition;
       'external-users.org-details': ExternalUsersOrgDetails;
       'external-users.founder': ExternalUsersFounder;
       'excellence-stats.stats': ExcellenceStatsStats;
-      'colleges.colleges': CollegesColleges;
       'essays.tags': EssaysTags;
       'essays.essay': EssaysEssay;
       'cycles.cycle': CyclesCycle;
+      'colleges.colleges': CollegesColleges;
       'college.requirement': CollegeRequirement;
       'college.programs': CollegePrograms;
       'classroom.resources': ClassroomResources;
       'classroom.notices': ClassroomNotices;
       'classroom.days': ClassroomDays;
-      'blog-section.blog': BlogSectionBlog;
       'claims.claims': ClaimsClaims;
-      'best-tutors-data.best-tutors-data': BestTutorsDataBestTutorsData;
       'certified-tutors.certified-tutors': CertifiedTutorsCertifiedTutors;
+      'blog-section.blog': BlogSectionBlog;
+      'best-tutors-data.best-tutors-data': BestTutorsDataBestTutorsData;
       'best-tutors.best-tutors': BestTutorsBestTutors;
-      'ap-future.ap-future': ApFutureApFuture;
-      'achievers.achiever': AchieversAchiever;
-      'ap-colleges.ap-colleges': ApCollegesApColleges;
       'availability.time-slot': AvailabilityTimeSlot;
       'availability.day-availability': AvailabilityDayAvailability;
+      'ap-future.ap-future': ApFutureApFuture;
+      'ap-colleges.ap-colleges': ApCollegesApColleges;
       'academics.acad-performance': AcademicsAcadPerformance;
       'achievers.achiever': AchieversAchiever;
     }
