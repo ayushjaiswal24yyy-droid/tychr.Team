@@ -92,9 +92,20 @@
       "mappedBy": "test_series"
     },
     "formula_booklet": {
+      "type": "media",
+      "multiple": true,
+      "required": false,
       "allowedTypes": [
         "images",
         "files"
+      ]
+    },
+    "instruction_booklet": {
+      "allowedTypes": [
+        "images",
+        "files",
+        "videos",
+        "audios"
       ],
       "type": "media",
       "multiple": true
