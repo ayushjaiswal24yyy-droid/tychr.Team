@@ -98,15 +98,16 @@ module.exports = {
         {
           filters: {
             system_plan: plan?.type === system_plan,
-            is_premium_plan_active: true,
-            premium_plan_effective_from: { $lte: now },
+            is_active: true,
+            effective_from: { $lte: now },
           },
-          sort: { premium_plan_effective_from: "desc" },
+          sort: { effective_from: "desc" },
           limit: 1,
         }
       );
       if (commissionSettings.length > 0) {
-        commissionPct = parseFloat(commissionSettings[0].premium_plan_percentage) || 0;
+        commissionPct =
+          parseFloat(commissionSettings[0].commission_percentage) || 0;
       }
 
       // Compute commission amount (what system admin gets)

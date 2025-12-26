@@ -207,16 +207,16 @@ module.exports = {
         {
           filters: {
             system_plan: plan?.type === "mentor" ? "mentor" : "counsellor",
-            is_premium_plan_active: true,
-            premium_plan_effective_from: { $lte: now },
+            is_active: true,
+            effective_from: { $lte: now },
           },
-          sort: { premium_plan_effective_from: "desc" },
+          sort: { effective_from: "desc" },
           limit: 1,
         }
       );
       if (commissionSettings.length > 0) {
         commissionPct =
-          parseFloat(commissionSettings[0].premium_plan_percentage) || 0;
+          parseFloat(commissionSettings[0].commission_percentage) || 0;
       }
 
       // Compute commission amount (what system admin gets)
@@ -336,10 +336,10 @@ module.exports = {
         {
           filters: {
             system_plan: item_type,
-            is_premium_plan_active: true,
-            premium_plan_effective_from: { $lte: now },
+            is_active: true,
+            effective_from: { $lte: now },
           },
-          sort: { premium_plan_effective_from: "desc" },
+          sort: { effective_from: "desc" },
           limit: 1,
         }
       );
@@ -347,7 +347,7 @@ module.exports = {
       // Calculate commission
       const commissionPct =
         commissionSettings.length > 0
-          ? parseFloat(commissionSettings[0].premium_plan_percentage)
+          ? parseFloat(commissionSettings[0].commission_percentage)
           : 0;
 
       const price = parseFloat(item.price);

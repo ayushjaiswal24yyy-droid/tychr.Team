@@ -1496,18 +1496,11 @@ export interface ApiCommissionSettingCommissionSetting
     draftAndPublish: false;
   };
   attributes: {
-    premium_plan_percentage: Attribute.Decimal;
-    premium_plan_effective_from: Attribute.Date;
-    is_premium_plan_active: Attribute.Boolean;
+    commission_percentage: Attribute.Decimal;
+    effective_from: Attribute.Date;
+    is_active: Attribute.Boolean;
     system_plan: Attribute.Enumeration<
-      [
-        'mentor',
-        'counsellor',
-        'recorded_lecture',
-        'classroom',
-        'live_lecture',
-        'add_on'
-      ]
+      ['mentor', 'counsellor', 'recorded_lecture', 'classroom']
     > &
       Attribute.Required;
     createdAt: Attribute.DateTime;

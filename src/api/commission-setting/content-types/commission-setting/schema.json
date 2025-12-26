@@ -12,25 +12,18 @@
   },
   "pluginOptions": {},
   "attributes": {
-    "premium_plan_percentage": {
+    "commission_percentage": {
       "type": "decimal"
     },
-    "premium_plan_effective_from": {
+    "effective_from": {
       "type": "date"
     },
-    "is_premium_plan_active": {
+    "is_active": {
       "type": "boolean"
     },
     "system_plan": {
       "type": "enumeration",
-      "enum": [
-        "mentor",
-        "counsellor",
-        "recorded_lecture",
-        "classroom",
-        "live_lecture",
-        "add_on"
-      ],
+      "enum": ["mentor", "classroom"],
       "required": true
     }
   }

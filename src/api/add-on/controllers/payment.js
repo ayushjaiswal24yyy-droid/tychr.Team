@@ -173,10 +173,10 @@ module.exports = {
           {
             filters: {
               system_plan: "add_on",
-              is_premium_plan_active: true,
-              premium_plan_effective_from: { $lte: now },
+              is_active: true,
+              effective_from: { $lte: now },
             },
-            sort: { premium_plan_effective_from: "desc" },
+            sort: { effective_from: "desc" },
             limit: 1,
           }
         );
@@ -190,7 +190,7 @@ module.exports = {
       // Calculate commission for single item - FIXED
       const commissionPct =
         commissionSettings.length > 0
-          ? parseFloat(commissionSettings[0].premium_plan_percentage) || 0
+          ? parseFloat(commissionSettings[0].commission_percentage) || 0
           : 0;
 
       const commissionAmount = (commissionPct / 100) * price;
