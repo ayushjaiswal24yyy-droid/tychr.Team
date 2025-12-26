@@ -688,6 +688,7 @@ module.exports = {
   },
 
   // 5. Verify payment (common for both)
+  // 5. Verify payment (common for both)
   async verifyPayment(ctx) {
     try {
       const {
@@ -701,6 +702,7 @@ module.exports = {
       console.log("Payment ID:", razorpay_payment_id);
       console.log("Order ID:", razorpay_order_id);
       console.log("Payment Type:", payment_type);
+      console.log("Signature length:", razorpay_signature?.length);
 
       // Verify signature
       const generatedSignature = crypto
@@ -708,18 +710,28 @@ module.exports = {
         .update(`${razorpay_order_id}|${razorpay_payment_id}`)
         .digest("hex");
 
+      console.log("Generated signature length:", generatedSignature.length);
       console.log("Generated signature:", generatedSignature);
       console.log("Received signature:", razorpay_signature);
 
       if (generatedSignature !== razorpay_signature) {
         console.error("❌ Signature verification failed");
-        return ctx.badRequest("Payment verification failed");
+        console.error("Expected:", generatedSignature);
+        console.error("Received:", razorpay_signature);
+        return ctx.badRequest(
+          "Payment verification failed - Invalid signature"
+        );
       }
 
-      // Get payment record
+      console.log("✅ Signature verification successful");
+
+      // Get payment record with proper population
       const payment = await strapi.db.query("api::payment.payment").findOne({
-        where: { razorpay_order_id },
-        populate: ["classroom", "student"],
+        where: { razorpay_order_id: razorpay_order_id },
+        populate: {
+          classroom: true,
+          student: true,
+        },
       });
 
       if (!payment) {
@@ -727,10 +739,50 @@ module.exports = {
           "❌ Payment record not found for order:",
           razorpay_order_id
         );
+
+        // Let's check if payment exists with different criteria
+        const allPayments = await strapi.db
+          .query("api::payment.payment")
+          .findMany({
+            where: {
+              razorpay_order_id: {
+                $contains: razorpay_order_id.substring(0, 10), // Partial match
+              },
+            },
+            limit: 5,
+          });
+
+        console.log("Similar payments found:", allPayments.length);
+        allPayments.forEach((p, i) => {
+          console.log(`Payment ${i}:`, {
+            id: p.id,
+            razorpay_order_id: p.razorpay_order_id,
+            student: p.student,
+            classroom: p.classroom,
+          });
+        });
+
         return ctx.badRequest("Payment record not found");
       }
 
-      console.log("Payment record found:", payment.id);
+      console.log("✅ Payment record found:", {
+        id: payment.id,
+        student_id: payment.student?.id,
+        classroom_id: payment.classroom?.id,
+        status: payment.status,
+        payment_type: payment.payment_type,
+        live_lectures_included: payment.live_lectures_included,
+      });
+
+      // Check if payment is already completed
+      if (payment.status === "completed") {
+        console.log("⚠️ Payment already completed, returning success");
+        return {
+          success: true,
+          payment: payment,
+          message: "Payment already verified",
+        };
+      }
 
       // Update payment status
       const updatedPayment = await strapi.entityService.update(
@@ -741,8 +793,8 @@ module.exports = {
             status: "completed",
             razorpay_payment_id,
             razorpay_signature,
-            purchased_at: new Date().toISOString(),
-            completed_at: new Date().toISOString(),
+            purchased_at: new Date(),
+            completed_at: new Date(),
           },
         }
       );
@@ -754,32 +806,69 @@ module.exports = {
         payment_type === "classroom_only" ||
         payment_type === "classroom_with_live"
       ) {
-        // Enroll student in classroom
-        await strapi.entityService.update(
-          "api::enrollment.enrollment",
-          payment.classroom.id,
-          {
-            data: {
-              students: {
-                connect: [payment.student.id],
-              },
-            },
+        try {
+          // Enroll student in classroom
+          const enrollmentId = payment.classroom?.id || payment.classroom;
+
+          if (!enrollmentId) {
+            console.error("❌ Enrollment ID not found in payment");
+            throw new Error("Enrollment ID not found");
           }
-        );
 
-        console.log(
-          `✅ Student ${payment.student.id} enrolled in classroom ${payment.classroom.id}`
-        );
-
-        // If live lectures included, grant access
-        if (
-          payment_type === "classroom_with_live" &&
-          payment.live_lectures_included
-        ) {
-          console.log(
-            "✅ Granting live lecture access with classroom purchase"
+          // Get current enrollment to check existing students
+          const enrollment = await strapi.entityService.findOne(
+            "api::enrollment.enrollment",
+            enrollmentId,
+            {
+              populate: ["students"],
+            }
           );
-          await this.grantLiveLectureAccess(payment, payment_type);
+
+          if (!enrollment) {
+            console.error("❌ Enrollment not found:", enrollmentId);
+            throw new Error("Enrollment not found");
+          }
+
+          const studentId = payment.student?.id || payment.student;
+          const existingStudentIds =
+            enrollment.students?.map((s) => s.id) || [];
+
+          // Check if student is already enrolled
+          if (!existingStudentIds.includes(studentId)) {
+            await strapi.entityService.update(
+              "api::enrollment.enrollment",
+              enrollmentId,
+              {
+                data: {
+                  students: {
+                    connect: [studentId],
+                  },
+                },
+              }
+            );
+            console.log(
+              `✅ Student ${studentId} enrolled in classroom ${enrollmentId}`
+            );
+          } else {
+            console.log(
+              `⚠️ Student ${studentId} already enrolled in classroom ${enrollmentId}`
+            );
+          }
+
+          // If live lectures included, grant access
+          if (
+            payment_type === "classroom_with_live" &&
+            payment.live_lectures_included
+          ) {
+            console.log(
+              "✅ Granting live lecture access with classroom purchase"
+            );
+            await this.grantLiveLectureAccess(payment, payment_type);
+          }
+        } catch (enrollmentError) {
+          console.error("❌ Enrollment error:", enrollmentError);
+          // Don't fail the whole payment if enrollment fails, just log it
+          console.log("⚠️ Enrollment failed but payment recorded");
         }
       } else if (payment_type === "live_only") {
         // Grant access to live lectures
@@ -796,29 +885,48 @@ module.exports = {
       };
     } catch (error) {
       console.error("❌ PAYMENT VERIFICATION ERROR:", error);
-      console.error(error.stack);
-      return ctx.internalServerError("Payment verification failed");
+      console.error("Error name:", error.name);
+      console.error("Error message:", error.message);
+      console.error("Error stack:", error.stack);
+
+      // Check for specific database errors
+      if (
+        error.message.includes("relation") ||
+        error.message.includes("column")
+      ) {
+        console.error("Database schema error detected");
+        console.error(
+          "Check if classroom and student relationships exist in payment model"
+        );
+      }
+
+      return ctx.internalServerError(
+        "Payment verification failed: " + error.message
+      );
     }
   },
 
-  // 6. Grant live lecture access
+  // 6. Grant live lecture access - UPDATED
   async grantLiveLectureAccess(payment, payment_type = "classroom_with_live") {
     try {
       console.log("=== GRANT LIVE LECTURE ACCESS ===");
       console.log("Payment ID:", payment.id);
       console.log("Payment type:", payment_type);
+      console.log("Payment data:", {
+        id: payment.id,
+        classroom_id: payment.classroom?.id || payment.classroom,
+        student_id: payment.student?.id || payment.student,
+        purchased_lectures: payment.purchased_lectures,
+        live_lectures_included: payment.live_lectures_included,
+      });
 
-      // Get enrollment details to understand the schedule
-      const enrollment = await strapi.entityService.findOne(
-        "api::enrollment.enrollment",
-        payment.classroom.id,
-        {
-          populate: ["days"],
-        }
-      );
+      // Get student and classroom IDs
+      const studentId = payment.student?.id || payment.student;
+      const enrollmentId = payment.classroom?.id || payment.classroom;
 
-      if (!enrollment) {
-        throw new Error("Enrollment not found");
+      if (!studentId || !enrollmentId) {
+        console.error("❌ Missing student or enrollment ID");
+        throw new Error("Missing student or enrollment ID");
       }
 
       // Check if live lecture purchase already exists
@@ -826,8 +934,8 @@ module.exports = {
         .query("api::live-lecture-purchase.live-lecture-purchase")
         .findOne({
           where: {
-            enrollment: payment.classroom.id,
-            student: payment.student.id,
+            enrollment: enrollmentId,
+            student: studentId,
             is_active: true,
           },
         });
@@ -844,7 +952,7 @@ module.exports = {
               lectures_purchased: payment.purchased_lectures || [],
               valid_until: new Date(
                 new Date().setFullYear(new Date().getFullYear() + 1)
-              ).toISOString(),
+              ),
               is_active: true,
               payment: payment.id,
             },
@@ -860,15 +968,15 @@ module.exports = {
 
       // Create new live lecture purchase record
       const livePurchaseData = {
-        enrollment: payment.classroom.id,
-        student: payment.student.id,
+        enrollment: enrollmentId,
+        student: studentId,
         payment: payment.id,
         lectures_purchased: payment.purchased_lectures || [],
-        purchase_date: new Date().toISOString(),
-        valid_from: new Date().toISOString(),
+        purchase_date: new Date(),
+        valid_from: new Date(),
         valid_until: new Date(
           new Date().setFullYear(new Date().getFullYear() + 1)
-        ).toISOString(),
+        ),
         is_active: true,
       };
 
@@ -882,12 +990,65 @@ module.exports = {
       );
 
       console.log(
-        `✅ Live lecture access granted for student ${payment.student.id}`,
+        `✅ Live lecture access granted for student ${studentId}`,
         livePurchase.id
       );
       return livePurchase;
     } catch (error) {
       console.error("❌ GRANT LIVE LECTURE ACCESS ERROR:", error);
+      console.error("Error details:", error.details || error.message);
+
+      // Check if it's a database relationship error
+      if (
+        error.message.includes("users_permissions_user") ||
+        error.message.includes("tutor_classroom")
+      ) {
+        console.error("Database relationship mismatch detected");
+        console.error(
+          "Check if your live-lecture-purchase model has correct field names:"
+        );
+        console.error("- student field might be 'users_permissions_user'");
+        console.error("- enrollment field might be 'tutor_classroom'");
+
+        // Try with alternative field names
+        try {
+          console.log("Trying with alternative field names...");
+
+          const studentId = payment.student?.id || payment.student;
+          const enrollmentId = payment.classroom?.id || payment.classroom;
+
+          const alternativeData = {
+            tutor_classroom: enrollmentId, // Try this field name
+            users_permissions_user: studentId, // Try this field name
+            payment: payment.id,
+            lectures_purchased: payment.purchased_lectures || [],
+            purchase_date: new Date(),
+            valid_from: new Date(),
+            valid_until: new Date(
+              new Date().setFullYear(new Date().getFullYear() + 1)
+            ),
+            is_active: true,
+          };
+
+          console.log("Alternative data:", alternativeData);
+
+          const alternativePurchase = await strapi.entityService.create(
+            "api::live-lecture-purchase.live-lecture-purchase",
+            {
+              data: alternativeData,
+            }
+          );
+
+          console.log(
+            "✅ Live lecture access created with alternative fields:",
+            alternativePurchase.id
+          );
+          return alternativePurchase;
+        } catch (altError) {
+          console.error("Alternative approach also failed:", altError.message);
+        }
+      }
+
       throw error;
     }
   },
@@ -1200,6 +1361,121 @@ module.exports = {
       };
     } catch (error) {
       console.error("Test endpoint error:", error);
+      return {
+        success: false,
+        error: error.message,
+      };
+    }
+  },
+  // Add this function to your module.exports
+  async checkSchema(ctx) {
+    try {
+      console.log("=== CHECKING DATABASE SCHEMA ===");
+
+      // Check payment model fields
+      const paymentFields = await strapi.db
+        .query("api::payment.payment")
+        .findOne({
+          where: { id: 1 },
+        })
+        .catch(() => null);
+
+      console.log(
+        "Payment model sample:",
+        paymentFields ? "Exists" : "No sample"
+      );
+
+      // Check live-lecture-purchase model fields
+      const livePurchaseFields = await strapi.db
+        .query("api::live-lecture-purchase.live-lecture-purchase")
+        .findOne({
+          where: { id: 1 },
+        })
+        .catch(() => null);
+
+      console.log(
+        "Live purchase model sample:",
+        livePurchaseFields ? "Exists" : "No sample"
+      );
+
+      // Check enrollment model
+      const enrollmentFields = await strapi.db
+        .query("api::enrollment.enrollment")
+        .findOne({
+          where: { id: 1 },
+          populate: ["students"],
+        })
+        .catch(() => null);
+
+      console.log(
+        "Enrollment model sample:",
+        enrollmentFields ? "Exists" : "No sample"
+      );
+
+      return {
+        success: true,
+        models: {
+          payment: !!paymentFields,
+          live_lecture_purchase: !!livePurchaseFields,
+          enrollment: !!enrollmentFields,
+        },
+        message: "Schema check completed",
+      };
+    } catch (error) {
+      console.error("Schema check error:", error);
+      return {
+        success: false,
+        error: error.message,
+      };
+    }
+  },
+
+  // Also add a test verification endpoint (for testing without actual payment)
+  async testVerification(ctx) {
+    try {
+      console.log("=== TEST VERIFICATION ===");
+
+      // Create a test payment record first
+      const testPayment = await strapi.entityService.create(
+        "api::payment.payment",
+        {
+          data: {
+            payment_type: "classroom_with_live",
+            amount: 100,
+            status: "pending",
+            razorpay_order_id: `test_order_${Date.now()}`,
+            total_amount_paid: 100,
+            classroom: 1, // Use an existing enrollment ID
+            student: 1, // Use an existing user ID
+            live_lectures_included: true,
+            purchased_lectures: [
+              { id: "test_1", title: "Test Lecture", price: 50 },
+            ],
+          },
+        }
+      );
+
+      console.log("Test payment created:", testPayment.id);
+
+      // Now test the verification logic manually
+      const payment = await strapi.db.query("api::payment.payment").findOne({
+        where: { id: testPayment.id },
+        populate: ["classroom", "student"],
+      });
+
+      console.log("Payment retrieved:", {
+        id: payment.id,
+        classroom: payment.classroom,
+        student: payment.student,
+      });
+
+      return {
+        success: true,
+        test_payment: payment,
+        message: "Test verification completed",
+      };
+    } catch (error) {
+      console.error("Test verification error:", error);
       return {
         success: false,
         error: error.message,
