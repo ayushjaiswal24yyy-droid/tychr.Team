@@ -4,7 +4,8 @@
   "info": {
     "singularName": "class-request",
     "pluralName": "class-requests",
-    "displayName": "class_requests"
+    "displayName": "class_requests",
+    "description": ""
   },
   "options": {
     "draftAndPublish": true
@@ -15,7 +16,8 @@
       "type": "enumeration",
       "enum": [
         "reschedule",
-        "cancellation"
+        "cancellation",
+        "extra_class"
       ],
       "required": true
     },
@@ -62,6 +64,17 @@
     "notification_sent": {
       "type": "boolean",
       "default": false
+    },
+    "requested_by": {
+      "displayName": "requested_by",
+      "type": "component",
+      "repeatable": false,
+      "component": "requested-by.requested-by"
+    },
+    "lectures_unit": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::topic.topic"
     }
   }
 }
