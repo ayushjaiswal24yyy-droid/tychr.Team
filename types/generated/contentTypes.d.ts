@@ -832,6 +832,7 @@ export interface PluginUsersPermissionsUser extends Schema.CollectionType {
     dream_profession: Attribute.String;
     dream_profession_secondary: Attribute.String;
     dream_university: Attribute.String;
+    tutor_title: Attribute.String;
     fav_subject: Attribute.Relation<
       'plugin::users-permissions.user',
       'oneToOne',

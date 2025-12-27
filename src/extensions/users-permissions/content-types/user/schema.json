@@ -138,6 +138,9 @@
     "dream_university": {
       "type": "string"
     },
+    "tutor_title": {
+      "type": "string"
+    },
     "fav_subject": {
       "type": "relation",
       "relation": "oneToOne",
