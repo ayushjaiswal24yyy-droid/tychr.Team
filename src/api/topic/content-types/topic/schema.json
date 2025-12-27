@@ -54,6 +54,16 @@
       "relation": "oneToMany",
       "target": "api::doubt-section.doubt-section",
       "mappedBy": "topic"
+    },
+    "image": {
+      "allowedTypes": [
+        "images",
+        "files",
+        "videos",
+        "audios"
+      ],
+      "type": "media",
+      "multiple": false
     }
   }
 }

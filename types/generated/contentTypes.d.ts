@@ -1968,6 +1968,7 @@ export interface ApiEnrollmentEnrollment extends Schema.CollectionType {
       'oneToMany',
       'api::payment.payment'
     >;
+    lecture_count: Attribute.Integer;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     createdBy: Attribute.Relation<
@@ -2090,6 +2091,7 @@ export interface ApiGradeSubjectGradeSubject extends Schema.CollectionType {
       'oneToMany',
       'api::test-serie.test-serie'
     >;
+    image: Attribute.Media<'images' | 'files' | 'videos' | 'audios'>;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
@@ -2725,6 +2727,11 @@ export interface ApiPaymentPayment extends Schema.CollectionType {
       'manyToOne',
       'api::enrollment.enrollment'
     >;
+    tutor_classroom: Attribute.Relation<
+      'api::payment.payment',
+      'manyToOne',
+      'api::enrollment.enrollment'
+    >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     createdBy: Attribute.Relation<
@@ -2976,6 +2983,7 @@ export interface ApiQuestionBankQuestionBank extends Schema.CollectionType {
       'manyToOne',
       'api::note.note'
     >;
+    word_limit: Attribute.Integer;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     createdBy: Attribute.Relation<
@@ -3662,6 +3670,10 @@ export interface ApiTestSerieTestSerie extends Schema.CollectionType {
       'api::answer.answer'
     >;
     formula_booklet: Attribute.Media<'images' | 'files', true>;
+    instruction_booklet: Attribute.Media<
+      'images' | 'files' | 'videos' | 'audios',
+      true
+    >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     createdBy: Attribute.Relation<
@@ -3820,6 +3832,7 @@ export interface ApiTopicTopic extends Schema.CollectionType {
       'oneToMany',
       'api::doubt-section.doubt-section'
     >;
+    image: Attribute.Media<'images' | 'files' | 'videos' | 'audios'>;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;

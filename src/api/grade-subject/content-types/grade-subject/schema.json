@@ -94,6 +94,16 @@
       "relation": "oneToMany",
       "target": "api::test-serie.test-serie",
       "mappedBy": "grade_subject"
+    },
+    "image": {
+      "allowedTypes": [
+        "images",
+        "files",
+        "videos",
+        "audios"
+      ],
+      "type": "media",
+      "multiple": false
     }
   }
 }

@@ -211,6 +211,9 @@
       "relation": "oneToMany",
       "target": "api::payment.payment",
       "mappedBy": "tutor_classroom"
+    },
+    "lecture_count": {
+      "type": "integer"
     }
   }
 }

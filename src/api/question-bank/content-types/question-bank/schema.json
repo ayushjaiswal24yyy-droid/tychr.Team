@@ -80,6 +80,9 @@
       "relation": "manyToOne",
       "target": "api::note.note",
       "inversedBy": "question_banks"
+    },
+    "word_limit": {
+      "type": "integer"
     }
   }
 }
