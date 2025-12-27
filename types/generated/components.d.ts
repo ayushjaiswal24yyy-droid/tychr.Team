@@ -1,15 +1,5 @@
 import type { Schema, Attribute } from '@strapi/strapi';
 
-export interface WhyChooseDataWhyChooseData extends Schema.Component {
-  collectionName: 'components_why_choose_data_why_choose_data';
-  info: {
-    displayName: 'why_choose_data';
-  };
-  attributes: {
-    string: Attribute.Text;
-  };
-}
-
 export interface WhyTychrWhyTychr extends Schema.Component {
   collectionName: 'components_why_tychr_why_tychrs';
   info: {
@@ -20,6 +10,95 @@ export interface WhyTychrWhyTychr extends Schema.Component {
     title: Attribute.String;
     subtitle: Attribute.String;
     icon: Attribute.Media<'images' | 'files' | 'videos' | 'audios'>;
+  };
+}
+
+export interface TutorsWebsiteBestOnlineTutors extends Schema.Component {
+  collectionName: 'components_tutors_website_best_online_tutors';
+  info: {
+    displayName: 'best_online_tutors';
+    icon: 'code';
+    description: '';
+  };
+  attributes: {
+    title: Attribute.Text;
+  };
+}
+
+export interface TopCollegesTopColleges extends Schema.Component {
+  collectionName: 'components_top_colleges_top_colleges';
+  info: {
+    displayName: 'top_colleges';
+  };
+  attributes: {
+    images: Attribute.Media<'images' | 'files' | 'videos' | 'audios', true>;
+    name: Attribute.String;
+    description: Attribute.String;
+    tags: Attribute.Component<'tags.tags', true>;
+  };
+}
+
+export interface UserUserExperience extends Schema.Component {
+  collectionName: 'components_user_user_experiences';
+  info: {
+    displayName: 'userExperience';
+    icon: 'bulletList';
+  };
+  attributes: {
+    company_name: Attribute.String;
+    company_type: Attribute.Enumeration<['private', 'government']>;
+    position: Attribute.String;
+    start_date: Attribute.Date;
+    end_date: Attribute.Date;
+    employment_type: Attribute.Enumeration<
+      ['Full time', 'Part time', 'Contract', 'Internship', 'Freelance']
+    >;
+    description: Attribute.Text;
+    responsibilities: Attribute.JSON;
+  };
+}
+
+export interface UserStudentPlan extends Schema.Component {
+  collectionName: 'components_user_student_plans';
+  info: {
+    displayName: 'student_plan';
+  };
+  attributes: {
+    course_plan: Attribute.Relation<
+      'user.student-plan',
+      'oneToOne',
+      'api::course-plan.course-plan'
+    >;
+    grade_subject: Attribute.Relation<
+      'user.student-plan',
+      'oneToOne',
+      'api::grade-subject.grade-subject'
+    >;
+  };
+}
+
+export interface UserExtraActivity extends Schema.Component {
+  collectionName: 'components_user_extra_activities';
+  info: {
+    displayName: 'ExtraActivity';
+  };
+  attributes: {
+    ActivityTitle: Attribute.String;
+    Position: Attribute.String;
+    org_name: Attribute.String;
+    start_date: Attribute.Date;
+    end_date: Attribute.Date;
+    description: Attribute.Text;
+  };
+}
+
+export interface WhyChooseDataWhyChooseData extends Schema.Component {
+  collectionName: 'components_why_choose_data_why_choose_data';
+  info: {
+    displayName: 'why_choose_data';
+  };
+  attributes: {
+    string: Attribute.Text;
   };
 }
 
@@ -231,85 +310,6 @@ export interface UniversityAdditionalCosts extends Schema.Component {
     living_expense_max: Attribute.String;
     insurance_min: Attribute.String;
     insurance_max: Attribute.String;
-  };
-}
-
-export interface TutorsWebsiteBestOnlineTutors extends Schema.Component {
-  collectionName: 'components_tutors_website_best_online_tutors';
-  info: {
-    displayName: 'best_online_tutors';
-    icon: 'code';
-    description: '';
-  };
-  attributes: {
-    title: Attribute.Text;
-  };
-}
-
-export interface UserUserExperience extends Schema.Component {
-  collectionName: 'components_user_user_experiences';
-  info: {
-    displayName: 'userExperience';
-    icon: 'bulletList';
-  };
-  attributes: {
-    company_name: Attribute.String;
-    company_type: Attribute.Enumeration<['private', 'government']>;
-    position: Attribute.String;
-    start_date: Attribute.Date;
-    end_date: Attribute.Date;
-    employment_type: Attribute.Enumeration<
-      ['Full time', 'Part time', 'Contract', 'Internship', 'Freelance']
-    >;
-    description: Attribute.Text;
-    responsibilities: Attribute.JSON;
-  };
-}
-
-export interface UserStudentPlan extends Schema.Component {
-  collectionName: 'components_user_student_plans';
-  info: {
-    displayName: 'student_plan';
-  };
-  attributes: {
-    course_plan: Attribute.Relation<
-      'user.student-plan',
-      'oneToOne',
-      'api::course-plan.course-plan'
-    >;
-    grade_subject: Attribute.Relation<
-      'user.student-plan',
-      'oneToOne',
-      'api::grade-subject.grade-subject'
-    >;
-  };
-}
-
-export interface UserExtraActivity extends Schema.Component {
-  collectionName: 'components_user_extra_activities';
-  info: {
-    displayName: 'ExtraActivity';
-  };
-  attributes: {
-    ActivityTitle: Attribute.String;
-    Position: Attribute.String;
-    org_name: Attribute.String;
-    start_date: Attribute.Date;
-    end_date: Attribute.Date;
-    description: Attribute.Text;
-  };
-}
-
-export interface TopCollegesTopColleges extends Schema.Component {
-  collectionName: 'components_top_colleges_top_colleges';
-  info: {
-    displayName: 'top_colleges';
-  };
-  attributes: {
-    images: Attribute.Media<'images' | 'files' | 'videos' | 'audios', true>;
-    name: Attribute.String;
-    description: Attribute.String;
-    tags: Attribute.Component<'tags.tags', true>;
   };
 }
 
@@ -1002,19 +1002,6 @@ export interface ClassroomDays extends Schema.Component {
   };
 }
 
-export interface ClaimsClaims extends Schema.Component {
-  collectionName: 'components_claims_claims';
-  info: {
-    displayName: 'claims';
-  };
-  attributes: {
-    title: Attribute.String;
-    description: Attribute.Text;
-    highlight: Attribute.Text;
-    image: Attribute.Media<'images' | 'files' | 'videos' | 'audios', true>;
-  };
-}
-
 export interface CertifiedTutorsCertifiedTutors extends Schema.Component {
   collectionName: 'components_certified_tutors_certified_tutors';
   info: {
@@ -1025,6 +1012,19 @@ export interface CertifiedTutorsCertifiedTutors extends Schema.Component {
     Name: Attribute.String;
     role: Attribute.String;
     years_of_experience: Attribute.String;
+  };
+}
+
+export interface ClaimsClaims extends Schema.Component {
+  collectionName: 'components_claims_claims';
+  info: {
+    displayName: 'claims';
+  };
+  attributes: {
+    title: Attribute.String;
+    description: Attribute.Text;
+    highlight: Attribute.Text;
+    image: Attribute.Media<'images' | 'files' | 'videos' | 'audios', true>;
   };
 }
 
@@ -1164,8 +1164,13 @@ export interface AcademicsAcadPerformance extends Schema.Component {
 declare module '@strapi/types' {
   export module Shared {
     export interface Components {
-      'why-choose-data.why-choose-data': WhyChooseDataWhyChooseData;
       'why-tychr.why-tychr': WhyTychrWhyTychr;
+      'tutors-website.best-online-tutors': TutorsWebsiteBestOnlineTutors;
+      'top-colleges.top-colleges': TopCollegesTopColleges;
+      'user.user-experience': UserUserExperience;
+      'user.student-plan': UserStudentPlan;
+      'user.extra-activity': UserExtraActivity;
+      'why-choose-data.why-choose-data': WhyChooseDataWhyChooseData;
       'university.tution-fees': UniversityTutionFees;
       'university.subject-ranking': UniversitySubjectRanking;
       'university.student-application': UniversityStudentApplication;
@@ -1179,11 +1184,6 @@ declare module '@strapi/types' {
       'university.application-cycle-deadline': UniversityApplicationCycleDeadline;
       'university.admission-requirements': UniversityAdmissionRequirements;
       'university.additional-costs': UniversityAdditionalCosts;
-      'tutors-website.best-online-tutors': TutorsWebsiteBestOnlineTutors;
-      'user.user-experience': UserUserExperience;
-      'user.student-plan': UserStudentPlan;
-      'user.extra-activity': UserExtraActivity;
-      'top-colleges.top-colleges': TopCollegesTopColleges;
       'tags.tags': TagsTags;
       'subtopic.qn-a': SubtopicQnA;
       'subtopic.heading': SubtopicHeading;
@@ -1233,8 +1233,8 @@ declare module '@strapi/types' {
       'classroom.resources': ClassroomResources;
       'classroom.notices': ClassroomNotices;
       'classroom.days': ClassroomDays;
-      'claims.claims': ClaimsClaims;
       'certified-tutors.certified-tutors': CertifiedTutorsCertifiedTutors;
+      'claims.claims': ClaimsClaims;
       'blog-section.blog': BlogSectionBlog;
       'best-tutors-data.best-tutors-data': BestTutorsDataBestTutorsData;
       'best-tutors.best-tutors': BestTutorsBestTutors;

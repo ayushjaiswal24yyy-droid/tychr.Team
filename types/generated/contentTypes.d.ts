@@ -2983,6 +2983,7 @@ export interface ApiQuestionBankQuestionBank extends Schema.CollectionType {
       'manyToOne',
       'api::note.note'
     >;
+    word_limit: Attribute.Integer;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     createdBy: Attribute.Relation<
