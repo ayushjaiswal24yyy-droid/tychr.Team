@@ -1281,6 +1281,11 @@ export interface ApiArticleArticle extends Schema.CollectionType {
     tags: Attribute.JSON;
     date: Attribute.Date;
     image_title: Attribute.JSON;
+    college: Attribute.Relation<
+      'api::article.article',
+      'manyToOne',
+      'api::college.college'
+    >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     createdBy: Attribute.Relation<
@@ -1437,6 +1442,18 @@ export interface ApiCollegeCollege extends Schema.CollectionType {
       'api::college.college',
       'manyToMany',
       'api::program.program'
+    >;
+    essays: Attribute.Component<'essays.essay', true>;
+    intakes: Attribute.Component<'cycles.cycle', true>;
+    lors: Attribute.Component<'university.lor', true>;
+    tution_fees: Attribute.Component<'university.tution-fees'>;
+    financial_aids: Attribute.Component<'university.financial-aids'>;
+    additional_costs: Attribute.Component<'university.additional-costs'>;
+    admission_requirements: Attribute.Component<'university.admission-requirements'>;
+    college_articles: Attribute.Relation<
+      'api::college.college',
+      'oneToMany',
+      'api::article.article'
     >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
@@ -4134,6 +4151,12 @@ export interface ApiUniversityUniversity extends Schema.CollectionType {
       'oneToMany',
       'api::college.college'
     >;
+    university_name: Attribute.String;
+    location: Attribute.String;
+    university_type: Attribute.String;
+    year_of_establishment: Attribute.Integer;
+    world_rank: Attribute.Integer;
+    acceptance_rate: Attribute.String;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
