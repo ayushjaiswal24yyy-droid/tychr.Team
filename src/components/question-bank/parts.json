@@ -81,6 +81,9 @@
       "type": "component",
       "repeatable": true,
       "component": "question-bank.right-items-section"
+    },
+    "word_limit": {
+      "type": "integer"
     }
   }
 }
