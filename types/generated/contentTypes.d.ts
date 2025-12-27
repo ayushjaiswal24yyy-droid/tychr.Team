@@ -2048,6 +2048,7 @@ export interface ApiGradeSubjectGradeSubject extends Schema.CollectionType {
       'manyToOne',
       'api::subject.subject'
     >;
+    test_series_price: Attribute.Decimal;
     grade: Attribute.Relation<
       'api::grade-subject.grade-subject',
       'manyToOne',

@@ -8,7 +8,7 @@ const razorpay = new Razorpay({
   key_secret: process.env.RAZORPAY_SECRET_ID,
 });
 
-// Helper function to count weekdays between dates (EXACTLY LIKE FRONTEND)
+// Helper function to count weekdays between dates
 const countWeekdaysBetweenDates = (startDate, endDate, weekdays) => {
   let count = 0;
   const dayMap = {
@@ -25,7 +25,6 @@ const countWeekdaysBetweenDates = (startDate, endDate, weekdays) => {
   const currentDate = new Date(startDate);
   const end = new Date(endDate);
 
-  // Reset time part to compare dates only
   currentDate.setHours(0, 0, 0, 0);
   end.setHours(0, 0, 0, 0);
 
@@ -40,15 +39,20 @@ const countWeekdaysBetweenDates = (startDate, endDate, weekdays) => {
 };
 
 module.exports = {
-  // 1. Create classroom order (with or without live lectures)
+  // 1. Create classroom order (with or without live lectures and test series)
   async createClassroomOrder(ctx) {
     try {
       console.log("=== CREATE CLASSROOM ORDER START ===");
-      const { enrollment_id, include_live_lectures = false } = ctx.request.body;
+      const {
+        enrollment_id,
+        include_live_lectures = false,
+        include_test_series = false,
+      } = ctx.request.body;
 
       console.log("Request body:", ctx.request.body);
       console.log("Enrollment ID:", enrollment_id);
       console.log("Include Live Lectures:", include_live_lectures);
+      console.log("Include Test Series:", include_test_series);
 
       if (!enrollment_id) {
         console.error("❌ Enrollment ID is required");
@@ -76,7 +80,7 @@ module.exports = {
         return ctx.unauthorized("Invalid token");
       }
 
-      // Fetch enrollment details
+      // Fetch enrollment details with grade_subject
       console.log("Fetching enrollment...");
       const enrollment = await strapi.entityService.findOne(
         "api::enrollment.enrollment",
@@ -86,6 +90,9 @@ module.exports = {
             students: true,
             days: true,
             live_lectures: true,
+            grade_subject: {
+              fields: ["test_series_price", "name"],
+            },
           },
         }
       );
@@ -103,6 +110,7 @@ module.exports = {
         startDate: enrollment.startDate,
         endDate: enrollment.endDate,
         days: enrollment.days,
+        grade_subject: enrollment.grade_subject,
         studentCount: enrollment.students?.length || 0,
       });
 
@@ -113,11 +121,12 @@ module.exports = {
         return ctx.badRequest("You are already enrolled in this classroom");
       }
 
-      // Calculate price
+      // Calculate price with test series option
       console.log("Calculating price...");
       const calculation = await this.calculateClassroomPrice(
         enrollment,
         include_live_lectures,
+        include_test_series,
         studentId
       );
 
@@ -127,13 +136,13 @@ module.exports = {
       );
 
       // Validate calculation
-      if (
-        !calculation ||
-        typeof calculation.totalAmount !== "number" ||
-        calculation.totalAmount <= 0
-      ) {
+      if (!calculation || typeof calculation.totalAmount !== "number") {
         console.error("❌ Invalid calculation result:", calculation);
         return ctx.internalServerError("Invalid price calculation");
+      }
+
+      if (calculation.totalAmount <= 0) {
+        return ctx.badRequest("Total amount must be greater than 0");
       }
 
       // Create Razorpay order
@@ -147,6 +156,7 @@ module.exports = {
             : "classroom_only",
           enrollment_id,
           student_id: studentId,
+          include_test_series: include_test_series,
         },
         payment_capture: 1,
       };
@@ -155,7 +165,6 @@ module.exports = {
 
       let order;
       try {
-        // Create order
         order = await razorpay.orders.create(orderData);
         console.log("✅ Razorpay order created:", {
           id: order.id,
@@ -193,6 +202,8 @@ module.exports = {
         live_lectures_included: include_live_lectures,
         live_lectures_price: calculation.liveLecturesPrice || 0,
         number_of_live_lectures: calculation.numberOfLectures || 0,
+        test_series_included: include_test_series,
+        test_series_price: calculation.testSeriesPrice || 0,
         purchased_lectures: calculation.lectures || [],
         metadata: {
           calculation,
@@ -202,6 +213,7 @@ module.exports = {
             startDate: enrollment.startDate,
             endDate: enrollment.endDate,
             days: enrollment.days,
+            grade_subject: enrollment.grade_subject,
           },
         },
       };
@@ -222,7 +234,6 @@ module.exports = {
           message: dbError.message,
           details: dbError.details,
         });
-
         throw dbError;
       }
 
@@ -253,17 +264,16 @@ module.exports = {
     }
   },
 
-  // 2. Calculate classroom price - UPDATED to match frontend calculation
-  async calculateClassroomPrice(enrollment, includeLiveLectures, studentId) {
+  // 2. Calculate classroom price - UPDATED to include test series
+  async calculateClassroomPrice(
+    enrollment,
+    includeLiveLectures,
+    includeTestSeries,
+    studentId
+  ) {
     try {
       console.log("=== CALCULATE PRICE START ===");
-      console.log("Enrollment data received:", {
-        startDate: enrollment.startDate,
-        endDate: enrollment.endDate,
-        days: enrollment.days,
-        base_price: enrollment.base_price,
-        lecture_price: enrollment.lecture_price,
-      });
+      console.log("Include Test Series:", includeTestSeries);
 
       const basePrice = parseFloat(enrollment.base_price) || 0;
       console.log("Base price parsed:", basePrice);
@@ -271,18 +281,19 @@ module.exports = {
       let liveLecturesPrice = 0;
       let numberOfLectures = 0;
       let lectures = [];
+      let testSeriesPrice = 0;
 
+      // Calculate live lectures price
       if (
         includeLiveLectures &&
         enrollment.days &&
         enrollment.days.length > 0
       ) {
-        // Calculate number of classes based on schedule days between start and end dates
         const startDate = new Date(enrollment.startDate);
         const endDate = new Date(enrollment.endDate);
         const weekdays = enrollment.days.map((day) => day.days);
 
-        console.log("Calculating classes between:", {
+        console.log("Calculating live lectures:", {
           startDate,
           endDate,
           weekdays,
@@ -313,7 +324,27 @@ module.exports = {
         }
       }
 
-      // Fetch GST data with fallback
+      // Calculate test series price if included
+      if (includeTestSeries && enrollment.grade_subject) {
+        try {
+          // Get test_series_price from grade_subject
+          const gradeSubject = await strapi.entityService.findOne(
+            "api::grade-subject.grade-subject",
+            enrollment.grade_subject.id,
+            {
+              fields: ["test_series_price", "name"],
+            }
+          );
+
+          testSeriesPrice = parseFloat(gradeSubject?.test_series_price) || 0;
+          console.log("Test Series Price from grade subject:", testSeriesPrice);
+        } catch (error) {
+          console.warn("⚠️ Could not fetch test series price:", error.message);
+          testSeriesPrice = 0;
+        }
+      }
+
+      // Fetch GST data
       let gstRate = 0;
       try {
         const gstData = await strapi.entityService.findOne("api::gst.gst", {
@@ -326,11 +357,12 @@ module.exports = {
         gstRate = 0;
       }
 
-      // Fetch commission data with fallback - ONLY FOR LIVE LECTURES
+      // Fetch commission data - FOR LIVE LECTURES AND TEST SERIES
       let commissionRate = 0;
       let commissionAmount = 0;
 
-      if (liveLecturesPrice > 0) {
+      const taxableForCommission = liveLecturesPrice + testSeriesPrice;
+      if (taxableForCommission > 0) {
         try {
           const commissionData = await strapi.entityService.findMany(
             "api::commission-setting.commission-setting",
@@ -348,7 +380,7 @@ module.exports = {
               ? parseFloat(commissionData[0].commission_percentage)
               : 0;
           commissionAmount = parseFloat(
-            ((liveLecturesPrice * commissionRate) / 100).toFixed(2)
+            ((taxableForCommission * commissionRate) / 100).toFixed(2)
           );
           console.log(
             "Commission Rate:",
@@ -365,31 +397,38 @@ module.exports = {
       }
 
       // Calculate amounts with proper rounding
-      const taxableAmount = basePrice + liveLecturesPrice;
+      const taxableAmount = basePrice + liveLecturesPrice + testSeriesPrice;
       const gstAmount = parseFloat(
         ((taxableAmount * gstRate) / 100).toFixed(2)
       );
       const totalAmount = parseFloat(
-        (basePrice + liveLecturesPrice + commissionAmount + gstAmount).toFixed(
-          2
-        )
+        (
+          basePrice +
+          liveLecturesPrice +
+          testSeriesPrice +
+          commissionAmount +
+          gstAmount
+        ).toFixed(2)
       );
 
       console.log("Final calculation:", {
         basePrice,
         liveLecturesPrice,
         numberOfLectures,
+        testSeriesPrice,
         taxableAmount,
         gstRate,
         gstAmount,
         commissionRate,
         commissionAmount,
         totalAmount,
+        includeTestSeries,
       });
 
       return {
         basePrice,
         liveLecturesPrice,
+        testSeriesPrice,
         numberOfLectures,
         lectures,
         gstRate,
@@ -398,6 +437,7 @@ module.exports = {
         commissionAmount,
         totalAmount,
         includeLiveLectures,
+        includeTestSeries,
       };
     } catch (error) {
       console.error("❌ CALCULATE PRICE ERROR:", error);
@@ -422,13 +462,6 @@ module.exports = {
         throw new Error("Enrollment not found");
       }
 
-      console.log("Enrollment for remaining lectures:", {
-        startDate: enrollment.startDate,
-        endDate: enrollment.endDate,
-        days: enrollment.days,
-        lecture_price: enrollment.lecture_price,
-      });
-
       const today = new Date();
       const startDate = new Date(enrollment.startDate);
       const endDate = new Date(enrollment.endDate);
@@ -437,7 +470,6 @@ module.exports = {
       // Calculate total number of classes from today till end date
       let numberOfLectures = 0;
       if (weekdays.length > 0 && today <= endDate) {
-        // Use today as start date if classroom has already started
         const effectiveStartDate = today > startDate ? today : startDate;
         numberOfLectures = countWeekdaysBetweenDates(
           effectiveStartDate,
@@ -460,7 +492,7 @@ module.exports = {
           },
         });
 
-      // If student already has purchase, they can't buy again (since it's all-or-nothing)
+      // If student already has purchase, they can't buy again
       if (existingPurchase) {
         console.log("Student already has live lecture access");
         return {
@@ -687,8 +719,233 @@ module.exports = {
     }
   },
 
-  // 5. Verify payment (common for both)
-  // 5. Verify payment (common for both)
+  // 5. Create test series only order (after classroom purchase)
+  async createTestSeriesOrder(ctx) {
+    try {
+      console.log("=== CREATE TEST SERIES ORDER ===");
+      const { enrollment_id } = ctx.request.body;
+
+      console.log("Enrollment ID:", enrollment_id);
+
+      if (!enrollment_id) {
+        return ctx.badRequest("Enrollment ID is required");
+      }
+
+      // Get user from token
+      const token = ctx.request.header.authorization?.replace("Bearer ", "");
+      if (!token) {
+        return ctx.unauthorized("Authorization token missing");
+      }
+
+      const { id: studentId } = await strapi.plugins[
+        "users-permissions"
+      ].services.jwt.verify(token);
+
+      console.log("Student ID:", studentId);
+
+      // Check if student has classroom access
+      const hasClassroomAccess = await this.checkClassroomAccess(
+        enrollment_id,
+        studentId
+      );
+      if (!hasClassroomAccess) {
+        console.error("❌ Student doesn't have classroom access");
+        return ctx.badRequest("You must enroll in the classroom first");
+      }
+
+      // Check if already has test series access
+      const hasTestSeriesAccess = await this.checkTestSeriesAccess(
+        enrollment_id,
+        studentId
+      );
+      if (hasTestSeriesAccess) {
+        console.error("❌ Student already has test series access");
+        return ctx.badRequest("You already have test series access");
+      }
+
+      // Calculate price for test series
+      const calculation = await this.calculateTestSeriesOnlyPrice(
+        enrollment_id,
+        studentId
+      );
+
+      console.log("Test Series Calculation:", calculation);
+
+      if (calculation.totalAmount === 0) {
+        return ctx.badRequest("Test series is not available or free");
+      }
+
+      // Create Razorpay order
+      const orderData = {
+        amount: Math.round(calculation.totalAmount * 100),
+        currency: "INR",
+        receipt: `testseries_${enrollment_id}_${Date.now()}`,
+        notes: {
+          type: "test_series_only",
+          enrollment_id,
+          student_id: studentId,
+        },
+        payment_capture: 1,
+      };
+
+      console.log("Test Series Order data to Razorpay:", orderData);
+
+      const order = await razorpay.orders.create(orderData);
+
+      console.log("✅ Test series order created:", order.id);
+
+      // Save pending payment record
+      const paymentData = {
+        payment_type: "test_series_only",
+        amount: calculation.totalAmount,
+        classroom: enrollment_id,
+        student: studentId,
+        status: "pending",
+        razorpay_order_id: order.id,
+        price_at_purchase: calculation.totalAmount,
+        commission_percentage_applied: calculation.commissionRate,
+        commission_amount: calculation.commissionAmount,
+        gst_amount: calculation.gstAmount,
+        total_amount_paid: calculation.totalAmount,
+        test_series_included: true,
+        test_series_price: calculation.testSeriesPrice,
+        metadata: {
+          calculation,
+          purchase_date: new Date().toISOString(),
+          purchase_type: "test_series_only_addon",
+        },
+      };
+
+      const payment = await strapi.entityService.create(
+        "api::payment.payment",
+        {
+          data: paymentData,
+        }
+      );
+
+      console.log("✅ Test series payment record created:", payment.id);
+
+      return {
+        success: true,
+        order,
+        calculation,
+        payment_id: payment.id,
+      };
+    } catch (error) {
+      console.error("❌ CREATE TEST SERIES ORDER ERROR:", error);
+      return ctx.internalServerError(error.message || "Failed to create order");
+    }
+  },
+
+  // 6. Calculate test series only price
+  async calculateTestSeriesOnlyPrice(enrollmentId, studentId) {
+    try {
+      console.log("=== CALCULATE TEST SERIES ONLY PRICE ===");
+
+      const enrollment = await strapi.entityService.findOne(
+        "api::enrollment.enrollment",
+        enrollmentId,
+        {
+          populate: ["grade_subject"],
+        }
+      );
+
+      if (!enrollment || !enrollment.grade_subject) {
+        throw new Error("Enrollment or grade subject not found");
+      }
+
+      // Get test series price from grade_subject
+      const gradeSubject = await strapi.entityService.findOne(
+        "api::grade-subject.grade-subject",
+        enrollment.grade_subject.id,
+        {
+          fields: ["test_series_price"],
+        }
+      );
+
+      const testSeriesPrice = parseFloat(gradeSubject?.test_series_price) || 0;
+
+      if (testSeriesPrice <= 0) {
+        return {
+          testSeriesPrice: 0,
+          gstRate: 0,
+          gstAmount: 0,
+          commissionRate: 0,
+          commissionAmount: 0,
+          totalAmount: 0,
+        };
+      }
+
+      // Fetch GST
+      let gstRate = 0;
+      try {
+        const gstData = await strapi.entityService.findOne("api::gst.gst", {
+          filters: { is_active: true },
+        });
+        gstRate = gstData ? parseFloat(gstData.gst_rate) : 0;
+      } catch (gstError) {
+        console.warn("⚠️ Could not fetch GST:", gstError.message);
+      }
+
+      // Fetch commission for test series
+      let commissionRate = 0;
+      let commissionAmount = 0;
+
+      try {
+        const commissionData = await strapi.entityService.findMany(
+          "api::commission-setting.commission-setting",
+          {
+            filters: {
+              system_plan: "classroom",
+              is_active: true,
+            },
+            sort: { effective_from: "desc" },
+            limit: 1,
+          }
+        );
+        commissionRate =
+          commissionData.length > 0
+            ? parseFloat(commissionData[0].commission_percentage)
+            : 0;
+        commissionAmount = parseFloat(
+          ((testSeriesPrice * commissionRate) / 100).toFixed(2)
+        );
+      } catch (commissionError) {
+        console.warn("⚠️ Could not fetch commission:", commissionError.message);
+      }
+
+      // Calculate amounts
+      const gstAmount = parseFloat(
+        ((testSeriesPrice * gstRate) / 100).toFixed(2)
+      );
+      const totalAmount = parseFloat(
+        (testSeriesPrice + commissionAmount + gstAmount).toFixed(2)
+      );
+
+      console.log("Test series calculation:", {
+        testSeriesPrice,
+        gstRate,
+        gstAmount,
+        commissionRate,
+        commissionAmount,
+        totalAmount,
+      });
+
+      return {
+        testSeriesPrice,
+        gstRate,
+        gstAmount,
+        commissionRate,
+        commissionAmount,
+        totalAmount,
+      };
+    } catch (error) {
+      console.error("❌ CALCULATE TEST SERIES PRICE ERROR:", error);
+      throw error;
+    }
+  },
+
+  // 7. Verify payment (common for all types)
   async verifyPayment(ctx) {
     try {
       const {
@@ -702,7 +959,6 @@ module.exports = {
       console.log("Payment ID:", razorpay_payment_id);
       console.log("Order ID:", razorpay_order_id);
       console.log("Payment Type:", payment_type);
-      console.log("Signature length:", razorpay_signature?.length);
 
       // Verify signature
       const generatedSignature = crypto
@@ -710,14 +966,8 @@ module.exports = {
         .update(`${razorpay_order_id}|${razorpay_payment_id}`)
         .digest("hex");
 
-      console.log("Generated signature length:", generatedSignature.length);
-      console.log("Generated signature:", generatedSignature);
-      console.log("Received signature:", razorpay_signature);
-
       if (generatedSignature !== razorpay_signature) {
         console.error("❌ Signature verification failed");
-        console.error("Expected:", generatedSignature);
-        console.error("Received:", razorpay_signature);
         return ctx.badRequest(
           "Payment verification failed - Invalid signature"
         );
@@ -725,7 +975,7 @@ module.exports = {
 
       console.log("✅ Signature verification successful");
 
-      // Get payment record with proper population
+      // Get payment record
       const payment = await strapi.db.query("api::payment.payment").findOne({
         where: { razorpay_order_id: razorpay_order_id },
         populate: {
@@ -739,29 +989,6 @@ module.exports = {
           "❌ Payment record not found for order:",
           razorpay_order_id
         );
-
-        // Let's check if payment exists with different criteria
-        const allPayments = await strapi.db
-          .query("api::payment.payment")
-          .findMany({
-            where: {
-              razorpay_order_id: {
-                $contains: razorpay_order_id.substring(0, 10), // Partial match
-              },
-            },
-            limit: 5,
-          });
-
-        console.log("Similar payments found:", allPayments.length);
-        allPayments.forEach((p, i) => {
-          console.log(`Payment ${i}:`, {
-            id: p.id,
-            razorpay_order_id: p.razorpay_order_id,
-            student: p.student,
-            classroom: p.classroom,
-          });
-        });
-
         return ctx.badRequest("Payment record not found");
       }
 
@@ -772,6 +999,7 @@ module.exports = {
         status: payment.status,
         payment_type: payment.payment_type,
         live_lectures_included: payment.live_lectures_included,
+        test_series_included: payment.test_series_included,
       });
 
       // Check if payment is already completed
@@ -815,7 +1043,7 @@ module.exports = {
             throw new Error("Enrollment ID not found");
           }
 
-          // Get current enrollment to check existing students
+          // Get current enrollment
           const enrollment = await strapi.entityService.findOne(
             "api::enrollment.enrollment",
             enrollmentId,
@@ -855,6 +1083,12 @@ module.exports = {
             );
           }
 
+          // If test series included, grant access
+          if (payment.test_series_included) {
+            console.log("✅ Granting test series access");
+            await this.grantTestSeriesAccess(payment);
+          }
+
           // If live lectures included, grant access
           if (
             payment_type === "classroom_with_live" &&
@@ -867,13 +1101,16 @@ module.exports = {
           }
         } catch (enrollmentError) {
           console.error("❌ Enrollment error:", enrollmentError);
-          // Don't fail the whole payment if enrollment fails, just log it
           console.log("⚠️ Enrollment failed but payment recorded");
         }
       } else if (payment_type === "live_only") {
         // Grant access to live lectures
         console.log("✅ Granting live-only lecture access");
         await this.grantLiveLectureAccess(payment, payment_type);
+      } else if (payment_type === "test_series_only") {
+        // Grant access to test series
+        console.log("✅ Granting test series access");
+        await this.grantTestSeriesAccess(payment);
       }
 
       console.log("✅ Payment verified and processed successfully");
@@ -889,38 +1126,93 @@ module.exports = {
       console.error("Error message:", error.message);
       console.error("Error stack:", error.stack);
 
-      // Check for specific database errors
-      if (
-        error.message.includes("relation") ||
-        error.message.includes("column")
-      ) {
-        console.error("Database schema error detected");
-        console.error(
-          "Check if classroom and student relationships exist in payment model"
-        );
-      }
-
       return ctx.internalServerError(
         "Payment verification failed: " + error.message
       );
     }
   },
 
-  // 6. Grant live lecture access - UPDATED
+  // 8. Grant test series access
+  async grantTestSeriesAccess(payment) {
+    try {
+      console.log("=== GRANT TEST SERIES ACCESS ===");
+
+      const studentId = payment.student?.id || payment.student;
+      const enrollmentId = payment.classroom?.id || payment.classroom;
+
+      if (!studentId || !enrollmentId) {
+        console.error("❌ Missing student or enrollment ID");
+        throw new Error("Missing student or enrollment ID");
+      }
+
+      // Get the grade_subject from enrollment
+      const enrollment = await strapi.entityService.findOne(
+        "api::enrollment.enrollment",
+        enrollmentId,
+        {
+          populate: ["grade_subject"],
+        }
+      );
+
+      if (!enrollment?.grade_subject) {
+        console.error("❌ Grade subject not found for enrollment");
+        throw new Error("Grade subject not found");
+      }
+
+      // Check if you have a test series model - you'll need to create this
+      // For now, we'll just log and create a simple record
+      const testSeriesData = {
+        grade_subject: enrollment.grade_subject.id,
+        student: studentId,
+        classroom: enrollmentId,
+        payment: payment.id,
+        enrollment_date: new Date(),
+        is_active: true,
+        valid_until: new Date(
+          new Date().setFullYear(new Date().getFullYear() + 1)
+        ),
+      };
+
+      console.log("Test series access data:", testSeriesData);
+
+      // If you have a test series enrollment model, create it here
+      // Example: await strapi.entityService.create("api::test-series-enrollment.test-series-enrollment", { data: testSeriesData });
+
+      // For now, we'll update the user's metadata or create a custom field
+      await strapi.entityService.update(
+        "plugin::users-permissions.user",
+        studentId,
+        {
+          data: {
+            test_series_access: [
+              ...(payment.student?.test_series_access || []),
+              {
+                grade_subject_id: enrollment.grade_subject.id,
+                classroom_id: enrollmentId,
+                payment_id: payment.id,
+                granted_at: new Date(),
+                valid_until: new Date(
+                  new Date().setFullYear(new Date().getFullYear() + 1)
+                ),
+              },
+            ],
+          },
+        }
+      );
+
+      console.log("✅ Test series access granted for student:", studentId);
+      return testSeriesData;
+    } catch (error) {
+      console.error("❌ GRANT TEST SERIES ACCESS ERROR:", error);
+      throw error;
+    }
+  },
+
+  // 9. Grant live lecture access
   async grantLiveLectureAccess(payment, payment_type = "classroom_with_live") {
     try {
       console.log("=== GRANT LIVE LECTURE ACCESS ===");
-      console.log("Payment ID:", payment.id);
-      console.log("Payment type:", payment_type);
-      console.log("Payment data:", {
-        id: payment.id,
-        classroom_id: payment.classroom?.id || payment.classroom,
-        student_id: payment.student?.id || payment.student,
-        purchased_lectures: payment.purchased_lectures,
-        live_lectures_included: payment.live_lectures_included,
-      });
 
-      // Get student and classroom IDs
       const studentId = payment.student?.id || payment.student;
       const enrollmentId = payment.classroom?.id || payment.classroom;
 
@@ -997,63 +1289,37 @@ module.exports = {
     } catch (error) {
       console.error("❌ GRANT LIVE LECTURE ACCESS ERROR:", error);
       console.error("Error details:", error.details || error.message);
-
-      // Check if it's a database relationship error
-      if (
-        error.message.includes("users_permissions_user") ||
-        error.message.includes("tutor_classroom")
-      ) {
-        console.error("Database relationship mismatch detected");
-        console.error(
-          "Check if your live-lecture-purchase model has correct field names:"
-        );
-        console.error("- student field might be 'users_permissions_user'");
-        console.error("- enrollment field might be 'tutor_classroom'");
-
-        // Try with alternative field names
-        try {
-          console.log("Trying with alternative field names...");
-
-          const studentId = payment.student?.id || payment.student;
-          const enrollmentId = payment.classroom?.id || payment.classroom;
-
-          const alternativeData = {
-            tutor_classroom: enrollmentId, // Try this field name
-            users_permissions_user: studentId, // Try this field name
-            payment: payment.id,
-            lectures_purchased: payment.purchased_lectures || [],
-            purchase_date: new Date(),
-            valid_from: new Date(),
-            valid_until: new Date(
-              new Date().setFullYear(new Date().getFullYear() + 1)
-            ),
-            is_active: true,
-          };
-
-          console.log("Alternative data:", alternativeData);
-
-          const alternativePurchase = await strapi.entityService.create(
-            "api::live-lecture-purchase.live-lecture-purchase",
-            {
-              data: alternativeData,
-            }
-          );
-
-          console.log(
-            "✅ Live lecture access created with alternative fields:",
-            alternativePurchase.id
-          );
-          return alternativePurchase;
-        } catch (altError) {
-          console.error("Alternative approach also failed:", altError.message);
-        }
-      }
-
       throw error;
     }
   },
 
-  // 7. Check student's access status
+  // 10. Check test series access
+  async checkTestSeriesAccess(enrollmentId, studentId) {
+    try {
+      // Check if student already has test series access
+      const user = await strapi.entityService.findOne(
+        "plugin::users-permissions.user",
+        studentId,
+        {
+          fields: ["test_series_access"],
+        }
+      );
+
+      if (user?.test_series_access) {
+        const hasAccess = user.test_series_access.some(
+          (access) => access.classroom_id == enrollmentId
+        );
+        return hasAccess;
+      }
+
+      return false;
+    } catch (error) {
+      console.error("Check test series access error:", error);
+      return false;
+    }
+  },
+
+  // 11. Check student's access status (updated for test series)
   async checkAccessStatus(ctx) {
     try {
       const { enrollment_id } = ctx.params;
@@ -1102,6 +1368,13 @@ module.exports = {
       const liveLectureAccess = !!liveLecturePurchase;
       console.log("Live lecture access:", liveLectureAccess);
 
+      // Check test series access
+      const testSeriesAccess = await this.checkTestSeriesAccess(
+        enrollment_id,
+        studentId
+      );
+      console.log("Test series access:", testSeriesAccess);
+
       // Check if can purchase live lectures
       let canPurchaseLive = false;
       let remainingLectures = null;
@@ -1114,12 +1387,18 @@ module.exports = {
         canPurchaseLive =
           remainingLectures.numberOfLectures > 0 &&
           remainingLectures.totalAmount > 0;
-        console.log(
-          "Can purchase live:",
-          canPurchaseLive,
-          "Remaining:",
-          remainingLectures.numberOfLectures
+      }
+
+      // Check if can purchase test series
+      let canPurchaseTestSeries = false;
+      let testSeriesPrice = null;
+
+      if (classroomAccess && !testSeriesAccess) {
+        testSeriesPrice = await this.calculateTestSeriesOnlyPrice(
+          enrollment_id,
+          studentId
         );
+        canPurchaseTestSeries = testSeriesPrice.totalAmount > 0;
       }
 
       return {
@@ -1128,10 +1407,13 @@ module.exports = {
           classroom_access: classroomAccess,
           live_lecture_access: liveLectureAccess,
           live_lectures: liveLecturePurchase?.lectures_purchased || [],
+          test_series_access: testSeriesAccess,
           can_purchase_live: canPurchaseLive,
+          can_purchase_test_series: canPurchaseTestSeries,
           student_id: studentId,
           enrollment_id: enrollment_id,
           remaining_lectures_info: remainingLectures,
+          test_series_info: testSeriesPrice,
         },
       };
     } catch (error) {
@@ -1140,7 +1422,7 @@ module.exports = {
     }
   },
 
-  // 8. Helper: Check classroom access
+  // 12. Helper: Check classroom access
   async checkClassroomAccess(enrollmentId, studentId) {
     try {
       const enrollment = await strapi.entityService.findOne(
@@ -1161,7 +1443,7 @@ module.exports = {
     }
   },
 
-  // 9. Helper: Check live lecture access
+  // 13. Helper: Check live lecture access
   async checkLiveLectureAccess(enrollmentId, studentId) {
     try {
       const livePurchase = await strapi.db
@@ -1181,7 +1463,7 @@ module.exports = {
     }
   },
 
-  // 10. Get upcoming live lectures for student (based on schedule)
+  // 14. Get upcoming live lectures for student
   async getUpcomingLiveLectures(ctx) {
     try {
       const { enrollment_id } = ctx.params;
@@ -1264,7 +1546,6 @@ module.exports = {
           },
         });
 
-      // If student has live access, all lectures are purchased
       const hasLiveAccess = !!livePurchase;
 
       return {
@@ -1288,7 +1569,7 @@ module.exports = {
     }
   },
 
-  // 11. Helper: Calculate next class date based on schedule
+  // 15. Helper: Calculate next class date based on schedule
   calculateNextClassDate(startDate, weekdays, classIndex) {
     const dayMap = {
       Sunday: 0,
@@ -1319,12 +1600,11 @@ module.exports = {
     return resultDate ? resultDate.toISOString() : null;
   },
 
-  // 12. Simple test endpoint
+  // 16. Simple test endpoint
   async testPayment(ctx) {
     try {
       console.log("=== TEST PAYMENT ENDPOINT ===");
 
-      // Check environment variables
       const envVars = {
         RAZORPAY_KEY_ID: !!process.env.RAZORPAY_KEY_ID,
         RAZORPAY_SECRET_ID: !!process.env.RAZORPAY_SECRET_ID,
@@ -1332,7 +1612,6 @@ module.exports = {
 
       console.log("Environment variables:", envVars);
 
-      // Test database connection
       const testPayment = await strapi.entityService.findMany(
         "api::payment.payment",
         {
@@ -1342,7 +1621,6 @@ module.exports = {
 
       console.log("Database connection:", testPayment ? "OK" : "Failed");
 
-      // Test Razorpay connection
       let razorpayStatus = "Unknown";
       try {
         await razorpay.orders.all({ count: 1 });
@@ -1361,121 +1639,6 @@ module.exports = {
       };
     } catch (error) {
       console.error("Test endpoint error:", error);
-      return {
-        success: false,
-        error: error.message,
-      };
-    }
-  },
-  // Add this function to your module.exports
-  async checkSchema(ctx) {
-    try {
-      console.log("=== CHECKING DATABASE SCHEMA ===");
-
-      // Check payment model fields
-      const paymentFields = await strapi.db
-        .query("api::payment.payment")
-        .findOne({
-          where: { id: 1 },
-        })
-        .catch(() => null);
-
-      console.log(
-        "Payment model sample:",
-        paymentFields ? "Exists" : "No sample"
-      );
-
-      // Check live-lecture-purchase model fields
-      const livePurchaseFields = await strapi.db
-        .query("api::live-lecture-purchase.live-lecture-purchase")
-        .findOne({
-          where: { id: 1 },
-        })
-        .catch(() => null);
-
-      console.log(
-        "Live purchase model sample:",
-        livePurchaseFields ? "Exists" : "No sample"
-      );
-
-      // Check enrollment model
-      const enrollmentFields = await strapi.db
-        .query("api::enrollment.enrollment")
-        .findOne({
-          where: { id: 1 },
-          populate: ["students"],
-        })
-        .catch(() => null);
-
-      console.log(
-        "Enrollment model sample:",
-        enrollmentFields ? "Exists" : "No sample"
-      );
-
-      return {
-        success: true,
-        models: {
-          payment: !!paymentFields,
-          live_lecture_purchase: !!livePurchaseFields,
-          enrollment: !!enrollmentFields,
-        },
-        message: "Schema check completed",
-      };
-    } catch (error) {
-      console.error("Schema check error:", error);
-      return {
-        success: false,
-        error: error.message,
-      };
-    }
-  },
-
-  // Also add a test verification endpoint (for testing without actual payment)
-  async testVerification(ctx) {
-    try {
-      console.log("=== TEST VERIFICATION ===");
-
-      // Create a test payment record first
-      const testPayment = await strapi.entityService.create(
-        "api::payment.payment",
-        {
-          data: {
-            payment_type: "classroom_with_live",
-            amount: 100,
-            status: "pending",
-            razorpay_order_id: `test_order_${Date.now()}`,
-            total_amount_paid: 100,
-            classroom: 1, // Use an existing enrollment ID
-            student: 1, // Use an existing user ID
-            live_lectures_included: true,
-            purchased_lectures: [
-              { id: "test_1", title: "Test Lecture", price: 50 },
-            ],
-          },
-        }
-      );
-
-      console.log("Test payment created:", testPayment.id);
-
-      // Now test the verification logic manually
-      const payment = await strapi.db.query("api::payment.payment").findOne({
-        where: { id: testPayment.id },
-        populate: ["classroom", "student"],
-      });
-
-      console.log("Payment retrieved:", {
-        id: payment.id,
-        classroom: payment.classroom,
-        student: payment.student,
-      });
-
-      return {
-        success: true,
-        test_payment: payment,
-        message: "Test verification completed",
-      };
-    } catch (error) {
-      console.error("Test verification error:", error);
       return {
         success: false,
         error: error.message,
