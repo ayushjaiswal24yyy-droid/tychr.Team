@@ -94,6 +94,24 @@
       "type": "relation",
       "relation": "oneToMany",
       "target": "api::college.college"
+    },
+    "university_name": {
+      "type": "string"
+    },
+    "location": {
+      "type": "string"
+    },
+    "university_type": {
+      "type": "string"
+    },
+    "year_of_establishment": {
+      "type": "integer"
+    },
+    "world_rank": {
+      "type": "integer"
+    },
+    "acceptance_rate": {
+      "type": "string"
     }
   }
 }

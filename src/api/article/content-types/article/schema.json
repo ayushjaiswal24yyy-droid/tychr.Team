@@ -77,6 +77,12 @@
     },
     "image_title": {
       "type": "json"
+    },
+    "college": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::college.college",
+      "inversedBy": "college_articles"
     }
   }
 }
