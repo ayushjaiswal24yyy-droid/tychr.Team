@@ -8,7 +8,7 @@
     "description": "Tracks student subscriptions to classrooms"
   },
   "options": {
-    "draftAndPublish": true
+    "draftAndPublish": false
   },
   "pluginOptions": {},
   "attributes": {
