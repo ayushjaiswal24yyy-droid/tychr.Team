@@ -44,7 +44,18 @@ module.exports = {
       },
     },
 
-    // 5. Get subscription status
+    // 5. Handle payment failed
+    {
+      method: "POST",
+      path: "/payment/failed",
+      handler: "razorpayment.handlePaymentFailed",
+      config: {
+        policies: [],
+        middlewares: [],
+      },
+    },
+
+    // 6. Get subscription status
     {
       method: "GET",
       path: "/payment/subscription-status/:enrollment_id",
@@ -55,7 +66,7 @@ module.exports = {
       },
     },
 
-    // 6. Get upcoming live lectures (considering subscription)
+    // 7. Get upcoming live lectures (considering subscription)
     {
       method: "GET",
       path: "/payment/upcoming-lectures/:enrollment_id",
@@ -66,7 +77,18 @@ module.exports = {
       },
     },
 
-    // 7. Mark live lecture as consumed
+    // 8. Calculate minimum live lectures price
+    {
+      method: "GET",
+      path: "/payment/minimum-live-price/:enrollment_id",
+      handler: "razorpayment.calculateMinimumLiveLecturesPrice",
+      config: {
+        policies: [],
+        middlewares: [],
+      },
+    },
+
+    // 9. Mark live lecture as consumed
     {
       method: "POST",
       path: "/payment/consume-lecture",
@@ -77,7 +99,7 @@ module.exports = {
       },
     },
 
-    // 8. Get student's classroom subscriptions
+    // 10. Get student's classroom subscriptions
     {
       method: "GET",
       path: "/payment/my-subscriptions",
