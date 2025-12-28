@@ -7,7 +7,9 @@
     "displayName": "Classroom Subscription",
     "description": "Tracks student subscriptions to classrooms"
   },
-
+  "options": {
+    "draftAndPublish": true
+  },
   "pluginOptions": {},
   "attributes": {
     "student": {
