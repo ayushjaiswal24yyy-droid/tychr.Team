@@ -3482,11 +3482,8 @@ export interface ApiSubscriptionSubscription extends Schema.CollectionType {
   info: {
     singularName: 'subscription';
     pluralName: 'subscriptions';
-    displayName: 'Student:Subscription';
-    description: 'Tracks student subscriptions';
-  };
-  options: {
-    draftAndPublish: true;
+    displayName: 'Classroom Subscription';
+    description: 'Tracks student subscriptions to classrooms';
   };
   attributes: {
     student: Attribute.Relation<
@@ -3506,8 +3503,10 @@ export interface ApiSubscriptionSubscription extends Schema.CollectionType {
     total_live_lectures_purchased: Attribute.Integer & Attribute.DefaultTo<0>;
     is_test_series_purchased: Attribute.Boolean & Attribute.DefaultTo<false>;
     test_series_purchased_at: Attribute.DateTime;
-    status: Attribute.Enumeration<['active', 'expired', 'cancelled']> &
-      Attribute.DefaultTo<'active'>;
+    status: Attribute.Enumeration<
+      ['pending', 'active', 'failed', 'cancelled', 'expired']
+    > &
+      Attribute.DefaultTo<'pending'>;
     valid_until: Attribute.DateTime;
     payments: Attribute.Relation<
       'api::subscription.subscription',
@@ -3516,7 +3515,6 @@ export interface ApiSubscriptionSubscription extends Schema.CollectionType {
     >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
-    publishedAt: Attribute.DateTime;
     createdBy: Attribute.Relation<
       'api::subscription.subscription',
       'oneToOne',

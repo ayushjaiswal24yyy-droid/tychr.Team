@@ -4,12 +4,10 @@
   "info": {
     "singularName": "subscription",
     "pluralName": "subscriptions",
-    "displayName": "Student:Subscription",
-    "description": "Tracks student subscriptions"
+    "displayName": "Classroom Subscription",
+    "description": "Tracks student subscriptions to classrooms"
   },
-  "options": {
-    "draftAndPublish": true
-  },
+
   "pluginOptions": {},
   "attributes": {
     "student": {
@@ -51,8 +49,8 @@
     },
     "status": {
       "type": "enumeration",
-      "enum": ["active", "expired", "cancelled"],
-      "default": "active"
+      "enum": ["pending", "active", "failed", "cancelled", "expired"],
+      "default": "pending"
     },
     "valid_until": {
       "type": "datetime"
