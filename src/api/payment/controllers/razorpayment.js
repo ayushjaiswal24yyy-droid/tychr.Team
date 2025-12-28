@@ -655,6 +655,24 @@ module.exports = {
         };
       }
 
+      const subscription = await strapi.db
+        .query("api::subscription.subscription")
+        .findOne({
+          where: { id: payment.subscription.id },
+          populate: ["student", "classroom"],
+        });
+
+      if (!subscription) {
+        console.error("Subscription not found for payment:", payment_id);
+        return ctx.badRequest("Subscription not found");
+      }
+
+      console.log("Subscription details:", {
+        student_id: subscription.student?.id,
+        classroom_id: subscription.classroom?.id,
+        payment_type: payment.payment_type,
+      });
+
       // Update payment status
       const updatedPayment = await strapi.entityService.update(
         "api::payment.payment",
@@ -675,7 +693,11 @@ module.exports = {
       await this.updateSubscriptionAfterPayment(payment);
 
       // Add student to classroom
-      await this.addStudentToClassroom(payment);
+      await this.addStudentToClassroom(
+        subscription.student.id,
+        subscription.classroom.id,
+        payment.payment_type
+      );
 
       console.log("Payment verification completed successfully");
 
@@ -1117,23 +1139,23 @@ module.exports = {
       );
     }
   },
-  async addStudentToClassroom(payment) {
+  async addStudentToClassroom(studentId, classroomId, paymentType) {
     try {
-      // Check if this is a classroom purchase (not addon)
       const isClassroomPurchase =
-        payment.payment_type === "classroom_only" ||
-        payment.payment_type === "classroom_with_live";
+        paymentType === "classroom_only" ||
+        paymentType === "classroom_with_live";
 
+      if (!isClassroomPurchase) {
+        console.log("Not a classroom purchase, skipping enrollment");
+        return;
+      }
       if (!isClassroomPurchase) {
         console.log("Not a classroom purchase, skipping student enrollment");
         return;
       }
 
-      const studentId = payment.subscription?.student?.id;
-      const classroomId = payment.subscription?.classroom?.id;
-
       if (!studentId || !classroomId) {
-        console.error("Missing student or classroom data:", {
+        console.error("Missing studentId or classroomId:", {
           studentId,
           classroomId,
         });
