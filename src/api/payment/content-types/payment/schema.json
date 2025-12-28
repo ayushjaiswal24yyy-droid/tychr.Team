@@ -5,22 +5,29 @@
     "singularName": "payment",
     "pluralName": "payments",
     "displayName": "Payment",
-    "description": "Manage payments for classrooms and live lectures"
+    "description": "Payment records for subscriptions"
   },
   "options": {
     "draftAndPublish": false
   },
   "pluginOptions": {},
   "attributes": {
+    "subscription": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::subscription.subscription",
+      "inversedBy": "payments"
+    },
     "payment_type": {
       "type": "enumeration",
       "enum": [
         "classroom_only",
         "classroom_with_live",
-        "live_only"
+        "live_lectures_only",
+        "test_series_only",
+        "live_lectures_addon"
       ],
-      "required": true,
-      "default": "classroom_only"
+      "required": true
     },
     "amount": {
       "type": "decimal",
@@ -28,19 +35,8 @@
     },
     "status": {
       "type": "enumeration",
-      "enum": [
-        "pending",
-        "completed",
-        "failed",
-        "refunded"
-      ],
+      "enum": ["pending", "completed", "failed", "refunded"],
       "default": "pending"
-    },
-    "student": {
-      "type": "relation",
-      "relation": "manyToOne",
-      "target": "plugin::users-permissions.user",
-      "inversedBy": "payments"
     },
     "razorpay_payment_id": {
       "type": "string"
@@ -52,60 +48,28 @@
     "razorpay_signature": {
       "type": "string"
     },
-    "purchased_at": {
-      "type": "datetime"
+    "items": {
+      "type": "json",
+      "required": true,
+      "default": {
+        "classroom": false,
+        "live_lectures_count": 0,
+        "test_series": false
+      }
     },
-    "completed_at": {
-      "type": "datetime"
-    },
-    "price_at_purchase": {
-      "type": "decimal"
-    },
-    "commission_percentage_applied": {
-      "type": "decimal",
-      "default": 0
-    },
-    "commission_amount": {
-      "type": "decimal",
-      "default": 0
-    },
-    "gst_amount": {
-      "type": "decimal",
-      "default": 0
-    },
-    "total_amount_paid": {
-      "type": "decimal",
-      "required": true
-    },
-    "live_lectures_included": {
-      "type": "boolean",
-      "default": false
-    },
-    "live_lectures_price": {
-      "type": "decimal",
-      "default": 0
-    },
-    "number_of_live_lectures": {
-      "type": "integer",
-      "default": 0
-    },
-    "purchased_lectures": {
-      "type": "json"
+    "price_details": {
+      "type": "json",
+      "default": {
+        "classroom_price": 0,
+        "live_lecture_price": 0,
+        "test_series_price": 0,
+        "commission": 0,
+        "gst": 0,
+        "total": 0
+      }
     },
     "metadata": {
       "type": "json"
-    },
-    "classroom": {
-      "type": "relation",
-      "relation": "manyToOne",
-      "target": "api::enrollment.enrollment",
-      "inversedBy": "payments"
-    },
-    "tutor_classroom": {
-      "type": "relation",
-      "relation": "manyToOne",
-      "target": "api::enrollment.enrollment",
-      "inversedBy": "payments"
     }
   }
 }

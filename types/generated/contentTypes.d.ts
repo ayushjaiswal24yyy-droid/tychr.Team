@@ -1024,6 +1024,11 @@ export interface PluginUsersPermissionsUser extends Schema.CollectionType {
       'oneToMany',
       'api::live-lecture-purchase.live-lecture-purchase'
     >;
+    subscriptions: Attribute.Relation<
+      'plugin::users-permissions.user',
+      'oneToMany',
+      'api::subscription.subscription'
+    >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     createdBy: Attribute.Relation<
@@ -1997,6 +2002,11 @@ export interface ApiEnrollmentEnrollment extends Schema.CollectionType {
       'api::payment.payment'
     >;
     lecture_count: Attribute.Integer;
+    subscriptions: Attribute.Relation<
+      'api::enrollment.enrollment',
+      'oneToMany',
+      'api::subscription.subscription'
+    >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     createdBy: Attribute.Relation<
@@ -2715,52 +2725,52 @@ export interface ApiPaymentPayment extends Schema.CollectionType {
     singularName: 'payment';
     pluralName: 'payments';
     displayName: 'Payment';
-    description: 'Manage payments for classrooms and live lectures';
+    description: 'Payment records for subscriptions';
   };
   options: {
     draftAndPublish: false;
   };
   attributes: {
+    subscription: Attribute.Relation<
+      'api::payment.payment',
+      'manyToOne',
+      'api::subscription.subscription'
+    >;
     payment_type: Attribute.Enumeration<
-      ['classroom_only', 'classroom_with_live', 'live_only']
+      [
+        'classroom_only',
+        'classroom_with_live',
+        'live_lectures_only',
+        'test_series_only',
+        'live_lectures_addon'
+      ]
     > &
-      Attribute.Required &
-      Attribute.DefaultTo<'classroom_only'>;
+      Attribute.Required;
     amount: Attribute.Decimal & Attribute.Required;
     status: Attribute.Enumeration<
       ['pending', 'completed', 'failed', 'refunded']
     > &
       Attribute.DefaultTo<'pending'>;
-    student: Attribute.Relation<
-      'api::payment.payment',
-      'manyToOne',
-      'plugin::users-permissions.user'
-    >;
     razorpay_payment_id: Attribute.String;
     razorpay_order_id: Attribute.String & Attribute.Unique;
     razorpay_signature: Attribute.String;
-    purchased_at: Attribute.DateTime;
-    completed_at: Attribute.DateTime;
-    price_at_purchase: Attribute.Decimal;
-    commission_percentage_applied: Attribute.Decimal & Attribute.DefaultTo<0>;
-    commission_amount: Attribute.Decimal & Attribute.DefaultTo<0>;
-    gst_amount: Attribute.Decimal & Attribute.DefaultTo<0>;
-    total_amount_paid: Attribute.Decimal & Attribute.Required;
-    live_lectures_included: Attribute.Boolean & Attribute.DefaultTo<false>;
-    live_lectures_price: Attribute.Decimal & Attribute.DefaultTo<0>;
-    number_of_live_lectures: Attribute.Integer & Attribute.DefaultTo<0>;
-    purchased_lectures: Attribute.JSON;
+    items: Attribute.JSON &
+      Attribute.Required &
+      Attribute.DefaultTo<{
+        classroom: false;
+        live_lectures_count: 0;
+        test_series: false;
+      }>;
+    price_details: Attribute.JSON &
+      Attribute.DefaultTo<{
+        classroom_price: 0;
+        live_lecture_price: 0;
+        test_series_price: 0;
+        commission: 0;
+        gst: 0;
+        total: 0;
+      }>;
     metadata: Attribute.JSON;
-    classroom: Attribute.Relation<
-      'api::payment.payment',
-      'manyToOne',
-      'api::enrollment.enrollment'
-    >;
-    tutor_classroom: Attribute.Relation<
-      'api::payment.payment',
-      'manyToOne',
-      'api::enrollment.enrollment'
-    >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     createdBy: Attribute.Relation<
@@ -3460,6 +3470,61 @@ export interface ApiSubjectGroupSubjectGroup extends Schema.CollectionType {
       Attribute.Private;
     updatedBy: Attribute.Relation<
       'api::subject-group.subject-group',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+  };
+}
+
+export interface ApiSubscriptionSubscription extends Schema.CollectionType {
+  collectionName: 'subscriptions';
+  info: {
+    singularName: 'subscription';
+    pluralName: 'subscriptions';
+    displayName: 'Student:Subscription';
+    description: 'Tracks student subscriptions';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    student: Attribute.Relation<
+      'api::subscription.subscription',
+      'manyToOne',
+      'plugin::users-permissions.user'
+    >;
+    classroom: Attribute.Relation<
+      'api::subscription.subscription',
+      'manyToOne',
+      'api::enrollment.enrollment'
+    >;
+    is_classroom_purchased: Attribute.Boolean & Attribute.DefaultTo<false>;
+    classroom_purchased_at: Attribute.DateTime;
+    is_live_lectures_purchased: Attribute.Boolean & Attribute.DefaultTo<false>;
+    live_lectures_purchased_at: Attribute.DateTime;
+    total_live_lectures_purchased: Attribute.Integer & Attribute.DefaultTo<0>;
+    is_test_series_purchased: Attribute.Boolean & Attribute.DefaultTo<false>;
+    test_series_purchased_at: Attribute.DateTime;
+    status: Attribute.Enumeration<['active', 'expired', 'cancelled']> &
+      Attribute.DefaultTo<'active'>;
+    valid_until: Attribute.DateTime;
+    payments: Attribute.Relation<
+      'api::subscription.subscription',
+      'oneToMany',
+      'api::payment.payment'
+    >;
+    createdAt: Attribute.DateTime;
+    updatedAt: Attribute.DateTime;
+    publishedAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<
+      'api::subscription.subscription',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+    updatedBy: Attribute.Relation<
+      'api::subscription.subscription',
       'oneToOne',
       'admin::user'
     > &
@@ -4392,6 +4457,7 @@ declare module '@strapi/types' {
       'api::student-uni-application.student-uni-application': ApiStudentUniApplicationStudentUniApplication;
       'api::subject.subject': ApiSubjectSubject;
       'api::subject-group.subject-group': ApiSubjectGroupSubjectGroup;
+      'api::subscription.subscription': ApiSubscriptionSubscription;
       'api::subtopic.subtopic': ApiSubtopicSubtopic;
       'api::support-ticket.support-ticket': ApiSupportTicketSupportTicket;
       'api::task.task': ApiTaskTask;
