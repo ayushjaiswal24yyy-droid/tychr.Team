@@ -104,14 +104,14 @@ module.exports = {
 
       console.log("Student ID:", studentId);
 
-      // Check if subscription already exists
+      // Check if subscription already exists (only check for active ones)
       const existingSubscription = await strapi.db
         .query("api::subscription.subscription")
         .findOne({
           where: {
             classroom: enrollment_id,
             student: studentId,
-            status: "active",
+            status: { $in: ["active", "pending"] },
           },
         });
 
@@ -167,33 +167,30 @@ module.exports = {
         throw new Error(`Razorpay error: ${razorpayError.message}`);
       }
 
-      // Create subscription (pending activation)
+      // Create subscription ONLY with pending status
       const subscriptionData = {
         student: studentId,
         classroom: enrollment_id,
-        is_classroom_purchased: true,
-        classroom_purchased_at: new Date(),
-        is_live_lectures_purchased: include_live_lectures,
-        live_lectures_purchased_at: include_live_lectures ? new Date() : null,
-        total_live_lectures_purchased: include_live_lectures
-          ? calculation.numberOfLectures
-          : 0,
-        is_test_series_purchased: include_test_series,
-        test_series_purchased_at: include_test_series ? new Date() : null,
-        status: "active",
+        is_classroom_purchased: false, // Will be true only after payment
+        is_live_lectures_purchased: false, // Will be true only after payment if included
+        is_test_series_purchased: false, // Will be true only after payment if included
+        status: "pending", // Important: Keep as pending until payment
         valid_until: new Date(
           new Date().setFullYear(new Date().getFullYear() + 1)
         ),
       };
 
-      console.log("Creating subscription:", subscriptionData);
+      console.log(
+        "Creating subscription with pending status:",
+        subscriptionData
+      );
 
       const subscription = await strapi.entityService.create(
         "api::subscription.subscription",
         { data: subscriptionData }
       );
 
-      console.log("Subscription created:", subscription.id);
+      console.log("Subscription created with pending status:", subscription.id);
 
       // Create payment record
       const paymentData = {
@@ -210,6 +207,7 @@ module.exports = {
             ? calculation.numberOfLectures
             : 0,
           test_series: include_test_series,
+          test_series_price: calculation.testSeriesPrice,
         },
         price_details: {
           classroom_price: calculation.basePrice,
@@ -223,6 +221,8 @@ module.exports = {
           enrollment_name: enrollment.classroom_name,
           purchase_type: "initial",
           calculation: calculation,
+          include_live_lectures: include_live_lectures,
+          include_test_series: include_test_series,
         },
       };
 
@@ -465,11 +465,39 @@ module.exports = {
       const testSeriesPrice =
         parseFloat(enrollment.grade_subject?.test_series_price) || 0;
 
-      if (testSeriesPrice <= 0) {
+      if (testSeriesPrice < 0) {
         return ctx.badRequest("Test series not available");
       }
 
-      // Calculate taxes
+      // If test series is free (price = 0), grant access immediately
+      if (testSeriesPrice === 0) {
+        console.log("Test series is free, granting access immediately");
+
+        await strapi.entityService.update(
+          "api::subscription.subscription",
+          subscription.id,
+          {
+            data: {
+              is_test_series_purchased: true,
+              test_series_purchased_at: new Date(),
+            },
+          }
+        );
+
+        return {
+          success: true,
+          message: "Test series added successfully (free)",
+          subscription_id: subscription.id,
+          calculation: {
+            testSeriesPrice: 0,
+            gstAmount: 0,
+            commissionAmount: 0,
+            totalAmount: 0,
+          },
+        };
+      }
+
+      // Calculate taxes for paid test series
       const gstRate = await this.getGSTRate();
       const commissionRate = await this.getCommissionRate();
 
@@ -646,17 +674,6 @@ module.exports = {
       // Update subscription based on payment type
       await this.updateSubscriptionAfterPayment(payment);
 
-      // Enroll student in classroom if not already enrolled
-      if (
-        payment.payment_type === "classroom_only" ||
-        payment.payment_type === "classroom_with_live"
-      ) {
-        await this.enrollStudentInClassroom(
-          payment.subscription.student,
-          payment.subscription.classroom
-        );
-      }
-
       console.log("Payment verification completed successfully");
 
       return {
@@ -672,7 +689,62 @@ module.exports = {
     }
   },
 
-  // 5. GET SUBSCRIPTION STATUS
+  // 5. HANDLE PAYMENT FAILED (Webhook or frontend callback)
+  async handlePaymentFailed(ctx) {
+    try {
+      const { payment_id } = ctx.request.body;
+
+      console.log("=== HANDLE PAYMENT FAILED ===");
+      console.log("Payment ID:", payment_id);
+
+      // Get payment record with subscription
+      const payment = await strapi.entityService.findOne(
+        "api::payment.payment",
+        payment_id,
+        { populate: ["subscription"] }
+      );
+
+      if (!payment) {
+        console.error("Payment not found:", payment_id);
+        return ctx.badRequest("Payment not found");
+      }
+
+      // Update payment status
+      await strapi.entityService.update("api::payment.payment", payment_id, {
+        data: {
+          status: "failed",
+          failed_at: new Date(),
+        },
+      });
+
+      // Update subscription status to failed
+      if (payment.subscription) {
+        await strapi.entityService.update(
+          "api::subscription.subscription",
+          payment.subscription.id,
+          {
+            data: {
+              status: "failed",
+            },
+          }
+        );
+      }
+
+      console.log("Payment marked as failed");
+
+      return {
+        success: true,
+        message: "Payment failed status updated",
+      };
+    } catch (error) {
+      console.error("Handle payment failed error:", error);
+      return ctx.internalServerError(
+        error.message || "Failed to update payment status"
+      );
+    }
+  },
+
+  // 6. GET SUBSCRIPTION STATUS
   async getSubscriptionStatus(ctx) {
     try {
       const { enrollment_id } = ctx.params;
@@ -692,13 +764,14 @@ module.exports = {
 
       console.log("Student ID:", studentId);
 
-      // Get subscription with payments
+      // Get subscription with payments (only active or pending)
       const subscription = await strapi.db
         .query("api::subscription.subscription")
         .findOne({
           where: {
             classroom: enrollment_id,
             student: studentId,
+            status: { $in: ["active", "pending"] },
           },
           populate: ["payments", "classroom"],
         });
@@ -717,7 +790,41 @@ module.exports = {
         };
       }
 
-      console.log("Subscription found:", subscription.id);
+      console.log(
+        "Subscription found:",
+        subscription.id,
+        "Status:",
+        subscription.status
+      );
+
+      // If subscription is pending, check if there's a completed payment
+      if (subscription.status === "pending") {
+        const completedPayment = subscription.payments?.find(
+          (p) => p.status === "completed"
+        );
+
+        if (!completedPayment) {
+          console.log("Subscription pending - no completed payment found");
+          return {
+            success: true,
+            data: {
+              has_subscription: true,
+              subscription_status: "pending",
+              subscription: {
+                id: subscription.id,
+                status: subscription.status,
+                is_classroom_purchased: false,
+                is_live_lectures_purchased: false,
+                is_test_series_purchased: false,
+              },
+              can_purchase_classroom: false,
+              can_add_live_lectures: false,
+              can_add_test_series: false,
+              message: "Payment pending for subscription",
+            },
+          };
+        }
+      }
 
       // Calculate available lectures for purchase
       const enrollment = subscription.classroom;
@@ -748,6 +855,7 @@ module.exports = {
         success: true,
         data: {
           has_subscription: true,
+          subscription_status: subscription.status,
           subscription: {
             id: subscription.id,
             is_classroom_purchased: subscription.is_classroom_purchased,
@@ -780,7 +888,7 @@ module.exports = {
     }
   },
 
-  // 6. GET UPCOMING LIVE LECTURES
+  // 7. GET UPCOMING LIVE LECTURES
   async getUpcomingLiveLectures(ctx) {
     try {
       const { enrollment_id } = ctx.params;
@@ -800,7 +908,7 @@ module.exports = {
 
       console.log("Student ID:", studentId);
 
-      // Get subscription
+      // Get active subscription
       const subscription = await strapi.db
         .query("api::subscription.subscription")
         .findOne({
@@ -815,12 +923,19 @@ module.exports = {
       const enrollment = await strapi.entityService.findOne(
         "api::enrollment.enrollment",
         enrollment_id,
-        { populate: ["days"] }
+        { populate: ["days", "grade_subject"] }
       );
 
       if (!enrollment) {
         return ctx.badRequest("Enrollment not found");
       }
+
+      // Check if test series is available (free or paid)
+      const testSeriesAvailable =
+        enrollment.grade_subject?.test_series_price !== null;
+      const testSeriesPrice =
+        parseFloat(enrollment.grade_subject?.test_series_price) || 0;
+      const isTestSeriesFree = testSeriesPrice === 0;
 
       // Calculate all upcoming classes
       const today = new Date();
@@ -889,6 +1004,9 @@ module.exports = {
           has_live_access: subscription?.is_live_lectures_purchased || false,
           total_purchased: subscription?.total_live_lectures_purchased || 0,
           lecture_price: enrollment.lecture_price || 0,
+          test_series_available: testSeriesAvailable,
+          test_series_price: testSeriesPrice,
+          is_test_series_free: isTestSeriesFree,
           subscription_status: subscription
             ? {
                 is_classroom_purchased: subscription.is_classroom_purchased,
@@ -909,7 +1027,7 @@ module.exports = {
     }
   },
 
-  // 7. MARK LIVE LECTURE AS CONSUMED
+  // 8. MARK LIVE LECTURE AS CONSUMED
   async consumeLiveLecture(ctx) {
     try {
       const { subscription_id } = ctx.request.body;
@@ -930,9 +1048,6 @@ module.exports = {
         return ctx.badRequest("Live lectures not purchased");
       }
 
-      // Note: Since we removed remaining_live_lectures, we don't track consumption
-      // This function is kept for compatibility but won't change any data
-
       console.log("Lecture consumption recorded");
 
       return {
@@ -948,7 +1063,7 @@ module.exports = {
     }
   },
 
-  // 8. GET MY SUBSCRIPTIONS
+  // 9. GET MY SUBSCRIPTIONS
   async getMySubscriptions(ctx) {
     try {
       console.log("=== GET MY SUBSCRIPTIONS ===");
@@ -970,7 +1085,7 @@ module.exports = {
         .findMany({
           where: {
             student: studentId,
-            status: "active",
+            status: { $in: ["active", "pending"] },
           },
           populate: ["classroom", "payments"],
         });
@@ -1010,6 +1125,7 @@ module.exports = {
       payment_type: payment.payment_type,
       live_lectures_count: payment.items?.live_lectures_count,
       test_series: payment.items?.test_series,
+      test_series_price: payment.items?.test_series_price,
     });
 
     switch (payment.payment_type) {
@@ -1025,6 +1141,13 @@ module.exports = {
             },
           }
         );
+
+        // Enroll student in classroom
+        await this.enrollStudentInClassroom(
+          payment.subscription.student,
+          payment.subscription.classroom
+        );
+
         console.log("Updated subscription for classroom_only");
         break;
 
@@ -1036,17 +1159,30 @@ module.exports = {
             data: {
               is_classroom_purchased: true,
               classroom_purchased_at: new Date(),
-              is_live_lectures_purchased: true,
-              live_lectures_purchased_at: new Date(),
-              total_live_lectures_purchased: payment.items.live_lectures_count,
-              is_test_series_purchased: payment.items.test_series || false,
-              test_series_purchased_at: payment.items.test_series
+              is_live_lectures_purchased:
+                payment.metadata?.include_live_lectures || false,
+              live_lectures_purchased_at: payment.metadata
+                ?.include_live_lectures
+                ? new Date()
+                : null,
+              total_live_lectures_purchased:
+                payment.items?.live_lectures_count || 0,
+              is_test_series_purchased:
+                payment.metadata?.include_test_series || false,
+              test_series_purchased_at: payment.metadata?.include_test_series
                 ? new Date()
                 : null,
               status: "active",
             },
           }
         );
+
+        // Enroll student in classroom
+        await this.enrollStudentInClassroom(
+          payment.subscription.student,
+          payment.subscription.classroom
+        );
+
         console.log("Updated subscription for classroom_with_live");
         break;
 
@@ -1200,8 +1336,12 @@ module.exports = {
     }
 
     // Calculate test series
-    if (includeTestSeries && enrollment.grade_subject?.test_series_price) {
-      testSeriesPrice = parseFloat(enrollment.grade_subject.test_series_price);
+    if (
+      includeTestSeries &&
+      enrollment.grade_subject?.test_series_price !== null
+    ) {
+      testSeriesPrice =
+        parseFloat(enrollment.grade_subject.test_series_price) || 0;
       console.log("Test series price:", testSeriesPrice);
     }
 
@@ -1246,5 +1386,46 @@ module.exports = {
       commissionAmount,
       totalAmount,
     };
+  },
+
+  // 10. CALCULATE MINIMUM LIVE LECTURES PRICE (minimum 5 lectures)
+  async calculateMinimumLiveLecturesPrice(enrollmentId) {
+    try {
+      const enrollment = await strapi.entityService.findOne(
+        "api::enrollment.enrollment",
+        enrollmentId,
+        { populate: ["days"] }
+      );
+
+      if (!enrollment) {
+        throw new Error("Enrollment not found");
+      }
+
+      const lecturePrice = parseFloat(enrollment.lecture_price) || 0;
+      const minimumLectures = 5;
+      const liveLecturesPrice = minimumLectures * lecturePrice;
+
+      // Calculate taxes
+      const gstRate = await this.getGSTRate();
+      const commissionRate = await this.getCommissionRate();
+
+      const gstAmount = (liveLecturesPrice * gstRate) / 100;
+      const commissionAmount = (liveLecturesPrice * commissionRate) / 100;
+      const totalAmount = liveLecturesPrice + commissionAmount + gstAmount;
+
+      return {
+        minimumLectures,
+        lecturePrice,
+        liveLecturesPrice,
+        gstRate,
+        gstAmount,
+        commissionRate,
+        commissionAmount,
+        totalAmount,
+      };
+    } catch (error) {
+      console.error("Calculate minimum live lectures price error:", error);
+      throw error;
+    }
   },
 };
