@@ -13,21 +13,24 @@
   "pluginOptions": {},
   "attributes": {
     "Name": {
-      "type": "string"
+      "type": "string",
+      "required": true
     },
     "description": {
-      "type": "text"
+      "type": "text",
+      "required": true
     },
     "image": {
       "type": "media",
       "multiple": false,
       "required": false,
-      "allowedTypes": [
-        "images",
-        "files",
-        "videos",
-        "audios"
-      ]
+      "allowedTypes": ["images"]
+    },
+    "type": {
+      "type": "enumeration",
+      "enum": ["public", "private"],
+      "default": "public",
+      "required": true
     },
     "members": {
       "type": "relation",
@@ -46,6 +49,18 @@
       "relation": "oneToOne",
       "target": "api::enrollment.enrollment",
       "inversedBy": "community"
+    },
+    "created_by": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "plugin::users-permissions.user"
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true
+    },
+    "rules": {
+      "type": "richtext"
     }
   }
 }

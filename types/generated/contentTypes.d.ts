@@ -1303,7 +1303,7 @@ export interface ApiClassClass extends Schema.CollectionType {
   info: {
     singularName: 'class';
     pluralName: 'classes';
-    displayName: '\u2B50Lecture: Grade';
+    displayName: 'Ib program: Grade';
     description: '';
   };
   options: {
@@ -1545,9 +1545,12 @@ export interface ApiCommunityCommunity extends Schema.CollectionType {
     draftAndPublish: true;
   };
   attributes: {
-    Name: Attribute.String;
-    description: Attribute.Text;
-    image: Attribute.Media<'images' | 'files' | 'videos' | 'audios'>;
+    Name: Attribute.String & Attribute.Required;
+    description: Attribute.Text & Attribute.Required;
+    image: Attribute.Media<'images'>;
+    type: Attribute.Enumeration<['public', 'private']> &
+      Attribute.Required &
+      Attribute.DefaultTo<'public'>;
     members: Attribute.Relation<
       'api::community.community',
       'manyToMany',
@@ -1563,6 +1566,13 @@ export interface ApiCommunityCommunity extends Schema.CollectionType {
       'oneToOne',
       'api::enrollment.enrollment'
     >;
+    created_by: Attribute.Relation<
+      'api::community.community',
+      'oneToOne',
+      'plugin::users-permissions.user'
+    >;
+    is_active: Attribute.Boolean & Attribute.DefaultTo<true>;
+    rules: Attribute.RichText;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
