@@ -674,6 +674,9 @@ module.exports = {
       // Update subscription based on payment type
       await this.updateSubscriptionAfterPayment(payment);
 
+      // Add student to classroom
+      await this.addStudentToClassroom(payment);
+
       console.log("Payment verification completed successfully");
 
       return {
@@ -1112,6 +1115,102 @@ module.exports = {
       return ctx.internalServerError(
         error.message || "Failed to get subscriptions"
       );
+    }
+  },
+  async addStudentToClassroom(payment) {
+    try {
+      // Check if this is a classroom purchase (not addon)
+      const isClassroomPurchase =
+        payment.payment_type === "classroom_only" ||
+        payment.payment_type === "classroom_with_live";
+
+      if (!isClassroomPurchase) {
+        console.log("Not a classroom purchase, skipping student enrollment");
+        return;
+      }
+
+      const studentId = payment.subscription?.student?.id;
+      const classroomId = payment.subscription?.classroom?.id;
+
+      if (!studentId || !classroomId) {
+        console.error("Missing student or classroom data:", {
+          studentId,
+          classroomId,
+        });
+        return;
+      }
+
+      console.log("Adding student to classroom:", { studentId, classroomId });
+
+      // Get current enrollment with students
+      const enrollment = await strapi.entityService.findOne(
+        "api::enrollment.enrollment",
+        classroomId,
+        {
+          populate: ["students"],
+        }
+      );
+
+      if (!enrollment) {
+        console.error("Enrollment not found:", classroomId);
+        return;
+      }
+
+      // Check if student is already enrolled
+      const currentStudents = enrollment.students || [];
+      const studentExists = currentStudents.some(
+        (student) => student.id === studentId
+      );
+
+      if (studentExists) {
+        console.log(
+          `Student ${studentId} already enrolled in classroom ${classroomId}`
+        );
+        return;
+      }
+
+      // Add student to classroom using connect (preserves existing students)
+      try {
+        await strapi.entityService.update(
+          "api::enrollment.enrollment",
+          classroomId,
+          {
+            data: {
+              students: {
+                connect: [studentId],
+              },
+            },
+          }
+        );
+
+        console.log(
+          `Successfully added student ${studentId} to classroom ${classroomId}`
+        );
+
+        console.log(`Updated enrollment date for classroom ${classroomId}`);
+      } catch (connectError) {
+        console.error("Error connecting student to classroom:", connectError);
+
+        // Fallback method if connect doesn't work
+        const allStudentIds = [...currentStudents.map((s) => s.id), studentId];
+
+        await strapi.entityService.update(
+          "api::enrollment.enrollment",
+          classroomId,
+          {
+            data: {
+              students: {
+                set: allStudentIds,
+              },
+            },
+          }
+        );
+
+        console.log(`Added student using fallback method`);
+      }
+    } catch (error) {
+      console.error("Error in addStudentToClassroom:", error);
+      // Don't throw error - payment should still be marked as successful
     }
   },
 

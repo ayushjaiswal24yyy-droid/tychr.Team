@@ -3486,7 +3486,7 @@ export interface ApiSubscriptionSubscription extends Schema.CollectionType {
     description: 'Tracks student subscriptions to classrooms';
   };
   options: {
-    draftAndPublish: true;
+    draftAndPublish: false;
   };
   attributes: {
     student: Attribute.Relation<
@@ -3518,7 +3518,6 @@ export interface ApiSubscriptionSubscription extends Schema.CollectionType {
     >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
-    publishedAt: Attribute.DateTime;
     createdBy: Attribute.Relation<
       'api::subscription.subscription',
       'oneToOne',
