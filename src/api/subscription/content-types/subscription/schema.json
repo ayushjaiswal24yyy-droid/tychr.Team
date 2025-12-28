@@ -1,0 +1,67 @@
+{
+  "kind": "collectionType",
+  "collectionName": "subscriptions",
+  "info": {
+    "singularName": "subscription",
+    "pluralName": "subscriptions",
+    "displayName": "Student:Subscription",
+    "description": "Tracks student subscriptions"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "student": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "plugin::users-permissions.user",
+      "inversedBy": "subscriptions"
+    },
+    "classroom": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::enrollment.enrollment",
+      "inversedBy": "subscriptions"
+    },
+    "is_classroom_purchased": {
+      "type": "boolean",
+      "default": false
+    },
+    "classroom_purchased_at": {
+      "type": "datetime"
+    },
+    "is_live_lectures_purchased": {
+      "type": "boolean",
+      "default": false
+    },
+    "live_lectures_purchased_at": {
+      "type": "datetime"
+    },
+    "total_live_lectures_purchased": {
+      "type": "integer",
+      "default": 0
+    },
+    "is_test_series_purchased": {
+      "type": "boolean",
+      "default": false
+    },
+    "test_series_purchased_at": {
+      "type": "datetime"
+    },
+    "status": {
+      "type": "enumeration",
+      "enum": ["active", "expired", "cancelled"],
+      "default": "active"
+    },
+    "valid_until": {
+      "type": "datetime"
+    },
+    "payments": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::payment.payment",
+      "mappedBy": "subscription"
+    }
+  }
+}
