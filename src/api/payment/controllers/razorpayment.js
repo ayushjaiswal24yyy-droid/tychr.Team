@@ -1219,7 +1219,7 @@ module.exports = {
         await strapi.entityService.update(
           "api::enrollment.enrollment",
           classroomId,
-          {
+          { 
             data: {
               students: {
                 set: allStudentIds,
