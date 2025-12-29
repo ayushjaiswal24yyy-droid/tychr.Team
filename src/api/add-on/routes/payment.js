@@ -1,34 +1,36 @@
 module.exports = {
   routes: [
+    // Create Razorpay order
     {
       method: "POST",
-      path: "/payment/add-on-order",
-      handler: "payment.completeAddOnTransaction",
+      path: "/payment/create-addon-order",
+      handler: "payment.createOrder",
       config: {
         policies: [],
         middlewares: [],
       },
     },
 
+    // Verify payment
+    {
+      method: "POST",
+      path: "/payment/verify-addon-payment",
+      handler: "payment.verifyPayment",
+      config: {
+        policies: [],
+        middlewares: [],
+      },
+    },
+
+    // Handle failed payment
+    {
+      method: "POST",
+      path: "/payment/addon-payment-failed",
+      handler: "payment.handleFailedPayment",
+      config: {
+        policies: [],
+        middlewares: [],
+      },
+    },
   ],
-  //   routes: [
-  //   {
-  //     method: 'POST',
-  //     path: '/payments/create-order',
-  //     handler: 'payment.createOrder',
-  //     config: {
-  //       policies: [],
-  //       middlewares: [],
-  //     },
-  //   },
-  //   {
-  //     method: 'POST',
-  //     path: '/payments/verify',
-  //     handler: 'payment.verifyPayment',
-  //     config: {
-  //       policies: [],
-  //       middlewares: [],
-  //     },
-  //   },
-  // ],
 };
