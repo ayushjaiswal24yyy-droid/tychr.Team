@@ -1029,6 +1029,11 @@ export interface PluginUsersPermissionsUser extends Schema.CollectionType {
       'oneToMany',
       'api::subscription.subscription'
     >;
+    student_attendances: Attribute.Relation<
+      'plugin::users-permissions.user',
+      'oneToMany',
+      'api::attendance.attendance'
+    >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     createdBy: Attribute.Relation<
@@ -1301,6 +1306,53 @@ export interface ApiArticleArticle extends Schema.CollectionType {
       Attribute.Private;
     updatedBy: Attribute.Relation<
       'api::article.article',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+  };
+}
+
+export interface ApiAttendanceAttendance extends Schema.CollectionType {
+  collectionName: 'attendances';
+  info: {
+    singularName: 'attendance';
+    pluralName: 'attendances';
+    displayName: 'Attendance';
+    description: '';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    student: Attribute.Relation<
+      'api::attendance.attendance',
+      'manyToOne',
+      'plugin::users-permissions.user'
+    >;
+    live_lecture: Attribute.Relation<
+      'api::attendance.attendance',
+      'manyToOne',
+      'api::live-lecture.live-lecture'
+    >;
+    status: Attribute.Enumeration<['pending', 'present', 'absent', 'late']> &
+      Attribute.DefaultTo<'pending'>;
+    joined_at: Attribute.DateTime;
+    left_at: Attribute.DateTime;
+    duration_minutes: Attribute.Integer;
+    marked_at: Attribute.DateTime;
+    marked_by: Attribute.String;
+    notes: Attribute.Text;
+    createdAt: Attribute.DateTime;
+    updatedAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<
+      'api::attendance.attendance',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+    updatedBy: Attribute.Relation<
+      'api::attendance.attendance',
       'oneToOne',
       'admin::user'
     > &
@@ -2320,6 +2372,11 @@ export interface ApiLiveLectureLiveLecture extends Schema.CollectionType {
     > &
       Attribute.DefaultTo<'scheduled'>;
     status_history: Attribute.JSON;
+    attendance: Attribute.Relation<
+      'api::live-lecture.live-lecture',
+      'oneToMany',
+      'api::attendance.attendance'
+    >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
@@ -4417,6 +4474,7 @@ declare module '@strapi/types' {
       'api::add-on-order.add-on-order': ApiAddOnOrderAddOnOrder;
       'api::answer.answer': ApiAnswerAnswer;
       'api::article.article': ApiArticleArticle;
+      'api::attendance.attendance': ApiAttendanceAttendance;
       'api::class.class': ApiClassClass;
       'api::class-request.class-request': ApiClassRequestClassRequest;
       'api::college.college': ApiCollegeCollege;

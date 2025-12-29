@@ -482,6 +482,12 @@
       "relation": "oneToMany",
       "target": "api::subscription.subscription",
       "mappedBy": "student"
+    },
+    "student_attendances": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::attendance.attendance",
+      "mappedBy": "student"
     }
   }
 }

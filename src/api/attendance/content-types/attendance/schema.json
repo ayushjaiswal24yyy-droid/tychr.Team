@@ -1,0 +1,55 @@
+{
+  "kind": "collectionType",
+  "collectionName": "attendances",
+  "info": {
+    "singularName": "attendance",
+    "pluralName": "attendances",
+    "displayName": "Attendance",
+    "description": ""
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "attributes": {
+    "student": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "plugin::users-permissions.user",
+      "inversedBy": "student_attendances"
+    },
+    "live_lecture": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::live-lecture.live-lecture",
+      "inversedBy": "attendance"
+    },
+    "status": {
+      "type": "enumeration",
+      "enum": [
+        "pending",
+        "present",
+        "absent",
+        "late"
+      ],
+      "default": "pending"
+    },
+    "joined_at": {
+      "type": "datetime"
+    },
+    "left_at": {
+      "type": "datetime"
+    },
+    "duration_minutes": {
+      "type": "integer"
+    },
+    "marked_at": {
+      "type": "datetime"
+    },
+    "marked_by": {
+      "type": "string"
+    },
+    "notes": {
+      "type": "text"
+    }
+  }
+}

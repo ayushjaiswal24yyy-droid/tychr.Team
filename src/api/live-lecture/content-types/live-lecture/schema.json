@@ -92,6 +92,12 @@
     },
     "status_history": {
       "type": "json"
+    },
+    "attendance": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::attendance.attendance",
+      "mappedBy": "live_lecture"
     }
   }
 }
