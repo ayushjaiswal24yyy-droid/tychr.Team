@@ -1369,7 +1369,7 @@ export interface ApiClassRequestClassRequest extends Schema.CollectionType {
     description: '';
   };
   options: {
-    draftAndPublish: true;
+    draftAndPublish: false;
   };
   attributes: {
     request_type: Attribute.Enumeration<
@@ -1408,7 +1408,6 @@ export interface ApiClassRequestClassRequest extends Schema.CollectionType {
     >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
-    publishedAt: Attribute.DateTime;
     createdBy: Attribute.Relation<
       'api::class-request.class-request',
       'oneToOne',
@@ -1729,8 +1728,7 @@ export interface ApiDemoBookingDemoBooking extends Schema.CollectionType {
       'api::demo-booking.demo-booking',
       'oneToOne',
       'plugin::users-permissions.user'
-    > &
-      Attribute.Required;
+    >;
     booking_date: Attribute.DateTime;
     status: Attribute.Enumeration<
       ['Requested', 'Confirmed', 'Completed', 'Cancelled', 'No-show']

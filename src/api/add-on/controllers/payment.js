@@ -17,21 +17,27 @@ module.exports = {
     console.log("🚀 Starting completeAddOnTransaction API call");
 
     try {
-      // Log incoming request for debugging
-      console.log(
-        "📥 Request body:",
-        JSON.stringify(ctx.request.body, null, 2)
-      );
+      // Log incoming request
+      console.log("📥 Request body:", ctx.request.body);
+      console.log("📋 Request headers:", ctx.request.headers);
 
-      // Extract required data from request - FIXED: user is buying individual add-on-content
+      // Extract and validate data
       const {
         razorpay_order_id,
         razorpay_payment_id,
         razorpay_signature,
-        add_on_content_id, // ID of the specific add-on-content being purchased
+        add_on_content_id,
       } = ctx.request.body;
 
-      // Validate required fields - FIXED: check for add_on_content_id instead of add_on_id
+      console.log("🔍 Extracted data:", {
+        razorpay_order_id,
+        razorpay_payment_id,
+        razorpay_signature: razorpay_signature ? "Present" : "Missing",
+        add_on_content_id,
+        add_on_content_id_type: typeof add_on_content_id,
+      });
+
+      // Validate required fields
       if (
         !razorpay_order_id ||
         !razorpay_payment_id ||
@@ -39,193 +45,159 @@ module.exports = {
         !add_on_content_id
       ) {
         console.error("❌ Missing required fields:", {
-          razorpay_order_id: !!razorpay_order_id,
-          razorpay_payment_id: !!razorpay_payment_id,
-          // razorpay_signature: !!razorpay_signature,
-          add_on_content_id: !!add_on_content_id,
+          razorpay_order_id: !razorpay_order_id,
+          razorpay_payment_id: !razorpay_payment_id,
+          razorpay_signature: !razorpay_signature,
+          add_on_content_id: !add_on_content_id,
         });
-        return ctx.badRequest("Missing required payment fields", {
-          missing_fields: {
-            razorpay_order_id: !razorpay_order_id,
-            razorpay_payment_id: !razorpay_payment_id,
-            // razorpay_signature: !razorpay_signature,
-            add_on_content_id: !add_on_content_id,
-          },
-          received_data: ctx.request.body,
-        });
+        return ctx.badRequest("Missing required payment fields");
       }
 
       // Verify the payment signature
       console.log("🔐 Verifying payment signature...");
-      // const generatedSignature = crypto
-      //   .createHmac("sha256", process.env.RAZORPAY_SECRET_ID)
-      //   .update(`${razorpay_order_id}|${razorpay_payment_id}`)
-      //   .digest("hex");
+      const generatedSignature = crypto
+        .createHmac("sha256", process.env.RAZORPAY_SECRET_ID)
+        .update(`${razorpay_order_id}|${razorpay_payment_id}`)
+        .digest("hex");
 
-      // console.log("📝 Signature comparison:", {
-      //   generated: generatedSignature,
-      //   received: razorpay_signature,
-      //   match: generatedSignature === razorpay_signature,
-      // });
+      console.log("📝 Signature comparison:", {
+        generated: generatedSignature,
+        received: razorpay_signature,
+        match: generatedSignature === razorpay_signature,
+      });
 
-      // if (generatedSignature !== razorpay_signature) {
-      //   console.error("❌ Payment signature verification failed");
-      //   return ctx.badRequest("Payment verification failed");
-      // }
-      // console.log("✅ Payment signature verified successfully");
+      if (generatedSignature !== razorpay_signature) {
+        console.error("❌ Payment signature verification failed");
+        return ctx.badRequest(
+          "Payment verification failed - invalid signature"
+        );
+      }
+      console.log("✅ Payment signature verified successfully");
 
-      // Get user ID from token
+      // Get user from token
       const token = ctx.request.header.authorization?.replace("Bearer ", "");
-      console.log("🔑 Token present:", !!token);
-
       if (!token) {
         return ctx.unauthorized("Authorization token missing");
       }
 
-      let userId;
+      let user;
       try {
         const decoded = await strapi.plugins[
           "users-permissions"
         ].services.jwt.verify(token);
-        userId = decoded.id;
-        console.log("👤 User ID from token:", userId);
+        user = await strapi.entityService.findOne(
+          "plugin::users-permissions.user",
+          decoded.id,
+          {
+            populate: "*",
+          }
+        );
+
+        if (!user) {
+          return ctx.badRequest("User not found");
+        }
+        console.log("✅ User verified:", user.id, user.username);
       } catch (jwtError) {
         console.error("❌ JWT verification failed:", jwtError);
         return ctx.unauthorized("Invalid or expired token");
       }
 
-      if (!userId) {
-        return ctx.badRequest("Student (user) not identified");
+      // Parse add_on_content_id to integer
+      const contentId = parseInt(add_on_content_id);
+      if (isNaN(contentId)) {
+        return ctx.badRequest("Invalid add-on content ID format");
       }
 
-      // Verify user exists
-      let user;
-      try {
-        user = await strapi.entityService.findOne(
-          "plugin::users-permissions.user",
-          userId
-        );
-        if (!user) {
-          console.error("❌ User not found with ID:", userId);
-          return ctx.badRequest("User not found");
-        }
-        console.log("✅ User verified:", user.username);
-      } catch (userError) {
-        console.error("❌ User lookup failed:", userError);
-        return ctx.badRequest("User validation failed");
-      }
-
-      // Fetch the specific add-on-content with its details - FIXED: fetch single content item
-      console.log("📦 Fetching add-on-content with ID:", add_on_content_id);
+      // Verify the add-on content exists
+      console.log("📦 Fetching add-on-content with ID:", contentId);
       let addOnContent;
       try {
         addOnContent = await strapi.entityService.findOne(
           "api::add-on-content.add-on-content",
-          add_on_content_id,
+          contentId,
           {
             populate: {
-              add_on: {
-                populate: {
-                  ib_program: true,
-                },
-              },
-              // Populate other necessary fields
+              add_on: true,
             },
           }
         );
-        console.log(
-          "✅ Add-on-content fetched:",
-          addOnContent
-            ? `"${addOnContent.name}" - Price: ${addOnContent.price}`
-            : "NOT FOUND"
-        );
+
+        if (!addOnContent) {
+          return ctx.badRequest("Add-on content not found");
+        }
+        console.log("✅ Add-on-content found:", addOnContent.name);
       } catch (error) {
         console.error("❌ Add-on-content fetch error:", error);
-        return ctx.badRequest("Invalid add-on-content ID");
+        return ctx.badRequest("Failed to fetch add-on content");
       }
 
-      if (!addOnContent) {
-        return ctx.badRequest("Add-on content not found");
+      // Check if payment already exists for this order
+      const existingOrder = await strapi.db
+        .query("api::add-on-order.add-on-order")
+        .findOne({
+          where: {
+            razorpay_order_id: razorpay_order_id,
+            razorpay_payment_id: razorpay_payment_id,
+          },
+        });
+
+      if (existingOrder) {
+        console.log("⚠️ Payment already processed for this order");
+        return ctx.badRequest("Payment already processed");
       }
 
-      // Check if content is free
-      if (addOnContent.is_free) {
-        console.log("ℹ️ Add-on content is free, processing without payment...");
-        // Handle free content differently
-      }
-
-      // Get price from the add-on-content - FIXED: single item price
-      const price = parseFloat(addOnContent.price || 0);
-      console.log("💰 Add-on-content price:", price);
-
-      if (price <= 0) {
-        console.error("❌ Invalid price:", price);
-        return ctx.badRequest("Add-on content has invalid pricing");
-      }
-
-      // Get current commission settings for add-ons
-      console.log("⚙️ Fetching commission settings...");
-      const now = new Date().toISOString();
-      let commissionSettings;
+      // Verify with Razorpay API that payment is successful
       try {
-        commissionSettings = await strapi.entityService.findMany(
-          "api::commission-setting.commission-setting",
-          {
-            filters: {
-              system_plan: "add_on",
-              is_active: true,
-              effective_from: { $lte: now },
-            },
-            sort: { effective_from: "desc" },
-            limit: 1,
-          }
+        // This step ensures the payment is actually captured by Razorpay
+        const payment = await razorpay.payments.fetch(razorpay_payment_id);
+        console.log("💰 Razorpay payment status:", payment.status);
+
+        if (payment.status !== "captured") {
+          return ctx.badRequest(
+            `Payment not captured. Status: ${payment.status}`
+          );
+        }
+      } catch (razorpayError) {
+        console.error(
+          "❌ Razorpay payment verification failed:",
+          razorpayError
         );
-        console.log("✅ Commission settings found:", commissionSettings.length);
-      } catch (commissionError) {
-        console.error("❌ Commission settings fetch failed:", commissionError);
-        // Continue with default commission (0%) if settings not found
-        commissionSettings = [];
+        return ctx.badRequest("Failed to verify payment with Razorpay");
       }
 
-      // Calculate commission for single item - FIXED
-      const commissionPct =
-        commissionSettings.length > 0
-          ? parseFloat(commissionSettings[0].commission_percentage) || 0
-          : 0;
+      // Get price and validate
+      const price = parseFloat(addOnContent.price) || 0;
+      if (price <= 0) {
+        return ctx.badRequest("Invalid price for add-on content");
+      }
 
+      // Calculate commission
+      const commissionPct = 0; // Set your commission logic here
       const commissionAmount = (commissionPct / 100) * price;
       const totalPaid = price;
 
-      console.log("💸 Commission details:", {
-        percentage: commissionPct,
-        amount: commissionAmount,
-        totalPaid: totalPaid,
-      });
-
-      // Calculate expiration date based on validity_in_months or default 1 year
+      // Calculate expiration date
       const expires_at = new Date();
       if (addOnContent.validity_in_months) {
         expires_at.setMonth(
           expires_at.getMonth() + addOnContent.validity_in_months
         );
       } else {
-        expires_at.setFullYear(expires_at.getFullYear() + 1); // Default 1 year
+        expires_at.setFullYear(expires_at.getFullYear() + 1);
       }
-      console.log("📅 Expiration date:", expires_at.toISOString());
 
-      // Create single payment record for the add-on-content - FIXED: single payment
+      // Create the payment record
       console.log("💳 Creating payment record...");
-
       const paymentData = {
         price: price,
-        add_on_content: add_on_content_id, // Link to the specific content
-        users_permissions_user: userId,
+        add_on_content: contentId,
+        users_permissions_user: user.id,
         expires_at: expires_at.toISOString(),
         purchased_at: new Date().toISOString(),
         is_active: true,
         razorpay_payment_id,
         razorpay_order_id,
-        razorpay_signature: "none", // Storing 'none' as signature is not verified
+        razorpay_signature,
         price_at_purchase: price,
         commission_percentage_applied: commissionPct,
         commission_amount: commissionAmount,
@@ -238,70 +210,40 @@ module.exports = {
           "api::add-on-order.add-on-order",
           {
             data: paymentData,
+            populate: ["add_on_content", "users_permissions_user"],
           }
         );
-        console.log("✅ Payment record created with ID:", payment.id);
+        console.log("✅ Payment record created:", payment.id);
       } catch (paymentError) {
         console.error("❌ Payment creation failed:", paymentError);
         return ctx.internalServerError("Failed to create payment record");
       }
 
-      // Create access record for the user - FIXED: single access record
-      // console.log("🔓 Creating access record...");
-      // let accessRecord;
-      // try {
-      //   accessRecord = await strapi.entityService.create(
-      //     "api::user-content-access.user-content-access",
-      //     {
-      //       data: {
-      //         user: userId,
-      //         add_on_content: add_on_content_id,
-      //         payment: payment.id,
-      //         expires_at: expires_at.toISOString(),
-      //         access_granted: true,
-      //       },
-      //     }
-      //   );
-      //   console.log("✅ Access record created with ID:", accessRecord.id);
-      // } catch (accessError) {
-      //   console.error("❌ Access record creation failed:", accessError);
-      //   // Don't fail the entire transaction if access record fails
-      // }
-
-      // console.log("🎉 Add-on content transaction completed successfully!");
-
+      // Return success response
       return {
         success: true,
-        payment: {
-          id: payment.id,
-          price: payment.price,
-          razorpay_payment_id: payment.razorpay_payment_id,
-          purchased_at: payment.purchased_at,
-          expires_at: payment.expires_at,
+        message: "Payment processed successfully",
+        data: {
+          payment_id: payment.id,
+          order_id: razorpay_order_id,
+          add_on_content: {
+            id: addOnContent.id,
+            name: addOnContent.name,
+            price: price,
+          },
+          user: {
+            id: user.id,
+            username: user.username,
+          },
+          expires_at: expires_at.toISOString(),
         },
-        commission: {
-          percentage: commissionPct,
-          amount: commissionAmount,
-        },
-        add_on_content: {
-          id: addOnContent.id,
-          name: addOnContent.name,
-          description: addOnContent.description,
-          price: price,
-          validity_months: addOnContent.validity_in_months,
-        },
-        // access_granted: true,
       };
     } catch (error) {
-      console.error("💥 Add-on payment processing error:", error);
-      console.error("🔍 Error details:", {
-        message: error.message,
-        stack: error.stack,
-        name: error.name,
-      });
+      console.error("💥 Complete transaction error:", error);
+      console.error("Stack trace:", error.stack);
 
       return ctx.internalServerError(
-        "Add-on payment processing failed: " + error.message
+        `Payment processing failed: ${error.message}`
       );
     }
   },
