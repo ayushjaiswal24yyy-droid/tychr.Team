@@ -70,6 +70,18 @@
       "relation": "oneToMany",
       "target": "api::article.article",
       "mappedBy": "college"
+    },
+    "program_types": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::program-type.program-type",
+      "mappedBy": "college"
+    },
+    "departments": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::department.department",
+      "mappedBy": "college"
     }
   }
 }

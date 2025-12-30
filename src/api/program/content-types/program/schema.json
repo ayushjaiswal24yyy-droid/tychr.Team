@@ -16,7 +16,9 @@
       "type": "string"
     },
     "program_type": {
-      "type": "string"
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::program-type.program-type"
     },
     "department": {
       "type": "string"
@@ -57,6 +59,12 @@
       "relation": "manyToMany",
       "target": "api::college.college",
       "inversedBy": "programs"
+    },
+    "program_fees": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::program-fee.program-fee",
+      "mappedBy": "program"
     }
   }
 }
