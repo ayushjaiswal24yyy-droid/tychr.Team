@@ -15,11 +15,6 @@
     "program_name": {
       "type": "string"
     },
-    "program_type": {
-      "type": "relation",
-      "relation": "oneToOne",
-      "target": "api::program-type.program-type"
-    },
     "department": {
       "type": "string"
     },
@@ -65,6 +60,14 @@
       "relation": "oneToMany",
       "target": "api::program-fee.program-fee",
       "mappedBy": "program"
+    },
+    "program_type": {
+      "type": "enumeration",
+      "enum": [
+        "UG",
+        "PG",
+        "Phd"
+      ]
     }
   }
 }
