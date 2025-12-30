@@ -19,6 +19,12 @@
       "relation": "manyToOne",
       "target": "api::college.college",
       "inversedBy": "departments"
+    },
+    "programs": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::program.program",
+      "mappedBy": "department"
     }
   }
 }

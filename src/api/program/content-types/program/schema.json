@@ -15,9 +15,6 @@
     "program_name": {
       "type": "string"
     },
-    "department": {
-      "type": "string"
-    },
     "duration": {
       "type": "string"
     },
@@ -68,6 +65,12 @@
         "PG",
         "Phd"
       ]
+    },
+    "department": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::department.department",
+      "inversedBy": "programs"
     }
   }
 }

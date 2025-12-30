@@ -1906,6 +1906,11 @@ export interface ApiDepartmentDepartment extends Schema.CollectionType {
       'manyToOne',
       'api::college.college'
     >;
+    programs: Attribute.Relation<
+      'api::department.department',
+      'oneToMany',
+      'api::program.program'
+    >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
@@ -2991,7 +2996,6 @@ export interface ApiProgramProgram extends Schema.CollectionType {
   };
   attributes: {
     program_name: Attribute.String;
-    department: Attribute.String;
     duration: Attribute.String;
     annual_fee: Attribute.String;
     intake: Attribute.String;
@@ -3018,6 +3022,11 @@ export interface ApiProgramProgram extends Schema.CollectionType {
       'api::program-fee.program-fee'
     >;
     program_type: Attribute.Enumeration<['UG', 'PG', 'Phd']>;
+    department: Attribute.Relation<
+      'api::program.program',
+      'manyToOne',
+      'api::department.department'
+    >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
