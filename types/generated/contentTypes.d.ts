@@ -1511,6 +1511,16 @@ export interface ApiCollegeCollege extends Schema.CollectionType {
       'oneToMany',
       'api::article.article'
     >;
+    program_types: Attribute.Relation<
+      'api::college.college',
+      'oneToMany',
+      'api::program-type.program-type'
+    >;
+    departments: Attribute.Relation<
+      'api::college.college',
+      'oneToMany',
+      'api::department.department'
+    >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
@@ -1879,6 +1889,46 @@ export interface ApiDemoVideoDemoVideo extends Schema.CollectionType {
   };
 }
 
+export interface ApiDepartmentDepartment extends Schema.CollectionType {
+  collectionName: 'departments';
+  info: {
+    singularName: 'department';
+    pluralName: 'departments';
+    displayName: 'Department';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    name: Attribute.String;
+    college: Attribute.Relation<
+      'api::department.department',
+      'manyToOne',
+      'api::college.college'
+    >;
+    programs: Attribute.Relation<
+      'api::department.department',
+      'oneToMany',
+      'api::program.program'
+    >;
+    createdAt: Attribute.DateTime;
+    updatedAt: Attribute.DateTime;
+    publishedAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<
+      'api::department.department',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+    updatedBy: Attribute.Relation<
+      'api::department.department',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+  };
+}
+
 export interface ApiDoubtSectionDoubtSection extends Schema.CollectionType {
   collectionName: 'doubt_sections';
   info: {
@@ -2230,7 +2280,7 @@ export interface ApiIbProgramIbProgram extends Schema.CollectionType {
     description: '';
   };
   options: {
-    draftAndPublish: false;
+    draftAndPublish: true;
   };
   attributes: {
     name: Attribute.String;
@@ -2264,6 +2314,7 @@ export interface ApiIbProgramIbProgram extends Schema.CollectionType {
     >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
+    publishedAt: Attribute.DateTime;
     createdBy: Attribute.Relation<
       'api::ib-program.ib-program',
       'oneToOne',
@@ -2946,8 +2997,6 @@ export interface ApiProgramProgram extends Schema.CollectionType {
   };
   attributes: {
     program_name: Attribute.String;
-    program_type: Attribute.String;
-    department: Attribute.String;
     duration: Attribute.String;
     annual_fee: Attribute.String;
     intake: Attribute.String;
@@ -2968,6 +3017,17 @@ export interface ApiProgramProgram extends Schema.CollectionType {
       'manyToMany',
       'api::college.college'
     >;
+    program_fees: Attribute.Relation<
+      'api::program.program',
+      'oneToMany',
+      'api::program-fee.program-fee'
+    >;
+    program_type: Attribute.Enumeration<['UG', 'PG', 'Phd']>;
+    department: Attribute.Relation<
+      'api::program.program',
+      'manyToOne',
+      'api::department.department'
+    >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
@@ -2979,6 +3039,78 @@ export interface ApiProgramProgram extends Schema.CollectionType {
       Attribute.Private;
     updatedBy: Attribute.Relation<
       'api::program.program',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+  };
+}
+
+export interface ApiProgramFeeProgramFee extends Schema.CollectionType {
+  collectionName: 'program_fees';
+  info: {
+    singularName: 'program-fee';
+    pluralName: 'program-fees';
+    displayName: 'Program Fee';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    title: Attribute.String;
+    description: Attribute.Text;
+    price: Attribute.Decimal;
+    program: Attribute.Relation<
+      'api::program-fee.program-fee',
+      'manyToOne',
+      'api::program.program'
+    >;
+    createdAt: Attribute.DateTime;
+    updatedAt: Attribute.DateTime;
+    publishedAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<
+      'api::program-fee.program-fee',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+    updatedBy: Attribute.Relation<
+      'api::program-fee.program-fee',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+  };
+}
+
+export interface ApiProgramTypeProgramType extends Schema.CollectionType {
+  collectionName: 'program_types';
+  info: {
+    singularName: 'program-type';
+    pluralName: 'program-types';
+    displayName: 'Program Type';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    name: Attribute.String;
+    college: Attribute.Relation<
+      'api::program-type.program-type',
+      'manyToOne',
+      'api::college.college'
+    >;
+    createdAt: Attribute.DateTime;
+    updatedAt: Attribute.DateTime;
+    publishedAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<
+      'api::program-type.program-type',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+    updatedBy: Attribute.Relation<
+      'api::program-type.program-type',
       'oneToOne',
       'admin::user'
     > &
@@ -3826,6 +3958,9 @@ export interface ApiTestSerieTestSerie extends Schema.CollectionType {
       'images' | 'files' | 'videos' | 'audios',
       true
     >;
+    resource_name: Attribute.String;
+    resource_description: Attribute.Text;
+    resource: Attribute.Media<'images' | 'files' | 'videos' | 'audios'>;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     createdBy: Attribute.Relation<
@@ -4487,6 +4622,7 @@ declare module '@strapi/types' {
       'api::credential.credential': ApiCredentialCredential;
       'api::demo-booking.demo-booking': ApiDemoBookingDemoBooking;
       'api::demo-video.demo-video': ApiDemoVideoDemoVideo;
+      'api::department.department': ApiDepartmentDepartment;
       'api::doubt-section.doubt-section': ApiDoubtSectionDoubtSection;
       'api::enrollment.enrollment': ApiEnrollmentEnrollment;
       'api::external-user.external-user': ApiExternalUserExternalUser;
@@ -4507,6 +4643,8 @@ declare module '@strapi/types' {
       'api::post.post': ApiPostPost;
       'api::premium-plan.premium-plan': ApiPremiumPlanPremiumPlan;
       'api::program.program': ApiProgramProgram;
+      'api::program-fee.program-fee': ApiProgramFeeProgramFee;
+      'api::program-type.program-type': ApiProgramTypeProgramType;
       'api::progress.progress': ApiProgressProgress;
       'api::question-bank.question-bank': ApiQuestionBankQuestionBank;
       'api::recorded-lecture.recorded-lecture': ApiRecordedLectureRecordedLecture;

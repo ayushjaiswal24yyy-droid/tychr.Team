@@ -101,6 +101,23 @@
       ]
     },
     "instruction_booklet": {
+      "type": "media",
+      "multiple": true,
+      "required": false,
+      "allowedTypes": [
+        "images",
+        "files",
+        "videos",
+        "audios"
+      ]
+    },
+    "resource_name": {
+      "type": "string"
+    },
+    "resource_description": {
+      "type": "text"
+    },
+    "resource": {
       "allowedTypes": [
         "images",
         "files",
@@ -108,7 +125,7 @@
         "audios"
       ],
       "type": "media",
-      "multiple": true
+      "multiple": false
     }
   }
 }

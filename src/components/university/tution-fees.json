@@ -1,20 +1,21 @@
 {
   "collectionName": "components_university_tution_fees",
   "info": {
-    "displayName": "tution-fees"
+    "displayName": "tution-fees",
+    "description": ""
   },
   "options": {},
   "attributes": {
     "ug_int": {
       "type": "biginteger"
     },
-    "ug_uk": {
+    "ug_domestic": {
       "type": "integer"
     },
     "grad_int": {
       "type": "integer"
     },
-    "grad_uk": {
+    "grad_domestic": {
       "type": "integer"
     }
   }

@@ -1,0 +1,24 @@
+{
+  "kind": "collectionType",
+  "collectionName": "program_types",
+  "info": {
+    "singularName": "program-type",
+    "pluralName": "program-types",
+    "displayName": "Program Type"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "name": {
+      "type": "string"
+    },
+    "college": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::college.college",
+      "inversedBy": "program_types"
+    }
+  }
+}

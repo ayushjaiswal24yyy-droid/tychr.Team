@@ -15,12 +15,6 @@
     "program_name": {
       "type": "string"
     },
-    "program_type": {
-      "type": "string"
-    },
-    "department": {
-      "type": "string"
-    },
     "duration": {
       "type": "string"
     },
@@ -56,6 +50,26 @@
       "type": "relation",
       "relation": "manyToMany",
       "target": "api::college.college",
+      "inversedBy": "programs"
+    },
+    "program_fees": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::program-fee.program-fee",
+      "mappedBy": "program"
+    },
+    "program_type": {
+      "type": "enumeration",
+      "enum": [
+        "UG",
+        "PG",
+        "Phd"
+      ]
+    },
+    "department": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::department.department",
       "inversedBy": "programs"
     }
   }

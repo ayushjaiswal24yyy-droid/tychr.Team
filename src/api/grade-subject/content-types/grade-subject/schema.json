@@ -47,7 +47,11 @@
     },
     "level": {
       "type": "enumeration",
-      "enum": ["SL", "HL", "None"]
+      "enum": [
+        "SL",
+        "HL",
+        "None"
+      ]
     },
     "classrooms": {
       "type": "relation",
