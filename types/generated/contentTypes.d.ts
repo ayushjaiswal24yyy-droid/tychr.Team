@@ -3956,6 +3956,9 @@ export interface ApiTestSerieTestSerie extends Schema.CollectionType {
       'images' | 'files' | 'videos' | 'audios',
       true
     >;
+    resource_name: Attribute.String;
+    resource_description: Attribute.Text;
+    resource: Attribute.Media<'images' | 'files' | 'videos' | 'audios'>;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     createdBy: Attribute.Relation<
