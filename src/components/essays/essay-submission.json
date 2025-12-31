@@ -1,0 +1,28 @@
+{
+  "collectionName": "components_essays_essay_submissions",
+  "info": {
+    "displayName": "Essay Submission",
+    "description": "",
+    "icon": "feather"
+  },
+  "options": {},
+  "attributes": {
+    "essay_type": {
+      "type": "string"
+    },
+    "file": {
+      "type": "media",
+      "multiple": false
+    },
+    "submitted_at": {
+      "type": "datetime"
+    },
+    "status": {
+      "type": "enumeration",
+      "enum": ["pending", "submitted", "reviewed"]
+    },
+    "college_essay_id": {
+      "type": "string"
+    }
+  }
+}

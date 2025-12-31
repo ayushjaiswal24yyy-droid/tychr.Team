@@ -3424,6 +3424,8 @@ export interface ApiStudentUniApplicationStudentUniApplication
       true
     >;
     lor: Attribute.Component<'lor.lor', true>;
+    essay_submissions: Attribute.Component<'essays.essay-submission', true>;
+    lor_submissions: Attribute.Component<'lor.lor-submission', true>;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     createdBy: Attribute.Relation<

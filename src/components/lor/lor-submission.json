@@ -1,0 +1,33 @@
+{
+  "collectionName": "components_lor_lor_submissions",
+  "info": {
+    "displayName": "LOR Submission",
+    "icon": "check"
+  },
+  "options": {},
+  "attributes": {
+    "facultyname": {
+      "type": "string"
+    },
+    "facultydomain": {
+      "type": "string"
+    },
+    "facultysubject": {
+      "type": "string"
+    },
+    "status": {
+      "type": "enumeration",
+      "enum": ["in progress", "accepted", "rejected"]
+    },
+    "file": {
+      "type": "media",
+      "multiple": false
+    },
+    "submitted_at": {
+      "type": "datetime"
+    },
+    "college_lor_id": {
+      "type": "string"
+    }
+  }
+}
