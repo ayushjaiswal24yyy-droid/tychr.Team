@@ -27,7 +27,7 @@
       "type": "datetime"
     },
     "college_lor_id": {
-      "type": "string"
+      "type": "integer"
     }
   }
 }

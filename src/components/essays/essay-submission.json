@@ -22,7 +22,7 @@
       "enum": ["pending", "submitted", "reviewed"]
     },
     "college_essay_id": {
-      "type": "string"
+      "type": "integer"
     }
   }
 }
