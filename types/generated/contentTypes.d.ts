@@ -3183,7 +3183,8 @@ export interface ApiQuestionBankQuestionBank extends Schema.CollectionType {
         'drag_drop',
         'ranking',
         'data_interpretation',
-        'multimedia'
+        'multimedia',
+        'fill_in_the_blanks'
       ]
     > &
       Attribute.Required;
