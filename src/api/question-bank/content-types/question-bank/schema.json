@@ -21,7 +21,8 @@
       "enum": [
         "html",
         "markdown",
-        "richtext"
+        "richtext",
+        "canvas"
       ],
       "default": "richtext"
     },

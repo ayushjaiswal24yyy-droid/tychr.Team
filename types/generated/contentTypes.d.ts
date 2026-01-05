@@ -3171,7 +3171,9 @@ export interface ApiQuestionBankQuestionBank extends Schema.CollectionType {
   };
   attributes: {
     question: Attribute.RichText & Attribute.Required;
-    content_format: Attribute.Enumeration<['html', 'markdown', 'richtext']> &
+    content_format: Attribute.Enumeration<
+      ['html', 'markdown', 'richtext', 'canvas']
+    > &
       Attribute.DefaultTo<'richtext'>;
     question_type: Attribute.Enumeration<
       [
