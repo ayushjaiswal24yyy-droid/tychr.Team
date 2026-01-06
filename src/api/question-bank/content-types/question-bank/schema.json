@@ -85,6 +85,12 @@
     },
     "word_limit": {
       "type": "integer"
+    },
+    "diagram": {
+      "type": "json"
+    },
+    "isDiagramEditable": {
+      "type": "boolean"
     }
   }
 }

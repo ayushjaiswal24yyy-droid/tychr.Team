@@ -3213,6 +3213,8 @@ export interface ApiQuestionBankQuestionBank extends Schema.CollectionType {
       'api::note.note'
     >;
     word_limit: Attribute.Integer;
+    diagram: Attribute.JSON;
+    isDiagramEditable: Attribute.Boolean;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     createdBy: Attribute.Relation<
