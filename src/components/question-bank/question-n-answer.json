@@ -16,6 +16,18 @@
     },
     "question_n_answer": {
       "type": "richtext"
+    },
+    "part_evaluations": {
+      "displayName": "evaluation",
+      "type": "component",
+      "repeatable": true,
+      "component": "evaluation.evaluation"
+    },
+    "question_awarded_marks": {
+      "type": "decimal"
+    },
+    "question_feedback": {
+      "type": "text"
     }
   }
 }

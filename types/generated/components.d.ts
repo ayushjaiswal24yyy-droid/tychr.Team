@@ -77,18 +77,6 @@ export interface UserExtraActivity extends Schema.Component {
   };
 }
 
-export interface TutorsWebsiteBestOnlineTutors extends Schema.Component {
-  collectionName: 'components_tutors_website_best_online_tutors';
-  info: {
-    displayName: 'best_online_tutors';
-    icon: 'code';
-    description: '';
-  };
-  attributes: {
-    title: Attribute.Text;
-  };
-}
-
 export interface UniversityTutionFees extends Schema.Component {
   collectionName: 'components_university_tution_fees';
   info: {
@@ -298,6 +286,18 @@ export interface UniversityAdditionalCosts extends Schema.Component {
     living_expense_max: Attribute.String;
     insurance_min: Attribute.String;
     insurance_max: Attribute.String;
+  };
+}
+
+export interface TutorsWebsiteBestOnlineTutors extends Schema.Component {
+  collectionName: 'components_tutors_website_best_online_tutors';
+  info: {
+    displayName: 'best_online_tutors';
+    icon: 'code';
+    description: '';
+  };
+  attributes: {
+    title: Attribute.Text;
   };
 }
 
@@ -532,6 +532,9 @@ export interface QuestionBankQuestionNAnswer extends Schema.Component {
     >;
     answer: Attribute.JSON;
     question_n_answer: Attribute.RichText;
+    part_evaluations: Attribute.Component<'evaluation.evaluation', true>;
+    question_awarded_marks: Attribute.Decimal;
+    question_feedback: Attribute.Text;
   };
 }
 
@@ -892,6 +895,18 @@ export interface ExcellenceStatsStats extends Schema.Component {
   };
 }
 
+export interface EvaluationEvaluation extends Schema.Component {
+  collectionName: 'components_evaluation_evaluations';
+  info: {
+    displayName: 'evaluation';
+  };
+  attributes: {
+    part_index: Attribute.Integer;
+    awarded_marks: Attribute.Decimal;
+    feedback: Attribute.Text;
+  };
+}
+
 export interface EssaysTags extends Schema.Component {
   collectionName: 'components_essays_tags';
   info: {
@@ -1207,7 +1222,6 @@ declare module '@strapi/types' {
       'user.user-experience': UserUserExperience;
       'user.student-plan': UserStudentPlan;
       'user.extra-activity': UserExtraActivity;
-      'tutors-website.best-online-tutors': TutorsWebsiteBestOnlineTutors;
       'university.tution-fees': UniversityTutionFees;
       'university.subject-ranking': UniversitySubjectRanking;
       'university.student-application': UniversityStudentApplication;
@@ -1221,6 +1235,7 @@ declare module '@strapi/types' {
       'university.application-cycle-deadline': UniversityApplicationCycleDeadline;
       'university.admission-requirements': UniversityAdmissionRequirements;
       'university.additional-costs': UniversityAdditionalCosts;
+      'tutors-website.best-online-tutors': TutorsWebsiteBestOnlineTutors;
       'top-colleges.top-colleges': TopCollegesTopColleges;
       'tags.tags': TagsTags;
       'subtopic.qn-a': SubtopicQnA;
@@ -1263,6 +1278,7 @@ declare module '@strapi/types' {
       'external-users.org-details': ExternalUsersOrgDetails;
       'external-users.founder': ExternalUsersFounder;
       'excellence-stats.stats': ExcellenceStatsStats;
+      'evaluation.evaluation': EvaluationEvaluation;
       'essays.tags': EssaysTags;
       'essays.essay': EssaysEssay;
       'essays.essay-submission': EssaysEssaySubmission;

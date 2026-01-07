@@ -1,0 +1,18 @@
+{
+  "collectionName": "components_evaluation_evaluations",
+  "info": {
+    "displayName": "evaluation"
+  },
+  "options": {},
+  "attributes": {
+    "part_index": {
+      "type": "integer"
+    },
+    "awarded_marks": {
+      "type": "decimal"
+    },
+    "feedback": {
+      "type": "text"
+    }
+  }
+}
