@@ -3925,7 +3925,7 @@ export interface ApiTestSerieTestSerie extends Schema.CollectionType {
     description: '';
   };
   options: {
-    draftAndPublish: false;
+    draftAndPublish: true;
   };
   attributes: {
     program_type: Attribute.Enumeration<
@@ -3966,8 +3966,10 @@ export interface ApiTestSerieTestSerie extends Schema.CollectionType {
     resource_name: Attribute.String;
     resource_description: Attribute.Text;
     resource: Attribute.Media<'images' | 'files' | 'videos' | 'audios'>;
+    start_date: Attribute.DateTime;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
+    publishedAt: Attribute.DateTime;
     createdBy: Attribute.Relation<
       'api::test-serie.test-serie',
       'oneToOne',
