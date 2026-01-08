@@ -53,10 +53,7 @@ module.exports = createCoreController(
               grade_subject: { id: gradeSubjectId },
               test_type: { $eq: "Test Series" },
               publishedAt: { $notNull: true },
-               $or: [
-    { start_date: { $null: true } },
-    { start_date: { $lte: new Date().toISOString() } },
-  ],
+    
             },
             populate: {
               question_banks: {
