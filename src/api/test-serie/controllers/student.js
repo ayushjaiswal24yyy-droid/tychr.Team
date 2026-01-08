@@ -52,6 +52,11 @@ module.exports = createCoreController(
             filters: {
               grade_subject: { id: gradeSubjectId },
               test_type: { $eq: "Test Series" },
+              publishedAt: { $notNull: true },
+               $or: [
+    { start_date: { $null: true } },
+    { start_date: { $lte: new Date().toISOString() } },
+  ],
             },
             populate: {
               question_banks: {
@@ -83,19 +88,22 @@ module.exports = createCoreController(
             sort: { createdAt: "desc" },
           }
         );
-
+        const now = new Date();
         // Transform data to include answer status
         const transformedData = testSeries.map((series) => {
+          const startDate = series.start_date ? new Date(series.start_date) : null;
+          const isUnlocked = !startDate || startDate <= now;
+
           const userAnswers = series.answers || [];
           const hasSubmitted = userAnswers.length > 0;
           const latestAnswer = hasSubmitted
             ? userAnswers.reduce((latest, current) => {
-                if (!latest) return current;
-                return new Date(current.submission_date) >
-                  new Date(latest.submission_date)
-                  ? current
-                  : latest;
-              }, null)
+              if (!latest) return current;
+              return new Date(current.submission_date) >
+                new Date(latest.submission_date)
+                ? current
+                : latest;
+            }, null)
             : null;
 
           const completedAnswers = userAnswers.filter(
@@ -105,6 +113,21 @@ module.exports = createCoreController(
             (answer) => answer.evaluation_status === "evaluated"
           );
 
+          if (!isUnlocked) {
+            // 🔒 UPCOMING TEST → send limited data
+            return {
+              id: series.id,
+              title: series.title,
+              program_type: series.program_type,
+              test_mode: series.test_mode,
+              test_type: series.test_type,
+              year: series.year,
+              test_duration: series.test_duration,
+              start_date: series.start_date,
+              status: "upcoming",
+              is_locked: true,
+            };
+          }
           return {
             id: series.id,
             title: series.title,
@@ -125,9 +148,9 @@ module.exports = createCoreController(
             test_papers: series.test_papers,
             grade_subject: series.grade_subject
               ? {
-                  id: series.grade_subject.id,
-                  name: series.grade_subject.name,
-                }
+                id: series.grade_subject.id,
+                name: series.grade_subject.name,
+              }
               : null,
             answer_status: {
               has_attempted: hasSubmitted,
@@ -136,13 +159,13 @@ module.exports = createCoreController(
               evaluated_attempts: evaluatedAnswers.length,
               latest_attempt: latestAnswer
                 ? {
-                    id: latestAnswer.id,
-                    submission_date: latestAnswer.submission_date,
-                    marks: latestAnswer.marks,
-                    evaluation_status: latestAnswer.evaluation_status,
-                    time_taken: latestAnswer.time_taken,
-                    completed: latestAnswer.completed,
-                  }
+                  id: latestAnswer.id,
+                  submission_date: latestAnswer.submission_date,
+                  marks: latestAnswer.marks,
+                  evaluation_status: latestAnswer.evaluation_status,
+                  time_taken: latestAnswer.time_taken,
+                  completed: latestAnswer.completed,
+                }
                 : null,
               all_attempts: userAnswers.map((answer) => ({
                 id: answer.id,
@@ -211,6 +234,7 @@ module.exports = createCoreController(
             filters: {
               grade_subject: { id: gradeSubjectId },
               test_type: { $eq: "Practice Test" },
+
             },
             populate: {
               question_banks: {
@@ -249,12 +273,12 @@ module.exports = createCoreController(
           const hasSubmitted = userAnswers.length > 0;
           const latestAnswer = hasSubmitted
             ? userAnswers.reduce((latest, current) => {
-                if (!latest) return current;
-                return new Date(current.submission_date) >
-                  new Date(latest.submission_date)
-                  ? current
-                  : latest;
-              }, null)
+              if (!latest) return current;
+              return new Date(current.submission_date) >
+                new Date(latest.submission_date)
+                ? current
+                : latest;
+            }, null)
             : null;
 
           const completedAnswers = userAnswers.filter(
@@ -284,9 +308,9 @@ module.exports = createCoreController(
             test_papers: series.test_papers,
             grade_subject: series.grade_subject
               ? {
-                  id: series.grade_subject.id,
-                  name: series.grade_subject.name,
-                }
+                id: series.grade_subject.id,
+                name: series.grade_subject.name,
+              }
               : null,
             answer_status: {
               has_attempted: hasSubmitted,
@@ -295,13 +319,13 @@ module.exports = createCoreController(
               evaluated_attempts: evaluatedAnswers.length,
               latest_attempt: latestAnswer
                 ? {
-                    id: latestAnswer.id,
-                    submission_date: latestAnswer.submission_date,
-                    marks: latestAnswer.marks,
-                    evaluation_status: latestAnswer.evaluation_status,
-                    time_taken: latestAnswer.time_taken,
-                    completed: latestAnswer.completed,
-                  }
+                  id: latestAnswer.id,
+                  submission_date: latestAnswer.submission_date,
+                  marks: latestAnswer.marks,
+                  evaluation_status: latestAnswer.evaluation_status,
+                  time_taken: latestAnswer.time_taken,
+                  completed: latestAnswer.completed,
+                }
                 : null,
               all_attempts: userAnswers.map((answer) => ({
                 id: answer.id,
