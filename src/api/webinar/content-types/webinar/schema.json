@@ -1,0 +1,65 @@
+{
+  "kind": "collectionType",
+  "collectionName": "webinars",
+  "info": {
+    "singularName": "webinar",
+    "pluralName": "webinars",
+    "displayName": "Webinars"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "attributes": {
+    "name": {
+      "type": "string",
+      "required": true
+    },
+    "slug": {
+      "type": "uid",
+      "targetField": "name",
+      "required": true
+    },
+    "description": {
+      "type": "richtext"
+    },
+    "shortDescription": {
+      "type": "string"
+    },
+    "startDate": {
+      "type": "datetime",
+      "required": true
+    },
+    "endDate": {
+      "type": "datetime"
+    },
+    "timezone": {
+      "type": "string",
+      "required": true,
+      "default": "UTC"
+    },
+    "coverImage": {
+      "type": "media",
+      "multiple": false,
+      "allowedTypes": ["images"]
+    },
+    "status": {
+      "type": "enumeration",
+      "enum": ["draft", "scheduled", "live", "completed", "cancelled"],
+      "default": "draft",
+      "required": true
+    },
+    "leads": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::lead.lead",
+      "mappedBy": "webinar"
+    },
+    "emailCampaigns": {
+  "type": "relation",
+  "relation": "oneToMany",
+  "target": "api::email-campaign.email-campaign",
+  "mappedBy": "webinar"
+}
+
+  }
+}

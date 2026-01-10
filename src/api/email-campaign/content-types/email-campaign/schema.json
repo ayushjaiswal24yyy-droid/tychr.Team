@@ -1,0 +1,79 @@
+{
+  "kind": "collectionType",
+  "collectionName": "email_campaigns",
+  "info": {
+    "singularName": "email-campaign",
+    "pluralName": "email-campaigns",
+    "displayName": "Email Campaign"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "attributes": {
+    "name": {
+      "type": "string",
+      "required": true
+    },
+    "subject": {
+      "type": "string",
+      "required": true
+    },
+    "htmlTemplate": {
+      "type": "media",
+      "multiple": false,
+      "required": true,
+      "allowedTypes": [
+        "files"
+      ]
+    },
+    "attachments": {
+      "type": "media",
+      "multiple": true
+    },
+    "fromName": {
+      "type": "string"
+    },
+    "fromEmail": {
+      "type": "email"
+    },
+    "replyTo": {
+      "type": "email"
+    },
+    "scheduleAt": {
+      "type": "datetime"
+    },
+    "timezone": {
+      "type": "string"
+    },
+    "status": {
+      "type": "enumeration",
+      "enum": [
+        "draft",
+        "scheduled",
+        "sending",
+        "sent",
+        "cancelled"
+      ],
+      "default": "draft",
+      "required": true
+    },
+    "totalRecipients": {
+      "type": "integer",
+      "default": 0
+    },
+    "sentCount": {
+      "type": "integer",
+      "default": 0
+    },
+    "failedCount": {
+      "type": "integer",
+      "default": 0
+    },
+    "webinar": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::webinar.webinar",
+      "inversedBy": "emailCampaigns"
+    }
+  }
+}

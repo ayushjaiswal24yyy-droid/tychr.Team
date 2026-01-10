@@ -1973,6 +1973,56 @@ export interface ApiDoubtSectionDoubtSection extends Schema.CollectionType {
   };
 }
 
+export interface ApiEmailCampaignEmailCampaign extends Schema.CollectionType {
+  collectionName: 'email_campaigns';
+  info: {
+    singularName: 'email-campaign';
+    pluralName: 'email-campaigns';
+    displayName: 'Email Campaign';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    name: Attribute.String & Attribute.Required;
+    subject: Attribute.String & Attribute.Required;
+    htmlTemplate: Attribute.Media<'files'> & Attribute.Required;
+    attachments: Attribute.Media<undefined, true>;
+    fromName: Attribute.String;
+    fromEmail: Attribute.Email;
+    replyTo: Attribute.Email;
+    scheduleAt: Attribute.DateTime;
+    timezone: Attribute.String;
+    status: Attribute.Enumeration<
+      ['draft', 'scheduled', 'sending', 'sent', 'cancelled']
+    > &
+      Attribute.Required &
+      Attribute.DefaultTo<'draft'>;
+    totalRecipients: Attribute.Integer & Attribute.DefaultTo<0>;
+    sentCount: Attribute.Integer & Attribute.DefaultTo<0>;
+    failedCount: Attribute.Integer & Attribute.DefaultTo<0>;
+    webinar: Attribute.Relation<
+      'api::email-campaign.email-campaign',
+      'manyToOne',
+      'api::webinar.webinar'
+    >;
+    createdAt: Attribute.DateTime;
+    updatedAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<
+      'api::email-campaign.email-campaign',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+    updatedBy: Attribute.Relation<
+      'api::email-campaign.email-campaign',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+  };
+}
+
 export interface ApiEnrollmentEnrollment extends Schema.CollectionType {
   collectionName: 'enrollments';
   info: {
@@ -2372,6 +2422,42 @@ export interface ApiIndividualUserIndividualUser extends Schema.CollectionType {
       'oneToOne',
       'admin::user'
     > &
+      Attribute.Private;
+  };
+}
+
+export interface ApiLeadLead extends Schema.CollectionType {
+  collectionName: 'leads';
+  info: {
+    singularName: 'lead';
+    pluralName: 'leads';
+    displayName: 'Lead';
+    description: 'Webinar leads';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    email: Attribute.Email & Attribute.Required;
+    firstName: Attribute.String;
+    lastName: Attribute.String;
+    status: Attribute.Enumeration<['active', 'unsubscribed', 'bounced']> &
+      Attribute.DefaultTo<'active'>;
+    source: Attribute.Enumeration<['csv', 'manual', 'api']> &
+      Attribute.DefaultTo<'csv'>;
+    lastEmailedAt: Attribute.DateTime;
+    emailCount: Attribute.Integer & Attribute.DefaultTo<0>;
+    meta: Attribute.JSON;
+    webinar: Attribute.Relation<
+      'api::lead.lead',
+      'manyToOne',
+      'api::webinar.webinar'
+    >;
+    createdAt: Attribute.DateTime;
+    updatedAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<'api::lead.lead', 'oneToOne', 'admin::user'> &
+      Attribute.Private;
+    updatedBy: Attribute.Relation<'api::lead.lead', 'oneToOne', 'admin::user'> &
       Attribute.Private;
   };
 }
@@ -4564,6 +4650,60 @@ export interface ApiUserPlanUserPlan extends Schema.CollectionType {
   };
 }
 
+export interface ApiWebinarWebinar extends Schema.CollectionType {
+  collectionName: 'webinars';
+  info: {
+    singularName: 'webinar';
+    pluralName: 'webinars';
+    displayName: 'Webinars';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    name: Attribute.String & Attribute.Required;
+    slug: Attribute.UID<'api::webinar.webinar', 'name'> & Attribute.Required;
+    description: Attribute.RichText;
+    shortDescription: Attribute.String;
+    startDate: Attribute.DateTime & Attribute.Required;
+    endDate: Attribute.DateTime;
+    timezone: Attribute.String &
+      Attribute.Required &
+      Attribute.DefaultTo<'UTC'>;
+    coverImage: Attribute.Media<'images'>;
+    status: Attribute.Enumeration<
+      ['draft', 'scheduled', 'live', 'completed', 'cancelled']
+    > &
+      Attribute.Required &
+      Attribute.DefaultTo<'draft'>;
+    leads: Attribute.Relation<
+      'api::webinar.webinar',
+      'oneToMany',
+      'api::lead.lead'
+    >;
+    emailCampaigns: Attribute.Relation<
+      'api::webinar.webinar',
+      'oneToMany',
+      'api::email-campaign.email-campaign'
+    >;
+    createdAt: Attribute.DateTime;
+    updatedAt: Attribute.DateTime;
+    publishedAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<
+      'api::webinar.webinar',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+    updatedBy: Attribute.Relation<
+      'api::webinar.webinar',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+  };
+}
+
 export interface ApiWhatsNewWhatsNew extends Schema.CollectionType {
   collectionName: 'whats_news';
   info: {
@@ -4633,12 +4773,14 @@ declare module '@strapi/types' {
       'api::demo-video.demo-video': ApiDemoVideoDemoVideo;
       'api::department.department': ApiDepartmentDepartment;
       'api::doubt-section.doubt-section': ApiDoubtSectionDoubtSection;
+      'api::email-campaign.email-campaign': ApiEmailCampaignEmailCampaign;
       'api::enrollment.enrollment': ApiEnrollmentEnrollment;
       'api::external-user.external-user': ApiExternalUserExternalUser;
       'api::grade-subject.grade-subject': ApiGradeSubjectGradeSubject;
       'api::gst.gst': ApiGstGst;
       'api::ib-program.ib-program': ApiIbProgramIbProgram;
       'api::individual-user.individual-user': ApiIndividualUserIndividualUser;
+      'api::lead.lead': ApiLeadLead;
       'api::live-lecture.live-lecture': ApiLiveLectureLiveLecture;
       'api::live-lecture-purchase.live-lecture-purchase': ApiLiveLecturePurchaseLiveLecturePurchase;
       'api::live-lectures-meeting.live-lectures-meeting': ApiLiveLecturesMeetingLiveLecturesMeeting;
@@ -4680,6 +4822,7 @@ declare module '@strapi/types' {
       'api::university.university': ApiUniversityUniversity;
       'api::user-grade-plan.user-grade-plan': ApiUserGradePlanUserGradePlan;
       'api::user-plan.user-plan': ApiUserPlanUserPlan;
+      'api::webinar.webinar': ApiWebinarWebinar;
       'api::whats-new.whats-new': ApiWhatsNewWhatsNew;
     }
   }

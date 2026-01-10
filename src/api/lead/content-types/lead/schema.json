@@ -1,0 +1,51 @@
+{
+  "kind": "collectionType",
+  "collectionName": "leads",
+  "info": {
+    "singularName": "lead",
+    "pluralName": "leads",
+    "displayName": "Lead",
+    "description": "Webinar leads"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "attributes": {
+    "email": {
+      "type": "email",
+      "required": true
+    },
+    "firstName": {
+      "type": "string"
+    },
+    "lastName": {
+      "type": "string"
+    },
+    "status": {
+      "type": "enumeration",
+      "enum": ["active", "unsubscribed", "bounced"],
+      "default": "active"
+    },
+    "source": {
+      "type": "enumeration",
+      "enum": ["csv", "manual", "api"],
+      "default": "csv"
+    },
+    "lastEmailedAt": {
+      "type": "datetime"
+    },
+    "emailCount": {
+      "type": "integer",
+      "default": 0
+    },
+    "meta": {
+      "type": "json"
+    },
+    "webinar": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::webinar.webinar",
+      "inversedBy": "leads"
+    }
+  }
+}
