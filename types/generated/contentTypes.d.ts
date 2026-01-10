@@ -1217,7 +1217,9 @@ export interface ApiAnswerAnswer extends Schema.CollectionType {
     uploaded_answer_sheet: Attribute.Media<'images' | 'files'>;
     submission_date: Attribute.DateTime;
     time_taken: Attribute.Integer;
-    evaluation_status: Attribute.Enumeration<['evaluated', 'pending']> &
+    evaluation_status: Attribute.Enumeration<
+      ['evaluated', 'pending', 'in_progress']
+    > &
       Attribute.DefaultTo<'pending'>;
     student_feedback: Attribute.Text;
     tutor_feedback: Attribute.Text;
