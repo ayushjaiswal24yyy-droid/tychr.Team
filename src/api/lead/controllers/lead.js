@@ -20,11 +20,11 @@ module.exports = createCoreController('api::lead.lead', ({ strapi }) => ({
       return ctx.badRequest("Invalid file");
     }
 
-    // ✅ READ FILE VIA PROVIDER (NOT URL)
+    // ✅ CORRECT Strapi v4 upload access
     let csvText;
     try {
-      const provider = strapi.plugin("upload").provider;
-      const stream = await provider.getStream(file);
+      const uploadService = strapi.plugin("upload").service("upload");
+      const stream = await uploadService.getFileStream(file);
 
       const chunks = [];
       for await (const chunk of stream) {
