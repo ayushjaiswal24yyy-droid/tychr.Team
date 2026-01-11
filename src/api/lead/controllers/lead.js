@@ -2,40 +2,36 @@
 
 const { createCoreController } = require('@strapi/strapi').factories;
 const csv = require('csvtojson');
+const fs = require('fs');
 
 module.exports = createCoreController('api::lead.lead', ({ strapi }) => ({
   async importCSV(ctx) {
-    const { webinarId, fileId } = ctx.request.body;
+    const { webinarId } = ctx.request.body;
+    const file = ctx.request.files?.file;
 
-    if (!webinarId || !fileId) {
-      return ctx.badRequest("webinarId and fileId are required");
+    if (!webinarId) {
+      return ctx.badRequest("webinarId is required");
     }
-
-    const file = await strapi.entityService.findOne(
-      "plugin::upload.file",
-      fileId
-    );
 
     if (!file) {
-      return ctx.badRequest("Invalid file");
+      return ctx.badRequest("CSV file is required");
     }
+
+    // normalize file (array vs object)
+    const csvFile = Array.isArray(file) ? file[0] : file;
 
     let csvText;
     try {
-      const providerService = strapi.plugin("upload").service("provider");
-      const signedUrl = await providerService.getSignedUrl(file);
-
-      const res = await fetch(signedUrl);
-      csvText = await res.text();
+      csvText = fs.readFileSync(csvFile.path, "utf-8");
     } catch (err) {
-      strapi.log.error("CSV READ ERROR:", err);
+      strapi.log.error("FILE READ ERROR:", err);
       return ctx.badRequest("Unable to read CSV file");
     }
 
     let rows;
     try {
       rows = await csv().fromString(csvText);
-    } catch {
+    } catch (err) {
       return ctx.badRequest("Invalid CSV format");
     }
 
@@ -68,6 +64,7 @@ module.exports = createCoreController('api::lead.lead', ({ strapi }) => ({
       return ctx.badRequest("No valid leads found");
     }
 
+    // remove duplicates already in DB
     const existing = await strapi.entityService.findMany(
       "api::lead.lead",
       {
@@ -85,7 +82,7 @@ module.exports = createCoreController('api::lead.lead', ({ strapi }) => ({
     );
 
     await strapi.entityService.createMany(
-      'api::lead.lead',
+      "api::lead.lead",
       { data: finalLeads }
     );
 
