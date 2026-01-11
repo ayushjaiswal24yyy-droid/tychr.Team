@@ -5,35 +5,41 @@ const csv = require('csvtojson');
 
 module.exports = createCoreController('api::lead.lead', ({ strapi }) => ({
   async importCSV(ctx) {
-    const { webinarId } = ctx.request.body;
+    const { webinarId, fileId } = ctx.request.body;
 
-    if (!webinarId) {
-      return ctx.badRequest('webinarId is required');
+    if (!webinarId || !fileId) {
+      return ctx.badRequest("webinarId and fileId are required");
     }
 
-    const files = ctx.request.files;
-    if (!files || !files.file) {
-      return ctx.badRequest('CSV file is required');
+    // 1️⃣ Fetch uploaded file
+    const file = await strapi.entityService.findOne(
+      "plugin::upload.file",
+      fileId
+    );
+
+    if (!file?.url) {
+      return ctx.badRequest("Invalid file");
     }
 
-    const file = Array.isArray(files.file)
-      ? files.file[0]
-      : files.file;
-
-    if (!file.path) {
-      return ctx.badRequest('Invalid CSV upload');
+    // 2️⃣ Fetch CSV content (S3 or local)
+    let csvText;
+    try {
+      const res = await fetch(file.url);
+      csvText = await res.text();
+    } catch (err) {
+      return ctx.badRequest("Unable to read CSV file");
     }
 
-    // 1️⃣ Parse CSV
+    // 3️⃣ Parse CSV
     let rows;
     try {
-      rows = await csv().fromFile(file.path);
-    } catch (err) {
-      return ctx.badRequest('Invalid CSV format');
+      rows = await csv().fromString(csvText);
+    } catch {
+      return ctx.badRequest("Invalid CSV format");
     }
 
     if (!rows.length) {
-      return ctx.badRequest('CSV is empty');
+      return ctx.badRequest("CSV is empty");
     }
 
     const emails = new Set();
@@ -51,38 +57,35 @@ module.exports = createCoreController('api::lead.lead', ({ strapi }) => ({
         email,
         firstName: row.firstName || null,
         lastName: row.lastName || null,
-        status: 'active',
-        source: 'csv',
+        status: "active",
+        source: "csv",
         webinar: webinarId,
       });
     }
 
     if (!leadsToCreate.length) {
-      return ctx.badRequest('No valid leads found');
+      return ctx.badRequest("No valid leads found");
     }
 
-    // 2️⃣ Remove existing leads
+    // 4️⃣ Remove existing leads for webinar
     const existing = await strapi.entityService.findMany(
-      'api::lead.lead',
+      "api::lead.lead",
       {
         filters: {
           webinar: webinarId,
-          email: {
-            $in: leadsToCreate.map(l => l.email),
-          },
+          email: { $in: leadsToCreate.map(l => l.email) },
         },
-        fields: ['email'],
+        fields: ["email"],
       }
     );
 
     const existingEmails = new Set(existing.map(l => l.email));
-
     const finalLeads = leadsToCreate.filter(
       l => !existingEmails.has(l.email)
     );
 
     await strapi.entityService.createMany(
-      'api::lead.lead',
+      "api::lead.lead",
       { data: finalLeads }
     );
 
