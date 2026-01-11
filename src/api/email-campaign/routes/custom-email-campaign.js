@@ -10,7 +10,7 @@ module.exports = {
     },
     {
       method: "POST",
-      path: "/email-campaigns/send",
+      path: "/email-campaigns/:id/send",
       handler: "email-campaign.sendCampaign",
       config: {
         policies: [],
