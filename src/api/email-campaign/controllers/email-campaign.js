@@ -3,15 +3,36 @@
 const { createCoreController } = require('@strapi/strapi').factories;
 const axios = require("axios");
 
-function renderTemplate(html, lead, webinar) {
-  return html
-    .replace(/{{firstName}}/g, lead.firstName || "")
-    .replace(/{{lastName}}/g, lead.lastName || "")
-    .replace(/{{email}}/g, lead.email)
-    .replace(/{{webinarName}}/g, webinar.name)
-    .replace(/{{startDate}}/g, webinar.startDate)
-    .replace(/{{endDate}}/g, webinar.endDate || "");
+function renderTemplate(html, context) {
+  return html.replace(/{{\s*(\w+)\s*}}/g, (_, key) => {
+    return context[key] ?? "";
+  });
 }
+function buildTemplateContext({ lead, webinar, campaign }) {
+  const start = new Date(webinar.startDate);
+  const end = webinar.endDate ? new Date(webinar.endDate) : null;
+
+  return {
+    // Lead
+    firstName: lead.firstName || "",
+    lastName: lead.lastName || "",
+    email: lead.email,
+
+    // Webinar
+    webinarName: webinar.name,
+
+    startDate: start.toLocaleDateString(),
+    startTime: start.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+    endDate: end ? end.toLocaleDateString() : "",
+    timezone: webinar.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone,
+
+    joinLink: webinar.joinLink || "",
+
+    // Campaign
+    fromName: campaign.fromName || "Team",
+  };
+}
+
 
 module.exports = createCoreController(
   'api::email-campaign.email-campaign',
@@ -41,11 +62,14 @@ module.exports = createCoreController(
 
       const { data: html } = await axios.get(campaign.htmlTemplate.url);
 
-      const rendered = renderTemplate(
-        html,
-        { email, firstName: "Test" },
-        campaign.webinar
-      );
+      const context = buildTemplateContext({
+        lead: { email, firstName: "Test" },
+        webinar: campaign.webinar,
+        campaign,
+      });
+
+      const rendered = renderTemplate(html, context);
+
 
       await strapi.plugin('email').service('email').send({
         to: email,
@@ -94,7 +118,14 @@ module.exports = createCoreController(
 
       for (const lead of leads) {
         try {
-          const rendered = renderTemplate(html, lead, campaign.webinar);
+          const context = buildTemplateContext({
+            lead,
+            webinar: campaign.webinar,
+            campaign,
+          });
+
+          const rendered = renderTemplate(html, context);
+
 
           await strapi.plugin("email").service("email").send({
             to: lead.email,
