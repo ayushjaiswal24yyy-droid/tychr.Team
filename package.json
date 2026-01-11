@@ -27,6 +27,7 @@
     "bcryptjs": "^2.4.3",
     "better-sqlite3": "8.6.0",
     "crypto": "^1.0.1",
+    "csvtojson": "^2.0.14",
     "node-cron": "^3.0.3",
     "nodemailer": "^6.9.14",
     "pg": "8.8.0",
