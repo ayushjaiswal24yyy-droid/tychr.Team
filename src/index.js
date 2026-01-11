@@ -42,19 +42,6 @@ module.exports = {
   },
 
  
-  bootstrap({ strapi }) {
-    // -----------------------
-    // Cron job registration
-    // -----------------------
-    strapi.cron.add({
-      "*/1 * * * *": {
-        task: "sendScheduledCampaigns",
-        options: {
-          tz: "UTC",
-        },
-      },
-    });
-
-    strapi.log.info("Cron job registered: sendScheduledCampaigns");
+  bootstrap() {
   },
 };
