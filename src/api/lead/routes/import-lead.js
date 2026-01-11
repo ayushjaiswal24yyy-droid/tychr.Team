@@ -7,7 +7,7 @@ module.exports = {
       path: '/leads/import',
       handler: 'lead.importCSV',
       config: {
-        auth: true, // 🔥 REQUIRED
+        policies: [],
       },
     },
   ],
