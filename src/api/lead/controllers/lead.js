@@ -2,7 +2,6 @@
 
 const { createCoreController } = require('@strapi/strapi').factories;
 const csv = require('csvtojson');
-const axios = require('axios');
 
 module.exports = createCoreController('api::lead.lead', ({ strapi }) => ({
   async importCSV(ctx) {
@@ -12,27 +11,32 @@ module.exports = createCoreController('api::lead.lead', ({ strapi }) => ({
       return ctx.badRequest("webinarId and fileId are required");
     }
 
-    // 1️⃣ Fetch uploaded file
     const file = await strapi.entityService.findOne(
       "plugin::upload.file",
       fileId
     );
 
-    if (!file?.url) {
+    if (!file) {
       return ctx.badRequest("Invalid file");
     }
 
-    // 2️⃣ Download CSV (axios instead of fetch)
+    // ✅ READ FILE VIA PROVIDER (NOT URL)
     let csvText;
     try {
-      const response = await axios.get(file.url);
-      csvText = response.data;
+      const provider = strapi.plugin("upload").provider;
+      const stream = await provider.getStream(file);
+
+      const chunks = [];
+      for await (const chunk of stream) {
+        chunks.push(chunk);
+      }
+
+      csvText = Buffer.concat(chunks).toString("utf-8");
     } catch (err) {
-      strapi.log.error(err);
+      strapi.log.error("CSV READ ERROR:", err);
       return ctx.badRequest("Unable to read CSV file");
     }
 
-    // 3️⃣ Parse CSV
     let rows;
     try {
       rows = await csv().fromString(csvText);
@@ -69,7 +73,6 @@ module.exports = createCoreController('api::lead.lead', ({ strapi }) => ({
       return ctx.badRequest("No valid leads found");
     }
 
-    // 4️⃣ Deduplicate existing leads
     const existing = await strapi.entityService.findMany(
       "api::lead.lead",
       {
