@@ -1,8 +1,13 @@
 'use strict';
 
 module.exports = {
-  async sendScheduledCampaigns({ strapi }) {
-    strapi.log.info("Cron tick: checking scheduled campaigns");
+  async sendScheduled(ctx) {
+    // 🔐 Simple security check
+    const secret = ctx.request.headers['x-cron-key'];
+
+    if (secret !== process.env.CRON_SECRET) {
+      return ctx.unauthorized('Invalid cron key');
+    }
 
     const now = new Date();
 
@@ -17,8 +22,11 @@ module.exports = {
       }
     );
 
+    let processed = 0;
+
     for (const campaign of campaigns) {
       try {
+        // lock campaign
         await strapi.entityService.update(
           "api::email-campaign.email-campaign",
           campaign.id,
@@ -29,12 +37,18 @@ module.exports = {
           .controller("api::email-campaign.email-campaign")
           .sendCampaign({ params: { id: campaign.id } });
 
+        processed++;
       } catch (err) {
         strapi.log.error(
-          `Failed to send scheduled campaign ${campaign.id}`,
+          `Scheduled send failed for campaign ${campaign.id}`,
           err
         );
       }
     }
+
+    return {
+      ok: true,
+      processed,
+    };
   },
 };

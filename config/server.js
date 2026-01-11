@@ -13,7 +13,9 @@ module.exports = ({ env }) => ({
     },
   },
   cron: {
-    enabled: true
+    enabled: false,
+    driver: cron,
+    tasks: cronTasks,
   },
   proxy: env.bool('IS_PROXIED', true),
   app: {
