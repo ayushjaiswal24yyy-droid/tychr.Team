@@ -11,9 +11,17 @@ module.exports = createCoreController('api::lead.lead', ({ strapi }) => ({
       return ctx.badRequest('webinarId is required');
     }
 
-    const file = ctx.request.files?.file;
-    if (!file) {
+    const files = ctx.request.files;
+    if (!files || !files.file) {
       return ctx.badRequest('CSV file is required');
+    }
+
+    const file = Array.isArray(files.file)
+      ? files.file[0]
+      : files.file;
+
+    if (!file.path) {
+      return ctx.badRequest('Invalid CSV upload');
     }
 
     // 1️⃣ Parse CSV
@@ -28,24 +36,21 @@ module.exports = createCoreController('api::lead.lead', ({ strapi }) => ({
       return ctx.badRequest('CSV is empty');
     }
 
-    // 2️⃣ Normalize & validate
     const emails = new Set();
     const leadsToCreate = [];
 
     for (const row of rows) {
       const email = row.email?.trim().toLowerCase();
-
       if (!email) continue;
       if (!/^\S+@\S+\.\S+$/.test(email)) continue;
-
-      // avoid duplicate emails in same CSV
       if (emails.has(email)) continue;
+
       emails.add(email);
 
       leadsToCreate.push({
         email,
-        firstName: row.firstName?.trim() || null,
-        lastName: row.lastName?.trim() || null,
+        firstName: row.firstName || null,
+        lastName: row.lastName || null,
         status: 'active',
         source: 'csv',
         webinar: webinarId,
@@ -56,8 +61,8 @@ module.exports = createCoreController('api::lead.lead', ({ strapi }) => ({
       return ctx.badRequest('No valid leads found');
     }
 
-    // 3️⃣ Remove existing leads for same webinar
-    const existingLeads = await strapi.entityService.findMany(
+    // 2️⃣ Remove existing leads
+    const existing = await strapi.entityService.findMany(
       'api::lead.lead',
       {
         filters: {
@@ -70,15 +75,12 @@ module.exports = createCoreController('api::lead.lead', ({ strapi }) => ({
       }
     );
 
-    const existingEmails = new Set(
-      existingLeads.map(l => l.email)
-    );
+    const existingEmails = new Set(existing.map(l => l.email));
 
     const finalLeads = leadsToCreate.filter(
       l => !existingEmails.has(l.email)
     );
 
-    // 4️⃣ Bulk insert
     await strapi.entityService.createMany(
       'api::lead.lead',
       { data: finalLeads }
