@@ -20,18 +20,13 @@ module.exports = createCoreController('api::lead.lead', ({ strapi }) => ({
       return ctx.badRequest("Invalid file");
     }
 
-    // ✅ CORRECT Strapi v4 upload access
     let csvText;
     try {
-      const uploadService = strapi.plugin("upload").service("upload");
-      const stream = await uploadService.getFileStream(file);
+      const providerService = strapi.plugin("upload").service("provider");
+      const signedUrl = await providerService.getSignedUrl(file);
 
-      const chunks = [];
-      for await (const chunk of stream) {
-        chunks.push(chunk);
-      }
-
-      csvText = Buffer.concat(chunks).toString("utf-8");
+      const res = await fetch(signedUrl);
+      csvText = await res.text();
     } catch (err) {
       strapi.log.error("CSV READ ERROR:", err);
       return ctx.badRequest("Unable to read CSV file");
@@ -90,7 +85,7 @@ module.exports = createCoreController('api::lead.lead', ({ strapi }) => ({
     );
 
     await strapi.entityService.createMany(
-      "api::lead.lead",
+      'api::lead.lead',
       { data: finalLeads }
     );
 
