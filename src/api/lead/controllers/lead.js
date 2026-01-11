@@ -2,6 +2,7 @@
 
 const { createCoreController } = require('@strapi/strapi').factories;
 const csv = require('csvtojson');
+const axios = require('axios');
 
 module.exports = createCoreController('api::lead.lead', ({ strapi }) => ({
   async importCSV(ctx) {
@@ -21,12 +22,13 @@ module.exports = createCoreController('api::lead.lead', ({ strapi }) => ({
       return ctx.badRequest("Invalid file");
     }
 
-    // 2️⃣ Fetch CSV content (S3 or local)
+    // 2️⃣ Download CSV (axios instead of fetch)
     let csvText;
     try {
-      const res = await fetch(file.url);
-      csvText = await res.text();
+      const response = await axios.get(file.url);
+      csvText = response.data;
     } catch (err) {
+      strapi.log.error(err);
       return ctx.badRequest("Unable to read CSV file");
     }
 
@@ -67,7 +69,7 @@ module.exports = createCoreController('api::lead.lead', ({ strapi }) => ({
       return ctx.badRequest("No valid leads found");
     }
 
-    // 4️⃣ Remove existing leads for webinar
+    // 4️⃣ Deduplicate existing leads
     const existing = await strapi.entityService.findMany(
       "api::lead.lead",
       {
