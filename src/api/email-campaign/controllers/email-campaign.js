@@ -93,9 +93,10 @@ module.exports = createCoreController(
       );
 
       if (!campaign) return ctx.notFound();
-      if (campaign.status === "sent") {
-        return ctx.badRequest("Campaign already sent");
+      if (["sent", "sending"].includes(campaign.status)) {
+        return ctx.badRequest("Campaign already processed");
       }
+
 
       const leads = await strapi.entityService.findMany(
         "api::lead.lead",
