@@ -8,5 +8,13 @@ module.exports = {
         policies: [],
       },
     },
+    {
+      method: "POST",
+      path: "/email-campaigns/send",
+      handler: "email-campaign.sendCampaign",
+      config: {
+        policies: [],
+      },
+    }
   ],
 };
