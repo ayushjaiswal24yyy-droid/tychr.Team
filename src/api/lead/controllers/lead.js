@@ -32,7 +32,8 @@ module.exports = createCoreController('api::lead.lead', ({ strapi }) => ({
         lastName: lead.lastName || null,
         status: "active",
         source: "csv",
-        webinar: webinarId,
+       webinar: { connect: [webinarId] },
+
       });
     }
 
