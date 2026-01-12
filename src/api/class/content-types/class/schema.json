@@ -42,6 +42,12 @@
       "relation": "oneToMany",
       "target": "plugin::users-permissions.user",
       "mappedBy": "grade"
+    },
+    "notifications_enquiries": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::notification.notification",
+      "mappedBy": "ib_program_grade"
     }
   }
 }

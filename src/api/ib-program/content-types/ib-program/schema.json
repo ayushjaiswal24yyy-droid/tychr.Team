@@ -54,6 +54,12 @@
       "relation": "oneToMany",
       "target": "api::add-on.add-on",
       "mappedBy": "ib_program"
+    },
+    "notifications_enquiries": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::notification.notification",
+      "mappedBy": "ib_program"
     }
   }
 }

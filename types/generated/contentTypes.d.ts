@@ -1397,6 +1397,11 @@ export interface ApiClassClass extends Schema.CollectionType {
       'oneToMany',
       'plugin::users-permissions.user'
     >;
+    notifications_enquiries: Attribute.Relation<
+      'api::class.class',
+      'oneToMany',
+      'api::notification.notification'
+    >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
@@ -2284,6 +2289,11 @@ export interface ApiGradeSubjectGradeSubject extends Schema.CollectionType {
       'api::test-serie.test-serie'
     >;
     image: Attribute.Media<'images' | 'files' | 'videos' | 'audios'>;
+    notifications_enquiries: Attribute.Relation<
+      'api::grade-subject.grade-subject',
+      'oneToMany',
+      'api::notification.notification'
+    >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
@@ -2364,6 +2374,11 @@ export interface ApiIbProgramIbProgram extends Schema.CollectionType {
       'api::ib-program.ib-program',
       'oneToMany',
       'api::add-on.add-on'
+    >;
+    notifications_enquiries: Attribute.Relation<
+      'api::ib-program.ib-program',
+      'oneToMany',
+      'api::notification.notification'
     >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
@@ -2897,6 +2912,21 @@ export interface ApiNotificationNotification extends Schema.CollectionType {
     classroom_type: Attribute.Enumeration<['Offline', 'Online']>;
     parent_location: Attribute.String;
     enquiryNotes: Attribute.Component<'notification.notes', true>;
+    ib_program: Attribute.Relation<
+      'api::notification.notification',
+      'manyToOne',
+      'api::ib-program.ib-program'
+    >;
+    ib_program_grade: Attribute.Relation<
+      'api::notification.notification',
+      'manyToOne',
+      'api::class.class'
+    >;
+    lecture_grade_subject: Attribute.Relation<
+      'api::notification.notification',
+      'manyToOne',
+      'api::grade-subject.grade-subject'
+    >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     createdBy: Attribute.Relation<

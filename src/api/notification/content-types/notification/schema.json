@@ -122,6 +122,24 @@
       "type": "component",
       "repeatable": true,
       "component": "notification.notes"
+    },
+    "ib_program": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::ib-program.ib-program",
+      "inversedBy": "notifications_enquiries"
+    },
+    "ib_program_grade": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::class.class",
+      "inversedBy": "notifications_enquiries"
+    },
+    "lecture_grade_subject": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::grade-subject.grade-subject",
+      "inversedBy": "notifications_enquiries"
     }
   }
 }
