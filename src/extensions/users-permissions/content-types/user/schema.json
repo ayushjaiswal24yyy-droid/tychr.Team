@@ -494,6 +494,9 @@
       "type": "component",
       "repeatable": true,
       "component": "time-slots.time-slots"
+    },
+    "countryCode": {
+      "type": "string"
     }
   }
 }

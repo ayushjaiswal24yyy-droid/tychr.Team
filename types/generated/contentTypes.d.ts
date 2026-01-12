@@ -1035,6 +1035,7 @@ export interface PluginUsersPermissionsUser extends Schema.CollectionType {
       'api::attendance.attendance'
     >;
     time_slots: Attribute.Component<'time-slots.time-slots', true>;
+    countryCode: Attribute.String;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     createdBy: Attribute.Relation<
