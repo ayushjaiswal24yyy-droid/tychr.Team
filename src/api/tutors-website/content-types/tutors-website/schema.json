@@ -68,6 +68,23 @@
       "type": "component",
       "repeatable": true,
       "component": "semesters.semesters"
+    },
+    "seo_title": {
+      "type": "string"
+    },
+    "seo_description": {
+      "type": "text"
+    },
+    "seo_keywords": {
+      "type": "string"
+    },
+    "slug": {
+      "type": "uid",
+      "required": true,
+      "targetField": "name"
+    },
+    "schema_markup": {
+      "type": "json"
     }
   }
 }

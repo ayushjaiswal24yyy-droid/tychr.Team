@@ -4527,6 +4527,12 @@ export interface ApiTutorsWebsiteTutorsWebsite extends Schema.CollectionType {
       true
     >;
     semesters: Attribute.Component<'semesters.semesters', true>;
+    seo_title: Attribute.String;
+    seo_description: Attribute.Text;
+    seo_keywords: Attribute.String;
+    slug: Attribute.UID<'api::tutors-website.tutors-website', 'name'> &
+      Attribute.Required;
+    schema_markup: Attribute.JSON;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
