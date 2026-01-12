@@ -488,6 +488,12 @@
       "relation": "oneToMany",
       "target": "api::attendance.attendance",
       "mappedBy": "student"
+    },
+    "time_slots": {
+      "displayName": "time_slots",
+      "type": "component",
+      "repeatable": true,
+      "component": "time-slots.time-slots"
     }
   }
 }

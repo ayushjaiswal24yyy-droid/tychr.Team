@@ -1,0 +1,24 @@
+{
+  "collectionName": "components_time_slots_time_slots",
+  "info": {
+    "displayName": "time_slots"
+  },
+  "options": {},
+  "attributes": {
+    "day": {
+      "type": "enumeration",
+      "enum": [
+        "Sunday",
+        "Monday",
+        "Tuesday",
+        "Wednesday",
+        "Thursday",
+        "Friday",
+        "Saturday"
+      ]
+    },
+    "time": {
+      "type": "time"
+    }
+  }
+}

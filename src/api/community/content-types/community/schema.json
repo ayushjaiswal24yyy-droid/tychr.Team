@@ -24,11 +24,16 @@
       "type": "media",
       "multiple": false,
       "required": false,
-      "allowedTypes": ["images"]
+      "allowedTypes": [
+        "images"
+      ]
     },
     "type": {
       "type": "enumeration",
-      "enum": ["public", "private"],
+      "enum": [
+        "public",
+        "private"
+      ],
       "default": "public",
       "required": true
     },

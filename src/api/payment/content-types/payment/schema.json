@@ -35,7 +35,12 @@
     },
     "status": {
       "type": "enumeration",
-      "enum": ["pending", "completed", "failed", "refunded"],
+      "enum": [
+        "pending",
+        "completed",
+        "failed",
+        "refunded"
+      ],
       "default": "pending"
     },
     "razorpay_payment_id": {
@@ -70,6 +75,12 @@
     },
     "metadata": {
       "type": "json"
+    },
+    "student": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "plugin::users-permissions.user",
+      "inversedBy": "payments"
     }
   }
 }

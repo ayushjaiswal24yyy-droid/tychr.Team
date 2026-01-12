@@ -20,21 +20,37 @@
     },
     "status": {
       "type": "enumeration",
-      "enum": ["dream", "target", "safety", "reach", "others"]
+      "enum": [
+        "dream",
+        "target",
+        "safety",
+        "reach",
+        "others"
+      ]
     },
     "progress": {
       "type": "integer"
     },
     "universityDecision": {
       "type": "enumeration",
-      "enum": ["Pending", "Accepted", "Rejected", "Waitlisted", "Deferred"]
+      "enum": [
+        "Pending",
+        "Accepted",
+        "Rejected",
+        "Waitlisted",
+        "Deferred"
+      ]
     },
     "Deadline": {
       "type": "date"
     },
     "Category": {
       "type": "enumeration",
-      "enum": ["Submitted", "In Progress", "Rejected"]
+      "enum": [
+        "Submitted",
+        "In Progress",
+        "Rejected"
+      ]
     },
     "university": {
       "type": "relation",
@@ -63,19 +79,34 @@
       "type": "media",
       "multiple": false,
       "required": false,
-      "allowedTypes": ["images", "files", "videos", "audios"]
+      "allowedTypes": [
+        "images",
+        "files",
+        "videos",
+        "audios"
+      ]
     },
     "whyusessay": {
       "type": "media",
       "multiple": true,
       "required": false,
-      "allowedTypes": ["images", "files", "videos", "audios"]
+      "allowedTypes": [
+        "images",
+        "files",
+        "videos",
+        "audios"
+      ]
     },
     "activityessay": {
       "type": "media",
       "multiple": true,
       "required": false,
-      "allowedTypes": ["images", "files", "videos", "audios"]
+      "allowedTypes": [
+        "images",
+        "files",
+        "videos",
+        "audios"
+      ]
     },
     "lor": {
       "type": "component",
@@ -87,7 +118,6 @@
       "repeatable": true,
       "component": "essays.essay-submission"
     },
-
     "lor_submissions": {
       "type": "component",
       "repeatable": true,

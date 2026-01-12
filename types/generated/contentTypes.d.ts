@@ -1034,6 +1034,7 @@ export interface PluginUsersPermissionsUser extends Schema.CollectionType {
       'oneToMany',
       'api::attendance.attendance'
     >;
+    time_slots: Attribute.Component<'time-slots.time-slots', true>;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     createdBy: Attribute.Relation<
@@ -2965,6 +2966,11 @@ export interface ApiPaymentPayment extends Schema.CollectionType {
         total: 0;
       }>;
     metadata: Attribute.JSON;
+    student: Attribute.Relation<
+      'api::payment.payment',
+      'manyToOne',
+      'plugin::users-permissions.user'
+    >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     createdBy: Attribute.Relation<

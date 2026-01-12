@@ -51,7 +51,13 @@
     },
     "status": {
       "type": "enumeration",
-      "enum": ["pending", "active", "failed", "cancelled", "expired"],
+      "enum": [
+        "pending",
+        "active",
+        "failed",
+        "cancelled",
+        "expired"
+      ],
       "default": "pending"
     },
     "valid_until": {
