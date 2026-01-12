@@ -1,7 +1,8 @@
 {
   "collectionName": "components_time_slots_time_slots",
   "info": {
-    "displayName": "time_slots"
+    "displayName": "time_slots",
+    "description": ""
   },
   "options": {},
   "attributes": {
@@ -17,7 +18,10 @@
         "Saturday"
       ]
     },
-    "time": {
+    "start_time": {
+      "type": "time"
+    },
+    "end_time": {
       "type": "time"
     }
   }
