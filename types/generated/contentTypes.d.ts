@@ -4533,6 +4533,14 @@ export interface ApiTutorsWebsiteTutorsWebsite extends Schema.CollectionType {
     slug: Attribute.UID<'api::tutors-website.tutors-website', 'name'> &
       Attribute.Required;
     schema_markup: Attribute.JSON;
+    schema_title: Attribute.String;
+    schema_description: Attribute.String;
+    schema_level: Attribute.String;
+    schema_skills: Attribute.JSON;
+    schema_results: Attribute.Component<'schema.schema-results'>;
+    schema_reviews: Attribute.Component<'schema.schema-reviews', true>;
+    schema_video: Attribute.Component<'schema.schema-video'>;
+    schema_faqs: Attribute.Component<'schema.schema-faqs', true>;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;

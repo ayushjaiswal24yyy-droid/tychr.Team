@@ -1,0 +1,24 @@
+{
+  "collectionName": "components_schema_schema_videos",
+  "info": {
+    "displayName": "schema_video"
+  },
+  "options": {},
+  "attributes": {
+    "name": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "thumbnail": {
+      "type": "string"
+    },
+    "uploadDate": {
+      "type": "date"
+    },
+    "url": {
+      "type": "string"
+    }
+  }
+}

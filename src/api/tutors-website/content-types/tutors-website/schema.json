@@ -85,6 +85,42 @@
     },
     "schema_markup": {
       "type": "json"
+    },
+    "schema_title": {
+      "type": "string"
+    },
+    "schema_description": {
+      "type": "string"
+    },
+    "schema_level": {
+      "type": "string"
+    },
+    "schema_skills": {
+      "type": "json"
+    },
+    "schema_results": {
+      "displayName": "schema-results",
+      "type": "component",
+      "repeatable": false,
+      "component": "schema.schema-results"
+    },
+    "schema_reviews": {
+      "displayName": "schema_reviews",
+      "type": "component",
+      "repeatable": true,
+      "component": "schema.schema-reviews"
+    },
+    "schema_video": {
+      "displayName": "schema_video",
+      "type": "component",
+      "repeatable": false,
+      "component": "schema.schema-video"
+    },
+    "schema_faqs": {
+      "displayName": "schema-faqs",
+      "type": "component",
+      "repeatable": true,
+      "component": "schema.schema-faqs"
     }
   }
 }
