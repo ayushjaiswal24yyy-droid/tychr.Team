@@ -175,21 +175,22 @@ ${tutor?.fullName || "Your Tutor"}
         }
       },
       async sendLectureReminders(ctx) {
-        // 🔐 Plesk security
         const secret = ctx.request.headers["x-cron-key"];
         if (secret !== process.env.CRON_SECRET) {
           return ctx.unauthorized("Invalid cron key");
         }
 
         const now = new Date();
-        const from = new Date(now.getTime() + 25 * 60 * 1000);
         const to = new Date(now.getTime() + 30 * 60 * 1000);
 
         const lectures = await strapi.entityService.findMany(
           "api::live-lecture.live-lecture",
           {
             filters: {
-              schedule: { $gte: from, $lte: to },
+              schedule: {
+                $gt: now,
+                $lte: to,
+              },
               reminderSent: false,
             },
             populate: {
@@ -210,6 +211,14 @@ ${tutor?.fullName || "Your Tutor"}
           const classroom = lecture.classrooms;
           if (!classroom?.students?.length) continue;
 
+          const minutesLeft = Math.max(
+            1,
+            Math.round(
+              (new Date(lecture.schedule).getTime() - now.getTime()) / 60000
+            )
+          );
+
+
           const formattedSchedule = new Intl.DateTimeFormat("en-GB", {
             dateStyle: "long",
             timeStyle: "short",
@@ -217,8 +226,8 @@ ${tutor?.fullName || "Your Tutor"}
 
           await sendLectureNotifications({
             students: classroom.students,
-            subject: "⏰ Live Lecture Reminder (Starts in 30 Minutes)",
-            title: `Your live lecture "${lecture.title}" starts in 30 minutes`,
+            subject: "⏰ Live Lecture Starting Soon",
+            title: `Your class starts in less than 30 minutes`,
             description: lecture.description,
             topicname: lecture.topic,
             zoom_url: lecture.zoom_url,
@@ -235,11 +244,9 @@ ${tutor?.fullName || "Your Tutor"}
           processed++;
         }
 
-        return {
-          ok: true,
-          processed,
-        };
+        return { ok: true, processed };
       }
+
 
     };
   }
