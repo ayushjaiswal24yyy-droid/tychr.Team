@@ -12,6 +12,7 @@ module.exports = createCoreController(
     // Helper method to send notifications asynchronously
     const sendLectureNotifications = async ({
       students,
+      subject,
       title,
       description,
       topicname,
@@ -21,46 +22,41 @@ module.exports = createCoreController(
     }) => {
       try {
         const emailPromises = students.map((student) => {
-          const emailContent = {
-            subject: `New Live Lecture: ${title}`,
-            text: `Dear student,\n\nA new live lecture titled "${title}" has been scheduled.\n\nTopic: ${
-              topicname?.name || "N/A"
-            }\nDescription: ${description}\nClass Link: ${zoom_url}\nScheduled for: ${formattedSchedule}\n\nBest regards,\nYour Tutor\n${
-              tutor?.fullName || "Your Tutor"
-            }`,
-            html: `
-              <p>Dear student,</p>
-              <p>A new live lecture titled "<strong>${title}</strong>" has been scheduled.</p>
-              <p><strong>Topic:</strong> ${topicname?.name || "N/A"}</p>
-              <p><strong>Description:</strong> ${description}</p>
-              <p><strong>Zoom Link:</strong> <a href="${zoom_url}">${zoom_url}</a></p>
-              <p><strong>Scheduled for:</strong> ${formattedSchedule}</p>
-              <br/>
-              <p>Best regards,<br/>Your Tutor<br/>${
-                tutor?.fullName || "Your Tutor"
-              }</p>
-            `,
-          };
-
           return strapi.plugins["email"].services.email.send({
             to: student.email,
             from: "tychr@saralgroups.com",
-            subject: emailContent.subject,
-            text: emailContent.text,
-            html: emailContent.html,
+            subject,
+            text: `Dear student,
+
+${title}
+
+Topic: ${topicname?.name || "N/A"}
+Description: ${description}
+Class Link: ${zoom_url}
+Scheduled for: ${formattedSchedule}
+
+Best regards,
+${tutor?.fullName || "Your Tutor"}
+        `,
+            html: `
+          <p>Dear student,</p>
+          <p>${title}</p>
+          <p><strong>Topic:</strong> ${topicname?.name || "N/A"}</p>
+          <p><strong>Description:</strong> ${description}</p>
+          <p><strong>Zoom Link:</strong> <a href="${zoom_url}">${zoom_url}</a></p>
+          <p><strong>Scheduled for:</strong> ${formattedSchedule}</p>
+          <br/>
+          <p>Best regards,<br/>${tutor?.fullName || "Your Tutor"}</p>
+        `,
           });
         });
 
-        // Send all emails with a timeout
         await Promise.allSettled(emailPromises);
-        strapi.log.info(
-          `Sent live lecture notifications to ${students.length} students`
-        );
-      } catch (error) {
-        strapi.log.error("Error in sendLectureNotifications:", error);
-        // Don't rethrow - we don't want to affect the main request
+      } catch (err) {
+        strapi.log.error("Email send error:", err);
       }
     };
+
 
     return {
       async create(ctx) {
@@ -76,7 +72,7 @@ module.exports = createCoreController(
         try {
           // First, create the live lecture
           response = await super.create(ctx);
-          
+
           const { title, description, zoom_url, schedule, topic, classrooms } =
             ctx.request.body.data;
 
@@ -95,8 +91,8 @@ module.exports = createCoreController(
               "api::enrollment.enrollment",
               classrooms,
               {
-                populate: { 
-                  students: true, 
+                populate: {
+                  students: true,
                   tutor: true  // Changed from 'tutors' to 'tutor' (singular)
                 },
               }
@@ -104,7 +100,7 @@ module.exports = createCoreController(
 
             if (classroom) {
               students = classroom?.students || [];
-              
+
               // Format schedule date
               let formattedSchedule = "N/A";
               if (schedule) {
@@ -122,11 +118,12 @@ module.exports = createCoreController(
               if (students.length > 0) {
                 // Track emails being sent
                 notificationResult.attempted = students.map(s => s.email);
-                
+
                 // Send emails in background
                 sendLectureNotifications({
                   students,
                   title,
+                  subject: `New Live Lecture: ${title}`,
                   description,
                   topicname,
                   zoom_url,
@@ -151,8 +148,8 @@ module.exports = createCoreController(
 
           // Return success response with notification status
           return ctx.send({
-            message: classroom 
-              ? "Live lecture created successfully" 
+            message: classroom
+              ? "Live lecture created successfully"
               : "Live lecture created (but failed to fetch classroom details)",
             data: response.data || response,
             notification: notificationResult
@@ -163,7 +160,7 @@ module.exports = createCoreController(
             stack: error.stack,
             details: error
           });
-          
+
           // Return partial success if lecture was created
           if (response) {
             return ctx.send({
@@ -177,6 +174,74 @@ module.exports = createCoreController(
           }
         }
       },
+      async sendLectureReminders(ctx) {
+        // 🔐 Plesk security
+        const secret = ctx.request.headers["x-cron-key"];
+        if (secret !== process.env.CRON_SECRET) {
+          return ctx.unauthorized("Invalid cron key");
+        }
+
+        const now = new Date();
+        const from = new Date(now.getTime() + 25 * 60 * 1000);
+        const to = new Date(now.getTime() + 30 * 60 * 1000);
+
+        const lectures = await strapi.entityService.findMany(
+          "api::live-lecture.live-lecture",
+          {
+            filters: {
+              schedule: { $gte: from, $lte: to },
+              reminderSent: false,
+            },
+            populate: {
+              topic: true,
+              classrooms: {
+                populate: {
+                  students: true,
+                  tutor: true,
+                },
+              },
+            },
+          }
+        );
+
+        let processed = 0;
+
+        for (const lecture of lectures) {
+          const classroom = lecture.classrooms;
+          if (!classroom?.students?.length) continue;
+
+          const formattedSchedule = new Intl.DateTimeFormat("en-GB", {
+            dateStyle: "long",
+            timeStyle: "short",
+          }).format(new Date(lecture.schedule));
+
+          await sendLectureNotifications({
+            students: classroom.students,
+            subject: "⏰ Live Lecture Reminder (Starts in 30 Minutes)",
+            title: `Your live lecture "${lecture.title}" starts in 30 minutes`,
+            description: lecture.description,
+            topicname: lecture.topic,
+            zoom_url: lecture.zoom_url,
+            formattedSchedule,
+            tutor: classroom.tutor,
+          });
+
+          await strapi.entityService.update(
+            "api::live-lecture.live-lecture",
+            lecture.id,
+            { data: { reminderSent: true } }
+          );
+
+          processed++;
+        }
+
+        return {
+          ok: true,
+          processed,
+        };
+      }
+
     };
   }
 );
+
