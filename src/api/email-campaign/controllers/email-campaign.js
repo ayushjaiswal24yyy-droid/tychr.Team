@@ -74,6 +74,7 @@ module.exports = createCoreController(
       await strapi.plugin('email').service('email').send({
         to: email,
         subject: `[TEST] ${campaign.subject}`,
+        ...(campaign.replyTo && { replyTo: campaign.replyTo }),
         html: rendered,
       });
 
@@ -133,6 +134,7 @@ module.exports = createCoreController(
             to: lead.email,
             subject: campaign.subject,
             html: rendered,
+            ...(campaign.replyTo && { replyTo: campaign.replyTo }),
           });
 
           sent++;
