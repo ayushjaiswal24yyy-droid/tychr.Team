@@ -4,10 +4,10 @@ module.exports = {
   routes: [
     {
       method: "POST",
-      path: "/live-lectures/send-reminders",
+      path: "/cron/send-lecture-reminders",
       handler: "live-lecture.sendLectureReminders",
       config: {
-       policies: [],
+        policies: [], 
       },
     },
   ],
