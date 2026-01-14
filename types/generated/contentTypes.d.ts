@@ -3960,6 +3960,38 @@ export interface ApiSupportTicketSupportTicket extends Schema.CollectionType {
   };
 }
 
+export interface ApiSupportTicketTemplateSupportTicketTemplate
+  extends Schema.CollectionType {
+  collectionName: 'support_ticket_templates';
+  info: {
+    singularName: 'support-ticket-template';
+    pluralName: 'support-ticket-templates';
+    displayName: 'support-ticket-template';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    title: Attribute.String;
+    Text: Attribute.Text;
+    createdAt: Attribute.DateTime;
+    updatedAt: Attribute.DateTime;
+    publishedAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<
+      'api::support-ticket-template.support-ticket-template',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+    updatedBy: Attribute.Relation<
+      'api::support-ticket-template.support-ticket-template',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+  };
+}
+
 export interface ApiTaskTask extends Schema.CollectionType {
   collectionName: 'tasks';
   info: {
@@ -4851,6 +4883,7 @@ declare module '@strapi/types' {
       'api::subscription.subscription': ApiSubscriptionSubscription;
       'api::subtopic.subtopic': ApiSubtopicSubtopic;
       'api::support-ticket.support-ticket': ApiSupportTicketSupportTicket;
+      'api::support-ticket-template.support-ticket-template': ApiSupportTicketTemplateSupportTicketTemplate;
       'api::task.task': ApiTaskTask;
       'api::test.test': ApiTestTest;
       'api::test-serie.test-serie': ApiTestSerieTestSerie;

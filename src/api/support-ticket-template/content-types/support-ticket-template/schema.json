@@ -1,0 +1,21 @@
+{
+  "kind": "collectionType",
+  "collectionName": "support_ticket_templates",
+  "info": {
+    "singularName": "support-ticket-template",
+    "pluralName": "support-ticket-templates",
+    "displayName": "support-ticket-template"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "title": {
+      "type": "string"
+    },
+    "Text": {
+      "type": "text"
+    }
+  }
+}
