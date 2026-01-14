@@ -208,31 +208,34 @@ ${tutor?.fullName || "Your Tutor"}
         let processed = 0;
 
         for (const lecture of lectures) {
-          const classroom = lecture.classrooms;
-          if (!classroom?.students?.length) continue;
+          const classrooms = lecture.classrooms || [];
 
-          const minutesLeft = Math.max(
-            1,
-            Math.round(
-              (new Date(lecture.schedule).getTime() - now.getTime()) / 60000
-            )
+          let allStudents = [];
+          for (const classroom of classrooms) {
+            if (classroom?.students?.length) {
+              allStudents.push(...classroom.students);
+            }
+          }
+
+          if (!allStudents.length) continue;
+
+          const uniqueStudents = Array.from(
+            new Map(allStudents.map(s => [s.email, s])).values()
           );
-
-
           const formattedSchedule = new Intl.DateTimeFormat("en-GB", {
             dateStyle: "long",
             timeStyle: "short",
           }).format(new Date(lecture.schedule));
 
           await sendLectureNotifications({
-            students: classroom.students,
+            students: uniqueStudents,
             subject: "⏰ Live Lecture Starting Soon",
-            title: `Your class starts in less than 30 minutes`,
+            title: "Your class starts in less than 30 minutes",
             description: lecture.description,
             topicname: lecture.topic,
             zoom_url: lecture.zoom_url,
             formattedSchedule,
-            tutor: classroom.tutor,
+            tutor: classrooms[0]?.tutor,
           });
 
           await strapi.entityService.update(
@@ -243,6 +246,7 @@ ${tutor?.fullName || "Your Tutor"}
 
           processed++;
         }
+
 
         return { ok: true, processed };
       }
