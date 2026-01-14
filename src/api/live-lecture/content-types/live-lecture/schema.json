@@ -98,6 +98,10 @@
       "relation": "oneToMany",
       "target": "api::attendance.attendance",
       "mappedBy": "live_lecture"
+    },
+    "reminderSent": {
+      "type": "boolean",
+      "default": false
     }
   }
 }

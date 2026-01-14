@@ -2533,6 +2533,7 @@ export interface ApiLiveLectureLiveLecture extends Schema.CollectionType {
       'oneToMany',
       'api::attendance.attendance'
     >;
+    reminderSent: Attribute.Boolean & Attribute.DefaultTo<false>;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
@@ -3001,6 +3002,11 @@ export interface ApiPaymentPayment extends Schema.CollectionType {
       'api::payment.payment',
       'manyToOne',
       'plugin::users-permissions.user'
+    >;
+    live_lecture: Attribute.Relation<
+      'api::payment.payment',
+      'manyToOne',
+      'api::live-lecture.live-lecture'
     >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
