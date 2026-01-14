@@ -4731,6 +4731,7 @@ export interface ApiWebinarWebinar extends Schema.CollectionType {
     singularName: 'webinar';
     pluralName: 'webinars';
     displayName: 'Webinars';
+    description: '';
   };
   options: {
     draftAndPublish: true;
@@ -4761,6 +4762,7 @@ export interface ApiWebinarWebinar extends Schema.CollectionType {
       'oneToMany',
       'api::email-campaign.email-campaign'
     >;
+    meeting_link: Attribute.String;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;

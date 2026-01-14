@@ -4,7 +4,8 @@
   "info": {
     "singularName": "webinar",
     "pluralName": "webinars",
-    "displayName": "Webinars"
+    "displayName": "Webinars",
+    "description": ""
   },
   "options": {
     "draftAndPublish": true
@@ -40,11 +41,20 @@
     "coverImage": {
       "type": "media",
       "multiple": false,
-      "allowedTypes": ["images"]
+      "required": false,
+      "allowedTypes": [
+        "images"
+      ]
     },
     "status": {
       "type": "enumeration",
-      "enum": ["draft", "scheduled", "live", "completed", "cancelled"],
+      "enum": [
+        "draft",
+        "scheduled",
+        "live",
+        "completed",
+        "cancelled"
+      ],
       "default": "draft",
       "required": true
     },
@@ -55,11 +65,13 @@
       "mappedBy": "webinar"
     },
     "emailCampaigns": {
-  "type": "relation",
-  "relation": "oneToMany",
-  "target": "api::email-campaign.email-campaign",
-  "mappedBy": "webinar"
-}
-
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::email-campaign.email-campaign",
+      "mappedBy": "webinar"
+    },
+    "meeting_link": {
+      "type": "string"
+    }
   }
 }

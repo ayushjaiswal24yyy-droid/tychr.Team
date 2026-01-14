@@ -23,12 +23,20 @@
     },
     "status": {
       "type": "enumeration",
-      "enum": ["active", "unsubscribed", "bounced"],
+      "enum": [
+        "active",
+        "unsubscribed",
+        "bounced"
+      ],
       "default": "active"
     },
     "source": {
       "type": "enumeration",
-      "enum": ["csv", "manual", "api"],
+      "enum": [
+        "csv",
+        "manual",
+        "api"
+      ],
       "default": "csv"
     },
     "lastEmailedAt": {
