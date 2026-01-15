@@ -121,6 +121,17 @@
       "type": "component",
       "repeatable": true,
       "component": "schema.schema-faqs"
+    },
+    "Best_Online_tutors_city": {
+      "type": "component",
+      "repeatable": true,
+      "component": "best-tutors-data.best-tutors-data"
+    },
+    "IB_Summarise_syllabus": {
+      "displayName": "IB_subjects",
+      "type": "component",
+      "repeatable": false,
+      "component": "syllabus.ib-subjects"
     }
   }
 }

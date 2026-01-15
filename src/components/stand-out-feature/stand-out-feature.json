@@ -1,0 +1,25 @@
+{
+  "collectionName": "components_stand_out_feature_stand_out_features",
+  "info": {
+    "displayName": "stand_out_feature"
+  },
+  "options": {},
+  "attributes": {
+    "title": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "icon": {
+      "allowedTypes": [
+        "images",
+        "files",
+        "videos",
+        "audios"
+      ],
+      "type": "media",
+      "multiple": true
+    }
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "collectionName": "components_forum_child_secure_forums",
+  "info": {
+    "displayName": "Child_Secure_Forum"
+  },
+  "options": {},
+  "attributes": {
+    "title": {
+      "type": "string"
+    }
+  }
+}

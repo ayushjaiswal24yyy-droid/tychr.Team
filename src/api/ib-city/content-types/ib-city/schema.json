@@ -1,0 +1,47 @@
+{
+  "kind": "singleType",
+  "collectionName": "ib_cities",
+  "info": {
+    "singularName": "ib-city",
+    "pluralName": "ib-cities",
+    "displayName": "IB_City",
+    "description": ""
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "stats": {
+      "type": "component",
+      "repeatable": true,
+      "component": "stats.stats"
+    },
+    "achievers": {
+      "type": "component",
+      "repeatable": true,
+      "component": "achievers.achiever"
+    },
+    "How_Its_work": {
+      "type": "component",
+      "repeatable": true,
+      "component": "how-it-works.how-it-works"
+    },
+    "Child_secure_forum": {
+      "displayName": "Child_Secure_Forum",
+      "type": "component",
+      "repeatable": false,
+      "component": "forum.child-secure-forum"
+    },
+    "Recent_blogs": {
+      "type": "component",
+      "repeatable": true,
+      "component": "blog-section.blog"
+    },
+    "results": {
+      "type": "component",
+      "repeatable": true,
+      "component": "results-data.results-data"
+    }
+  }
+}

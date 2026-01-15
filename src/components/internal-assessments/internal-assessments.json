@@ -1,0 +1,18 @@
+{
+  "collectionName": "components_internal_assessments_internal_assessments",
+  "info": {
+    "displayName": "internal_assessments"
+  },
+  "options": {},
+  "attributes": {
+    "name": {
+      "type": "string"
+    },
+    "duration": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    }
+  }
+}

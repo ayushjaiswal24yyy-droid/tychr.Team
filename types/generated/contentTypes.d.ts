@@ -2335,6 +2335,42 @@ export interface ApiGstGst extends Schema.SingleType {
   };
 }
 
+export interface ApiIbCityIbCity extends Schema.SingleType {
+  collectionName: 'ib_cities';
+  info: {
+    singularName: 'ib-city';
+    pluralName: 'ib-cities';
+    displayName: 'IB_City';
+    description: '';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    stats: Attribute.Component<'stats.stats', true>;
+    achievers: Attribute.Component<'achievers.achiever', true>;
+    How_Its_work: Attribute.Component<'how-it-works.how-it-works', true>;
+    Child_secure_forum: Attribute.Component<'forum.child-secure-forum'>;
+    Recent_blogs: Attribute.Component<'blog-section.blog', true>;
+    results: Attribute.Component<'results-data.results-data', true>;
+    createdAt: Attribute.DateTime;
+    updatedAt: Attribute.DateTime;
+    publishedAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<
+      'api::ib-city.ib-city',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+    updatedBy: Attribute.Relation<
+      'api::ib-city.ib-city',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+  };
+}
+
 export interface ApiIbProgramIbProgram extends Schema.CollectionType {
   collectionName: 'ib_programs';
   info: {
@@ -2392,6 +2428,44 @@ export interface ApiIbProgramIbProgram extends Schema.CollectionType {
       Attribute.Private;
     updatedBy: Attribute.Relation<
       'api::ib-program.ib-program',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+  };
+}
+
+export interface ApiIbSubjectIbSubject extends Schema.SingleType {
+  collectionName: 'ib_subjects';
+  info: {
+    singularName: 'ib-subject';
+    pluralName: 'ib-subjects';
+    displayName: 'IB_subject';
+    description: '';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    stats: Attribute.Component<'stats.stats', true>;
+    achievers: Attribute.Component<'achievers.achiever', true>;
+    Why_choose_tychr: Attribute.Component<'why-tychr.why-tychr', true>;
+    results: Attribute.Component<'results-data.results-data', true>;
+    stand_out_feature: Attribute.Component<
+      'stand-out-feature.stand-out-feature',
+      true
+    >;
+    createdAt: Attribute.DateTime;
+    updatedAt: Attribute.DateTime;
+    publishedAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<
+      'api::ib-subject.ib-subject',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+    updatedBy: Attribute.Relation<
+      'api::ib-subject.ib-subject',
       'oneToOne',
       'admin::user'
     > &
@@ -4541,6 +4615,11 @@ export interface ApiTutorsWebsiteTutorsWebsite extends Schema.CollectionType {
     schema_reviews: Attribute.Component<'schema.schema-reviews', true>;
     schema_video: Attribute.Component<'schema.schema-video'>;
     schema_faqs: Attribute.Component<'schema.schema-faqs', true>;
+    Best_Online_tutors_city: Attribute.Component<
+      'best-tutors-data.best-tutors-data',
+      true
+    >;
+    IB_Summarise_syllabus: Attribute.Component<'syllabus.ib-subjects'>;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
@@ -4869,7 +4948,9 @@ declare module '@strapi/types' {
       'api::external-user.external-user': ApiExternalUserExternalUser;
       'api::grade-subject.grade-subject': ApiGradeSubjectGradeSubject;
       'api::gst.gst': ApiGstGst;
+      'api::ib-city.ib-city': ApiIbCityIbCity;
       'api::ib-program.ib-program': ApiIbProgramIbProgram;
+      'api::ib-subject.ib-subject': ApiIbSubjectIbSubject;
       'api::individual-user.individual-user': ApiIndividualUserIndividualUser;
       'api::lead.lead': ApiLeadLead;
       'api::live-lecture.live-lecture': ApiLiveLectureLiveLecture;
