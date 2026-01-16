@@ -1,0 +1,42 @@
+{
+  "kind": "singleType",
+  "collectionName": "ib_subjects",
+  "info": {
+    "singularName": "ib-subject",
+    "pluralName": "ib-subjects",
+    "displayName": "IB_subject",
+    "description": ""
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "stats": {
+      "type": "component",
+      "repeatable": true,
+      "component": "stats.stats"
+    },
+    "achievers": {
+      "type": "component",
+      "repeatable": true,
+      "component": "achievers.achiever"
+    },
+    "Why_choose_tychr": {
+      "type": "component",
+      "repeatable": true,
+      "component": "why-tychr.why-tychr"
+    },
+    "results": {
+      "type": "component",
+      "repeatable": true,
+      "component": "results-data.results-data"
+    },
+    "stand_out_feature": {
+      "displayName": "stand_out_feature",
+      "type": "component",
+      "repeatable": true,
+      "component": "stand-out-feature.stand-out-feature"
+    }
+  }
+}

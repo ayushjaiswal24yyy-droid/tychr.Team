@@ -1,0 +1,18 @@
+{
+  "collectionName": "components_schema_schema_results",
+  "info": {
+    "displayName": "schema-results"
+  },
+  "options": {},
+  "attributes": {
+    "year": {
+      "type": "string"
+    },
+    "global": {
+      "type": "string"
+    },
+    "tychr": {
+      "type": "string"
+    }
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "collectionName": "components_external_assessments_external_assessments",
+  "info": {
+    "displayName": "external_assessments"
+  },
+  "options": {},
+  "attributes": {
+    "name": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    }
+  }
+}

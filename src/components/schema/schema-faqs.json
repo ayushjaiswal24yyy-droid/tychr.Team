@@ -1,0 +1,15 @@
+{
+  "collectionName": "components_schema_schema_faqs",
+  "info": {
+    "displayName": "schema-faqs"
+  },
+  "options": {},
+  "attributes": {
+    "q": {
+      "type": "string"
+    },
+    "a": {
+      "type": "string"
+    }
+  }
+}

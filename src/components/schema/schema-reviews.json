@@ -1,0 +1,18 @@
+{
+  "collectionName": "components_schema_schema_reviews",
+  "info": {
+    "displayName": "schema_reviews"
+  },
+  "options": {},
+  "attributes": {
+    "author": {
+      "type": "string"
+    },
+    "rating": {
+      "type": "decimal"
+    },
+    "text": {
+      "type": "string"
+    }
+  }
+}

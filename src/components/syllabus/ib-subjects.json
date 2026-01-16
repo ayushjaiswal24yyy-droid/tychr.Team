@@ -1,0 +1,42 @@
+{
+  "collectionName": "components_syllabus_ib_subjects",
+  "info": {
+    "displayName": "IB_subjects"
+  },
+  "options": {},
+  "attributes": {
+    "course_name": {
+      "type": "string"
+    },
+    "course_description": {
+      "type": "text"
+    },
+    "curriculum": {
+      "displayName": "curriculum",
+      "type": "component",
+      "repeatable": true,
+      "component": "curriculum.curriculum"
+    },
+    "external_assessments": {
+      "displayName": "external_assessments",
+      "type": "component",
+      "repeatable": true,
+      "component": "external-assessments.external-assessments"
+    },
+    "internal_assessments": {
+      "displayName": "internal_assessments",
+      "type": "component",
+      "repeatable": true,
+      "component": "internal-assessments.internal-assessments"
+    },
+    "provider_name": {
+      "type": "string"
+    },
+    "canonical_url": {
+      "type": "string"
+    },
+    "provider_url": {
+      "type": "string"
+    }
+  }
+}
