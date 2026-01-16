@@ -1,0 +1,24 @@
+{
+  "collectionName": "components_tutor_price_tutor_prices",
+  "info": {
+    "displayName": "tutor_price"
+  },
+  "options": {},
+  "attributes": {
+    "inr_price": {
+      "type": "decimal"
+    },
+    "usd_price": {
+      "type": "decimal"
+    },
+    "studentCount": {
+      "type": "integer"
+    },
+    "tychr_usd_price": {
+      "type": "decimal"
+    },
+    "tychr_inr_price": {
+      "type": "decimal"
+    }
+  }
+}

@@ -497,6 +497,12 @@
     },
     "countryCode": {
       "type": "string"
+    },
+    "tutor_price": {
+      "displayName": "tutor_price",
+      "type": "component",
+      "repeatable": true,
+      "component": "tutor-price.tutor-price"
     }
   }
 }

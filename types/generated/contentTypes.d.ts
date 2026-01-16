@@ -1036,6 +1036,7 @@ export interface PluginUsersPermissionsUser extends Schema.CollectionType {
     >;
     time_slots: Attribute.Component<'time-slots.time-slots', true>;
     countryCode: Attribute.String;
+    tutor_price: Attribute.Component<'tutor-price.tutor-price', true>;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     createdBy: Attribute.Relation<
