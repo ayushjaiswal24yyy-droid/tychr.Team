@@ -2357,6 +2357,7 @@ export interface ApiIbCityIbCity extends Schema.SingleType {
     Why_Tychr: Attribute.Component<'why-tychr.why-tychr', true>;
     stand_out: Attribute.Component<'stand-out.stand-out', true>;
     tutors: Attribute.Component<'certified-tutors.certified-tutors', true>;
+    why_choose_tutor: Attribute.Component<'why-choose-tutor.why-choose-tutor'>;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;

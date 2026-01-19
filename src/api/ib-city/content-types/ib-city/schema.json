@@ -57,6 +57,11 @@
       "type": "component",
       "repeatable": true,
       "component": "certified-tutors.certified-tutors"
+    },
+    "why_choose_tutor": {
+      "type": "component",
+      "repeatable": false,
+      "component": "why-choose-tutor.why-choose-tutor"
     }
   }
 }
