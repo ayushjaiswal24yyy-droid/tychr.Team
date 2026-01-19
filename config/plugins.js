@@ -42,8 +42,8 @@ module.exports = ({ env }) => ({
         amazon: `https://email.${process.env.AWS_REGION}.amazonaws.com`,
       },
       settings: {
-        defaultFrom: "tychr@saralgroups.com",
-        defaultReplyTo: "tychr@saralgroups.com",
+        defaultFrom: "contact@tychr.com",
+        defaultReplyTo: "contact@tychr.com",
       },
     },
   },
