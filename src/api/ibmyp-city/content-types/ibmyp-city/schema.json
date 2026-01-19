@@ -10,11 +10,57 @@
     "draftAndPublish": true
   },
   "pluginOptions": {},
-  "attributes": {
+ "attributes": {
     "stats": {
       "type": "component",
       "repeatable": true,
       "component": "stats.stats"
+    },
+    "achievers": {
+      "type": "component",
+      "repeatable": true,
+      "component": "achievers.achiever"
+    },
+    "How_Its_work": {
+      "type": "component",
+      "repeatable": true,
+      "component": "how-it-works.how-it-works"
+    },
+    "results": {
+      "type": "component",
+      "repeatable": true,
+      "component": "results-data.results-data"
+    },
+    "Why_Tychr": {
+      "type": "component",
+      "repeatable": true,
+      "component": "why-tychr.why-tychr"
+    },
+    "stand_out": {
+      "type": "component",
+      "repeatable": true,
+      "component": "stand-out.stand-out"
+    },
+    "tutors": {
+      "type": "component",
+      "repeatable": true,
+      "component": "certified-tutors.certified-tutors"
+    },
+    "why_choose_tutor": {
+      "type": "component",
+      "repeatable": false,
+      "component": "why-choose-tutor.why-choose-tutor"
+    },
+    "finest_tutors": {
+      "type": "component",
+      "repeatable": true,
+      "component": "finest-tutors.finest-tutors"
+    },
+    "ibmyp_entail": {
+      "displayName": "ibmyp_entail",
+      "type": "component",
+      "repeatable": false,
+      "component": "igcse-entail.igcse-entail"
     }
   }
 }

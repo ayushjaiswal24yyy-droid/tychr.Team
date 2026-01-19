@@ -4,7 +4,8 @@
   "info": {
     "singularName": "sat-city",
     "pluralName": "sat-cities",
-    "displayName": "SAT_City"
+    "displayName": "SAT_City",
+    "description": ""
   },
   "options": {
     "draftAndPublish": true
@@ -20,11 +21,6 @@
       "type": "component",
       "repeatable": true,
       "component": "achievers.achiever"
-    },
-    "How_Its_work": {
-      "type": "component",
-      "repeatable": true,
-      "component": "how-it-works.how-it-works"
     },
     "results": {
       "type": "component",

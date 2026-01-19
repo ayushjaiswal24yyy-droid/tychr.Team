@@ -2559,6 +2559,15 @@ export interface ApiIbmypCityIbmypCity extends Schema.SingleType {
   };
   attributes: {
     stats: Attribute.Component<'stats.stats', true>;
+    achievers: Attribute.Component<'achievers.achiever', true>;
+    How_Its_work: Attribute.Component<'how-it-works.how-it-works', true>;
+    results: Attribute.Component<'results-data.results-data', true>;
+    Why_Tychr: Attribute.Component<'why-tychr.why-tychr', true>;
+    stand_out: Attribute.Component<'stand-out.stand-out', true>;
+    tutors: Attribute.Component<'certified-tutors.certified-tutors', true>;
+    why_choose_tutor: Attribute.Component<'why-choose-tutor.why-choose-tutor'>;
+    finest_tutors: Attribute.Component<'finest-tutors.finest-tutors', true>;
+    ibmyp_entail: Attribute.Component<'igcse-entail.igcse-entail'>;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
@@ -3780,6 +3789,7 @@ export interface ApiSatCitySatCity extends Schema.SingleType {
     singularName: 'sat-city';
     pluralName: 'sat-cities';
     displayName: 'SAT_City';
+    description: '';
   };
   options: {
     draftAndPublish: true;
@@ -3787,7 +3797,6 @@ export interface ApiSatCitySatCity extends Schema.SingleType {
   attributes: {
     stats: Attribute.Component<'stats.stats', true>;
     achievers: Attribute.Component<'achievers.achiever', true>;
-    How_Its_work: Attribute.Component<'how-it-works.how-it-works', true>;
     results: Attribute.Component<'results-data.results-data', true>;
     Why_Tychr: Attribute.Component<'why-tychr.why-tychr', true>;
     stand_out: Attribute.Component<'stand-out.stand-out', true>;
