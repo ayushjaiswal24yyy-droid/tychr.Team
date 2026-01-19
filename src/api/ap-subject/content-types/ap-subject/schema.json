@@ -1,0 +1,20 @@
+{
+  "kind": "singleType",
+  "collectionName": "ap_subjects",
+  "info": {
+    "singularName": "ap-subject",
+    "pluralName": "ap-subjects",
+    "displayName": "AP_Subject"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "stats": {
+      "type": "component",
+      "repeatable": true,
+      "component": "stats.stats"
+    }
+  }
+}

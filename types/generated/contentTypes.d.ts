@@ -1256,6 +1256,75 @@ export interface ApiAnswerAnswer extends Schema.CollectionType {
   };
 }
 
+export interface ApiApCityApCity extends Schema.SingleType {
+  collectionName: 'ap_cities';
+  info: {
+    singularName: 'ap-city';
+    pluralName: 'ap-cities';
+    displayName: 'AP_City';
+    description: '';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    stats: Attribute.Component<'stats.stats', true>;
+    achievers: Attribute.Component<'achievers.achiever', true>;
+    How_Its_work: Attribute.Component<'how-it-works.how-it-works', true>;
+    results: Attribute.Component<'results-data.results-data', true>;
+    Why_Tychr: Attribute.Component<'why-tychr.why-tychr', true>;
+    stand_out: Attribute.Component<'stand-out.stand-out', true>;
+    tutors: Attribute.Component<'certified-tutors.certified-tutors', true>;
+    why_choose_tutor: Attribute.Component<'why-choose-tutor.why-choose-tutor'>;
+    finest_tutors: Attribute.Component<'finest-tutors.finest-tutors', true>;
+    createdAt: Attribute.DateTime;
+    updatedAt: Attribute.DateTime;
+    publishedAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<
+      'api::ap-city.ap-city',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+    updatedBy: Attribute.Relation<
+      'api::ap-city.ap-city',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+  };
+}
+
+export interface ApiApSubjectApSubject extends Schema.SingleType {
+  collectionName: 'ap_subjects';
+  info: {
+    singularName: 'ap-subject';
+    pluralName: 'ap-subjects';
+    displayName: 'AP_Subject';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    stats: Attribute.Component<'stats.stats', true>;
+    createdAt: Attribute.DateTime;
+    updatedAt: Attribute.DateTime;
+    publishedAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<
+      'api::ap-subject.ap-subject',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+    updatedBy: Attribute.Relation<
+      'api::ap-subject.ap-subject',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+  };
+}
+
 export interface ApiArticleArticle extends Schema.CollectionType {
   collectionName: 'articles';
   info: {
@@ -2352,12 +2421,12 @@ export interface ApiIbCityIbCity extends Schema.SingleType {
     achievers: Attribute.Component<'achievers.achiever', true>;
     How_Its_work: Attribute.Component<'how-it-works.how-it-works', true>;
     Child_secure_forum: Attribute.Component<'forum.child-secure-forum'>;
-    Recent_blogs: Attribute.Component<'blog-section.blog', true>;
     results: Attribute.Component<'results-data.results-data', true>;
     Why_Tychr: Attribute.Component<'why-tychr.why-tychr', true>;
     stand_out: Attribute.Component<'stand-out.stand-out', true>;
     tutors: Attribute.Component<'certified-tutors.certified-tutors', true>;
     why_choose_tutor: Attribute.Component<'why-choose-tutor.why-choose-tutor'>;
+    finest_tutors: Attribute.Component<'finest-tutors.finest-tutors', true>;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
@@ -2471,6 +2540,136 @@ export interface ApiIbSubjectIbSubject extends Schema.SingleType {
       Attribute.Private;
     updatedBy: Attribute.Relation<
       'api::ib-subject.ib-subject',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+  };
+}
+
+export interface ApiIbmypCityIbmypCity extends Schema.SingleType {
+  collectionName: 'ibmyp_cities';
+  info: {
+    singularName: 'ibmyp-city';
+    pluralName: 'ibmyp-cities';
+    displayName: 'IBMYP_City';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    stats: Attribute.Component<'stats.stats', true>;
+    createdAt: Attribute.DateTime;
+    updatedAt: Attribute.DateTime;
+    publishedAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<
+      'api::ibmyp-city.ibmyp-city',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+    updatedBy: Attribute.Relation<
+      'api::ibmyp-city.ibmyp-city',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+  };
+}
+
+export interface ApiIbmypSubjectIbmypSubject extends Schema.SingleType {
+  collectionName: 'ibmyp_subjects';
+  info: {
+    singularName: 'ibmyp-subject';
+    pluralName: 'ibmyp-subjects';
+    displayName: 'IBMYP_Subject';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    stats: Attribute.Component<'stats.stats', true>;
+    createdAt: Attribute.DateTime;
+    updatedAt: Attribute.DateTime;
+    publishedAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<
+      'api::ibmyp-subject.ibmyp-subject',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+    updatedBy: Attribute.Relation<
+      'api::ibmyp-subject.ibmyp-subject',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+  };
+}
+
+export interface ApiIgcseCityIgcseCity extends Schema.SingleType {
+  collectionName: 'igcse_cities';
+  info: {
+    singularName: 'igcse-city';
+    pluralName: 'igcse-cities';
+    displayName: 'IGCSE_City';
+    description: '';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    stats: Attribute.Component<'stats.stats', true>;
+    achievers: Attribute.Component<'achievers.achiever', true>;
+    How_Its_work: Attribute.Component<'how-it-works.how-it-works', true>;
+    results: Attribute.Component<'results-data.results-data', true>;
+    Why_Tychr: Attribute.Component<'why-tychr.why-tychr', true>;
+    stand_out: Attribute.Component<'stand-out.stand-out', true>;
+    tutors: Attribute.Component<'certified-tutors.certified-tutors', true>;
+    why_choose_tutor: Attribute.Component<'why-choose-tutor.why-choose-tutor'>;
+    finest_tutors: Attribute.Component<'finest-tutors.finest-tutors', true>;
+    igcse_entail: Attribute.Component<'igcse-entail.igcse-entail'>;
+    createdAt: Attribute.DateTime;
+    updatedAt: Attribute.DateTime;
+    publishedAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<
+      'api::igcse-city.igcse-city',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+    updatedBy: Attribute.Relation<
+      'api::igcse-city.igcse-city',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+  };
+}
+
+export interface ApiIgcseSubjectIgcseSubject extends Schema.SingleType {
+  collectionName: 'igcse_subjects';
+  info: {
+    singularName: 'igcse-subject';
+    pluralName: 'igcse-subjects';
+    displayName: 'IGCSE_Subject';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    stats: Attribute.Component<'stats.stats', true>;
+    createdAt: Attribute.DateTime;
+    updatedAt: Attribute.DateTime;
+    publishedAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<
+      'api::igcse-subject.igcse-subject',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+    updatedBy: Attribute.Relation<
+      'api::igcse-subject.igcse-subject',
       'oneToOne',
       'admin::user'
     > &
@@ -3568,6 +3767,74 @@ export interface ApiResourceResource extends Schema.CollectionType {
       Attribute.Private;
     updatedBy: Attribute.Relation<
       'api::resource.resource',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+  };
+}
+
+export interface ApiSatCitySatCity extends Schema.SingleType {
+  collectionName: 'sat_cities';
+  info: {
+    singularName: 'sat-city';
+    pluralName: 'sat-cities';
+    displayName: 'SAT_City';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    stats: Attribute.Component<'stats.stats', true>;
+    achievers: Attribute.Component<'achievers.achiever', true>;
+    How_Its_work: Attribute.Component<'how-it-works.how-it-works', true>;
+    results: Attribute.Component<'results-data.results-data', true>;
+    Why_Tychr: Attribute.Component<'why-tychr.why-tychr', true>;
+    stand_out: Attribute.Component<'stand-out.stand-out', true>;
+    tutors: Attribute.Component<'certified-tutors.certified-tutors', true>;
+    why_choose_tutor: Attribute.Component<'why-choose-tutor.why-choose-tutor'>;
+    finest_tutors: Attribute.Component<'finest-tutors.finest-tutors', true>;
+    createdAt: Attribute.DateTime;
+    updatedAt: Attribute.DateTime;
+    publishedAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<
+      'api::sat-city.sat-city',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+    updatedBy: Attribute.Relation<
+      'api::sat-city.sat-city',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+  };
+}
+
+export interface ApiSatSubjectSatSubject extends Schema.SingleType {
+  collectionName: 'sat_subjects';
+  info: {
+    singularName: 'sat-subject';
+    pluralName: 'sat-subjects';
+    displayName: 'SAT_Subject';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    stats: Attribute.Component<'stats.stats', true>;
+    createdAt: Attribute.DateTime;
+    updatedAt: Attribute.DateTime;
+    publishedAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<
+      'api::sat-subject.sat-subject',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+    updatedBy: Attribute.Relation<
+      'api::sat-subject.sat-subject',
       'oneToOne',
       'admin::user'
     > &
@@ -4931,6 +5198,8 @@ declare module '@strapi/types' {
       'api::add-on-content.add-on-content': ApiAddOnContentAddOnContent;
       'api::add-on-order.add-on-order': ApiAddOnOrderAddOnOrder;
       'api::answer.answer': ApiAnswerAnswer;
+      'api::ap-city.ap-city': ApiApCityApCity;
+      'api::ap-subject.ap-subject': ApiApSubjectApSubject;
       'api::article.article': ApiArticleArticle;
       'api::attendance.attendance': ApiAttendanceAttendance;
       'api::class.class': ApiClassClass;
@@ -4953,6 +5222,10 @@ declare module '@strapi/types' {
       'api::ib-city.ib-city': ApiIbCityIbCity;
       'api::ib-program.ib-program': ApiIbProgramIbProgram;
       'api::ib-subject.ib-subject': ApiIbSubjectIbSubject;
+      'api::ibmyp-city.ibmyp-city': ApiIbmypCityIbmypCity;
+      'api::ibmyp-subject.ibmyp-subject': ApiIbmypSubjectIbmypSubject;
+      'api::igcse-city.igcse-city': ApiIgcseCityIgcseCity;
+      'api::igcse-subject.igcse-subject': ApiIgcseSubjectIgcseSubject;
       'api::individual-user.individual-user': ApiIndividualUserIndividualUser;
       'api::lead.lead': ApiLeadLead;
       'api::live-lecture.live-lecture': ApiLiveLectureLiveLecture;
@@ -4974,6 +5247,8 @@ declare module '@strapi/types' {
       'api::question-bank.question-bank': ApiQuestionBankQuestionBank;
       'api::recorded-lecture.recorded-lecture': ApiRecordedLectureRecordedLecture;
       'api::resource.resource': ApiResourceResource;
+      'api::sat-city.sat-city': ApiSatCitySatCity;
+      'api::sat-subject.sat-subject': ApiSatSubjectSatSubject;
       'api::student-meeting.student-meeting': ApiStudentMeetingStudentMeeting;
       'api::student-notification.student-notification': ApiStudentNotificationStudentNotification;
       'api::student-uni-application.student-uni-application': ApiStudentUniApplicationStudentUniApplication;

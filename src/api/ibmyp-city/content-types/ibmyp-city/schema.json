@@ -1,0 +1,20 @@
+{
+  "kind": "singleType",
+  "collectionName": "ibmyp_cities",
+  "info": {
+    "singularName": "ibmyp-city",
+    "pluralName": "ibmyp-cities",
+    "displayName": "IBMYP_City"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "stats": {
+      "type": "component",
+      "repeatable": true,
+      "component": "stats.stats"
+    }
+  }
+}

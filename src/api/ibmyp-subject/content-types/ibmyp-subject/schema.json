@@ -1,0 +1,20 @@
+{
+  "kind": "singleType",
+  "collectionName": "ibmyp_subjects",
+  "info": {
+    "singularName": "ibmyp-subject",
+    "pluralName": "ibmyp-subjects",
+    "displayName": "IBMYP_Subject"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "stats": {
+      "type": "component",
+      "repeatable": true,
+      "component": "stats.stats"
+    }
+  }
+}

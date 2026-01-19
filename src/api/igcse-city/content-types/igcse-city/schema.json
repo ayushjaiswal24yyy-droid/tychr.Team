@@ -1,10 +1,10 @@
 {
   "kind": "singleType",
-  "collectionName": "ib_cities",
+  "collectionName": "igcse_cities",
   "info": {
-    "singularName": "ib-city",
-    "pluralName": "ib-cities",
-    "displayName": "IB_City",
+    "singularName": "igcse-city",
+    "pluralName": "igcse-cities",
+    "displayName": "IGCSE_City",
     "description": ""
   },
   "options": {
@@ -26,12 +26,6 @@
       "type": "component",
       "repeatable": true,
       "component": "how-it-works.how-it-works"
-    },
-    "Child_secure_forum": {
-      "displayName": "Child_Secure_Forum",
-      "type": "component",
-      "repeatable": false,
-      "component": "forum.child-secure-forum"
     },
     "results": {
       "type": "component",
@@ -62,6 +56,12 @@
       "type": "component",
       "repeatable": true,
       "component": "finest-tutors.finest-tutors"
+    },
+    "igcse_entail": {
+      "displayName": "igcse_entail",
+      "type": "component",
+      "repeatable": false,
+      "component": "igcse-entail.igcse-entail"
     }
   }
 }

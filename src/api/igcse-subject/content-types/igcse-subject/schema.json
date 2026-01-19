@@ -1,0 +1,20 @@
+{
+  "kind": "singleType",
+  "collectionName": "igcse_subjects",
+  "info": {
+    "singularName": "igcse-subject",
+    "pluralName": "igcse-subjects",
+    "displayName": "IGCSE_Subject"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "stats": {
+      "type": "component",
+      "repeatable": true,
+      "component": "stats.stats"
+    }
+  }
+}

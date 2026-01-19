@@ -1,0 +1,22 @@
+{
+  "collectionName": "components_cta_button_cta_buttons",
+  "info": {
+    "displayName": "cta_buttons"
+  },
+  "options": {},
+  "attributes": {
+    "string": {
+      "type": "string"
+    },
+    "url": {
+      "type": "string"
+    },
+    "variant": {
+      "type": "enumeration",
+      "enum": [
+        "primary",
+        "secondary"
+      ]
+    }
+  }
+}

@@ -1,11 +1,10 @@
 {
   "kind": "singleType",
-  "collectionName": "ib_cities",
+  "collectionName": "sat_cities",
   "info": {
-    "singularName": "ib-city",
-    "pluralName": "ib-cities",
-    "displayName": "IB_City",
-    "description": ""
+    "singularName": "sat-city",
+    "pluralName": "sat-cities",
+    "displayName": "SAT_City"
   },
   "options": {
     "draftAndPublish": true
@@ -26,12 +25,6 @@
       "type": "component",
       "repeatable": true,
       "component": "how-it-works.how-it-works"
-    },
-    "Child_secure_forum": {
-      "displayName": "Child_Secure_Forum",
-      "type": "component",
-      "repeatable": false,
-      "component": "forum.child-secure-forum"
     },
     "results": {
       "type": "component",

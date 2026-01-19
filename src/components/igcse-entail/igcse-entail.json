@@ -1,0 +1,36 @@
+{
+  "collectionName": "components_igcse_entail_igcse_entails",
+  "info": {
+    "displayName": "igcse_entail",
+    "description": ""
+  },
+  "options": {},
+  "attributes": {
+    "title": {
+      "type": "string"
+    },
+    "subtitle": {
+      "type": "string"
+    },
+    "description": {
+      "type": "blocks"
+    },
+    "features": {
+      "type": "component",
+      "repeatable": true,
+      "component": "features.features"
+    },
+    "stats": {
+      "displayName": "stat_item",
+      "type": "component",
+      "repeatable": true,
+      "component": "stat-item.stat-item"
+    },
+    "cta_buttons": {
+      "displayName": "cta_buttons",
+      "type": "component",
+      "repeatable": true,
+      "component": "cta-button.cta-buttons"
+    }
+  }
+}

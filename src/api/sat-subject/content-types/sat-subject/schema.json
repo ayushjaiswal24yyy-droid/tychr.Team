@@ -1,0 +1,20 @@
+{
+  "kind": "singleType",
+  "collectionName": "sat_subjects",
+  "info": {
+    "singularName": "sat-subject",
+    "pluralName": "sat-subjects",
+    "displayName": "SAT_Subject"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "stats": {
+      "type": "component",
+      "repeatable": true,
+      "component": "stats.stats"
+    }
+  }
+}
