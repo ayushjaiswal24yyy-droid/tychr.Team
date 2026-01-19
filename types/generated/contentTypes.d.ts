@@ -2354,6 +2354,8 @@ export interface ApiIbCityIbCity extends Schema.SingleType {
     Child_secure_forum: Attribute.Component<'forum.child-secure-forum'>;
     Recent_blogs: Attribute.Component<'blog-section.blog', true>;
     results: Attribute.Component<'results-data.results-data', true>;
+    Why_Tychr: Attribute.Component<'why-tychr.why-tychr', true>;
+    stand_out: Attribute.Component<'stand-out.stand-out', true>;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;

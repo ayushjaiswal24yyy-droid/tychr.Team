@@ -42,6 +42,16 @@
       "type": "component",
       "repeatable": true,
       "component": "results-data.results-data"
+    },
+    "Why_Tychr": {
+      "type": "component",
+      "repeatable": true,
+      "component": "why-tychr.why-tychr"
+    },
+    "stand_out": {
+      "type": "component",
+      "repeatable": true,
+      "component": "stand-out.stand-out"
     }
   }
 }
