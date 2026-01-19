@@ -4619,11 +4619,8 @@ export interface ApiTutorsWebsiteTutorsWebsite extends Schema.CollectionType {
     schema_reviews: Attribute.Component<'schema.schema-reviews', true>;
     schema_video: Attribute.Component<'schema.schema-video'>;
     schema_faqs: Attribute.Component<'schema.schema-faqs', true>;
-    Best_Online_tutors_city: Attribute.Component<
-      'best-tutors-data.best-tutors-data',
-      true
-    >;
     IB_Summarise_syllabus: Attribute.Component<'syllabus.ib-subjects'>;
+    why_choose_tutor: Attribute.Component<'why-choose-tutor.why-choose-tutor'>;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;

@@ -1,0 +1,43 @@
+{
+  "collectionName": "components_why_choose_tutor_why_choose_tutors",
+  "info": {
+    "displayName": "why_choose_tutor"
+  },
+  "options": {},
+  "attributes": {
+    "title": {
+      "type": "string"
+    },
+    "subtitle": {
+      "type": "text"
+    },
+    "features": {
+      "displayName": "features",
+      "type": "component",
+      "repeatable": true,
+      "component": "features.features"
+    },
+    "right_box_title": {
+      "type": "string"
+    },
+    "cta_text": {
+      "type": "string"
+    },
+    "cta_link": {
+      "type": "string"
+    },
+    "enabled": {
+      "type": "boolean"
+    },
+    "theme": {
+      "type": "enumeration",
+      "enum": [
+        "light",
+        "dark"
+      ]
+    },
+    "bullet_points": {
+      "type": "json"
+    }
+  }
+}

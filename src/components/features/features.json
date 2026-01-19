@@ -1,26 +1,24 @@
 {
-  "collectionName": "components_best_tutors_data_best_tutors_data",
+  "collectionName": "components_features_features",
   "info": {
-    "displayName": "best_tutors_data",
-    "description": ""
+    "displayName": "features"
   },
   "options": {},
   "attributes": {
     "icon": {
-      "type": "media",
-      "multiple": false,
-      "required": false,
       "allowedTypes": [
         "images",
         "files",
         "videos",
         "audios"
-      ]
+      ],
+      "type": "media",
+      "multiple": false
     },
     "title": {
       "type": "string"
     },
-    "subtitle": {
+    "description": {
       "type": "text"
     }
   }
