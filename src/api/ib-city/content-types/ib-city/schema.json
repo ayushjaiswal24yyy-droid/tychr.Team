@@ -52,6 +52,11 @@
       "type": "component",
       "repeatable": true,
       "component": "stand-out.stand-out"
+    },
+    "tutors": {
+      "type": "component",
+      "repeatable": true,
+      "component": "certified-tutors.certified-tutors"
     }
   }
 }

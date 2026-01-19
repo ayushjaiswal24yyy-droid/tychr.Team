@@ -2356,6 +2356,7 @@ export interface ApiIbCityIbCity extends Schema.SingleType {
     results: Attribute.Component<'results-data.results-data', true>;
     Why_Tychr: Attribute.Component<'why-tychr.why-tychr', true>;
     stand_out: Attribute.Component<'stand-out.stand-out', true>;
+    tutors: Attribute.Component<'certified-tutors.certified-tutors', true>;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
