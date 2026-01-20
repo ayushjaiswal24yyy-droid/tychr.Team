@@ -17,11 +17,6 @@
       "repeatable": true,
       "component": "stats.stats"
     },
-    "achievers": {
-      "type": "component",
-      "repeatable": true,
-      "component": "achievers.achiever"
-    },
     "Why_choose_tychr": {
       "type": "component",
       "repeatable": true,
@@ -37,6 +32,11 @@
       "type": "component",
       "repeatable": true,
       "component": "stand-out-feature.stand-out-feature"
+    },
+    "free_resources": {
+      "type": "component",
+      "repeatable": false,
+      "component": "free-resources.free-resourced"
     }
   }
 }

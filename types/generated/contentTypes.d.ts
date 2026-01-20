@@ -2522,13 +2522,13 @@ export interface ApiIbSubjectIbSubject extends Schema.SingleType {
   };
   attributes: {
     stats: Attribute.Component<'stats.stats', true>;
-    achievers: Attribute.Component<'achievers.achiever', true>;
     Why_choose_tychr: Attribute.Component<'why-tychr.why-tychr', true>;
     results: Attribute.Component<'results-data.results-data', true>;
     stand_out_feature: Attribute.Component<
       'stand-out-feature.stand-out-feature',
       true
     >;
+    free_resources: Attribute.Component<'free-resources.free-resourced'>;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
