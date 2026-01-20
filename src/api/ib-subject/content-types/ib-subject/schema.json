@@ -17,6 +17,11 @@
       "repeatable": true,
       "component": "stats.stats"
     },
+    "How_Its_work": {
+      "type": "component",
+      "repeatable": true,
+      "component": "how-it-works.how-it-works"
+    },
     "Why_choose_tychr": {
       "type": "component",
       "repeatable": true,
