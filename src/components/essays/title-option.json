@@ -1,0 +1,13 @@
+{
+  "collectionName": "components_shared_title_options",
+  "info": {
+    "displayName": "Title Option",
+    "description": "A single essay title option"
+  },
+  "attributes": {
+    "title": {
+      "type": "string",
+      "required": true
+    }
+  }
+}

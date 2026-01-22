@@ -12,17 +12,25 @@
     },
     "file": {
       "type": "media",
-      "multiple": false
+      "multiple": false,
+      "required": false
     },
     "submitted_at": {
       "type": "datetime"
     },
     "status": {
       "type": "enumeration",
-      "enum": ["pending", "submitted", "reviewed"]
+      "enum": [
+        "pending",
+        "submitted",
+        "reviewed"
+      ]
     },
     "college_essay_id": {
       "type": "integer"
+    },
+    "essay": {
+      "type": "blocks"
     }
   }
 }

@@ -1,0 +1,13 @@
+{
+  "collectionName": "components_college_essay_title_options",
+  "info": {
+    "displayName": "Essay Title Options",
+    "description": "Predefined essay title options for dropdown selection"
+  },
+  "attributes": {
+    "title": {
+      "type": "string",
+      "required": true
+    }
+  }
+}
