@@ -1301,12 +1301,18 @@ export interface ApiApSubjectApSubject extends Schema.SingleType {
     singularName: 'ap-subject';
     pluralName: 'ap-subjects';
     displayName: 'AP_Subject';
+    description: '';
   };
   options: {
     draftAndPublish: true;
   };
   attributes: {
     stats: Attribute.Component<'stats.stats', true>;
+    stand_out: Attribute.Component<'stand-out.stand-out', true>;
+    finest_tutors: Attribute.Component<'finest-tutors.finest-tutors', true>;
+    How_Its_work: Attribute.Component<'how-it-works.how-it-works', true>;
+    why_choose_tutor: Attribute.Component<'why-choose-tutor.why-choose-tutor'>;
+    elite_tutors: Attribute.Component<'claims.claims', true>;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
@@ -2522,6 +2528,7 @@ export interface ApiIbSubjectIbSubject extends Schema.SingleType {
   };
   attributes: {
     stats: Attribute.Component<'stats.stats', true>;
+    How_Its_work: Attribute.Component<'how-it-works.how-it-works', true>;
     Why_choose_tychr: Attribute.Component<'why-tychr.why-tychr', true>;
     results: Attribute.Component<'results-data.results-data', true>;
     stand_out_feature: Attribute.Component<

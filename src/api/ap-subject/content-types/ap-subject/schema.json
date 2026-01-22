@@ -4,7 +4,8 @@
   "info": {
     "singularName": "ap-subject",
     "pluralName": "ap-subjects",
-    "displayName": "AP_Subject"
+    "displayName": "AP_Subject",
+    "description": ""
   },
   "options": {
     "draftAndPublish": true
@@ -15,6 +16,31 @@
       "type": "component",
       "repeatable": true,
       "component": "stats.stats"
+    },
+    "stand_out": {
+      "type": "component",
+      "repeatable": true,
+      "component": "stand-out.stand-out"
+    },
+    "finest_tutors": {
+      "type": "component",
+      "repeatable": true,
+      "component": "finest-tutors.finest-tutors"
+    },
+    "How_Its_work": {
+      "type": "component",
+      "repeatable": true,
+      "component": "how-it-works.how-it-works"
+    },
+    "why_choose_tutor": {
+      "type": "component",
+      "repeatable": false,
+      "component": "why-choose-tutor.why-choose-tutor"
+    },
+    "elite_tutors": {
+      "type": "component",
+      "repeatable": true,
+      "component": "claims.claims"
     }
   }
 }
