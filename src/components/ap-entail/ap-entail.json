@@ -1,0 +1,15 @@
+{
+  "collectionName": "components_ap_entail_ap_entails",
+  "info": {
+    "displayName": "ap_entail"
+  },
+  "options": {},
+  "attributes": {
+    "heading": {
+      "type": "string"
+    },
+    "paragraph": {
+      "type": "text"
+    }
+  }
+}

@@ -32,11 +32,6 @@
       "repeatable": true,
       "component": "how-it-works.how-it-works"
     },
-    "why_choose_tutor": {
-      "type": "component",
-      "repeatable": false,
-      "component": "why-choose-tutor.why-choose-tutor"
-    },
     "elite_tutors": {
       "type": "component",
       "repeatable": true,
