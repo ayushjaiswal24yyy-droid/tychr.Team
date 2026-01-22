@@ -4491,6 +4491,17 @@ export interface ApiTestSerieTestSerie extends Schema.CollectionType {
     resource_description: Attribute.Text;
     resource: Attribute.Media<'images' | 'files' | 'videos' | 'audios'>;
     start_date: Attribute.DateTime;
+    parent_test_series: Attribute.Relation<
+      'api::test-serie.test-serie',
+      'manyToOne',
+      'api::test-serie.test-serie'
+    >;
+    papers: Attribute.Relation<
+      'api::test-serie.test-serie',
+      'oneToMany',
+      'api::test-serie.test-serie'
+    >;
+    entity_type: Attribute.Enumeration<['series', 'paper']>;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;

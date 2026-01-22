@@ -130,6 +130,25 @@
     },
     "start_date": {
       "type": "datetime"
+    },
+    "parent_test_series": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::test-serie.test-serie",
+      "inversedBy": "papers"
+    },
+    "papers": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::test-serie.test-serie",
+      "mappedBy": "parent_test_series"
+    },
+    "entity_type": {
+      "type": "enumeration",
+      "enum": [
+        "series",
+        "paper"
+      ]
     }
   }
 }
