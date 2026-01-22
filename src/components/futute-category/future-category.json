@@ -10,7 +10,7 @@
       "type": "string"
     },
     "items": {
-      "type": "blocks"
+      "type": "json"
     }
   }
 }
