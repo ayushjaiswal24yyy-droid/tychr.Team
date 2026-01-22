@@ -19,6 +19,13 @@
       "type": "component",
       "repeatable": true,
       "component": "essays.essay-title-options"
+    },
+    "type": {
+      "type": "enumeration",
+      "enum": [
+        "main",
+        "supplementary"
+      ]
     }
   }
 }
