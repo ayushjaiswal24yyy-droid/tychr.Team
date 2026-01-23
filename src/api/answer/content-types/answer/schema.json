@@ -85,7 +85,8 @@
       "required": true
     },
     "is_attempt_marker": {
-      "type": "boolean"
+      "type": "boolean",
+      "default": false
     },
     "attempt_id": {
       "type": "integer"

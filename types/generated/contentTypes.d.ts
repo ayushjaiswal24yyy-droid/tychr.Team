@@ -1238,7 +1238,7 @@ export interface ApiAnswerAnswer extends Schema.CollectionType {
     >;
     online_answers: Attribute.JSON;
     completed: Attribute.Boolean & Attribute.Required;
-    is_attempt_marker: Attribute.Boolean;
+    is_attempt_marker: Attribute.Boolean & Attribute.DefaultTo<false>;
     attempt_id: Attribute.Integer;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;

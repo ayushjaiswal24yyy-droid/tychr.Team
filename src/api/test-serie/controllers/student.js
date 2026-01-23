@@ -617,6 +617,7 @@ module.exports = createCoreController(
               test_series: { id: { $in: paperIds } },
               attempt_id: currentAttemptId,
               completed: true,
+              is_attempt_marker: { $ne: true },
             },
             fields: ["id", "time_taken", "marks"],
             populate: {
