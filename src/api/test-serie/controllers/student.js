@@ -53,7 +53,7 @@ module.exports = createCoreController(
               grade_subject: { id: gradeSubjectId },
               test_type: { $eq: "Test Series" },
               publishedAt: { $notNull: true },
-              entity_type:{ $eq: "series" }
+              entity_type: { $eq: "series" }
             },
             populate: {
               question_banks: {
@@ -451,5 +451,160 @@ module.exports = createCoreController(
         ctx.throw(500, error.message);
       }
     },
+    async getStudentSeriesSession(ctx) {
+      try {
+        const { seriesId } = ctx.params;
+        const user = ctx.state.user;
+
+        if (!seriesId) {
+          return ctx.badRequest("Series ID is required");
+        }
+
+        if (!user) {
+          return ctx.unauthorized("User not authenticated");
+        }
+
+        /**
+         * 1. Fetch parent series with papers
+         */
+        const series = await strapi.entityService.findOne(
+          "api::test-serie.test-serie",
+          seriesId,
+          {
+            filters: {
+              entity_type: "series",
+              publishedAt: { $notNull: true },
+            },
+            populate: {
+              test_papers: {
+                sort: { createdAt: "asc" },
+                fields: ["id", "title"],
+              },
+            },
+          }
+        );
+
+        if (!series) {
+          return ctx.notFound("Test series not found");
+        }
+
+        if (!series.test_papers || series.test_papers.length === 0) {
+          return ctx.badRequest("No papers found for this series");
+        }
+
+        /**
+         * 2. Fetch all submitted answers for papers (session-bound)
+         */
+        const paperIds = series.test_papers.map((p) => p.id);
+
+        const answers = await strapi.entityService.findMany(
+          "api::answer.answer",
+          {
+            filters: {
+              student: user.id,
+              test_series: { id: { $in: paperIds } },
+              completed: true,
+            },
+            fields: ["id", "time_taken", "marks", "test_series"],
+            populate: {
+              test_series: {
+                fields: ["id"],
+              },
+            },
+          }
+        );
+
+        /**
+         * 3. Build lookup + total time taken
+         */
+        const answerByPaperId = {};
+        let totalTimeTaken = 0;
+
+        for (const ans of answers) {
+          const paperId = ans.test_series?.id;
+          if (!paperId) continue;
+
+          answerByPaperId[paperId] = {
+            id: ans.id,
+            time_taken: ans.time_taken || 0,
+            marks: ans.marks,
+          };
+
+          totalTimeTaken += ans.time_taken || 0;
+        }
+
+        /**
+         * 4. Compute remaining time (series-level)
+         */
+        const totalDurationSeconds = (series.test_duration || 0) * 60;
+
+        const remainingTime = Math.max(
+          totalDurationSeconds - totalTimeTaken,
+          0
+        );
+
+        /**
+         * 5. Compute paper statuses (SEQUENTIAL UNLOCK)
+         */
+        let activePaperAssigned = false;
+
+        const papers = series.test_papers.map((paper) => {
+          // Already submitted
+          if (answerByPaperId[paper.id]) {
+            return {
+              id: paper.id,
+              title: paper.title,
+              status: "submitted",
+              marks: answerByPaperId[paper.id].marks,
+            };
+          }
+
+          // First unsubmitted paper becomes active
+          if (!activePaperAssigned) {
+            activePaperAssigned = true;
+            return {
+              id: paper.id,
+              title: paper.title,
+              status: "active",
+            };
+          }
+
+          // Remaining papers locked
+          return {
+            id: paper.id,
+            title: paper.title,
+            status: "locked",
+          };
+        });
+
+        /**
+         * 6. Series completion check
+         */
+        const completed =
+          papers.every((p) => p.status === "submitted") ||
+          remainingTime === 0;
+
+        /**
+         * 7. Final response
+         */
+        return {
+          data: {
+            series: {
+              id: series.id,
+              title: series.title,
+              instructions: series.instructions,
+              total_duration: totalDurationSeconds,
+            },
+            remaining_time: remainingTime,
+            papers,
+            completed,
+          },
+        };
+      } catch (error) {
+        console.error("Error in getStudentSeriesSession:", error);
+        ctx.throw(500, error.message);
+      }
+    }
+
   })
 );

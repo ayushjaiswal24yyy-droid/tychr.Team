@@ -29,5 +29,14 @@ module.exports = {
         middlewares: [],
       },
     },
+    {
+      method: "GET",
+      path: "/test-series/:seriesId/student-session",
+      handler: "student.getStudentSeriesSession",
+      config: {
+        policies: [],
+        middlewares: [],
+      },
+    },
   ],
 };
