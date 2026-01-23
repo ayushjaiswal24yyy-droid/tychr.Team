@@ -478,9 +478,9 @@ module.exports = createCoreController(
             populate: {
               test_papers: {
                 sort: { createdAt: "asc" },
-                fields: ["id", "title"],
               },
             },
+
           }
         );
 
