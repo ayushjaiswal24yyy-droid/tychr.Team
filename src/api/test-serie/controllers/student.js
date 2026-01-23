@@ -488,7 +488,7 @@ module.exports = createCoreController(
           return ctx.notFound("Test series not found");
         }
 
-        if (!series.test_papers || series.test_papers.length === 0) {
+        if (!series.papers || series.papers.length === 0) {
           return ctx.badRequest("No papers found for this series");
         }
 
