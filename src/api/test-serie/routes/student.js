@@ -39,7 +39,7 @@ module.exports = {
       },
     },
         {
-      method: "GET",
+      method: "POST",
       path: "/test-series/:seriesId/start-new-attempt",
       handler: "student.startNewAttempt",
       config: {
