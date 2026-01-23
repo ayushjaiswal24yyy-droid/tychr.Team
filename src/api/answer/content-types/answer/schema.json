@@ -84,12 +84,11 @@
       "type": "boolean",
       "required": true
     },
-    "attempt_id": {
-      "type": "string",
-      "required": true
-    },
     "is_attempt_marker": {
       "type": "boolean"
+    },
+    "attempt_id": {
+      "type": "integer"
     }
   }
 }
