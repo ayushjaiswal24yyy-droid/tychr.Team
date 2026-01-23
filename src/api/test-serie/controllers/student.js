@@ -597,20 +597,13 @@ module.exports = createCoreController(
             },
             sort: { attempt_id: "desc" },
             limit: 1,
-            fields: ["attempt_id", "completed"],
+            fields: ["attempt_id"],
           }
         );
 
-        let currentAttemptId = 1;
-
-        if (lastAnswer.length) {
-          const latest = lastAnswer[0];
-
-          // If last attempt finished → start new
-          currentAttemptId = latest.completed
-            ? latest.attempt_id + 1
-            : latest.attempt_id;
-        }
+        let currentAttemptId = lastAnswer.length
+          ? lastAnswer[0].attempt_id
+          : 1;
 
         /* ----------------------------------------
            4. Fetch answers for CURRENT attempt
@@ -662,6 +655,15 @@ module.exports = createCoreController(
           totalDurationSeconds - totalTimeTaken,
           0
         );
+        /* ----------------------------------------
+           6.5 Determine if attempt is completed
+        ---------------------------------------- */
+        const allPapersSubmitted =
+          Object.keys(answerByPaperId).length === series.papers.length;
+
+        if (allPapersSubmitted || remainingTime === 0) {
+          currentAttemptId += 1;
+        }
 
         /* ----------------------------------------
            7. Compute paper statuses (attempt-aware)
