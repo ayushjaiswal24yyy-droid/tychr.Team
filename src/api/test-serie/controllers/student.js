@@ -604,7 +604,7 @@ module.exports = createCoreController(
 
         const hasAttempt = attemptMarkers.length > 0;
         const currentAttemptId = hasAttempt ? attemptMarkers[0].attempt_id : 0;
-        const attemptCompleted = hasAttempt ? attemptMarkers[0].completed : false;
+        let attemptCompleted = hasAttempt ? attemptMarkers[0].completed : false;
 
         /* ----------------------------------------
            4. Fetch answers for CURRENT attempt
@@ -688,11 +688,25 @@ module.exports = createCoreController(
           };
         });
 
-
         /* ----------------------------------------
-           8. Series completion check
+           8. Auto-end attempt if all papers submitted
         ---------------------------------------- */
-        const completed = attemptCompleted;
+        if (
+          hasAttempt &&
+          !attemptCompleted &&
+          answers.length === series.papers.length
+        ) {
+          await strapi.entityService.update(
+            "api::answer.answer",
+            attemptMarkers[0].id,
+            {
+              data: { completed: true },
+            }
+          );
+
+          attemptCompleted = true;
+        }
+
 
 
         /* ----------------------------------------
@@ -709,7 +723,7 @@ module.exports = createCoreController(
             },
             remaining_time: remainingTime,
             papers,
-            completed,
+            completed:attemptCompleted,
           },
         };
       } catch (error) {
