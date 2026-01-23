@@ -47,5 +47,14 @@ module.exports = {
         middlewares: [],
       },
     },
+        {
+      method: "POST",
+      path: "/test-series/:seriesId/end-attempt",
+      handler: "student.endAttempt",
+      config: {
+        policies: [],
+        middlewares: [],
+      },
+    },
   ],
 };
