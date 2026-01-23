@@ -83,6 +83,10 @@
     "completed": {
       "type": "boolean",
       "required": true
+    },
+    "attempt_id": {
+      "type": "string",
+      "required": true
     }
   }
 }

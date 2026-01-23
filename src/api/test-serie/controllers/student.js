@@ -53,7 +53,7 @@ module.exports = createCoreController(
               grade_subject: { id: gradeSubjectId },
               test_type: { $eq: "Test Series" },
               publishedAt: { $notNull: true },
-             entity_type: { $in: "series" },
+              entity_type: { $in: "series" },
             },
             populate: {
               question_banks: {
@@ -344,7 +344,6 @@ module.exports = createCoreController(
         ctx.throw(500, error.message);
       }
     },
-
     async getStudentTestResults(ctx) {
       try {
         const { testSeriesId } = ctx.params;
@@ -358,99 +357,190 @@ module.exports = createCoreController(
           return ctx.unauthorized("User not authenticated");
         }
 
-        // Get test series with all attempts and detailed question data
-        const testSeries = await strapi.entityService.findOne(
+        /**
+         * 1. Fetch SERIES with PAPERS + QUESTIONS
+         */
+        const series = await strapi.entityService.findOne(
           "api::test-serie.test-serie",
           testSeriesId,
           {
             populate: {
-              question_banks: {
+              papers: {
                 populate: {
-                  parts: true,
-                  attachments: true,
+                  question_banks: {
+                    populate: ["parts", "attachments"],
+                  },
                 },
               },
               grade_subject: {
                 fields: ["id", "name"],
               },
-              answers: {
-                filters: {
-                  student: user.id,
-                },
-                populate: {
-                  question_n_answer: {
-                    populate: {
-                      question: {
-                        populate: ["parts", "attachments"],
-                      },
-                    },
-                  },
-                  uploaded_answer_sheet: true,
-                },
-                sort: { submission_date: "desc" },
-              },
             },
           }
         );
 
-        if (!testSeries) {
+        if (!series) {
           return ctx.notFound("Test series not found");
         }
 
-        // Transform the data for frontend
-        const transformedData = {
-          id: testSeries.id,
-          title: testSeries.title,
-          test_type: testSeries.test_type,
-          test_mode: testSeries.test_mode,
-          test_duration: testSeries.test_duration,
-          program_type: testSeries.program_type,
-          grade_subject: testSeries.grade_subject,
-          total_questions: testSeries.question_banks?.length || 0,
-          total_marks: testSeries.question_banks?.reduce(
-            (sum, qb) => sum + (qb.marks || 0),
+        if (!series.papers || series.papers.length === 0) {
+          return ctx.badRequest("No papers found for this test series");
+        }
+
+        /**
+         * 2. Fetch ALL ANSWERS for ALL PAPERS
+         *    (attempt_id is the key 🔑)
+         */
+        const paperIds = series.papers.map(p => p.id);
+
+        const answers = await strapi.entityService.findMany(
+          "api::answer.answer",
+          {
+            filters: {
+              student: user.id,
+              test_series: { id: { $in: paperIds } },
+              completed: true,
+            },
+            populate: {
+              test_series: {
+                fields: ["id", "title"],
+              },
+              question_n_answer: {
+                populate: {
+                  question: {
+                    populate: ["parts", "attachments"],
+                  },
+                },
+              },
+              uploaded_answer_sheet: true,
+            },
+            sort: { submission_date: "asc" },
+          }
+        );
+
+        /**
+         * 3. Group ANSWERS BY attempt_id
+         */
+        const attemptsMap = {};
+
+        for (const ans of answers) {
+          if (!ans.attempt_id) continue;
+
+          if (!attemptsMap[ans.attempt_id]) {
+            attemptsMap[ans.attempt_id] = {
+              attempt_id: ans.attempt_id,
+              submission_date: ans.submission_date,
+              papers: [],
+            };
+          }
+
+          attemptsMap[ans.attempt_id].papers.push(ans);
+        }
+
+        /**
+         * 4. Transform attempts → frontend format
+         */
+        /**
+   * 4. Transform attempts → frontend format
+   */
+        const attempts = Object.values(attemptsMap).map((attempt, index) => {
+          const totalMarks = attempt.papers.reduce(
+            (sum, p) => sum + (p.marks || 0),
             0
-          ),
-          questions: testSeries.question_banks?.map((question) => ({
-            id: question.id,
-            question: question.question,
-            question_type: question.question_type,
-            marks: question.marks,
-            parts: question.parts,
-            attachments: question.attachments,
-          })),
-          attempts: testSeries.answers?.map((attempt) => ({
-            id: attempt.id,
-            submission_date: attempt.submission_date,
-            marks: attempt.marks,
-            evaluation_status: attempt.evaluation_status,
-            time_taken: attempt.time_taken,
-            completed: attempt.completed,
-            submission_type: attempt.submission_type,
-            uploaded_answer_sheet: attempt.uploaded_answer_sheet,
-            student_feedback: attempt.student_feedback,
-            tutor_feedback: attempt.tutor_feedback,
-            question_answers: attempt.question_n_answer?.map((qna) => ({
-              question_id: qna.question?.id,
-              question: qna.question?.question,
-              question_type: qna.question?.question_type,
-              marks: qna.question?.marks,
-              student_answer: qna.answer,
-              correct_answer: qna.question?.parts?.find(
-                (part) => part.is_correct
-              )?.content,
-              evaluated_marks: qna.evaluated_marks,
-              feedback: qna.feedback,
+          );
+
+          const totalTime = attempt.papers.reduce(
+            (sum, p) => sum + (p.time_taken || 0),
+            0
+          );
+
+          const evaluationStatus = attempt.papers.every(
+            p => p.evaluation_status === "evaluated"
+          )
+            ? "evaluated"
+            : "pending";
+
+          // ✅ correct submission date = latest paper submission
+          const submissionDate = attempt.papers
+            .map(p => new Date(p.submission_date))
+            .sort((a, b) => b - a)[0];
+
+          return {
+            attempt_no: index + 1,
+            attempt_id: attempt.attempt_id,
+            submission_date: submissionDate,
+            total_marks: totalMarks,
+            time_taken: totalTime,
+            evaluation_status: evaluationStatus,
+            completed: true,
+
+            papers: attempt.papers.map(paperAnswer => ({
+              id: paperAnswer.id,
+              paper_id: paperAnswer.test_series.id,
+              paper_title: paperAnswer.test_series.title,
+              marks: paperAnswer.marks,
+              time_taken: paperAnswer.time_taken,
+              submission_type: paperAnswer.submission_type,
+              uploaded_answer_sheet: paperAnswer.uploaded_answer_sheet,
+
+              question_answers: paperAnswer.question_n_answer?.map(qna => ({
+                question_id: qna.question?.id,
+                question: qna.question?.question,
+                question_type: qna.question?.question_type,
+                marks: qna.question?.marks,
+                student_answer: qna.answer,
+                correct_answer: qna.question?.parts?.find(
+                  part => part.is_correct
+                )?.content,
+                evaluated_marks: qna.evaluated_marks,
+                feedback: qna.feedback,
+              })),
             })),
-          })),
+          };
+        });
+
+
+        /**
+         * 5. Aggregate QUESTIONS & MARKS (SERIES LEVEL)
+         */
+        const allQuestions = series.papers.flatMap(
+          p => p.question_banks || []
+        );
+
+        const totalMarks = allQuestions.reduce(
+          (sum, q) => sum + (q.marks || 0),
+          0
+        );
+
+        /**
+         * 6. FINAL RESPONSE
+         */
+
+    
+
+        return {
+          data: {
+            id: series.id,
+            title: series.title,
+            test_type: series.test_type,
+            test_mode: series.test_mode,
+            test_duration: series.test_duration,
+            program_type: series.program_type,
+            grade_subject: series.grade_subject,
+
+            total_questions: allQuestions.length,
+            total_marks: totalMarks,
+
+            attempts,
+          },
         };
 
-        return { data: transformedData };
       } catch (error) {
         console.error("Error in getStudentTestResults:", error);
         ctx.throw(500, error.message);
       }
     },
+
     async getStudentSeriesSession(ctx) {
       try {
         const { seriesId } = ctx.params;
@@ -498,7 +588,7 @@ module.exports = createCoreController(
         const answers = await strapi.entityService.findMany(
           "api::answer.answer",
           {
-             publicationState: "preview",
+            publicationState: "preview",
             filters: {
               student: user.id,
               test_series: { id: { $in: paperIds } },
