@@ -400,6 +400,8 @@ module.exports = createCoreController(
               student: user.id,
               test_series: { id: { $in: paperIds } },
               completed: true,
+                is_attempt_marker: { $ne: true },
+
             },
             populate: {
               test_series: {
@@ -443,7 +445,7 @@ module.exports = createCoreController(
         /**
    * 4. Transform attempts → frontend format
    */
-        const attempts = Object.values(attemptsMap).map((attempt, index) => {
+        const attempts = Object.values(attemptsMap).sort((a, b) => a.attempt_id - b.attempt_id).map((attempt, index) => {
           const totalMarks = attempt.papers.reduce(
             (sum, p) => sum + (p.marks || 0),
             0
@@ -460,7 +462,9 @@ module.exports = createCoreController(
             ? "evaluated"
             : "pending";
 
+            const completed = attempt.papers.length === series.papers.length;
           // ✅ correct submission date = latest paper submission
+
           const submissionDate = attempt.papers
             .map(p => new Date(p.submission_date))
             .sort((a, b) => b - a)[0];
@@ -472,7 +476,7 @@ module.exports = createCoreController(
             total_marks: totalMarks,
             time_taken: totalTime,
             evaluation_status: evaluationStatus,
-            completed: true,
+            completed,
 
             papers: attempt.papers.map(paperAnswer => ({
               id: paperAnswer.id,
