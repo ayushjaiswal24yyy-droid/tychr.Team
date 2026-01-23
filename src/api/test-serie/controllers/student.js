@@ -496,32 +496,28 @@ module.exports = createCoreController(
          * 2. Fetch all submitted answers for papers (session-bound)
          */
         const paperIds = series.papers.map((p) => p.id);
-
         const answers = await strapi.entityService.findMany(
           "api::answer.answer",
           {
             filters: {
               student: user.id,
-              test_series: { id: { $in: paperIds } },
+              test_serie: { id: { $in: paperIds } },
               completed: true,
             },
-            fields: ["id", "time_taken", "marks", "test_series"],
+            fields: ["id", "time_taken", "marks"],
             populate: {
-              test_series: {
+              test_serie: {
                 fields: ["id"],
               },
             },
           }
         );
 
-        /**
-         * 3. Build lookup + total time taken
-         */
         const answerByPaperId = {};
         let totalTimeTaken = 0;
 
         for (const ans of answers) {
-          const paperId = ans.test_series?.id;
+          const paperId = ans.test_serie?.id;
           if (!paperId) continue;
 
           answerByPaperId[paperId] = {
@@ -532,6 +528,7 @@ module.exports = createCoreController(
 
           totalTimeTaken += ans.time_taken || 0;
         }
+
 
         /**
          * 4. Compute remaining time (series-level)
