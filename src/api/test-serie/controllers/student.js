@@ -498,6 +498,7 @@ module.exports = createCoreController(
         const answers = await strapi.entityService.findMany(
           "api::answer.answer",
           {
+             publicationState: "preview",
             filters: {
               student: user.id,
               test_series: { id: { $in: paperIds } },
