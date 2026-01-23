@@ -716,48 +716,77 @@ module.exports = createCoreController(
         ctx.throw(500, error.message);
       }
     },
-    async startNewAttempt(ctx) {
-      try {
-        const { seriesId } = ctx.params;
-        const user = ctx.state.user;
+async startNewAttempt(ctx) {
+  try {
+    const { seriesId } = ctx.params;
+    const user = ctx.state.user;
 
-        if (!seriesId || !user) {
-          return ctx.badRequest("Invalid request");
-        }
-
-        // Get last attempt
-        const lastAnswer = await strapi.entityService.findMany(
-          "api::answer.answer",
-          {
-            filters: {
-              student: user.id,
-              test_series: seriesId,
-            },
-            sort: { attempt_id: "desc" },
-            limit: 1,
-            fields: ["attempt_id"],
-          }
-        );
-
-        const nextAttemptId =
-          lastAnswer.length > 0 ? lastAnswer[0].attempt_id + 1 : 1;
-
-        // 👇 Persist a marker answer (no paper attached)
-        await strapi.entityService.create("api::answer.answer", {
-          data: {
-            student: user.id,
-            test_series: seriesId,
-            attempt_id: nextAttemptId,
-            completed: false,
-            is_attempt_marker: true,
-          },
-        });
-
-        return { data: { attempt_id: nextAttemptId } };
-      } catch (error) {
-        ctx.throw(500, error.message);
-      }
+    if (!seriesId || !user) {
+      return ctx.badRequest("Invalid request");
     }
+
+    // 🔑 ONLY look at attempt markers
+    const lastAttempt = await strapi.entityService.findMany(
+      "api::answer.answer",
+      {
+        filters: {
+          student: user.id,
+          test_series: seriesId,
+          is_attempt_marker: true,
+        },
+        sort: { attempt_id: "desc" },
+        limit: 1,
+        fields: ["attempt_id", "completed"],
+      }
+    );
+
+    const nextAttemptId =
+      lastAttempt.length > 0 ? lastAttempt[0].attempt_id + 1 : 1;
+
+    // Create new attempt marker
+    await strapi.entityService.create("api::answer.answer", {
+      data: {
+        student: user.id,
+        test_series: seriesId,
+        attempt_id: nextAttemptId,
+        completed: false,
+        is_attempt_marker: true,
+      },
+    });
+
+    return { data: { attempt_id: nextAttemptId } };
+  } catch (error) {
+    ctx.throw(500, error.message);
+  }
+},
+
+async endAttempt(ctx) {
+  const { seriesId } = ctx.params;
+  const user = ctx.state.user;
+
+  const marker = await strapi.entityService.findMany(
+    "api::answer.answer",
+    {
+      filters: {
+        student: user.id,
+        test_series: seriesId,
+        is_attempt_marker: true,
+        completed: false,
+      },
+      limit: 1,
+    }
+  );
+
+  if (!marker.length) return;
+
+  await strapi.entityService.update(
+    "api::answer.answer",
+    marker[0].id,
+    {
+      data: { completed: true },
+    }
+  );
+}
 
 
 
