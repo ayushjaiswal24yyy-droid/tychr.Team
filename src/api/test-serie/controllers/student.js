@@ -713,7 +713,49 @@ module.exports = createCoreController(
         console.error("Error in getStudentSeriesSession:", error);
         ctx.throw(500, error.message);
       }
+    },
+    async startNewAttempt(ctx) {
+  try {
+    const { seriesId } = ctx.params;
+    const user = ctx.state.user;
+
+    if (!seriesId) {
+      return ctx.badRequest("Series ID is required");
     }
+
+    if (!user) {
+      return ctx.unauthorized("User not authenticated");
+    }
+
+    // Get last attempt
+    const lastAnswer = await strapi.entityService.findMany(
+      "api::answer.answer",
+      {
+        filters: {
+          student: user.id,
+          test_series: seriesId,
+        },
+        sort: { attempt_id: "desc" },
+        limit: 1,
+        fields: ["attempt_id"],
+      }
+    );
+
+    const nextAttemptId =
+      lastAnswer.length > 0 ? lastAnswer[0].attempt_id + 1 : 1;
+
+    return {
+      data: {
+        attempt_id: nextAttemptId,
+      },
+    };
+  } catch (error) {
+    console.error("Error starting new attempt:", error);
+    ctx.throw(500, error.message);
+  }
+}
+
+    
 
 
   })
