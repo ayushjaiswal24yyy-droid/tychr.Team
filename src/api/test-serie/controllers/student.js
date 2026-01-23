@@ -59,7 +59,7 @@ module.exports = createCoreController(
               question_banks: {
                 fields: ["id", "question_type", "question", "marks"],
               },
-              test_papers: true,
+              papers: true,
               grade_subject: {
                 fields: ["id", "name"],
               },
@@ -142,7 +142,7 @@ module.exports = createCoreController(
               question: qb.question,
               marks: qb.marks,
             })),
-            test_papers: series.test_papers,
+            papers: series.papers,
             grade_subject: series.grade_subject
               ? {
                 id: series.grade_subject.id,
@@ -237,7 +237,7 @@ module.exports = createCoreController(
               question_banks: {
                 fields: ["id", "question_type", "question", "marks"],
               },
-              test_papers: true,
+              papers: true,
               grade_subject: {
                 fields: ["id", "name"],
               },
@@ -302,7 +302,7 @@ module.exports = createCoreController(
               question: qb.question,
               marks: qb.marks,
             })),
-            test_papers: series.test_papers,
+            papers: series.papers,
             grade_subject: series.grade_subject
               ? {
                 id: series.grade_subject.id,
@@ -476,7 +476,7 @@ module.exports = createCoreController(
               publishedAt: { $notNull: true },
             },
             populate: {
-              test_papers: {
+              papers: {
                 sort: { createdAt: "asc" },
               },
             },
@@ -495,7 +495,7 @@ module.exports = createCoreController(
         /**
          * 2. Fetch all submitted answers for papers (session-bound)
          */
-        const paperIds = series.test_papers.map((p) => p.id);
+        const paperIds = series.papers.map((p) => p.id);
 
         const answers = await strapi.entityService.findMany(
           "api::answer.answer",
@@ -548,7 +548,7 @@ module.exports = createCoreController(
          */
         let activePaperAssigned = false;
 
-        const papers = series.test_papers.map((paper) => {
+        const papers = series.papers.map((paper) => {
           // Already submitted
           if (answerByPaperId[paper.id]) {
             return {
