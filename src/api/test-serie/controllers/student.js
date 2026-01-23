@@ -53,7 +53,7 @@ module.exports = createCoreController(
               grade_subject: { id: gradeSubjectId },
               test_type: { $eq: "Test Series" },
               publishedAt: { $notNull: true },
-             entity_type: { $in: ["series", "paper"] },
+             entity_type: { $in: "series" },
             },
             populate: {
               question_banks: {
@@ -472,7 +472,6 @@ module.exports = createCoreController(
           seriesId,
           {
             filters: {
-              entity_type: "series",
               publishedAt: { $notNull: true },
             },
             populate: {
@@ -501,12 +500,12 @@ module.exports = createCoreController(
           {
             filters: {
               student: user.id,
-              test_serie: { id: { $in: paperIds } },
+              test_series: { id: { $in: paperIds } },
               completed: true,
             },
             fields: ["id", "time_taken", "marks"],
             populate: {
-              test_serie: {
+              test_series: {
                 fields: ["id"],
               },
             },
@@ -517,7 +516,7 @@ module.exports = createCoreController(
         let totalTimeTaken = 0;
 
         for (const ans of answers) {
-          const paperId = ans.test_serie?.id;
+          const paperId = ans.test_series?.id;
           if (!paperId) continue;
 
           answerByPaperId[paperId] = {
