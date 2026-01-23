@@ -586,46 +586,46 @@ module.exports = createCoreController(
         const paperIds = series.papers.map((p) => p.id);
 
         /* ----------------------------------------
-           3. Determine CURRENT attempt_id
-        ---------------------------------------- */
-        const lastAnswer = await strapi.entityService.findMany(
+      3. Fetch current attempt marker
+   ---------------------------------------- */
+        const attemptMarkers = await strapi.entityService.findMany(
           "api::answer.answer",
           {
             filters: {
               student: user.id,
               test_series: series.id,
+              is_attempt_marker: true,
             },
             sort: { attempt_id: "desc" },
             limit: 1,
-            fields: ["attempt_id"],
+            fields: ["attempt_id", "completed"],
           }
         );
 
-        let currentAttemptId = lastAnswer.length
-          ? lastAnswer[0].attempt_id
-          : 1;
+        const hasAttempt = attemptMarkers.length > 0;
+        const currentAttemptId = hasAttempt ? attemptMarkers[0].attempt_id : 0;
+        const attemptCompleted = hasAttempt ? attemptMarkers[0].completed : false;
 
         /* ----------------------------------------
            4. Fetch answers for CURRENT attempt
         ---------------------------------------- */
-        const answers = await strapi.entityService.findMany(
-          "api::answer.answer",
-          {
+        const answers = hasAttempt
+          ? await strapi.entityService.findMany("api::answer.answer", {
             publicationState: "preview",
             filters: {
               student: user.id,
               test_series: { id: { $in: paperIds } },
               attempt_id: currentAttemptId,
               completed: true,
+              is_attempt_marker: { $ne: true },
             },
             fields: ["id", "time_taken", "marks"],
             populate: {
-              test_series: {
-                fields: ["id"],
-              },
+              test_series: { fields: ["id"] },
             },
-          }
-        );
+          })
+          : [];
+
 
         /* ----------------------------------------
            5. Index answers by paper & sum time
@@ -651,24 +651,25 @@ module.exports = createCoreController(
         ---------------------------------------- */
         const totalDurationSeconds = (series.test_duration || 0) * 60;
 
-        const remainingTime = Math.max(
-          totalDurationSeconds - totalTimeTaken,
-          0
-        );
-        /* ----------------------------------------
-           6.5 Determine if attempt is completed
-        ---------------------------------------- */
-        const allPapersSubmitted =
-          Object.keys(answerByPaperId).length === series.papers.length;
+        const remainingTime = hasAttempt
+          ? Math.max(totalDurationSeconds - totalTimeTaken, 0)
+          : totalDurationSeconds;
 
-        if (allPapersSubmitted || remainingTime === 0) {
-          currentAttemptId += 1;
-        }
+
+
 
         /* ----------------------------------------
            7. Compute paper statuses (attempt-aware)
         ---------------------------------------- */
         const papers = series.papers.map((paper) => {
+          if (!hasAttempt || attemptCompleted) {
+            return {
+              id: paper.id,
+              title: paper.title,
+              status: "locked",
+            };
+          }
+
           const answer = answerByPaperId[paper.id];
 
           if (answer) {
@@ -687,12 +688,12 @@ module.exports = createCoreController(
           };
         });
 
+
         /* ----------------------------------------
            8. Series completion check
         ---------------------------------------- */
-        const completed =
-          papers.every((p) => p.status === "submitted") ||
-          remainingTime === 0;
+        const completed = attemptCompleted;
+
 
         /* ----------------------------------------
            9. Final response
