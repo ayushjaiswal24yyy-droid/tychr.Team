@@ -2605,6 +2605,10 @@ export interface ApiIbmypSubjectIbmypSubject extends Schema.SingleType {
   };
   attributes: {
     stats: Attribute.Component<'stats.stats', true>;
+    achievers: Attribute.Component<'achievers.achiever', true>;
+    results: Attribute.Component<'results-data.results-data', true>;
+    Why_Tychr: Attribute.Component<'why-tychr.why-tychr', true>;
+    finest_tutors: Attribute.Component<'finest-tutors.finest-tutors', true>;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
@@ -2675,6 +2679,10 @@ export interface ApiIgcseSubjectIgcseSubject extends Schema.SingleType {
   };
   attributes: {
     stats: Attribute.Component<'stats.stats', true>;
+    achievers: Attribute.Component<'achievers.achiever', true>;
+    results: Attribute.Component<'results-data.results-data', true>;
+    Why_Tychr: Attribute.Component<'why-tychr.why-tychr', true>;
+    finest_tutors: Attribute.Component<'finest-tutors.finest-tutors', true>;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;

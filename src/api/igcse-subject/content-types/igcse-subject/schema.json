@@ -10,11 +10,33 @@
     "draftAndPublish": true
   },
   "pluginOptions": {},
-  "attributes": {
+"attributes": {
     "stats": {
       "type": "component",
       "repeatable": true,
       "component": "stats.stats"
+    },
+    "achievers": {
+      "type": "component",
+      "repeatable": true,
+      "component": "achievers.achiever"
+    },
+
+    "results": {
+      "type": "component",
+      "repeatable": true,
+      "component": "results-data.results-data"
+    },
+    "Why_Tychr": {
+      "type": "component",
+      "repeatable": true,
+      "component": "why-tychr.why-tychr"
+    },
+ 
+    "finest_tutors": {
+      "type": "component",
+      "repeatable": true,
+      "component": "finest-tutors.finest-tutors"
     }
   }
 }
