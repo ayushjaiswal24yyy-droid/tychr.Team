@@ -546,7 +546,6 @@ module.exports = createCoreController(
         let activePaperAssigned = false;
 
         const papers = series.papers.map((paper) => {
-          // Already submitted
           if (answerByPaperId[paper.id]) {
             return {
               id: paper.id,
@@ -556,23 +555,13 @@ module.exports = createCoreController(
             };
           }
 
-          // First unsubmitted paper becomes active
-          if (!activePaperAssigned) {
-            activePaperAssigned = true;
-            return {
-              id: paper.id,
-              title: paper.title,
-              status: "active",
-            };
-          }
-
-          // Remaining papers locked
           return {
             id: paper.id,
             title: paper.title,
-            status: "locked",
+            status: "active",
           };
         });
+
 
         /**
          * 6. Series completion check
