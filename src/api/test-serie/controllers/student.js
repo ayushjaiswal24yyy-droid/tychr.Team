@@ -486,6 +486,7 @@ module.exports = createCoreController(
             completed,
             questions: allQuestions.map(q => ({
               id: q.id,
+              diagram: q.diagram,
               question: q.question,
               marks: q.marks,
               question_type: q.question_type,
