@@ -808,8 +808,157 @@ module.exports = createCoreController(
           data: { completed: true },
         }
       );
+    },
+
+async getPaperSubmissions(ctx) {
+  try {
+    const { id: testSeriesId } = ctx.params;
+    const user = ctx.state.user;
+
+    if (!testSeriesId) {
+      return ctx.badRequest("Test Series ID is required");
     }
 
+    if (!user || user.role?.name !== "Tutor") {
+      return ctx.unauthorized("Only tutors can access this endpoint");
+    }
+
+    /**
+     * 1️⃣ Fetch Test Series with Papers + Questions
+     */
+    const series = await strapi.entityService.findOne(
+      "api::test-serie.test-serie",
+      testSeriesId,
+      {
+        populate: {
+          papers: {
+            populate: {
+              question_banks: {
+                populate: ["parts", "attachments"],
+              },
+            },
+          },
+        },
+      }
+    );
+
+    if (!series) {
+      return ctx.notFound("Test series not found");
+    }
+
+    if (!series.papers?.length) {
+      return ctx.badRequest("No papers found for this test series");
+    }
+
+    const paperIds = series.papers.map(p => p.id);
+
+    /**
+     * 2️⃣ Fetch ALL answers for ALL papers (ALL students)
+     */
+    const answers = await strapi.entityService.findMany(
+      "api::answer.answer",
+      {
+        filters: {
+          test_series: { id: { $in: paperIds } },
+          is_attempt_marker: { $ne: true },
+        },
+        populate: {
+          student: {
+            fields: ["id", "fullName", "email"],
+            populate: ["avatar"],
+          },
+          test_series: {
+            fields: ["id", "title"],
+          },
+          question_n_answer: {
+            populate: {
+              question: {
+                populate: ["parts", "attachments"],
+              },
+            },
+          },
+          uploaded_answer_sheet: true,
+        },
+        sort: { submission_date: "desc" },
+      }
+    );
+
+    /**
+     * 3️⃣ Group answers by PAPER
+     */
+    const paperMap = {};
+
+    for (const paper of series.papers) {
+      paperMap[paper.id] = {
+        paper_id: paper.id,
+        paper_title: paper.title,
+        total_marks: paper.question_banks.reduce(
+          (sum, q) => sum + (q.marks || 0),
+          0
+        ),
+        questions: paper.question_banks.map(q => ({
+          id: q.id,
+          question: q.question,
+          diagram: q.diagram,
+          marks: q.marks,
+          question_type: q.question_type,
+          parts: q.parts,
+          attachments: q.attachments,
+        })),
+        submissions: [],
+      };
+    }
+
+    /**
+     * 4️⃣ Attach submissions to their paper
+     */
+    for (const ans of answers) {
+      const paperId = ans.test_series?.id;
+      if (!paperMap[paperId]) continue;
+
+      paperMap[paperId].submissions.push({
+        id: ans.id,
+        submission_date: ans.submission_date,
+        submission_type: ans.submission_type,
+        time_taken: ans.time_taken,
+        marks: ans.marks,
+        evaluation_status: ans.evaluation_status,
+        tutor_feedback: ans.tutor_feedback,
+        student: ans.student && {
+          id: ans.student.id,
+          name: ans.student.fullName,
+          email: ans.student.email,
+          avatar: ans.student.avatar,
+        },
+        uploaded_answer_sheet: ans.uploaded_answer_sheet,
+        question_answers: ans.question_n_answer?.map(qna => ({
+          question_id: qna.question?.id,
+          question: qna.question?.question,
+          question_type: qna.question?.question_type,
+          marks: qna.question?.marks,
+          student_answer: qna.answer,
+          evaluated_marks: qna.evaluated_marks,
+          feedback: qna.feedback,
+        })),
+      });
+    }
+
+    /**
+     * 5️⃣ Final Response
+     */
+    return {
+      data: {
+        id: series.id,
+        title: series.title,
+        papers: Object.values(paperMap),
+      },
+    };
+
+  } catch (error) {
+    console.error("Error in getPaperSubmissions:", error);
+    ctx.throw(500, error.message);
+  }
+}
 
 
 

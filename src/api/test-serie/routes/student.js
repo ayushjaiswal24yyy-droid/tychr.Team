@@ -38,7 +38,7 @@ module.exports = {
         middlewares: [],
       },
     },
-        {
+    {
       method: "POST",
       path: "/test-series/:seriesId/start-new-attempt",
       handler: "student.startNewAttempt",
@@ -47,13 +47,21 @@ module.exports = {
         middlewares: [],
       },
     },
-        {
+    {
       method: "POST",
       path: "/test-series/:seriesId/end-attempt",
       handler: "student.endAttempt",
       config: {
         policies: [],
         middlewares: [],
+      },
+    },
+    {
+      method: "GET",
+      path: "/test-series/:id/paper-submissions",
+      handler: "test-serie.getPaperSubmissions",
+      config: {
+        policies: [],
       },
     },
   ],
