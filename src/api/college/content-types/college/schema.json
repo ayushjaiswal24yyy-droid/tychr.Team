@@ -30,6 +30,11 @@
       "target": "api::program.program",
       "mappedBy": "colleges"
     },
+    "essay_title_options": {
+      "type": "component",
+      "repeatable": true,
+      "component": "essays.essay-title-options"
+    },
     "essays": {
       "type": "component",
       "repeatable": true,
