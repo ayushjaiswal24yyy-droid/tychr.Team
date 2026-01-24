@@ -59,7 +59,7 @@ module.exports = {
     {
       method: "GET",
       path: "/test-series/:id/paper-submissions",
-      handler: "test-serie.getPaperSubmissions",
+      handler: "student.getPaperSubmissions",
       config: {
         policies: [],
       },
