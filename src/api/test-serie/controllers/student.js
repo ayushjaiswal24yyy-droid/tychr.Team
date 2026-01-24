@@ -400,7 +400,7 @@ module.exports = createCoreController(
               student: user.id,
               test_series: { id: { $in: paperIds } },
               completed: true,
-                is_attempt_marker: { $ne: true },
+              is_attempt_marker: { $ne: true },
 
             },
             populate: {
@@ -438,13 +438,20 @@ module.exports = createCoreController(
 
           attemptsMap[ans.attempt_id].papers.push(ans);
         }
-
         /**
+          * 5. Aggregate QUESTIONS & MARKS (SERIES LEVEL)
+          */
+        const allQuestions = series.papers.flatMap(
+          p => p.question_banks || []
+        );
+
+        const totalMarks = allQuestions.reduce(
+          (sum, q) => sum + (q.marks || 0),
+          0
+        );
+         /**
          * 4. Transform attempts → frontend format
          */
-        /**
-   * 4. Transform attempts → frontend format
-   */
         const attempts = Object.values(attemptsMap).sort((a, b) => a.attempt_id - b.attempt_id).map((attempt, index) => {
           const totalMarks = attempt.papers.reduce(
             (sum, p) => sum + (p.marks || 0),
@@ -462,7 +469,7 @@ module.exports = createCoreController(
             ? "evaluated"
             : "pending";
 
-            const completed = attempt.papers.length === series.papers.length;
+          const completed = attempt.papers.length === series.papers.length;
           // ✅ correct submission date = latest paper submission
 
           const submissionDate = attempt.papers
@@ -477,7 +484,12 @@ module.exports = createCoreController(
             time_taken: totalTime,
             evaluation_status: evaluationStatus,
             completed,
-
+            questions: allQuestions.map(q => ({
+              id: q.id,
+              question: q.question,
+              marks: q.marks,
+              question_type: q.question_type,
+            })),
             papers: attempt.papers.map(paperAnswer => ({
               id: paperAnswer.id,
               paper_id: paperAnswer.test_series.id,
@@ -504,17 +516,7 @@ module.exports = createCoreController(
         });
 
 
-        /**
-         * 5. Aggregate QUESTIONS & MARKS (SERIES LEVEL)
-         */
-        const allQuestions = series.papers.flatMap(
-          p => p.question_banks || []
-        );
 
-        const totalMarks = allQuestions.reduce(
-          (sum, q) => sum + (q.marks || 0),
-          0
-        );
 
         /**
          * 6. FINAL RESPONSE
@@ -727,7 +729,7 @@ module.exports = createCoreController(
             },
             remaining_time: remainingTime,
             papers,
-            completed:attemptCompleted,
+            completed: attemptCompleted,
           },
         };
       } catch (error) {
