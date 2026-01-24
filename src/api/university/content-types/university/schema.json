@@ -112,6 +112,12 @@
     },
     "acceptance_rate": {
       "type": "string"
+    },
+    "videos": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::counselling-video.counselling-video",
+      "mappedBy": "university"
     }
   }
 }

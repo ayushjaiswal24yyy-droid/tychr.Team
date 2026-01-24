@@ -1585,6 +1585,10 @@ export interface ApiCollegeCollege extends Schema.CollectionType {
       'manyToMany',
       'api::program.program'
     >;
+    essay_title_options: Attribute.Component<
+      'essays.essay-title-options',
+      true
+    >;
     essays: Attribute.Component<'essays.essay', true>;
     intakes: Attribute.Component<'cycles.cycle', true>;
     lors: Attribute.Component<'university.lor', true>;
@@ -1753,6 +1757,53 @@ export interface ApiCommunityCommunity extends Schema.CollectionType {
       Attribute.Private;
     updatedBy: Attribute.Relation<
       'api::community.community',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+  };
+}
+
+export interface ApiCounsellingVideoCounsellingVideo
+  extends Schema.CollectionType {
+  collectionName: 'counselling_videos';
+  info: {
+    singularName: 'counselling-video';
+    pluralName: 'counselling-videos';
+    displayName: 'counselling-video';
+    description: '';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    createdAt: Attribute.DateTime;
+    updatedAt: Attribute.DateTime;
+    title: Attribute.String & Attribute.Required;
+    description: Attribute.Text;
+    videoUrl: Attribute.String & Attribute.Required;
+    thumbnail: Attribute.Media<'images'> & Attribute.Required;
+    duration: Attribute.Integer;
+    tags: Attribute.JSON;
+    department: Attribute.String;
+    category: Attribute.Enumeration<
+      ['USA', 'Canada', 'UK', 'Australia', 'Other']
+    >;
+    isFeatured: Attribute.Boolean & Attribute.DefaultTo<false>;
+    university: Attribute.Relation<
+      'api::counselling-video.counselling-video',
+      'manyToOne',
+      'api::university.university'
+    >;
+    publishedAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<
+      'api::counselling-video.counselling-video',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+    updatedBy: Attribute.Relation<
+      'api::counselling-video.counselling-video',
       'oneToOne',
       'admin::user'
     > &
@@ -4995,6 +5046,11 @@ export interface ApiUniversityUniversity extends Schema.CollectionType {
     year_of_establishment: Attribute.Integer;
     world_rank: Attribute.Integer;
     acceptance_rate: Attribute.String;
+    videos: Attribute.Relation<
+      'api::university.university',
+      'oneToMany',
+      'api::counselling-video.counselling-video'
+    >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
@@ -5246,6 +5302,7 @@ declare module '@strapi/types' {
       'api::comment.comment': ApiCommentComment;
       'api::commission-setting.commission-setting': ApiCommissionSettingCommissionSetting;
       'api::community.community': ApiCommunityCommunity;
+      'api::counselling-video.counselling-video': ApiCounsellingVideoCounsellingVideo;
       'api::course-plan.course-plan': ApiCoursePlanCoursePlan;
       'api::credential.credential': ApiCredentialCredential;
       'api::demo-booking.demo-booking': ApiDemoBookingDemoBooking;
