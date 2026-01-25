@@ -220,6 +220,16 @@
       "relation": "oneToMany",
       "target": "api::subscription.subscription",
       "mappedBy": "classroom"
+    },
+    "plan_of_action": {
+      "allowedTypes": [
+        "images",
+        "files",
+        "videos",
+        "audios"
+      ],
+      "type": "media",
+      "multiple": false
     }
   }
 }

@@ -1782,7 +1782,7 @@ export interface ApiCounsellingVideoCounsellingVideo
     title: Attribute.String & Attribute.Required;
     description: Attribute.Text;
     videoUrl: Attribute.String & Attribute.Required;
-    thumbnail: Attribute.Media<'images'> & Attribute.Required;
+    thumbnail: Attribute.Media<'images'>;
     duration: Attribute.Integer;
     tags: Attribute.JSON;
     department: Attribute.String;
