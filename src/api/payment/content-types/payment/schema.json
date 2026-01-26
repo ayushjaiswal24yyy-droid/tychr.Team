@@ -87,6 +87,12 @@
       "relation": "manyToOne",
       "target": "api::live-lecture.live-lecture",
       "inversedBy": "payments"
+    },
+    "tutor_classroom": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::enrollment.enrollment",
+      "inversedBy": "payments"
     }
   }
 }

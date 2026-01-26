@@ -15,11 +15,6 @@
     "title": {
       "type": "string"
     },
-    "title_options": {
-      "type": "component",
-      "repeatable": true,
-      "component": "essays.essay-title-options"
-    },
     "type": {
       "type": "enumeration",
       "enum": [
