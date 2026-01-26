@@ -577,6 +577,9 @@ module.exports = createCoreController(
             populate: {
               papers: {
                 sort: { createdAt: "asc" },
+                  populate: {
+      instructions: true, // 👈 if instructions is Media
+    },
               },
             },
           }
@@ -674,6 +677,7 @@ module.exports = createCoreController(
               id: paper.id,
               title: paper.title,
               status: "locked",
+               instructions: paper.instructions,
             };
           }
 
@@ -684,6 +688,7 @@ module.exports = createCoreController(
               id: paper.id,
               title: paper.title,
               status: "submitted",
+               instructions: paper.instructions,
               marks: answer.marks,
             };
           }
@@ -691,6 +696,7 @@ module.exports = createCoreController(
           return {
             id: paper.id,
             title: paper.title,
+             instructions: paper.instructions,
             status: "active",
           };
         });
