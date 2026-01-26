@@ -133,7 +133,7 @@ module.exports = createCoreController(
             test_type: series.test_type,
             year: series.year,
             test_duration: series.test_duration,
-            instructions: series.instructions,
+            instructions: series.instruction_booklet,
             pass_mark: series.pass_mark,
             is_global: series.is_global,
             question_banks: series.question_banks?.map((qb) => ({
@@ -293,7 +293,7 @@ module.exports = createCoreController(
             test_type: series.test_type,
             year: series.year,
             test_duration: series.test_duration,
-            instructions: series.instructions,
+            instructions: series.instruction_booklet,
             pass_mark: series.pass_mark,
             is_global: series.is_global,
             question_banks: series.question_banks?.map((qb) => ({
@@ -577,9 +577,9 @@ module.exports = createCoreController(
             populate: {
               papers: {
                 sort: { createdAt: "asc" },
-                  populate: {
-      instructions: true, // 👈 if instructions is Media
-    },
+                populate: {
+                  instruction_booklet: true, // 👈 if instructions is Media
+                },
               },
             },
           }
@@ -677,7 +677,7 @@ module.exports = createCoreController(
               id: paper.id,
               title: paper.title,
               status: "locked",
-               instructions: paper.instructions,
+              instructions: paper.instruction_booklet,
             };
           }
 
@@ -688,7 +688,7 @@ module.exports = createCoreController(
               id: paper.id,
               title: paper.title,
               status: "submitted",
-               instructions: paper.instructions,
+              instructions: paper.instruction_booklet,
               marks: answer.marks,
             };
           }
@@ -696,7 +696,7 @@ module.exports = createCoreController(
           return {
             id: paper.id,
             title: paper.title,
-             instructions: paper.instructions,
+            instructions: paper.instruction_booklet,
             status: "active",
           };
         });
@@ -731,7 +731,7 @@ module.exports = createCoreController(
             series: {
               id: series.id,
               title: series.title,
-              instructions: series.instructions,
+              instructions: series.instruction_booklet,
               total_duration: totalDurationSeconds,
             },
             remaining_time: remainingTime,
