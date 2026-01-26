@@ -919,6 +919,7 @@ module.exports = createCoreController(
           paperMap[paperId].submissions.push({
             id: ans.id,
             submission_date: ans.submission_date,
+            attempt_id: ans.attempt_id,
             submission_type: ans.submission_type,
             time_taken: ans.time_taken,
             marks: ans.marks,
