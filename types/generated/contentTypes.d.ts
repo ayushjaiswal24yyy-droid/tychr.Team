@@ -1037,6 +1037,11 @@ export interface PluginUsersPermissionsUser extends Schema.CollectionType {
     time_slots: Attribute.Component<'time-slots.time-slots', true>;
     countryCode: Attribute.String;
     tutor_price: Attribute.Component<'tutor-price.tutor-price', true>;
+    fav_grade_subjects: Attribute.Relation<
+      'plugin::users-permissions.user',
+      'manyToMany',
+      'api::grade-subject.grade-subject'
+    >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     createdBy: Attribute.Relation<
@@ -2294,6 +2299,8 @@ export interface ApiEnrollmentEnrollment extends Schema.CollectionType {
       'oneToMany',
       'api::subscription.subscription'
     >;
+    plan_of_action: Attribute.Media<'images' | 'files' | 'videos' | 'audios'>;
+    labels: Attribute.JSON;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     createdBy: Attribute.Relation<
@@ -2422,6 +2429,11 @@ export interface ApiGradeSubjectGradeSubject extends Schema.CollectionType {
       'api::grade-subject.grade-subject',
       'oneToMany',
       'api::notification.notification'
+    >;
+    users: Attribute.Relation<
+      'api::grade-subject.grade-subject',
+      'manyToMany',
+      'plugin::users-permissions.user'
     >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
@@ -3361,6 +3373,11 @@ export interface ApiPaymentPayment extends Schema.CollectionType {
       'api::payment.payment',
       'manyToOne',
       'api::live-lecture.live-lecture'
+    >;
+    tutor_classroom: Attribute.Relation<
+      'api::payment.payment',
+      'manyToOne',
+      'api::enrollment.enrollment'
     >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;

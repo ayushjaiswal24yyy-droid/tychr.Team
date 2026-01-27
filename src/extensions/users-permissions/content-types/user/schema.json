@@ -503,6 +503,12 @@
       "type": "component",
       "repeatable": true,
       "component": "tutor-price.tutor-price"
+    },
+    "fav_grade_subjects": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::grade-subject.grade-subject",
+      "inversedBy": "users"
     }
   }
 }

@@ -222,14 +222,18 @@
       "mappedBy": "classroom"
     },
     "plan_of_action": {
+      "type": "media",
+      "multiple": false,
+      "required": false,
       "allowedTypes": [
         "images",
         "files",
         "videos",
         "audios"
-      ],
-      "type": "media",
-      "multiple": false
+      ]
+    },
+    "labels": {
+      "type": "json"
     }
   }
 }
