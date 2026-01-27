@@ -17,6 +17,7 @@
     "@creazy231/strapi-plugin-apollo-sandbox": "^0.0.13",
     "@strapi/plugin-cloud": "4.25.6",
     "@strapi/plugin-i18n": "4.25.6",
+    "@strapi/plugin-sentry": "4.25.6",
     "@strapi/plugin-users-permissions": "4.25.6",
     "@strapi/provider-email-amazon-ses": "^4.25.8",
     "@strapi/provider-email-nodemailer": "^4.25.6",

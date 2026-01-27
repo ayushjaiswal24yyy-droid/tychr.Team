@@ -1,9 +1,6 @@
 module.exports = ({ env }) => ({
-  
   upload: {
-    
     config: {
-      
       provider: "aws-s3",
       providerOptions: {
         accessKeyId: env("AWS_ACCESS_KEY_ID"),
@@ -118,6 +115,19 @@ module.exports = ({ env }) => ({
             img: ["src", "alt", "width", "height"],
           },
         },
+      },
+    },
+  },
+  sentry: {
+    enabled: true,
+    config: {
+      dsn: env("SENTRY_DSN"),
+      sendMetadata: true,
+      init: {
+        environment: env("NODE_ENV"),
+        release: env("RELEASE_VERSION", "1.0.0"),
+        tracesSampleRate: 0.1, // For performance monitoring
+        maxBreadcrumbs: 50,
       },
     },
   },
