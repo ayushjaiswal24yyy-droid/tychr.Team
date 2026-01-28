@@ -188,6 +188,7 @@ module.exports = (plugin) => {
       role,
       phoneNumber,
       tutor_role,
+      countryCode
     } = ctx.request.body;
 
     // Check if user already exists
@@ -250,9 +251,11 @@ module.exports = (plugin) => {
       username: username || email.toLowerCase(),
       uuid,
       otp,
+      countryCode,
       confirmed: false,
       phoneNumber: phoneNumber || null,
     };
+const formattedPhoneNumber = `${countryCode}${phoneNumber}`;
 
     // Add role-specific fields
     if (role === "tutor") {
@@ -288,7 +291,7 @@ module.exports = (plugin) => {
     // }
     try {
       await sendSMS(
-        phoneNumber,
+        formattedPhoneNumber,
         `Your Tychr OTP is ${otp}. It is valid for 10 minutes.`
       );
     } catch (error) {
