@@ -1042,6 +1042,8 @@ export interface PluginUsersPermissionsUser extends Schema.CollectionType {
       'manyToMany',
       'api::grade-subject.grade-subject'
     >;
+    isPhoneVerified: Attribute.Boolean;
+    isEmailVerified: Attribute.Boolean;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     createdBy: Attribute.Relation<

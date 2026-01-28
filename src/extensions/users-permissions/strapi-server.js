@@ -507,7 +507,16 @@ module.exports = (plugin) => {
       prefix: "",
     },
   });
-
+  // Verify OTP
+  plugin.routes["content-api"].routes.push({
+    method: "POST",
+    path: "/auth/verify-otp-v2",
+    handler: "auth.verifyOTP_v2",
+    config: {
+      policies: [],
+      prefix: "",
+    },
+  });
   plugin.controllers.user.me = async (ctx) => {
     if (!ctx.state.user) {
       return ctx.unauthorized();
@@ -601,6 +610,82 @@ module.exports = (plugin) => {
       user: sanitizeUser(user),
     });
   };
+plugin.controllers.auth.verifyOTP_v2 = async (ctx) => {
+  const { uuid, otp, type } = ctx.request.body;
+
+  if (!uuid || !otp || !type) {
+    return ctx.badRequest("uuid, otp and type are required");
+  }
+
+  if (!["phone", "email"].includes(type)) {
+    return ctx.badRequest("Invalid verification type");
+  }
+
+  const user = await strapi
+    .query("plugin::users-permissions.user")
+    .findOne({
+      where: { uuid },
+      populate: {
+        role: true,
+        fav_topics: true,
+        avatar: true,
+        ib_program: true,
+        studying: true,
+        grade: {
+          populate: {
+            ib_programs: true,
+          },
+        },
+        enrolled_in: true,
+        tutor_plan: true,
+        student_plan: true,
+      },
+    });
+
+  if (!user) {
+    return ctx.badRequest("User not found");
+  }
+
+  if (!user.otp || user.otp !== otp) {
+    return ctx.badRequest("Invalid OTP");
+  }
+
+  // 🔥 Build update payload safely
+  const updateData = {
+    otp: null,
+  };
+
+  if (type === "phone") {
+    updateData.isPhoneVerified = true;
+  }
+
+  if (type === "email") {
+    updateData.isEmailVerified = true;
+  }
+
+  // confirmed = true if ANY verification succeeds
+  updateData.confirmed = true;
+
+  await strapi
+    .query("plugin::users-permissions.user")
+    .update({
+      where: { id: user.id },
+      data: updateData,
+    });
+
+  const jwt = strapi.plugins["users-permissions"].services.jwt.issue({
+    id: user.id,
+  });
+
+  return ctx.send({
+    message:
+      type === "phone"
+        ? "Phone number verified successfully"
+        : "Email verified successfully",
+    jwt,
+    user: sanitizeUser(user),
+  });
+};
 
   plugin.controllers.user.updateMe = async (ctx) => {
     if (!ctx.state.user) {

@@ -509,6 +509,12 @@
       "relation": "manyToMany",
       "target": "api::grade-subject.grade-subject",
       "inversedBy": "users"
+    },
+    "isPhoneVerified": {
+      "type": "boolean"
+    },
+    "isEmailVerified": {
+      "type": "boolean"
     }
   }
 }
