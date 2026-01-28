@@ -1,6 +1,29 @@
 const { default: axios } = require("axios");
 const bcrypt = require("bcryptjs");
 const crypto = require("crypto");
+const AWS = require('aws-sdk');
+AWS.config.update({
+  accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+  secretAccessKey: process.env.AWS_ACCESS_SECRET,
+  region: process.env.AWS_REGION
+});
+
+
+const sns = new AWS.SNS();
+const sendSMS = async (phoneNumber, message) => {
+  const params = {
+    Message: message,
+    PhoneNumber: phoneNumber,
+  };
+
+  try {
+    await sns.publish(params).promise();
+    console.log("SMS sent successfully");
+  } catch (err) {
+    console.error("Error sending SMS:", err);
+    throw err;
+  }
+};
 
 module.exports = (plugin) => {
   const sanitizeUser = (user) => {
@@ -83,14 +106,12 @@ module.exports = (plugin) => {
                   <li>Email: ${user.email}</li>
                   <li>Password: ${user.password}</li>
                   ${parent_name ? `<li>Parent Name: ${parent_name}</li>` : ""}
-                  ${
-                    parent_phonenumber
-                      ? `<li>Phone: ${parent_phonenumber}</li>`
-                      : ""
-                  }
-                  ${
-                    enquiry_type ? `<li>Enquiry Type: ${enquiry_type}</li>` : ""
-                  }
+                  ${parent_phonenumber
+            ? `<li>Phone: ${parent_phonenumber}</li>`
+            : ""
+          }
+                  ${enquiry_type ? `<li>Enquiry Type: ${enquiry_type}</li>` : ""
+          }
                 </ul>
                 <p>We'll be in touch within 24 hours to discuss your requirements.</p>
               </div>
@@ -132,14 +153,12 @@ module.exports = (plugin) => {
                   <li>Email: ${user.email}</li>
                   <li>Role: ${user.role?.type || "Lead"}</li>
                   ${parent_name ? `<li>Parent Name: ${parent_name}</li>` : ""}
-                  ${
-                    parent_phonenumber
-                      ? `<li>Phone: ${parent_phonenumber}</li>`
-                      : ""
-                  }
-                  ${
-                    enquiry_type ? `<li>Enquiry Type: ${enquiry_type}</li>` : ""
-                  }
+                  ${parent_phonenumber
+            ? `<li>Phone: ${parent_phonenumber}</li>`
+            : ""
+          }
+                  ${enquiry_type ? `<li>Enquiry Type: ${enquiry_type}</li>` : ""
+          }
                   <li>Registration Time: ${new Date().toLocaleString()}</li>
                 </ul>
                 <p><strong>Action Required:</strong> Please follow up with this lead within 24 hours.</p>
@@ -247,25 +266,33 @@ module.exports = (plugin) => {
     });
 
     // Send email based on role
-    if (role === "assistant" || role === "coach") {
-      await strapi
-        .plugin("email")
-        .service("email")
-        .send({
-          to: email,
-          from: "tychr@saralgroups.com",
-          subject: "Your Assistant Account Information",
-          text: `Your account has been created. Here are your login details:\n\nEmail: ${email}\nPassword: ${password}\n\nPlease make sure to change your password after logging in.`,
-        });
-    } else {
-      try {
-        await strapi
-          .service("api::email.email")
-          .sendEmailBasedOnRole(email, otp);
-      } catch (emailError) {
-        console.error("Email sending failed:", emailError);
-        // Don't fail registration if email fails
-      }
+    // if (role === "assistant" || role === "coach") {
+    //   await strapi
+    //     .plugin("email")
+    //     .service("email")
+    //     .send({
+    //       to: email,
+    //       from: "tychr@saralgroups.com",
+    //       subject: "Your Assistant Account Information",
+    //       text: `Your account has been created. Here are your login details:\n\nEmail: ${email}\nPassword: ${password}\n\nPlease make sure to change your password after logging in.`,
+    //     });
+    // } else {
+    //   try {
+    //     await strapi
+    //       .service("api::email.email")
+    //       .sendEmailBasedOnRole(email, otp);
+    //   } catch (emailError) {
+    //     console.error("Email sending failed:", emailError);
+    //     // Don't fail registration if email fails
+    //   }
+    // }
+    try {
+      await sendSMS(
+        phoneNumber,
+        `Your Tychr OTP is ${otp}. It is valid for 10 minutes.`
+      );
+    } catch (error) {
+      console.error("SMS sending failed:", error);
     }
 
     // Check if type=leads query parameter is present
@@ -610,82 +637,82 @@ module.exports = (plugin) => {
       user: sanitizeUser(user),
     });
   };
-plugin.controllers.auth.verifyOTP_v2 = async (ctx) => {
-  const { uuid, otp, type } = ctx.request.body;
+  plugin.controllers.auth.verifyOTP_v2 = async (ctx) => {
+    const { uuid, otp, type } = ctx.request.body;
 
-  if (!uuid || !otp || !type) {
-    return ctx.badRequest("uuid, otp and type are required");
-  }
+    if (!uuid || !otp || !type) {
+      return ctx.badRequest("uuid, otp and type are required");
+    }
 
-  if (!["phone", "email"].includes(type)) {
-    return ctx.badRequest("Invalid verification type");
-  }
+    if (!["phone", "email"].includes(type)) {
+      return ctx.badRequest("Invalid verification type");
+    }
 
-  const user = await strapi
-    .query("plugin::users-permissions.user")
-    .findOne({
-      where: { uuid },
-      populate: {
-        role: true,
-        fav_topics: true,
-        avatar: true,
-        ib_program: true,
-        studying: true,
-        grade: {
-          populate: {
-            ib_programs: true,
+    const user = await strapi
+      .query("plugin::users-permissions.user")
+      .findOne({
+        where: { uuid },
+        populate: {
+          role: true,
+          fav_topics: true,
+          avatar: true,
+          ib_program: true,
+          studying: true,
+          grade: {
+            populate: {
+              ib_programs: true,
+            },
           },
+          enrolled_in: true,
+          tutor_plan: true,
+          student_plan: true,
         },
-        enrolled_in: true,
-        tutor_plan: true,
-        student_plan: true,
-      },
+      });
+
+    if (!user) {
+      return ctx.badRequest("User not found");
+    }
+
+    if (!user.otp || user.otp !== otp) {
+      return ctx.badRequest("Invalid OTP");
+    }
+
+    // 🔥 Build update payload safely
+    const updateData = {
+      otp: null,
+    };
+
+    if (type === "phone") {
+      updateData.isPhoneVerified = true;
+    }
+
+    if (type === "email") {
+      updateData.isEmailVerified = true;
+    }
+
+    // confirmed = true if ANY verification succeeds
+    updateData.confirmed = true;
+
+    await strapi
+      .query("plugin::users-permissions.user")
+      .update({
+        where: { id: user.id },
+        data: updateData,
+      });
+
+    const jwt = strapi.plugins["users-permissions"].services.jwt.issue({
+      id: user.id,
     });
 
-  if (!user) {
-    return ctx.badRequest("User not found");
-  }
-
-  if (!user.otp || user.otp !== otp) {
-    return ctx.badRequest("Invalid OTP");
-  }
-
-  // 🔥 Build update payload safely
-  const updateData = {
-    otp: null,
+    return ctx.send({
+      message:
+        type === "phone"
+          ? "Phone number verified successfully"
+          : "Email verified successfully",
+      jwt,
+      user: sanitizeUser(user),
+    });
   };
-
-  if (type === "phone") {
-    updateData.isPhoneVerified = true;
-  }
-
-  if (type === "email") {
-    updateData.isEmailVerified = true;
-  }
-
-  // confirmed = true if ANY verification succeeds
-  updateData.confirmed = true;
-
-  await strapi
-    .query("plugin::users-permissions.user")
-    .update({
-      where: { id: user.id },
-      data: updateData,
-    });
-
-  const jwt = strapi.plugins["users-permissions"].services.jwt.issue({
-    id: user.id,
-  });
-
-  return ctx.send({
-    message:
-      type === "phone"
-        ? "Phone number verified successfully"
-        : "Email verified successfully",
-    jwt,
-    user: sanitizeUser(user),
-  });
-};
 
   plugin.controllers.user.updateMe = async (ctx) => {
     if (!ctx.state.user) {

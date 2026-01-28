@@ -16,20 +16,21 @@ const hashPassword = async (password) => {
 };
 
 const sns = new AWS.SNS();
-
 const sendSMS = async (phoneNumber, message) => {
-    const params = {
-        Message: message,
-        PhoneNumber: phoneNumber
-    };
-    sns.publish(params, (err, data) => {
-        if (err) {
-            console.error("Error sending SMS: ", err);
-        } else {
-            console.log("SMS sent successfully: ", data);
-        }
-    });
-}
+  const params = {
+    Message: message,
+    PhoneNumber: phoneNumber, 
+  };
+
+  try {
+    await sns.publish(params).promise();
+    console.log("SMS sent successfully");
+  } catch (err) {
+    console.error("Error sending SMS:", err);
+    throw err;
+  }
+};
+
 
 module.exports = {
     async authenticateByPhone(ctx) {
