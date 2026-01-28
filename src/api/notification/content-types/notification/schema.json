@@ -140,6 +140,13 @@
       "relation": "manyToOne",
       "target": "api::grade-subject.grade-subject",
       "inversedBy": "notifications_enquiries"
+    },
+    "isVerified": {
+      "type": "boolean",
+      "default": false
+    },
+    "isSpam": {
+      "type": "boolean"
     }
   }
 }

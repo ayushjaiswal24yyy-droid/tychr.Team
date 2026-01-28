@@ -2900,6 +2900,9 @@ export interface ApiLiveLectureLiveLecture extends Schema.CollectionType {
       'api::attendance.attendance'
     >;
     reminderSent: Attribute.Boolean & Attribute.DefaultTo<false>;
+    isReviewed: Attribute.Boolean;
+    review: Attribute.Text;
+    rating: Attribute.Integer;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
@@ -3295,6 +3298,8 @@ export interface ApiNotificationNotification extends Schema.CollectionType {
       'manyToOne',
       'api::grade-subject.grade-subject'
     >;
+    isVerified: Attribute.Boolean & Attribute.DefaultTo<false>;
+    isSpam: Attribute.Boolean;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     createdBy: Attribute.Relation<

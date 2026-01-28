@@ -102,6 +102,15 @@
     "reminderSent": {
       "type": "boolean",
       "default": false
+    },
+    "isReviewed": {
+      "type": "boolean"
+    },
+    "review": {
+      "type": "text"
+    },
+    "rating": {
+      "type": "integer"
     }
   }
 }
