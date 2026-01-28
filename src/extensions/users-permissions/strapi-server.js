@@ -313,7 +313,7 @@ const formattedPhoneNumber = `${countryCode}${phoneNumber}`;
     return ctx.send({
       message: isLeadRegistration
         ? "Lead registered successfully. Our team will contact you shortly."
-        : "User registered. Please verify your email with the OTP sent.",
+        : "User registered. Please verify your phone with the OTP sent.",
       uuid: user.uuid,
       jwt,
       user: sanitizeUser(user),
@@ -1037,6 +1037,85 @@ const formattedPhoneNumber = `${countryCode}${phoneNumber}`;
       return ctx.badRequest("Failed to send email", { error: error.message });
     }
   };
+plugin.controllers.auth.getOtpTarget = async (ctx) => {
+  const { uuid } = ctx.query;
+
+  if (!uuid) {
+    return ctx.badRequest("UUID is required");
+  }
+
+  const user = await strapi
+    .query("plugin::users-permissions.user")
+    .findOne({
+      where: { uuid },
+      select: ["email", "phoneNumber", "countryCode"],
+    });
+
+  if (!user) {
+    return ctx.notFound("User not found");
+  }
+
+  return ctx.send({
+    email: user.email,
+    phoneNumber: user.phoneNumber,
+    countryCode: user.countryCode,
+  });
+};
+
+plugin.controllers.auth.sendEmailOtp = async (ctx) => {
+  const { uuid } = ctx.request.body;
+
+  if (!uuid) {
+    return ctx.badRequest("UUID is required");
+  }
+
+  const user = await strapi
+    .query("plugin::users-permissions.user")
+    .findOne({
+      where: { uuid },
+    });
+
+  if (!user) {
+    return ctx.badRequest("User not found");
+  }
+
+  // Generate new OTP
+  const otp = Math.floor(100000 + Math.random() * 900000).toString();
+
+  // Save OTP
+  await strapi
+    .query("plugin::users-permissions.user")
+    .update({
+      where: { id: user.id },
+      data: { otp },
+    });
+
+  // ✅ Reuse existing email service
+  try {
+    await strapi
+      .service("api::email.email")
+      .sendEmailBasedOnRole(user.email, otp);
+  } catch (emailError) {
+    console.error("Email sending failed:", emailError);
+    return ctx.internalServerError("Failed to send email OTP");
+  }
+
+  return ctx.send({
+    message: "OTP sent to your registered email address",
+  });
+};
+
+
+plugin.routes["content-api"].routes.push({
+  method: "POST",
+  path: "/auth/send-email-otp",
+  handler: "auth.sendEmailOtp",
+  config: {
+    auth: false,
+    policies: [],
+    prefix: "",
+  },
+});
 
   plugin.routes["content-api"].routes.push({
     method: "POST",
@@ -1066,6 +1145,16 @@ const formattedPhoneNumber = `${countryCode}${phoneNumber}`;
       prefix: "",
     },
   });
+plugin.routes["content-api"].routes.push({
+  method: "GET",
+  path: "/auth/otp-target",
+  handler: "auth.getOtpTarget",
+  config: {
+    auth: false,
+    policies: [],
+    prefix: "",
+  },
+});
 
   return plugin;
 };
