@@ -411,8 +411,14 @@ module.exports = createCoreController(
                 populate: {
                   question: {
                     populate: ["parts", "attachments"],
+                    
                   },
-                  part_evaluations: true,
+                  part_evaluations: {
+                    populate: true,
+                  },
+                  question_awarded_marks:{
+                    populate:true
+                  }
                 },
               },
               uploaded_answer_sheet: true,
@@ -514,7 +520,7 @@ module.exports = createCoreController(
                   awarded_marks: pe.awarded_marks,
                   feedback: pe.feedback,
                 })) || [],
-               awarded_marks: qna.question_awarded_marks ?? 0,
+                awarded_marks: qna.question_awarded_marks ?? 0,
                 feedback: qna.feedback,
               })),
             })),
