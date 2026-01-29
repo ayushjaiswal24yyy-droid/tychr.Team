@@ -538,7 +538,15 @@ const formattedPhoneNumber = `${countryCode}${phoneNumber}`;
     },
   });
   // Verify OTP
-1
+  plugin.routes["content-api"].routes.push({
+    method: "POST",
+    path: "/auth/verify-otp-v2",
+    handler: "auth.verifyOTP_v2",
+    config: {
+      policies: [],
+      prefix: "",
+    },
+  });
   plugin.controllers.user.me = async (ctx) => {
     if (!ctx.state.user) {
       return ctx.unauthorized();
