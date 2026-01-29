@@ -413,9 +413,7 @@ module.exports = createCoreController(
                     populate: ["parts", "attachments"],
                     
                   },
-                  part_evaluations: {
-                    populate: true,
-                  },
+                 part_evaluations: true,
            
                 },
               },
