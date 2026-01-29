@@ -147,6 +147,9 @@
     },
     "isSpam": {
       "type": "boolean"
+    },
+    "otp": {
+      "type": "integer"
     }
   }
 }

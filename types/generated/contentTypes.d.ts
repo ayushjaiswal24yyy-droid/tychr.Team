@@ -3352,6 +3352,7 @@ export interface ApiNotificationNotification extends Schema.CollectionType {
     >;
     isVerified: Attribute.Boolean & Attribute.DefaultTo<false>;
     isSpam: Attribute.Boolean;
+    otp: Attribute.Integer;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     createdBy: Attribute.Relation<
