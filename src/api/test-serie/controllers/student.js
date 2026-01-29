@@ -487,6 +487,7 @@ module.exports = createCoreController(
             questions: allQuestions.map(q => ({
               id: q.id,
               diagram: q.diagram,
+                parts: q.parts || [], 
               question: q.question,
               marks: q.marks,
               question_type: q.question_type,
@@ -503,6 +504,7 @@ module.exports = createCoreController(
               question_answers: paperAnswer.question_n_answer?.map(qna => ({
                 question_id: qna.question?.id,
                 question: qna.question?.question,
+                 parts: qna.question?.parts || [],
                 question_type: qna.question?.question_type,
                 marks: qna.question?.marks,
                 student_answer: qna.answer,

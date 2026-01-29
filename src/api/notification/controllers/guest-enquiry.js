@@ -26,6 +26,7 @@ module.exports = createCoreController(
     async createWithOTP(ctx) {
       const data = ctx.request.body?.data;
 
+  strapi.log.info("Incoming guest enquiry", data);
       if (!data?.parent_phonenumber) {
         return ctx.badRequest('Parent phone number required');
       }
