@@ -71,68 +71,65 @@ module.exports = createCoreController(
                 return ctx.internalServerError('Failed to submit review');
             }
         },
+async pendingReview(ctx) {
+  try {
+    const user = ctx.state.user;
 
-        async pendingReview(ctx) {
-            try {
-                const user = ctx.state.user;
+    if (!user) {
+      return ctx.unauthorized();
+    }
 
-                if (!user) {
-                    return ctx.unauthorized();
-                }
+    // 1️⃣ Get attended lectures
+    const attendances = await strapi.db
+      .query('api::attendance.attendance')
+      .findMany({
+        where: {
+          student: user.id,
+          status: { $in: ['present', 'late'] },
+        },
+        populate: {
+          live_lecture: true,
+        },
+      });
 
-                // 1️⃣ Find attendances where user actually attended
-                const attendances = await strapi.db
-                    .query('api::attendance.attendance')
-                    .findMany({
-                        where: {
-                            student: user.id,
-                            status: {
-                                $in: ['present', 'late'],
-                            },
-                        },
-                        populate: {
-                            live_lecture: {
-                                populate: {
-                                    lecture_feedbacks: {
-                                        where: {
-                                            user: user.id,
-                                        },
-                                    },
-                                },
-                            },
-                        },
-                    });
+    // 2️⃣ Sort by lecture schedule DESC
+    const sorted = attendances
+      .filter(a => a.live_lecture?.schedule)
+      .sort(
+        (a, b) =>
+          new Date(b.live_lecture.schedule).getTime() -
+          new Date(a.live_lecture.schedule).getTime()
+      );
 
-                // 2️⃣ Sort by lecture schedule DESC (safe JS sort)
-                const sorted = attendances
-                    .filter(a => a.live_lecture?.schedule)
-                    .sort(
-                        (a, b) =>
-                            new Date(b.live_lecture.schedule).getTime() -
-                            new Date(a.live_lecture.schedule).getTime()
-                    )
+    // 3️⃣ Find first completed lecture without feedback
+    for (const attendance of sorted) {
+      const lecture = attendance.live_lecture;
+      if (!lecture) continue;
 
-                // 3️⃣ Find first completed lecture without feedback
-                for (const attendance of sorted) {
-                    const lecture = attendance.live_lecture;
+      if (lecture.lecture_status !== 'completed') continue;
 
-                    if (!lecture) continue;
+      // 🔥 IMPORTANT: check feedback via separate query
+      const existingFeedback = await strapi.db
+        .query('api::lecture-feedback.lecture-feedback')
+        .findOne({
+          where: {
+            live_lecture: lecture.id,
+            user: user.id,
+          },
+        });
 
-                    // Must be completed
-                    if (lecture.lecture_status !== 'completed') continue;
+      if (!existingFeedback) {
+        return ctx.send({ data: lecture });
+      }
+    }
 
-                    // No feedback by this user
-                    if (!lecture.lecture_feedbacks || lecture.lecture_feedbacks.length === 0) {
-                        return ctx.send({ data: lecture });
-                    }
-                }
+    return ctx.send({ data: null });
+  } catch (error) {
+    strapi.log.error('pendingReview error:', error);
+    return ctx.internalServerError('Failed to get pending review');
+  }
+}
 
-                return ctx.send({ data: null });
-            } catch (error) {
-                strapi.log.error('pendingReview error:', error);
-                return ctx.internalServerError('Failed to get pending review');
-            }
-        }
 
 
     })
