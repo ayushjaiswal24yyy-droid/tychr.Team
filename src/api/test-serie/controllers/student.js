@@ -412,6 +412,7 @@ module.exports = createCoreController(
                   question: {
                     populate: ["parts", "attachments"],
                   },
+                  part_evaluations: true,
                 },
               },
               uploaded_answer_sheet: true,
@@ -487,7 +488,7 @@ module.exports = createCoreController(
             questions: allQuestions.map(q => ({
               id: q.id,
               diagram: q.diagram,
-                parts: q.parts || [], 
+              parts: q.parts || [],
               question: q.question,
               marks: q.marks,
               question_type: q.question_type,
@@ -504,14 +505,16 @@ module.exports = createCoreController(
               question_answers: paperAnswer.question_n_answer?.map(qna => ({
                 question_id: qna.question?.id,
                 question: qna.question?.question,
-                 parts: qna.question?.parts || [],
+                parts: qna.question?.parts || [],
                 question_type: qna.question?.question_type,
                 marks: qna.question?.marks,
                 student_answer: qna.answer,
-                correct_answer: qna.question?.parts?.find(
-                  part => part.is_correct
-                )?.content,
-                evaluated_marks: qna.evaluated_marks,
+                part_evaluations: qna.part_evaluations?.map(pe => ({
+                  part_index: pe.part_index,
+                  awarded_marks: pe.awarded_marks,
+                  feedback: pe.feedback,
+                })) || [],
+               awarded_marks: qna.question_awarded_marks ?? 0,
                 feedback: qna.feedback,
               })),
             })),
