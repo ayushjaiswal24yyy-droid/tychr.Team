@@ -416,9 +416,7 @@ module.exports = createCoreController(
                   part_evaluations: {
                     populate: true,
                   },
-                  question_awarded_marks:{
-                    populate:true
-                  }
+           
                 },
               },
               uploaded_answer_sheet: true,
