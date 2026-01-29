@@ -60,5 +60,67 @@ module.exports = createCoreController(
 
       return ctx.send({ data: feedback });
     },
+     async pendingReview(ctx) {
+      const user = ctx.state.user;
+
+      if (!user) {
+        return ctx.unauthorized();
+      }
+
+      const now = new Date();
+
+      /**
+       * 1. Find attended lectures (most recent first)
+       */
+      const attendances = await strapi.db
+        .query('api::attendance.attendance')
+        .findMany({
+          where: {
+            user: user.id,
+            attended: true,
+          },
+          populate: {
+            lecture: {
+              populate: {
+                lecture_feedbacks: {
+                  where: {
+                    user: user.id,
+                  },
+                },
+              },
+            },
+          },
+          orderBy: {
+            lecture: { schedule: 'desc' },
+          },
+        });
+
+      for (const attendance of attendances) {
+        const lecture = attendance.lecture;
+
+        if (!lecture) continue;
+
+        // ---- COMPLETION CHECK (derived) ----
+        const start = new Date(lecture.schedule);
+        const duration = lecture.duration_minutes ?? 60;
+        const bufferMinutes = 15;
+
+        const completedAt = new Date(
+          start.getTime() + (duration + bufferMinutes) * 60 * 1000
+        );
+
+        if (now < completedAt) continue;
+
+        // ---- REVIEW CHECK ----
+        if (!lecture.lecture_feedbacks?.length) {
+          return ctx.send({
+            data: lecture,
+          });
+        }
+      }
+
+      return ctx.send({ data: null });
+    },
+  
   })
 );
