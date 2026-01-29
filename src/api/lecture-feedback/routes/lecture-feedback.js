@@ -5,11 +5,7 @@ const { createCoreRouter } = require('@strapi/strapi').factories;
 module.exports = createCoreRouter(
   'api::lecture-feedback.lecture-feedback',
   {
-    config: {
-      find: { auth: true },
-      findOne: { auth: true },
-      create: { auth: true },
-    },
+   
     routes: [
       {
         method: 'GET',
