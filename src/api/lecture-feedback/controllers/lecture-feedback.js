@@ -3,124 +3,137 @@
 const { createCoreController } = require('@strapi/strapi').factories;
 
 module.exports = createCoreController(
-  'api::lecture-feedback.lecture-feedback',
-  ({ strapi }) => ({
-    async create(ctx) {
-      const user = ctx.state.user;
-      const { lectureId, rating, review } = ctx.request.body;
+    'api::lecture-feedback.lecture-feedback',
+    ({ strapi }) => ({
+        async create(ctx) {
+            try {
+                const user = ctx.state.user;
+                const { lectureId, rating, review } = ctx.request.body;
 
-      if (!user) {
-        return ctx.unauthorized('You must be logged in');
-      }
+                if (!user) {
+                    return ctx.unauthorized('You must be logged in');
+                }
 
-      if (!lectureId || !rating) {
-        return ctx.badRequest('Lecture and rating are required');
-      }
+                if (!lectureId || !rating) {
+                    return ctx.badRequest('Lecture and rating are required');
+                }
 
-      // Optional: attendance check
-      const attended = await strapi.db
-        .query('api::attendance.attendance')
-        .findOne({
-          where: {
-            lecture: lectureId,
-            user: user.id,
-            attended: true,
-          },
-        });
+                if (rating < 1 || rating > 5) {
+                    return ctx.badRequest('Rating must be between 1 and 5');
+                }
 
-      if (!attended) {
-        return ctx.forbidden('You did not attend this lecture');
-      }
+                // 1️⃣ Attendance check (correct for your schema)
+                const attended = await strapi.db
+                    .query('api::attendance.attendance')
+                    .findOne({
+                        where: {
+                            student: user.id,
+                            live_lecture: lectureId,
+                            status: {
+                                $in: ['present', 'late'],
+                            },
+                        },
+                    });
 
-      // Check existing review
-      const existing = await strapi.db
-        .query('api::lecture-feedback.lecture-feedback')
-        .findOne({
-          where: {
-            lecture: lectureId,
-            user: user.id,
-          },
-        });
+                if (!attended) {
+                    return ctx.forbidden('You did not attend this lecture');
+                }
 
-      if (existing) {
-        return ctx.conflict('You have already reviewed this lecture');
-      }
+                // 2️⃣ Check existing review
+                const existing = await strapi.db
+                    .query('api::lecture-feedback.lecture-feedback')
+                    .findOne({
+                        where: {
+                            lecture: lectureId,
+                            user: user.id,
+                        },
+                    });
 
-      // Create feedback
-      const feedback = await strapi.db
-        .query('api::lecture-feedback.lecture-feedback')
-        .create({
-          data: {
-            lecture: lectureId,
-            user: user.id,
-            rating,
-            review,
-          },
-        });
+                if (existing) {
+                    return ctx.conflict('You have already reviewed this lecture');
+                }
 
-      return ctx.send({ data: feedback });
-    },
-     async pendingReview(ctx) {
-      const user = ctx.state.user;
+                // 3️⃣ Create feedback
+                const feedback = await strapi.db
+                    .query('api::lecture-feedback.lecture-feedback')
+                    .create({
+                        data: {
+                            lecture: lectureId,
+                            user: user.id,
+                            rating,
+                            review,
+                        },
+                    });
 
-      if (!user) {
-        return ctx.unauthorized();
-      }
+                return ctx.send({ data: feedback });
+            } catch (error) {
+                strapi.log.error('lecture-feedback.create error:', error);
+                return ctx.internalServerError('Failed to submit review');
+            }
+        },
 
-      const now = new Date();
+        async pendingReview(ctx) {
+            try {
+                const user = ctx.state.user;
 
-      /**
-       * 1. Find attended lectures (most recent first)
-       */
-      const attendances = await strapi.db
-        .query('api::attendance.attendance')
-        .findMany({
-          where: {
-            user: user.id,
-            attended: true,
-          },
-          populate: {
-            lecture: {
-              populate: {
-                lecture_feedbacks: {
-                  where: {
-                    user: user.id,
-                  },
-                },
-              },
-            },
-          },
-          orderBy: {
-            lecture: { schedule: 'desc' },
-          },
-        });
+                if (!user) {
+                    return ctx.unauthorized();
+                }
 
-      for (const attendance of attendances) {
-        const lecture = attendance.lecture;
+                // 1️⃣ Find attendances where user actually attended
+                const attendances = await strapi.db
+                    .query('api::attendance.attendance')
+                    .findMany({
+                        where: {
+                            student: user.id,
+                            status: {
+                                $in: ['present', 'late'],
+                            },
+                        },
+                        populate: {
+                            live_lecture: {
+                                populate: {
+                                    lecture_feedbacks: {
+                                        where: {
+                                            user: user.id,
+                                        },
+                                    },
+                                },
+                            },
+                        },
+                    });
 
-        if (!lecture) continue;
+                // 2️⃣ Sort by lecture schedule DESC (safe JS sort)
+                const sorted = attendances
+                    .filter(a => a.live_lecture?.schedule)
+                    .sort(
+                        (a, b) =>
+                            new Date(b.live_lecture.schedule).getTime() -
+                            new Date(a.live_lecture.schedule).getTime()
+                    )
 
-        // ---- COMPLETION CHECK (derived) ----
-        const start = new Date(lecture.schedule);
-        const duration = lecture.duration_minutes ?? 60;
-        const bufferMinutes = 15;
+                // 3️⃣ Find first completed lecture without feedback
+                for (const attendance of sorted) {
+                    const lecture = attendance.live_lecture;
 
-        const completedAt = new Date(
-          start.getTime() + (duration + bufferMinutes) * 60 * 1000
-        );
+                    if (!lecture) continue;
 
-        if (now < completedAt) continue;
+                    // Must be completed
+                    if (lecture.lecture_status !== 'completed') continue;
 
-        // ---- REVIEW CHECK ----
-        if (!lecture.lecture_feedbacks?.length) {
-          return ctx.send({
-            data: lecture,
-          });
+                    // No feedback by this user
+                    if (!lecture.lecture_feedbacks || lecture.lecture_feedbacks.length === 0) {
+                        return ctx.send({ data: lecture });
+                    }
+                }
+
+                return ctx.send({ data: null });
+            } catch (error) {
+                strapi.log.error('pendingReview error:', error);
+                return ctx.internalServerError('Failed to get pending review');
+            }
         }
-      }
 
-      return ctx.send({ data: null });
-    },
-  
-  })
+
+    })
 );
