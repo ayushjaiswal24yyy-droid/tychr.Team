@@ -515,6 +515,12 @@
     },
     "isEmailVerified": {
       "type": "boolean"
+    },
+    "lecture_feedbacks": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::lecture-feedback.lecture-feedback",
+      "mappedBy": "user"
     }
   }
 }

@@ -103,14 +103,11 @@
       "type": "boolean",
       "default": false
     },
-    "isReviewed": {
-      "type": "boolean"
-    },
-    "review": {
-      "type": "text"
-    },
-    "rating": {
-      "type": "integer"
+    "lecture_feedbacks": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::lecture-feedback.lecture-feedback",
+      "mappedBy": "live_lecture"
     }
   }
 }

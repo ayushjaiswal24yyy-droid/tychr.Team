@@ -1044,6 +1044,11 @@ export interface PluginUsersPermissionsUser extends Schema.CollectionType {
     >;
     isPhoneVerified: Attribute.Boolean;
     isEmailVerified: Attribute.Boolean;
+    lecture_feedbacks: Attribute.Relation<
+      'plugin::users-permissions.user',
+      'oneToMany',
+      'api::lecture-feedback.lecture-feedback'
+    >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     createdBy: Attribute.Relation<
@@ -2847,6 +2852,49 @@ export interface ApiLeadLead extends Schema.CollectionType {
   };
 }
 
+export interface ApiLectureFeedbackLectureFeedback
+  extends Schema.CollectionType {
+  collectionName: 'lecture_feedbacks';
+  info: {
+    singularName: 'lecture-feedback';
+    pluralName: 'lecture-feedbacks';
+    displayName: 'lecture_feedback';
+    description: '';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    live_lecture: Attribute.Relation<
+      'api::lecture-feedback.lecture-feedback',
+      'manyToOne',
+      'api::live-lecture.live-lecture'
+    >;
+    user: Attribute.Relation<
+      'api::lecture-feedback.lecture-feedback',
+      'manyToOne',
+      'plugin::users-permissions.user'
+    >;
+    review: Attribute.Text;
+    rating: Attribute.Integer;
+    createdAt: Attribute.DateTime;
+    updatedAt: Attribute.DateTime;
+    publishedAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<
+      'api::lecture-feedback.lecture-feedback',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+    updatedBy: Attribute.Relation<
+      'api::lecture-feedback.lecture-feedback',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+  };
+}
+
 export interface ApiLiveLectureLiveLecture extends Schema.CollectionType {
   collectionName: 'live_lectures';
   info: {
@@ -2902,9 +2950,11 @@ export interface ApiLiveLectureLiveLecture extends Schema.CollectionType {
       'api::attendance.attendance'
     >;
     reminderSent: Attribute.Boolean & Attribute.DefaultTo<false>;
-    isReviewed: Attribute.Boolean;
-    review: Attribute.Text;
-    rating: Attribute.Integer;
+    lecture_feedbacks: Attribute.Relation<
+      'api::live-lecture.live-lecture',
+      'oneToMany',
+      'api::lecture-feedback.lecture-feedback'
+    >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
@@ -5347,6 +5397,7 @@ declare module '@strapi/types' {
       'api::igcse-subject.igcse-subject': ApiIgcseSubjectIgcseSubject;
       'api::individual-user.individual-user': ApiIndividualUserIndividualUser;
       'api::lead.lead': ApiLeadLead;
+      'api::lecture-feedback.lecture-feedback': ApiLectureFeedbackLectureFeedback;
       'api::live-lecture.live-lecture': ApiLiveLectureLiveLecture;
       'api::live-lecture-purchase.live-lecture-purchase': ApiLiveLecturePurchaseLiveLecturePurchase;
       'api::live-lectures-meeting.live-lectures-meeting': ApiLiveLecturesMeetingLiveLecturesMeeting;
