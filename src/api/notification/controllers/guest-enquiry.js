@@ -18,80 +18,63 @@ const sendSMS = async (phoneNumber, message) => {
   }).promise();
 };
 
-// Validate phone number format
-const validatePhoneNumber = (phoneNumber) => {
-  // AWS SNS requires E.164 format: +[country code][number]
-  const phoneRegex = /^\+[1-9]\d{1,14}$/;
-  return phoneRegex.test(phoneNumber);
-};
-
 module.exports = createCoreController(
   'api::notification.notification',
   ({ strapi }) => ({
     async createWithOTP(ctx) {
       const data = ctx.request.body?.data;
       
-      strapi.log.info("Incoming guest enquiry", data);
+      strapi.log.info("=== Incoming guest enquiry ===");
+      strapi.log.info("Data received:", JSON.stringify(data, null, 2));
 
       if (!data?.parent_phonenumber) {
         return ctx.badRequest('Parent phone number required');
       }
 
-      // Validate phone number format
-      if (!validatePhoneNumber(data.parent_phonenumber)) {
-        return ctx.badRequest('Invalid phone number format. Use E.164 format: +[country code][number]');
-      }
-
-      // Check for recent unverified enquiries (prevent spam)
-      const recentEnquiry = await strapi.db
-        .query('api::notification.notification')
-        .findOne({
-          where: {
-            parent_phonenumber: data.parent_phonenumber,
-            isVerified: false,
-            createdAt: {
-              $gt: new Date(Date.now() - 5 * 60 * 1000) // Within last 5 minutes
-            }
-          },
-          orderBy: { createdAt: 'desc' }
-        });
-
-      if (recentEnquiry) {
-        return ctx.badRequest('An OTP was recently sent. Please wait before requesting a new one.');
-      }
-
-      // Generate OTP
       const otp = Math.floor(100000 + Math.random() * 900000);
       const hashedOtp = await bcrypt.hash(String(otp), 10);
-      
-      // Set OTP expiration (10 minutes)
       const otpExpiry = new Date(Date.now() + 10 * 60 * 1000);
 
       try {
         // Send SMS first
+        strapi.log.info(`Sending OTP to: ${data.parent_phonenumber}`);
         await sendSMS(
           data.parent_phonenumber,
           `Your verification OTP is ${otp}. Valid for 10 minutes.`
         );
+        strapi.log.info('SMS sent successfully');
 
-        // Only create enquiry if SMS sent successfully
+        // Prepare data for database
+        const dbData = {
+          ...data,
+          otp: hashedOtp,
+          otpExpiry: otpExpiry,
+          isVerified: false,
+          otpAttempts: 0,
+        };
+
+        strapi.log.info("=== Creating enquiry in DB ===");
+        strapi.log.info("DB Data:", JSON.stringify(dbData, null, 2));
+
+        // Create enquiry
         const enquiry = await strapi.db
           .query('api::notification.notification')
           .create({
-            data: {
-              ...data,
-              otp: hashedOtp,
-              otpExpiry: otpExpiry,
-              isVerified: false,
-              otpAttempts: 0,
-            },
+            data: dbData,
           });
+
+        strapi.log.info("Enquiry created successfully:", enquiry.id);
 
         return ctx.send({
           data: { enquiryId: enquiry.id },
         });
       } catch (error) {
-        strapi.log.error('Failed to send OTP SMS:', error);
+        strapi.log.error('=== ERROR in createWithOTP ===');
+        strapi.log.error('Error name:', error.name);
+        strapi.log.error('Error message:', error.message);
+        strapi.log.error('Error stack:', error.stack);
+        strapi.log.error('Full error:', JSON.stringify(error, null, 2));
+        
         return ctx.internalServerError('Failed to send verification code. Please try again.');
       }
     },
@@ -99,62 +82,72 @@ module.exports = createCoreController(
     async verifyOTP(ctx) {
       const { enquiryId, otp } = ctx.request.body;
 
+      strapi.log.info("=== Verifying OTP ===");
+      strapi.log.info("Enquiry ID:", enquiryId);
+      strapi.log.info("OTP:", otp);
+
       if (!enquiryId || !otp) {
         return ctx.badRequest('Invalid request');
       }
 
-      const enquiry = await strapi.db
-        .query('api::notification.notification')
-        .findOne({ where: { id: enquiryId } });
+      try {
+        const enquiry = await strapi.db
+          .query('api::notification.notification')
+          .findOne({ where: { id: enquiryId } });
 
-      if (!enquiry) {
-        return ctx.notFound('Enquiry not found');
-      }
+        if (!enquiry) {
+          return ctx.notFound('Enquiry not found');
+        }
 
-      if (enquiry.isVerified) {
-        return ctx.send({ success: true });
-      }
+        if (enquiry.isVerified) {
+          return ctx.send({ success: true });
+        }
 
-      // Check if OTP expired
-      if (enquiry.otpExpiry && new Date() > new Date(enquiry.otpExpiry)) {
-        return ctx.badRequest('OTP has expired. Please request a new one.');
-      }
+        // Check if OTP expired
+        if (enquiry.otpExpiry && new Date() > new Date(enquiry.otpExpiry)) {
+          return ctx.badRequest('OTP has expired. Please request a new one.');
+        }
 
-      // Check attempt limit (prevent brute force)
-      if (enquiry.otpAttempts >= 5) {
-        return ctx.badRequest('Too many failed attempts. Please request a new OTP.');
-      }
+        // Check attempt limit
+        if (enquiry.otpAttempts >= 5) {
+          return ctx.badRequest('Too many failed attempts. Please request a new OTP.');
+        }
 
-      const isValid = await bcrypt.compare(String(otp), enquiry.otp);
+        const isValid = await bcrypt.compare(String(otp), enquiry.otp);
 
-      if (!isValid) {
-        // Increment failed attempts
+        if (!isValid) {
+          // Increment failed attempts
+          await strapi.db
+            .query('api::notification.notification')
+            .update({
+              where: { id: enquiryId },
+              data: {
+                otpAttempts: enquiry.otpAttempts + 1,
+              },
+            });
+
+          return ctx.badRequest('Invalid OTP');
+        }
+
+        // OTP is valid - verify and clear sensitive data
         await strapi.db
           .query('api::notification.notification')
           .update({
             where: { id: enquiryId },
             data: {
-              otpAttempts: enquiry.otpAttempts + 1,
+              isVerified: true,
+              otp: null,
+              otpExpiry: null,
+              otpAttempts: 0,
             },
           });
 
-        return ctx.badRequest('Invalid OTP');
+        return ctx.send({ success: true });
+      } catch (error) {
+        strapi.log.error('=== ERROR in verifyOTP ===');
+        strapi.log.error('Error:', error);
+        return ctx.internalServerError('Failed to verify OTP');
       }
-
-      // OTP is valid - verify and clear sensitive data
-      await strapi.db
-        .query('api::notification.notification')
-        .update({
-          where: { id: enquiryId },
-          data: {
-            isVerified: true,
-            otp: null,
-            otpExpiry: null,
-            otpAttempts: 0,
-          },
-        });
-
-      return ctx.send({ success: true });
     },
   })
 );
