@@ -117,6 +117,35 @@
     "parent_location": {
       "type": "string"
     },
+    "parent_email": {
+      "type": "email"
+    },
+    "student_name": {
+      "type": "string"
+    },
+    "student_email": {
+      "type": "email"
+    },
+    "student_grade": {
+      "type": "string"
+    },
+    "student_school": {
+      "type": "string"
+    },
+    "how_did_you_hear": {
+      "type": "enumeration",
+      "enum": [
+        "Website",
+        "Social Media",
+        "Friend/Referral",
+        "Search Engine",
+        "Advertisement",
+        "Other"
+      ]
+    },
+    "preferred_start_date": {
+      "type": "date"
+    },
     "enquiryNotes": {
       "displayName": "notes",
       "type": "component",
@@ -152,11 +181,11 @@
       "type": "string"
     },
     "otpExpiry": {
-  "type": "datetime"
-},
-"otpAttempts": {
-  "type": "integer",
-  "default": 0
-}
+      "type": "datetime"
+    },
+    "otpAttempts": {
+      "type": "integer",
+      "default": 0
+    }
   }
 }

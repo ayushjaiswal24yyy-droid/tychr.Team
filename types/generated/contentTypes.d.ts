@@ -3334,6 +3334,22 @@ export interface ApiNotificationNotification extends Schema.CollectionType {
     classroom_limit: Attribute.Enumeration<['offline', 'online']>;
     classroom_type: Attribute.Enumeration<['Offline', 'Online']>;
     parent_location: Attribute.String;
+    parent_email: Attribute.Email;
+    student_name: Attribute.String;
+    student_email: Attribute.Email;
+    student_grade: Attribute.String;
+    student_school: Attribute.String;
+    how_did_you_hear: Attribute.Enumeration<
+      [
+        'Website',
+        'Social Media',
+        'Friend/Referral',
+        'Search Engine',
+        'Advertisement',
+        'Other'
+      ]
+    >;
+    preferred_start_date: Attribute.Date;
     enquiryNotes: Attribute.Component<'notification.notes', true>;
     ib_program: Attribute.Relation<
       'api::notification.notification',
