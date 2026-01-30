@@ -150,6 +150,13 @@
     },
     "otp": {
       "type": "string"
-    }
+    },
+    "otpExpiry": {
+  "type": "datetime"
+},
+"otpAttempts": {
+  "type": "integer",
+  "default": 0
+}
   }
 }

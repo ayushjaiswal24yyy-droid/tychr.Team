@@ -3353,6 +3353,8 @@ export interface ApiNotificationNotification extends Schema.CollectionType {
     isVerified: Attribute.Boolean & Attribute.DefaultTo<false>;
     isSpam: Attribute.Boolean;
     otp: Attribute.String;
+    otpExpiry: Attribute.DateTime;
+    otpAttempts: Attribute.Integer & Attribute.DefaultTo<0>;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     createdBy: Attribute.Relation<
