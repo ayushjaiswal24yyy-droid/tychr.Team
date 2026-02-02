@@ -627,7 +627,7 @@ module.exports = createCoreController(
                         },
                         diagram: true,
                       },
-                      fields: ["id", "question_type","question"],
+                      fields: ["id", "question_type", "question"],
                     },
                   }),
                 },
@@ -790,26 +790,6 @@ module.exports = createCoreController(
           };
         });
 
-        /* ----------------------------------------
-           8. Auto-end attempt if all papers submitted
-        ---------------------------------------- */
-        if (
-          hasAttempt &&
-          !attemptCompleted &&
-          answers.length === series.papers.length
-        ) {
-          await strapi.entityService.update(
-            "api::answer.answer",
-            attemptMarkers[0].id,
-            {
-              data: { completed: true },
-            }
-          );
-
-          attemptCompleted = true;
-        }
-
-
 
         /* ----------------------------------------
            9. Final response
@@ -917,12 +897,16 @@ module.exports = createCoreController(
         ctx.throw(500, error.message);
       }
     },
-
     async endAttempt(ctx) {
       const { seriesId } = ctx.params;
       const user = ctx.state.user;
 
-      const marker = await strapi.entityService.findMany(
+      if (!user) {
+        return ctx.unauthorized();
+      }
+
+      // 1. Find active attempt marker
+      const markers = await strapi.entityService.findMany(
         "api::answer.answer",
         {
           filters: {
@@ -930,21 +914,74 @@ module.exports = createCoreController(
             test_series: seriesId,
             is_attempt_marker: true,
             completed: false,
-            phase:"completed"
           },
           limit: 1,
+          fields: ["id", "started_at", "attempt_id"],
         }
       );
 
-      if (!marker.length) return;
+      if (!markers.length) {
+        return { success: true }; // idempotent
+      }
 
+      const marker = markers[0];
+
+      // 2. Fetch series
+      const series = await strapi.entityService.findOne(
+        "api::test-serie.test-serie",
+        seriesId,
+        { fields: ["reading_time", "test_duration"] }
+      );
+
+      const readingTimeSeconds = Number(series.reading_time) || 0;
+      const testDurationSeconds = Number(series.test_duration) * 60 || 0;
+      const totalAllowedSeconds = readingTimeSeconds + testDurationSeconds;
+
+      const elapsedSeconds =
+        (Date.now() - new Date(marker.started_at).getTime()) / 1000;
+
+      // 3. Count submitted papers
+      const submittedAnswers = await strapi.entityService.findMany(
+        "api::answer.answer",
+        {
+          filters: {
+            student: user.id,
+            test_series: seriesId,
+            attempt_id: marker.attempt_id,
+            completed: true,
+            is_attempt_marker: { $ne: true },
+          },
+          fields: ["id"],
+        }
+      );
+
+      const totalPapers = await strapi.entityService.count(
+        "api::paper.paper",
+        {
+          filters: { test_series: seriesId },
+        }
+      );
+
+      const allPapersSubmitted = submittedAnswers.length === totalPapers;
+
+      // 4. Safety check
+      if (!allPapersSubmitted && elapsedSeconds < totalAllowedSeconds) {
+        return ctx.badRequest("Attempt still active");
+      }
+
+      // 5. End attempt
       await strapi.entityService.update(
         "api::answer.answer",
-        marker[0].id,
+        marker.id,
         {
-          data: { completed: true },
+          data: {
+            completed: true,
+            phase: "completed",
+          },
         }
       );
+
+      return { success: true };
     },
 
     async getPaperSubmissions(ctx) {
