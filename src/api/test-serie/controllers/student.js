@@ -620,7 +620,7 @@ module.exports = createCoreController(
                             "id",
                             "question_text",
                             "options",
-                            "options_format",
+                             "content_format",
                             "marks",
                             "answer_type",
                           ],
