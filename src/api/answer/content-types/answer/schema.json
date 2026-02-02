@@ -90,6 +90,17 @@
     },
     "attempt_id": {
       "type": "integer"
+    },
+    "phase": {
+      "type": "enumeration",
+      "enum": [
+        "reading ",
+        "answering",
+        "completed"
+      ]
+    },
+    "phase_started_at": {
+      "type": "datetime"
     }
   }
 }

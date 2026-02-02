@@ -411,10 +411,10 @@ module.exports = createCoreController(
                 populate: {
                   question: {
                     populate: ["parts", "attachments"],
-                    
+
                   },
-                 part_evaluations: true,
-           
+                  part_evaluations: true,
+
                 },
               },
               uploaded_answer_sheet: true,
@@ -615,7 +615,13 @@ module.exports = createCoreController(
             },
             sort: { attempt_id: "desc" },
             limit: 1,
-            fields: ["attempt_id", "completed"],
+            fields: [
+              "attempt_id",
+              "completed",
+              "phase",
+              "phase_started_at",
+              "started_at",
+            ],
           }
         );
 
@@ -662,15 +668,56 @@ module.exports = createCoreController(
 
           totalTimeTaken += ans.time_taken || 0;
         }
+        const marker = attemptMarkers[0];
+        let phase = marker.phase;
+        let phaseStartedAt = new Date(marker.phase_started_at);
+        const now = new Date();
+        const readingTimeSeconds = Number(series.reading_time) || 0;
+        const testDurationSeconds = Number(series.test_duration) * 60 || 0;
+
+        const totalAllowedSeconds =
+          readingTimeSeconds + testDurationSeconds;
+
+        if (phase === "reading") {
+          const elapsed = (now.getTime() - phaseStartedAt.getTime()) / 1000;
+
+          if (elapsed >= readingTimeSeconds) {
+            phase = "answering";
+
+            await strapi.entityService.update(
+              "api::answer.answer",
+              marker.id,
+              {
+                data: {
+                  phase: "answering",
+                  phase_started_at: new Date(
+                    phaseStartedAt.getTime() + readingTimeSeconds * 1000
+                  ),
+                },
+              }
+            );
+
+            phaseStartedAt = new Date(
+              phaseStartedAt.getTime() + readingTimeSeconds * 1000
+            );
+          }
+        }
+
 
         /* ----------------------------------------
            6. Compute remaining series time
         ---------------------------------------- */
-        const totalDurationSeconds = (series.test_duration || 0) * 60;
 
-        const remainingTime = hasAttempt
-          ? Math.max(totalDurationSeconds - totalTimeTaken, 0)
-          : totalDurationSeconds;
+        const elapsedSinceStart = hasAttempt
+          ? Math.floor(
+            (now.getTime() - new Date(marker.started_at).getTime()) / 1000
+          )
+          : 0;
+
+        const remainingTime = Math.max(
+          totalAllowedSeconds - elapsedSinceStart,
+          0
+        );
 
 
 
@@ -679,6 +726,15 @@ module.exports = createCoreController(
            7. Compute paper statuses (attempt-aware)
         ---------------------------------------- */
         const papers = series.papers.map((paper) => {
+          if (hasAttempt && phase === "reading") {
+            return {
+              id: paper.id,
+              title: paper.title,
+              status: "locked",
+              instructions: paper.instruction_booklet,
+            };
+          }
+
           if (!hasAttempt || attemptCompleted) {
             return {
               id: paper.id,
@@ -735,6 +791,11 @@ module.exports = createCoreController(
         return {
           data: {
             attempt_id: currentAttemptId,
+
+            phase,
+            phase_started_at: phaseStartedAt,
+            reading_time: series.reading_time || 0,
+
             series: {
               id: series.id,
               title: series.title,
@@ -746,6 +807,7 @@ module.exports = createCoreController(
             completed: attemptCompleted,
           },
         };
+
       } catch (error) {
         console.error("Error in getStudentSeriesSession:", error);
         ctx.throw(500, error.message);
@@ -778,7 +840,15 @@ module.exports = createCoreController(
         const nextAttemptId =
           lastAttempt.length > 0 ? lastAttempt[0].attempt_id + 1 : 1;
 
-        // Create new attempt marker
+        const series = await strapi.entityService.findOne(
+          "api::test-serie.test-serie",
+          seriesId,
+          { fields: ["reading_time"] }
+        );
+
+        const hasReadingTime =
+          typeof series.reading_time === "number" && series.reading_time > 0;
+
         await strapi.entityService.create("api::answer.answer", {
           data: {
             student: user.id,
@@ -786,8 +856,13 @@ module.exports = createCoreController(
             attempt_id: nextAttemptId,
             completed: false,
             is_attempt_marker: true,
+
+            phase: hasReadingTime ? "reading" : "answering",
+            phase_started_at: new Date(),
+            started_at: new Date(),
           },
         });
+
 
         return { data: { attempt_id: nextAttemptId } };
       } catch (error) {

@@ -1252,6 +1252,8 @@ export interface ApiAnswerAnswer extends Schema.CollectionType {
     completed: Attribute.Boolean & Attribute.Required;
     is_attempt_marker: Attribute.Boolean & Attribute.DefaultTo<false>;
     attempt_id: Attribute.Integer;
+    phase: Attribute.Enumeration<['reading ', 'answering', 'completed']>;
+    phase_started_at: Attribute.DateTime;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
@@ -4657,6 +4659,7 @@ export interface ApiTestSerieTestSerie extends Schema.CollectionType {
     >;
     entity_type: Attribute.Enumeration<['series', 'paper']>;
     offline_pdf: Attribute.Media<'images' | 'files' | 'videos' | 'audios'>;
+    reading_time: Attribute.Integer;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
