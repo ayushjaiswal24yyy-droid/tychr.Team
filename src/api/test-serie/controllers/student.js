@@ -573,47 +573,12 @@ module.exports = createCoreController(
         if (!user) {
           return ctx.unauthorized("User not authenticated");
         }
-
-        /* ----------------------------------------
-           2. Fetch series with papers
-        ---------------------------------------- */
-        const series = await strapi.entityService.findOne(
-          "api::test-serie.test-serie",
-          seriesId,
-          {
-            filters: {
-              publishedAt: { $notNull: true },
-            },
-            populate: {
-              papers: {
-                sort: { createdAt: "asc" },
-                populate: {
-                  instruction_booklet: true, // 👈 if instructions is Media
-                },
-              },
-            },
-          }
-        );
-
-        if (!series) {
-          return ctx.notFound("Test series not found");
-        }
-
-        if (!series.papers || series.papers.length === 0) {
-          return ctx.badRequest("No papers found for this series");
-        }
-
-        const paperIds = series.papers.map((p) => p.id);
-
-        /* ----------------------------------------
-      3. Fetch current attempt marker
-   ---------------------------------------- */
         const attemptMarkers = await strapi.entityService.findMany(
           "api::answer.answer",
           {
             filters: {
               student: user.id,
-              test_series: series.id,
+              test_series: seriesId,
               is_attempt_marker: true,
             },
             sort: { attempt_id: "desc" },
@@ -631,6 +596,62 @@ module.exports = createCoreController(
         const hasAttempt = attemptMarkers.length > 0;
         const currentAttemptId = hasAttempt ? attemptMarkers[0].attempt_id : 0;
         let attemptCompleted = hasAttempt ? attemptMarkers[0].completed : false;
+        const shouldIncludeQuestions = hasAttempt;
+        /* ----------------------------------------
+           2. Fetch series with papers
+        ---------------------------------------- */
+        const series = await strapi.entityService.findOne(
+          "api::test-serie.test-serie",
+          seriesId,
+          {
+            filters: {
+              publishedAt: { $notNull: true },
+            },
+            populate: {
+              papers: {
+                sort: { createdAt: "asc" },
+                populate: {
+                  instruction_booklet: true,
+                  ...(hasAttempt && {
+                    question_banks: {
+                      populate: {
+                        parts: {
+                          fields: [
+                            "id",
+                            "question_text",
+                            "options",
+                            "options_format",
+                            "marks",
+                            "answer_type",
+                          ],
+                        },
+                        diagram: true,
+                      },
+                      fields: ["id", "question_type"],
+                    },
+                  }),
+                },
+              },
+            },
+
+          }
+        );
+
+        if (!series) {
+          return ctx.notFound("Test series not found");
+        }
+
+        if (!series.papers || series.papers.length === 0) {
+          return ctx.badRequest("No papers found for this series");
+        }
+
+        const paperIds = series.papers.map((p) => p.id);
+
+        /* ----------------------------------------
+      3. Fetch current attempt marker
+   ---------------------------------------- */
+
+
 
         /* ----------------------------------------
            4. Fetch answers for CURRENT attempt

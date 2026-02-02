@@ -3,11 +3,30 @@
 const Razorpay = require("razorpay");
 const crypto = require("crypto");
 
-const razorpay = new Razorpay({
-  key_id: process.env.RAZORPAY_KEY_ID,
-  key_secret: process.env.RAZORPAY_SECRET_ID,
-});
 
+const getRazorpayInstanceForUser = async (userId) => {
+  const user = await strapi.db
+    .query("plugin::users-permissions.user")
+    .findOne({
+      where: { id: userId },
+      select: ["id", "is_test_user"],
+    });
+
+  const isTestUser = user?.is_test_user === true;
+
+  return {
+    isTestUser,
+    razorpay: new Razorpay({
+      key_id: isTestUser
+        ? process.env.RAZORPAY_TEST_KEY_ID
+        : process.env.RAZORPAY_LIVE_KEY_ID,
+
+      key_secret: isTestUser
+        ? process.env.RAZORPAY_TEST_SECRET_ID
+        : process.env.RAZORPAY_LIVE_SECRET_ID,
+    }),
+  };
+};
 // Helper function to count weekdays between dates
 const countWeekdaysBetweenDates = (startDate, endDate, weekdays) => {
   let count = 0;
@@ -155,7 +174,7 @@ module.exports = {
         },
         payment_capture: 1,
       };
-
+      const { isTestUser, razorpay } = await getRazorpayInstanceForUser(studentId);
       console.log("Creating Razorpay order:", orderData);
 
       let order;
@@ -243,7 +262,9 @@ module.exports = {
         subscription_id: subscription.id,
         payment_id: payment.id,
         calculation,
-        razorpay_key: process.env.RAZORPAY_KEY_ID,
+        razorpay_key: isTestUser
+        ? process.env.RAZORPAY_TEST_KEY_ID
+        : process.env.RAZORPAY_LIVE_KEY_ID,
       };
     } catch (error) {
       console.error("Create classroom order error:", error);
@@ -338,7 +359,7 @@ module.exports = {
       };
 
       console.log("Creating Razorpay order:", orderData);
-
+      const { isTestUser, razorpay } = await getRazorpayInstanceForUser(studentId);
       let order;
       try {
         order = await razorpay.orders.create(orderData);
@@ -398,7 +419,10 @@ module.exports = {
           commissionAmount,
           totalAmount,
         },
-        razorpay_key: process.env.RAZORPAY_KEY_ID,
+        razorpay_key: isTestUser
+        ? process.env.RAZORPAY_TEST_KEY_ID
+        : process.env.RAZORPAY_LIVE_KEY_ID,
+
       };
     } catch (error) {
       console.error("Add live lectures error:", error);
@@ -529,7 +553,7 @@ module.exports = {
       };
 
       console.log("Creating Razorpay order:", orderData);
-
+      const { isTestUser, razorpay } = await getRazorpayInstanceForUser(studentId);
       let order;
       try {
         order = await razorpay.orders.create(orderData);
@@ -586,7 +610,9 @@ module.exports = {
           commissionAmount,
           totalAmount,
         },
-        razorpay_key: process.env.RAZORPAY_KEY_ID,
+        razorpay_key: isTestUser
+        ? process.env.RAZORPAY_TEST_KEY_ID
+        : process.env.RAZORPAY_LIVE_KEY_ID,
       };
     } catch (error) {
       console.error("Add test series error:", error);
@@ -856,10 +882,10 @@ module.exports = {
       const totalPossibleLectures =
         enrollment.days?.length > 0
           ? countWeekdaysBetweenDates(
-              new Date(enrollment.startDate),
-              new Date(enrollment.endDate),
-              enrollment.days.map((d) => d.days)
-            )
+            new Date(enrollment.startDate),
+            new Date(enrollment.endDate),
+            enrollment.days.map((d) => d.days)
+          )
           : 0;
 
       const availableToPurchase = Math.max(
@@ -1034,13 +1060,13 @@ module.exports = {
           is_test_series_free: isTestSeriesFree,
           subscription_status: subscription
             ? {
-                is_classroom_purchased: subscription.is_classroom_purchased,
-                is_live_lectures_purchased:
-                  subscription.is_live_lectures_purchased,
-                total_live_lectures_purchased:
-                  subscription.total_live_lectures_purchased,
-                is_test_series_purchased: subscription.is_test_series_purchased,
-              }
+              is_classroom_purchased: subscription.is_classroom_purchased,
+              is_live_lectures_purchased:
+                subscription.is_live_lectures_purchased,
+              total_live_lectures_purchased:
+                subscription.total_live_lectures_purchased,
+              is_test_series_purchased: subscription.is_test_series_purchased,
+            }
             : null,
         },
       };
@@ -1219,7 +1245,7 @@ module.exports = {
         await strapi.entityService.update(
           "api::enrollment.enrollment",
           classroomId,
-          { 
+          {
             data: {
               students: {
                 set: allStudentIds,

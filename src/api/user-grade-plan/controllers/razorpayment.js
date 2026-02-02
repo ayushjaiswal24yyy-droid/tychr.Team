@@ -1,11 +1,30 @@
 const Razorpay = require("razorpay");
 const crypto = require("crypto");
 
-const razorpay = new Razorpay({
-  key_id: process.env.RAZORPAY_KEY_ID,
-  key_secret: process.env.RAZORPAY_SECRET_ID,
-});
 
+const getRazorpayInstanceForUser = async (userId) => {
+  const user = await strapi.db
+    .query("plugin::users-permissions.user")
+    .findOne({
+      where: { id: userId },
+      select: ["id", "is_test_user"],
+    });
+
+  const isTestUser = user?.is_test_user === true;
+
+  return {
+    isTestUser,
+    razorpay: new Razorpay({
+      key_id: isTestUser
+        ? process.env.RAZORPAY_TEST_KEY_ID
+        : process.env.RAZORPAY_LIVE_KEY_ID,
+
+      key_secret: isTestUser
+        ? process.env.RAZORPAY_TEST_SECRET_ID
+        : process.env.RAZORPAY_LIVE_SECRET_ID,
+    }),
+  };
+};
 module.exports = {
   async createOrder(ctx) {
     try {
@@ -15,12 +34,27 @@ module.exports = {
         return ctx.badRequest("Amount is required");
       }
 
+      // 🔐 Get logged-in user
+      const user = ctx.state.user;
+      if (!user) {
+        return ctx.unauthorized("User not logged in");
+      }
+
+      // ✅ Get Razorpay instance for this user
+      const { razorpay, isTestUser } =
+        await getRazorpayInstanceForUser(user.id);
+
+      // ✅ Create order
       const order = await razorpay.orders.create({
-        amount: amount * 100, // Convert to paise
+        amount: amount * 100, // paise
         currency: "INR",
+        receipt: `rcpt_${Date.now()}`,
       });
 
-      return { order };
+      return {
+        orderId: order.id,   // 👈 THIS is the ID you’re looking for
+        isTestUser,
+      };
     } catch (error) {
       console.error(error);
       return ctx.internalServerError("Payment failed");
