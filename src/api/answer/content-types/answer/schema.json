@@ -101,6 +101,9 @@
     },
     "phase_started_at": {
       "type": "datetime"
+    },
+    "started_at": {
+      "type": "datetime"
     }
   }
 }

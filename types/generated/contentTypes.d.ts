@@ -1254,6 +1254,7 @@ export interface ApiAnswerAnswer extends Schema.CollectionType {
     attempt_id: Attribute.Integer;
     phase: Attribute.Enumeration<['reading ', 'answering', 'completed']>;
     phase_started_at: Attribute.DateTime;
+    started_at: Attribute.DateTime;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
