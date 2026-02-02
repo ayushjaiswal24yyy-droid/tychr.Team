@@ -2,6 +2,9 @@
 
 const { createCoreController } = require("@strapi/strapi").factories;
 
+
+
+
 module.exports = createCoreController(
   "api::test-serie.test-serie",
   ({ strapi }) => ({
@@ -813,6 +816,7 @@ module.exports = createCoreController(
         ctx.throw(500, error.message);
       }
     },
+
     async startNewAttempt(ctx) {
       try {
         const { seriesId } = ctx.params;
@@ -822,7 +826,21 @@ module.exports = createCoreController(
           return ctx.badRequest("Invalid request");
         }
 
-        // 🔑 ONLY look at attempt markers
+        // Fetch the series first to get reading_time
+        const series = await strapi.entityService.findOne(
+          "api::test-serie.test-serie",
+          seriesId,
+          {
+            fields: ["reading_time"],
+            filters: { publishedAt: { $notNull: true } } // Only published series
+          }
+        );
+
+        if (!series) {
+          return ctx.notFound("Test series not found");
+        }
+
+        // Check for existing attempts
         const lastAttempt = await strapi.entityService.findMany(
           "api::answer.answer",
           {
@@ -837,35 +855,42 @@ module.exports = createCoreController(
           }
         );
 
+        // Prevent starting a new attempt if there's an active one
+        if (lastAttempt.length > 0 && !lastAttempt[0].completed) {
+          return ctx.badRequest("An active attempt already exists. Please complete it first.");
+        }
+
         const nextAttemptId =
           lastAttempt.length > 0 ? lastAttempt[0].attempt_id + 1 : 1;
 
-        const series = await strapi.entityService.findOne(
-          "api::test-serie.test-serie",
-          seriesId,
-          { fields: ["reading_time"] }
-        );
+        // Determine initial phase
+        const readingTime = Number(series.reading_time) || 0;
+        const initialPhase = readingTime > 0 ? "reading" : "answering";
 
-        const hasReadingTime =
-          typeof series.reading_time === "number" && series.reading_time > 0;
-
-        await strapi.entityService.create("api::answer.answer", {
+        // Create attempt marker
+        const attemptMarker = await strapi.entityService.create("api::answer.answer", {
           data: {
             student: user.id,
             test_series: seriesId,
             attempt_id: nextAttemptId,
             completed: false,
             is_attempt_marker: true,
-
-            phase: hasReadingTime ? "reading" : "answering",
+            phase: initialPhase,
             phase_started_at: new Date(),
             started_at: new Date(),
           },
         });
 
+        return {
+          data: {
+            attempt_id: nextAttemptId,
+            phase: initialPhase,
+            reading_time: readingTime,
+          }
+        };
 
-        return { data: { attempt_id: nextAttemptId } };
       } catch (error) {
+        console.error("Error in startNewAttempt:", error);
         ctx.throw(500, error.message);
       }
     },
