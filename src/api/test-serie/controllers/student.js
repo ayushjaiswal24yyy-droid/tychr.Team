@@ -696,7 +696,8 @@ module.exports = createCoreController(
         let phase = marker.phase;
         let phaseStartedAt = new Date(marker.phase_started_at);
         const now = new Date();
-        const readingTimeSeconds = Number(series.reading_time) || 0;
+        const readingTimeSeconds = (Number(series.reading_time) || 0) * 60;
+
         const testDurationSeconds = Number(series.test_duration) * 60 || 0;
 
         const totalAllowedSeconds =
@@ -867,8 +868,8 @@ module.exports = createCoreController(
           lastAttempt.length > 0 ? lastAttempt[0].attempt_id + 1 : 1;
 
         // Determine initial phase
-        const readingTime = Number(series.reading_time) || 0;
-        const initialPhase = readingTime > 0 ? "reading" : "answering";
+ const readingTimeMinutes = Number(series.reading_time) || 0;
+const initialPhase = readingTimeMinutes > 0 ? "reading" : "answering";
 
         // Create attempt marker
         const attemptMarker = await strapi.entityService.create("api::answer.answer", {
@@ -888,7 +889,7 @@ module.exports = createCoreController(
           data: {
             attempt_id: nextAttemptId,
             phase: initialPhase,
-            reading_time: readingTime,
+            reading_time: readingTimeMinutes,
           }
         };
 
@@ -933,7 +934,7 @@ module.exports = createCoreController(
         { fields: ["reading_time", "test_duration"] }
       );
 
-      const readingTimeSeconds = Number(series.reading_time) || 0;
+      const readingTimeSeconds = Number(series.reading_time) * 60 || 0;
       const testDurationSeconds = Number(series.test_duration) * 60 || 0;
       const totalAllowedSeconds = readingTimeSeconds + testDurationSeconds;
 
