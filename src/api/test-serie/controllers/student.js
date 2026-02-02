@@ -930,6 +930,7 @@ module.exports = createCoreController(
             test_series: seriesId,
             is_attempt_marker: true,
             completed: false,
+            phase:"completed"
           },
           limit: 1,
         }
