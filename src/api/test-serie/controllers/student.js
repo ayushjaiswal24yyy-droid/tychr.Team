@@ -800,7 +800,7 @@ module.exports = createCoreController(
               id: series.id,
               title: series.title,
               instructions: series.instruction_booklet,
-              total_duration: totalDurationSeconds,
+              total_duration: testDurationSeconds,
             },
             remaining_time: remainingTime,
             papers,
