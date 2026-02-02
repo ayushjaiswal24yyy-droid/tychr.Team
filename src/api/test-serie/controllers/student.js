@@ -627,7 +627,7 @@ module.exports = createCoreController(
                         },
                         diagram: true,
                       },
-                      fields: ["id", "question_type"],
+                      fields: ["id", "question_type","question"],
                     },
                   }),
                 },
