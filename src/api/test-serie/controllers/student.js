@@ -620,7 +620,7 @@ module.exports = createCoreController(
                             "id",
                             "question_text",
                             "options",
-                             "content_format",
+                            "content_format",
                             "marks",
                             "answer_type",
                           ],
@@ -756,8 +756,10 @@ module.exports = createCoreController(
               title: paper.title,
               status: "locked",
               instructions: paper.instruction_booklet,
+              question_banks: paper.question_banks || [], // ✅ INCLUDE QUESTIONS
             };
           }
+
 
           if (!hasAttempt || attemptCompleted) {
             return {
