@@ -94,7 +94,7 @@
     "phase": {
       "type": "enumeration",
       "enum": [
-        "reading ",
+        "reading",
         "answering",
         "completed"
       ]
