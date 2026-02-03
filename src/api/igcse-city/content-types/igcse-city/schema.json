@@ -62,6 +62,12 @@
       "type": "component",
       "repeatable": false,
       "component": "igcse-entail.igcse-entail"
+    },
+       "test": {
+      "displayName": "Test",
+      "type": "component",
+      "repeatable": false,
+      "component": "test.test"
     }
   }
 }

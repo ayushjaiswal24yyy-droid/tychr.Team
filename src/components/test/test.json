@@ -1,0 +1,24 @@
+{
+  "collectionName": "components_test_tests",
+  "info": {
+    "displayName": "Test"
+  },
+  "options": {},
+  "attributes": {
+    "progress_data": {
+      "displayName": "progress_data",
+      "type": "component",
+      "repeatable": true,
+      "component": "progress-data.progress-data"
+    },
+    "test_steps": {
+      "displayName": "test_steps",
+      "type": "component",
+      "repeatable": true,
+      "component": "test-steps.test-steps"
+    },
+    "heading": {
+      "type": "string"
+    }
+  }
+}

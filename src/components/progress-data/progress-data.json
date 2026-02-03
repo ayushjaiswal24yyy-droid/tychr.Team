@@ -1,0 +1,15 @@
+{
+  "collectionName": "components_progress_data_progress_data",
+  "info": {
+    "displayName": "progress_data"
+  },
+  "options": {},
+  "attributes": {
+    "label": {
+      "type": "string"
+    },
+    "percentage": {
+      "type": "decimal"
+    }
+  }
+}
