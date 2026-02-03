@@ -27,7 +27,6 @@
       "repeatable": true,
       "component": "how-it-works.how-it-works"
     },
-
     "results": {
       "type": "component",
       "repeatable": true,
@@ -58,11 +57,17 @@
       "repeatable": true,
       "component": "finest-tutors.finest-tutors"
     },
-       "test": {
+    "test": {
       "displayName": "Test",
       "type": "component",
       "repeatable": false,
       "component": "test.test"
+    },
+    "result_heading": {
+      "type": "string"
+    },
+    "result_subheading": {
+      "type": "text"
     }
   }
 }

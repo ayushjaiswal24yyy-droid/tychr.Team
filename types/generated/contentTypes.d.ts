@@ -1295,6 +1295,8 @@ export interface ApiApCityApCity extends Schema.SingleType {
     why_choose_tutor: Attribute.Component<'why-choose-tutor.why-choose-tutor'>;
     finest_tutors: Attribute.Component<'finest-tutors.finest-tutors', true>;
     test: Attribute.Component<'test.test'>;
+    result_heading: Attribute.String;
+    result_subheading: Attribute.Text;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
@@ -2511,6 +2513,8 @@ export interface ApiIbCityIbCity extends Schema.SingleType {
     why_choose_tutor: Attribute.Component<'why-choose-tutor.why-choose-tutor'>;
     finest_tutors: Attribute.Component<'finest-tutors.finest-tutors', true>;
     test: Attribute.Component<'test.test'>;
+    result_heading: Attribute.String;
+    result_subheading: Attribute.Text;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
@@ -2655,6 +2659,8 @@ export interface ApiIbmypCityIbmypCity extends Schema.SingleType {
     finest_tutors: Attribute.Component<'finest-tutors.finest-tutors', true>;
     ibmyp_entail: Attribute.Component<'igcse-entail.igcse-entail'>;
     test: Attribute.Component<'test.test'>;
+    result_heading: Attribute.String;
+    result_subheading: Attribute.Text;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
@@ -2690,6 +2696,8 @@ export interface ApiIbmypSubjectIbmypSubject extends Schema.SingleType {
     Why_Tychr: Attribute.Component<'why-tychr.why-tychr', true>;
     finest_tutors: Attribute.Component<'finest-tutors.finest-tutors', true>;
     test: Attribute.Component<'test.test'>;
+    result_heading: Attribute.String;
+    result_subheading: Attribute.Text;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
@@ -2731,6 +2739,8 @@ export interface ApiIgcseCityIgcseCity extends Schema.SingleType {
     finest_tutors: Attribute.Component<'finest-tutors.finest-tutors', true>;
     igcse_entail: Attribute.Component<'igcse-entail.igcse-entail'>;
     test: Attribute.Component<'test.test'>;
+    result_heading: Attribute.String;
+    result_subheading: Attribute.Text;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
@@ -2766,6 +2776,8 @@ export interface ApiIgcseSubjectIgcseSubject extends Schema.SingleType {
     Why_Tychr: Attribute.Component<'why-tychr.why-tychr', true>;
     finest_tutors: Attribute.Component<'finest-tutors.finest-tutors', true>;
     test: Attribute.Component<'test.test'>;
+    result_heading: Attribute.String;
+    result_subheading: Attribute.Text;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
@@ -3976,6 +3988,8 @@ export interface ApiSatCitySatCity extends Schema.SingleType {
     why_choose_tutor: Attribute.Component<'why-choose-tutor.why-choose-tutor'>;
     finest_tutors: Attribute.Component<'finest-tutors.finest-tutors', true>;
     test: Attribute.Component<'test.test'>;
+    result_heading: Attribute.String;
+    result_subheading: Attribute.Text;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;

@@ -43,6 +43,12 @@
       "type": "component",
       "repeatable": false,
       "component": "test.test"
+    },
+        "result_heading": {
+      "type": "string"
+    },
+    "result_subheading": {
+      "type": "text"
     }
   }
 }
