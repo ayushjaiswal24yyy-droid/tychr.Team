@@ -164,10 +164,10 @@ module.exports = {
           overallAverage:
             allScores.length > 0
               ? parseFloat(
-                  (
-                    allScores.reduce((a, b) => a + b, 0) / allScores.length
-                  ).toFixed(1)
-                )
+                (
+                  allScores.reduce((a, b) => a + b, 0) / allScores.length
+                ).toFixed(1)
+              )
               : 0,
           totalTests: allScores.length,
           improvementRate: this.calculateImprovementRate(yearsWithTests),
@@ -414,11 +414,11 @@ module.exports = {
           overallAccuracy:
             totalQuestionsAnalyzed > 0
               ? parseFloat(
-                  (
-                    (totalCorrectQuestions / totalQuestionsAnalyzed) *
-                    100
-                  ).toFixed(1)
-                )
+                (
+                  (totalCorrectQuestions / totalQuestionsAnalyzed) *
+                  100
+                ).toFixed(1)
+              )
               : 0,
           totalQuestionsAnalyzed,
           totalCorrectQuestions,
@@ -722,7 +722,168 @@ module.exports = {
       };
     }
   },
+  async getWeeklyProgress(ctx) {
+    try {
+      /* ----------------------------
+         1. AUTH CHECK
+      ----------------------------- */
+      const user = ctx.state.user;
 
+      if (!user) {
+        return ctx.unauthorized("User not authenticated");
+      }
+
+      /* ----------------------------
+         2. RESOLVE WEEK RANGE
+      ----------------------------- */
+      const { week } = ctx.query;
+
+      if (!week) {
+        return ctx.badRequest("Week date is required");
+      }
+
+const inputDate = new Date(week);
+
+if (Number.isNaN(inputDate.getTime())) {
+  return ctx.badRequest("Invalid week date");
+}
+
+
+      // Monday start
+      const startOfWeek = new Date(inputDate);
+      const day = startOfWeek.getDay();
+      const diff = startOfWeek.getDate() - day + (day === 0 ? -6 : 1);
+      startOfWeek.setDate(diff);
+      startOfWeek.setHours(0, 0, 0, 0);
+
+      // Sunday end
+      const endOfWeek = new Date(startOfWeek);
+      endOfWeek.setDate(startOfWeek.getDate() + 6);
+      endOfWeek.setHours(23, 59, 59, 999);
+
+      /* ----------------------------
+         3. FETCH TEST ANSWERS
+      ----------------------------- */
+      const answers = await strapi.entityService.findMany(
+        "api::answer.answer",
+        {
+          filters: {
+            student: user.id,
+            completed: true,
+            is_attempt_marker: { $ne: true },
+            submission_date: {
+              $gte: startOfWeek,
+              $lte: endOfWeek,
+            },
+          },
+          populate: {
+            question_n_answer: {
+              populate: {
+                question: true,
+              },
+            },
+          },
+        }
+      );
+
+      /* ----------------------------
+         4. AGGREGATE TEST DATA
+      ----------------------------- */
+      let totalMarksScored = 0;
+      let totalPossibleMarks = 0;
+      let totalTestTime = 0;
+
+      const uniqueAttempts = new Set();
+
+      for (const ans of answers) {
+        uniqueAttempts.add(ans.attempt_id);
+
+        totalMarksScored += ans.marks || 0;
+        totalTestTime += ans.time_taken || 0;
+
+        if (ans.question_n_answer) {
+          for (const qna of ans.question_n_answer) {
+            totalPossibleMarks += qna.question?.marks || 0;
+          }
+        }
+      }
+
+      /* ----------------------------
+         5. FETCH ATTENDANCE
+      ----------------------------- */
+      const attendance = await strapi.entityService.findMany(
+        "api::attendance.attendance",
+        {
+          filters: {
+            student: user.id,
+            joined_at: {
+              $gte: startOfWeek,
+              $lte: endOfWeek,
+            },
+          },
+        }
+      );
+
+      /* ----------------------------
+         6. AGGREGATE ATTENDANCE
+      ----------------------------- */
+      let present = 0;
+      let absent = 0;
+      let late = 0;
+      let classMinutes = 0;
+
+      for (const a of attendance) {
+        if (a.status === "present") present++;
+        if (a.status === "absent") absent++;
+        if (a.status === "late") late++;
+
+        classMinutes += a.duration_minutes || 0;
+      }
+
+      const totalClasses = attendance.length;
+      const attendanceRate =
+        totalClasses > 0
+          ? Math.round(((present + late) / totalClasses) * 100)
+          : 0;
+
+      /* ----------------------------
+         7. FINAL RESPONSE
+      ----------------------------- */
+      return {
+        data: {
+          week: {
+            from: startOfWeek,
+            to: endOfWeek,
+          },
+          academics: {
+            tests_attempted: uniqueAttempts.size,
+            papers_completed: answers.length,
+            marks_scored: totalMarksScored,
+            total_marks: totalPossibleMarks,
+            average_percentage:
+              totalPossibleMarks > 0
+                ? Math.round((totalMarksScored / totalPossibleMarks) * 100)
+                : 0,
+          },
+          attendance: {
+            total_classes: totalClasses,
+            present,
+            absent,
+            late,
+            attendance_rate: attendanceRate,
+          },
+          time_spent: {
+            testing_minutes: totalTestTime,
+            class_minutes: classMinutes,
+            total_minutes: totalTestTime + classMinutes,
+          },
+        },
+      };
+    } catch (error) {
+      console.error("Weekly Progress Error:", error);
+      ctx.throw(500, error.message);
+    }
+  },
   // ==================== SIMPLIFIED HELPER METHODS ====================
 
   getFirstAttempts(answers) {

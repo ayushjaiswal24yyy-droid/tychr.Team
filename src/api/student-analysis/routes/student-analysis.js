@@ -40,5 +40,14 @@ module.exports = {
         middlewares: [],
       },
     },
+    {
+      method: "GET",
+      path: "/student-analysis/weekly",
+      handler: "student-analysis.getWeeklyProgress",
+      config: {
+        auth: true,
+      },
+    }
+
   ],
 };
