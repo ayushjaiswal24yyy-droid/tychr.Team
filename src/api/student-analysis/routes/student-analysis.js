@@ -45,7 +45,9 @@ module.exports = {
       path: "/student-analysis/weekly",
       handler: "student-analysis.getWeeklyProgress",
       config: {
-        auth: true,
+        auth: false,
+         policies: [],
+        middlewares: [],
       },
     }
 
