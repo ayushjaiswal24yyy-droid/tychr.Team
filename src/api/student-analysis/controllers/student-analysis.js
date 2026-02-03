@@ -742,11 +742,11 @@ module.exports = {
         return ctx.badRequest("Week date is required");
       }
 
-const inputDate = new Date(week);
+      const inputDate = new Date(week);
 
-if (Number.isNaN(inputDate.getTime())) {
-  return ctx.badRequest("Invalid week date");
-}
+      if (Number.isNaN(inputDate.getTime())) {
+        return ctx.badRequest("Invalid week date");
+      }
 
 
       // Monday start
