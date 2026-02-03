@@ -1252,7 +1252,7 @@ export interface ApiAnswerAnswer extends Schema.CollectionType {
     completed: Attribute.Boolean & Attribute.Required;
     is_attempt_marker: Attribute.Boolean & Attribute.DefaultTo<false>;
     attempt_id: Attribute.Integer;
-    phase: Attribute.Enumeration<['reading ', 'answering', 'completed']>;
+    phase: Attribute.Enumeration<['reading', 'answering', 'completed']>;
     phase_started_at: Attribute.DateTime;
     started_at: Attribute.DateTime;
     createdAt: Attribute.DateTime;
@@ -1495,6 +1495,7 @@ export interface ApiClassClass extends Schema.CollectionType {
       'oneToMany',
       'api::notification.notification'
     >;
+    slug: Attribute.String;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;

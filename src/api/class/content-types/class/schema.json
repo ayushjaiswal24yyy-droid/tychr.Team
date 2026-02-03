@@ -48,6 +48,9 @@
       "relation": "oneToMany",
       "target": "api::notification.notification",
       "mappedBy": "ib_program_grade"
+    },
+    "slug": {
+      "type": "string"
     }
   }
 }
