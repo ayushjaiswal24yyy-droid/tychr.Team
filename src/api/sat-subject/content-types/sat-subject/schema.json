@@ -15,6 +15,32 @@
       "type": "component",
       "repeatable": true,
       "component": "stats.stats"
+    },
+    "stand_out": {
+      "type": "component",
+      "repeatable": true,
+      "component": "stand-out.stand-out"
+    },
+    "finest_tutors": {
+      "type": "component",
+      "repeatable": true,
+      "component": "finest-tutors.finest-tutors"
+    },
+    "How_Its_work": {
+      "type": "component",
+      "repeatable": true,
+      "component": "how-it-works.how-it-works"
+    },
+    "elite_tutors": {
+      "type": "component",
+      "repeatable": true,
+      "component": "claims.claims"
+    },
+    "test": {
+      "displayName": "Test",
+      "type": "component",
+      "repeatable": false,
+      "component": "test.test"
     }
   }
 }
