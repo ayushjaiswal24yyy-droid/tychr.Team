@@ -4020,6 +4020,11 @@ export interface ApiSatSubjectSatSubject extends Schema.SingleType {
   };
   attributes: {
     stats: Attribute.Component<'stats.stats', true>;
+    stand_out: Attribute.Component<'stand-out.stand-out', true>;
+    finest_tutors: Attribute.Component<'finest-tutors.finest-tutors', true>;
+    How_Its_work: Attribute.Component<'how-it-works.how-it-works', true>;
+    elite_tutors: Attribute.Component<'claims.claims', true>;
+    test: Attribute.Component<'test.test'>;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
