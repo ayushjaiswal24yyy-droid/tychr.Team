@@ -18,12 +18,6 @@
     "duration": {
       "type": "string"
     },
-    "annual_fee": {
-      "type": "string"
-    },
-    "intake": {
-      "type": "string"
-    },
     "program_overview": {
       "type": "text"
     },
@@ -34,11 +28,6 @@
       "type": "component",
       "repeatable": true,
       "component": "university.application-cycle-deadline"
-    },
-    "requirement": {
-      "type": "component",
-      "repeatable": true,
-      "component": "college.requirement"
     },
     "student_uni_applications": {
       "type": "relation",
@@ -51,12 +40,6 @@
       "relation": "manyToMany",
       "target": "api::college.college",
       "inversedBy": "programs"
-    },
-    "program_fees": {
-      "type": "relation",
-      "relation": "oneToMany",
-      "target": "api::program-fee.program-fee",
-      "mappedBy": "program"
     },
     "program_type": {
       "type": "enumeration",
@@ -71,6 +54,29 @@
       "relation": "manyToOne",
       "target": "api::department.department",
       "inversedBy": "programs"
+    },
+    "intakes": {
+      "type": "component",
+      "repeatable": true,
+      "component": "cycles.cycle"
+    },
+    "tution_fees": {
+      "type": "component",
+      "repeatable": false,
+      "component": "university.tution-fees"
+    },
+    "admission_requirements": {
+      "type": "component",
+      "repeatable": false,
+      "component": "university.admission-requirements"
+    },
+    "world_rank": {
+      "type": "integer"
+    },
+    "financial_aids": {
+      "type": "component",
+      "repeatable": false,
+      "component": "university.financial-aids"
     }
   }
 }

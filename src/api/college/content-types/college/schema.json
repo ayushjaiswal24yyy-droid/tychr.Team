@@ -45,14 +45,11 @@
       "repeatable": true,
       "component": "university.lor"
     },
-
     "financial_aids": {
       "type": "component",
       "repeatable": false,
       "component": "university.financial-aids"
     },
-
-
     "college_articles": {
       "type": "relation",
       "relation": "oneToMany",

@@ -19,12 +19,6 @@
     },
     "price": {
       "type": "decimal"
-    },
-    "program": {
-      "type": "relation",
-      "relation": "manyToOne",
-      "target": "api::program.program",
-      "inversedBy": "program_fees"
     }
   }
 }

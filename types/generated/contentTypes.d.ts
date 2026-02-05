@@ -3596,15 +3596,12 @@ export interface ApiProgramProgram extends Schema.CollectionType {
   attributes: {
     program_name: Attribute.String;
     duration: Attribute.String;
-    annual_fee: Attribute.String;
-    intake: Attribute.String;
     program_overview: Attribute.Text;
     career_prospects: Attribute.Text;
     application_deadlines: Attribute.Component<
       'university.application-cycle-deadline',
       true
     >;
-    requirement: Attribute.Component<'college.requirement', true>;
     student_uni_applications: Attribute.Relation<
       'api::program.program',
       'oneToMany',
@@ -3615,17 +3612,17 @@ export interface ApiProgramProgram extends Schema.CollectionType {
       'manyToMany',
       'api::college.college'
     >;
-    program_fees: Attribute.Relation<
-      'api::program.program',
-      'oneToMany',
-      'api::program-fee.program-fee'
-    >;
     program_type: Attribute.Enumeration<['UG', 'PG', 'Phd']>;
     department: Attribute.Relation<
       'api::program.program',
       'manyToOne',
       'api::department.department'
     >;
+    intakes: Attribute.Component<'cycles.cycle', true>;
+    tution_fees: Attribute.Component<'university.tution-fees'>;
+    admission_requirements: Attribute.Component<'university.admission-requirements'>;
+    world_rank: Attribute.Integer;
+    financial_aids: Attribute.Component<'university.financial-aids'>;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
@@ -3658,11 +3655,6 @@ export interface ApiProgramFeeProgramFee extends Schema.CollectionType {
     title: Attribute.String;
     description: Attribute.Text;
     price: Attribute.Decimal;
-    program: Attribute.Relation<
-      'api::program-fee.program-fee',
-      'manyToOne',
-      'api::program.program'
-    >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
