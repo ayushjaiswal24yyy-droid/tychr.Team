@@ -40,36 +40,19 @@
       "repeatable": true,
       "component": "essays.essay"
     },
-    "intakes": {
-      "type": "component",
-      "repeatable": true,
-      "component": "cycles.cycle"
-    },
     "lors": {
       "type": "component",
       "repeatable": true,
       "component": "university.lor"
     },
-    "tution_fees": {
-      "type": "component",
-      "repeatable": false,
-      "component": "university.tution-fees"
-    },
+
     "financial_aids": {
       "type": "component",
       "repeatable": false,
       "component": "university.financial-aids"
     },
-    "additional_costs": {
-      "type": "component",
-      "repeatable": false,
-      "component": "university.additional-costs"
-    },
-    "admission_requirements": {
-      "type": "component",
-      "repeatable": false,
-      "component": "university.admission-requirements"
-    },
+
+
     "college_articles": {
       "type": "relation",
       "relation": "oneToMany",

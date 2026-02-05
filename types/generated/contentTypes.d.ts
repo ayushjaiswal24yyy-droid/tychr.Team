@@ -1610,12 +1610,8 @@ export interface ApiCollegeCollege extends Schema.CollectionType {
       true
     >;
     essays: Attribute.Component<'essays.essay', true>;
-    intakes: Attribute.Component<'cycles.cycle', true>;
     lors: Attribute.Component<'university.lor', true>;
-    tution_fees: Attribute.Component<'university.tution-fees'>;
     financial_aids: Attribute.Component<'university.financial-aids'>;
-    additional_costs: Attribute.Component<'university.additional-costs'>;
-    admission_requirements: Attribute.Component<'university.admission-requirements'>;
     college_articles: Attribute.Relation<
       'api::college.college',
       'oneToMany',
@@ -4207,7 +4203,17 @@ export interface ApiStudentUniApplicationStudentUniApplication
     >;
     progress: Attribute.Integer;
     universityDecision: Attribute.Enumeration<
-      ['Pending', 'Accepted', 'Rejected', 'Waitlisted', 'Deferred']
+      [
+        'Pending',
+        'Accepted',
+        'Rejected',
+        'Waitlisted',
+        'Deferred',
+        'Finalized',
+        'Needs Follow Up',
+        'Accepted By Student',
+        'Rejected by student'
+      ]
     >;
     Deadline: Attribute.Date;
     Category: Attribute.Enumeration<['Submitted', 'In Progress', 'Rejected']>;
@@ -5134,16 +5140,16 @@ export interface ApiUniversityUniversity extends Schema.CollectionType {
     draftAndPublish: true;
   };
   attributes: {
-    essays: Attribute.Component<'essays.essay', true>;
-    intakes: Attribute.Component<'cycles.cycle', true>;
-    basic: Attribute.Component<'university.basic-info'>;
+    university_name: Attribute.String;
+    location: Attribute.String;
+    university_type: Attribute.String;
+    year_of_establishment: Attribute.Integer;
+    world_rank: Attribute.Integer;
+    acceptance_rate: Attribute.String;
     stats: Attribute.Component<'university.key-stats'>;
     global_ranking: Attribute.Component<'university.global-ranking'>;
     subject_ranking: Attribute.Component<'university.subject-ranking'>;
     overview: Attribute.Component<'university.overview'>;
-    lors: Attribute.Component<'university.lor', true>;
-    admission_requirements: Attribute.Component<'university.admission-requirements'>;
-    tution_fees: Attribute.Component<'university.tution-fees'>;
     financial_aids: Attribute.Component<'university.financial-aids'>;
     additional_costs: Attribute.Component<'university.additional-costs'>;
     student_application_tasks: Attribute.Relation<
@@ -5166,12 +5172,6 @@ export interface ApiUniversityUniversity extends Schema.CollectionType {
       'oneToMany',
       'api::college.college'
     >;
-    university_name: Attribute.String;
-    location: Attribute.String;
-    university_type: Attribute.String;
-    year_of_establishment: Attribute.Integer;
-    world_rank: Attribute.Integer;
-    acceptance_rate: Attribute.String;
     videos: Attribute.Relation<
       'api::university.university',
       'oneToMany',

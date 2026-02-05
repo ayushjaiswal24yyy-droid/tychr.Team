@@ -38,7 +38,11 @@
         "Accepted",
         "Rejected",
         "Waitlisted",
-        "Deferred"
+        "Deferred",
+        "Finalized",
+        "Needs Follow Up",
+        "Accepted By Student",
+        "Rejected by student"
       ]
     },
     "Deadline": {

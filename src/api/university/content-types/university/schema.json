@@ -12,20 +12,23 @@
   },
   "pluginOptions": {},
   "attributes": {
-    "essays": {
-      "type": "component",
-      "repeatable": true,
-      "component": "essays.essay"
+    "university_name": {
+      "type": "string"
     },
-    "intakes": {
-      "type": "component",
-      "repeatable": true,
-      "component": "cycles.cycle"
+    "location": {
+      "type": "string"
     },
-    "basic": {
-      "type": "component",
-      "repeatable": false,
-      "component": "university.basic-info"
+    "university_type": {
+      "type": "string"
+    },
+    "year_of_establishment": {
+      "type": "integer"
+    },
+    "world_rank": {
+      "type": "integer"
+    },
+    "acceptance_rate": {
+      "type": "string"
     },
     "stats": {
       "type": "component",
@@ -46,21 +49,6 @@
       "type": "component",
       "repeatable": false,
       "component": "university.overview"
-    },
-    "lors": {
-      "type": "component",
-      "repeatable": true,
-      "component": "university.lor"
-    },
-    "admission_requirements": {
-      "type": "component",
-      "repeatable": false,
-      "component": "university.admission-requirements"
-    },
-    "tution_fees": {
-      "type": "component",
-      "repeatable": false,
-      "component": "university.tution-fees"
     },
     "financial_aids": {
       "type": "component",
@@ -94,24 +82,6 @@
       "type": "relation",
       "relation": "oneToMany",
       "target": "api::college.college"
-    },
-    "university_name": {
-      "type": "string"
-    },
-    "location": {
-      "type": "string"
-    },
-    "university_type": {
-      "type": "string"
-    },
-    "year_of_establishment": {
-      "type": "integer"
-    },
-    "world_rank": {
-      "type": "integer"
-    },
-    "acceptance_rate": {
-      "type": "string"
     },
     "videos": {
       "type": "relation",
