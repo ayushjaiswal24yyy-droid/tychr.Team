@@ -3,26 +3,22 @@
 module.exports = {
   async contentPlan(ctx) {
     const user = ctx.state.user;
+    if (!user) return ctx.unauthorized();
 
-    if (!user) {
-      return ctx.unauthorized();
-    }
-
-    // 1️⃣ Find active plan (allow expires_at = null)
-    const activePlan = await strapi.db
+    // 1️⃣ Fetch latest ACTIVE plan (no date logic in SQL)
+    const plans = await strapi.db
       .query("api::user-content-plan.user-content-plan")
-      .findOne({
+      .findMany({
         where: {
-          student: user.id,
+          student: { id: user.id },
           status: "active",
-          $or: [
-            { expires_at: { $gt: new Date() } },
-            { expires_at: null },
-          ],
         },
         orderBy: { purchased_at: "desc" },
+        limit: 1,
         populate: ["content_plan"],
       });
+
+    const activePlan = plans[0];
 
     if (!activePlan || !activePlan.content_plan) {
       return {
@@ -31,15 +27,26 @@ module.exports = {
       };
     }
 
-    // 2️⃣ Fetch unlocked subjects
+    // 2️⃣ Expiry check in JS (safe & predictable)
+    if (
+      activePlan.expires_at &&
+      new Date(activePlan.expires_at) < new Date()
+    ) {
+      return {
+        plan: null,
+        unlocked_subject_ids: [],
+      };
+    }
+
+    // 3️⃣ Fetch unlocked subjects
     const unlockedSubjects = await strapi.db
       .query("api::user-unlocked-subject.user-unlocked-subject")
       .findMany({
         where: {
-          student: user.id,
+          student: { id: user.id },
           status: "active",
         },
-        select: ["grade_subject"],
+        populate: ["grade_subject"],
       });
 
     return {
@@ -55,7 +62,7 @@ module.exports = {
         },
       },
       unlocked_subject_ids: unlockedSubjects.map(
-        (u) => u.grade_subject
+        (u) => u.grade_subject.id
       ),
     };
   },
