@@ -81,7 +81,7 @@ module.exports = {
                 (u) => u.grade_subject.id
             ),
         };
-    }
+    },
 
 async subtopicNotes(ctx) {
         const user = ctx.state.user;
