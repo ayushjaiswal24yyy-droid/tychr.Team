@@ -66,7 +66,7 @@ module.exports = {
             ),
         };
     },
-  async subtopicNotes(ctx) {
+async subtopicNotes(ctx) {
   const user = ctx.state.user;
   const subtopicId = Number(ctx.params.id);
 
@@ -80,70 +80,50 @@ module.exports = {
         topic: {
           populate: {
             grade_subject: true,
-            subtopics: {
-              sort: ["id:asc"], // IMPORTANT
-            },
+            subtopics: { sort: ["id:asc"] },
           },
         },
-        notes: {
-          populate: ["note"],
-        },
+        notes: true, // manyToMany → note
       },
     }
   );
 
-  if (!subtopic) {
-    return ctx.notFound("Subtopic not found");
-  }
+  if (!subtopic) return ctx.notFound("Subtopic not found");
 
-  const topic = subtopic.topic;
-  const gradeSubjectId = topic?.grade_subject?.id;
+  const gradeSubjectId = subtopic.topic?.grade_subject?.id;
+  if (!gradeSubjectId) return ctx.badRequest("Invalid subtopic mapping");
 
-  if (!gradeSubjectId) {
-    return ctx.badRequest("Invalid subtopic mapping");
-  }
+  // ✅ preview logic (position-based)
+  const isFree = subtopic.topic.subtopics?.[0]?.id === subtopic.id;
 
-  // ✅ determine preview subtopic by position
-  const firstSubtopicId = topic.subtopics?.[0]?.id;
-  const isFree = firstSubtopicId === subtopic.id;
-
-  if (isFree) {
-    return {
-      notes: subtopic.notes.map((n) => ({
-        id: n.id,
-        attributes: {
-          title: n.note?.title,
-          note: n.note?.note,
+  if (!isFree) {
+    const unlocked = await strapi.db
+      .query("api::user-unlocked-subject.user-unlocked-subject")
+      .findOne({
+        where: {
+          student: user.id,
+          grade_subject: gradeSubjectId,
+          status: "active",
         },
-      })),
-    };
+      });
+
+    if (!unlocked) {
+      return ctx.forbidden("Subject not unlocked");
+    }
   }
 
-  // 🔐 entitlement check
-  const unlocked = await strapi.db
-    .query("api::user-unlocked-subject.user-unlocked-subject")
-    .findOne({
-      where: {
-        student: user.id,
-        grade_subject: gradeSubjectId,
-        status: "active",
-      },
-    });
-
-  if (!unlocked) {
-    return ctx.forbidden("Subject not unlocked");
-  }
-
+  // ✅ CORRECT mapping
   return {
     notes: subtopic.notes.map((n) => ({
       id: n.id,
       attributes: {
-        title: n.note?.title,
-        note: n.note?.note,
+        title: n.title,
+        note: n.note,
       },
     })),
   };
 }
+
 
 
 
