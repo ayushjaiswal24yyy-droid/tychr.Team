@@ -1,0 +1,55 @@
+{
+  "kind": "collectionType",
+  "collectionName": "content_plans",
+  "info": {
+    "singularName": "content-plan",
+    "pluralName": "content-plans",
+    "displayName": "content-plan",
+    "description": ""
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "title": {
+      "type": "string"
+    },
+    "description": {
+      "type": "text"
+    },
+    "subject_limit": {
+      "type": "enumeration",
+      "enum": [
+        "limit_1",
+        "limit_3",
+        "limit_6"
+      ]
+    },
+    "duration_months": {
+      "type": "enumeration",
+    "enum": ["months_3", "months_6", "months_12"]
+    },
+    "price": {
+      "type": "decimal",
+      "required": true
+    },
+    "currency": {
+      "type": "enumeration",
+      "enum": [
+        "INR",
+        "USD"
+      ]
+    },
+    "active": {
+      "type": "boolean",
+      "default": true
+    },
+    "user_content_plans": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::user-content-plan.user-content-plan",
+      "mappedBy": "content_plan"
+    }
+  }
+}

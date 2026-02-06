@@ -521,6 +521,18 @@
       "relation": "oneToMany",
       "target": "api::lecture-feedback.lecture-feedback",
       "mappedBy": "user"
+    },
+    "user_content_plans": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::user-content-plan.user-content-plan",
+      "mappedBy": "student"
+    },
+    "user_unlocked_subjects": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::user-unlocked-subject.user-unlocked-subject",
+      "mappedBy": "student"
     }
   }
 }

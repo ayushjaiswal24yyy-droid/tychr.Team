@@ -1,0 +1,64 @@
+{
+  "kind": "collectionType",
+  "collectionName": "user_content_plans",
+  "info": {
+    "singularName": "user-content-plan",
+    "pluralName": "user-content-plans",
+    "displayName": "user-content-plan"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "student": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "plugin::users-permissions.user",
+      "inversedBy": "user_content_plans"
+    },
+    "content_plan": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::content-plan.content-plan",
+      "inversedBy": "user_content_plans"
+    },
+    "expires_at": {
+      "type": "datetime"
+    },
+    "purchased_at": {
+      "type": "datetime"
+    },
+    "remaining_subjects": {
+      "type": "integer"
+    },
+    "status": {
+      "type": "enumeration",
+      "enum": [
+        "active",
+        "expired",
+        "cancelled",
+        "refunded"
+      ]
+    },
+    "razorpay_payment_id": {
+      "type": "string"
+    },
+    "total_paid": {
+      "type": "decimal"
+    },
+    "currency": {
+      "type": "enumeration",
+      "enum": [
+        "INR",
+        "USD"
+      ]
+    },
+    "unlocked_subjects": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::user-unlocked-subject.user-unlocked-subject",
+      "mappedBy": "user_content_plan"
+    }
+  }
+}

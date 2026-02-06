@@ -120,6 +120,12 @@
       "relation": "manyToMany",
       "target": "plugin::users-permissions.user",
       "mappedBy": "fav_grade_subjects"
+    },
+    "user_unlocked_subjects": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::user-unlocked-subject.user-unlocked-subject",
+      "mappedBy": "grade_subject"
     }
   }
 }

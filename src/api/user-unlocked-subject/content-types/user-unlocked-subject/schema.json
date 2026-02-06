@@ -1,0 +1,48 @@
+{
+  "kind": "collectionType",
+  "collectionName": "user_unlocked_subjects",
+  "info": {
+    "singularName": "user-unlocked-subject",
+    "pluralName": "user-unlocked-subjects",
+    "displayName": "user-unlocked-subject"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "student": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "plugin::users-permissions.user",
+      "inversedBy": "user_unlocked_subjects"
+    },
+    "user_content_plan": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::user-content-plan.user-content-plan",
+      "inversedBy": "unlocked_subjects"
+    },
+    "unlocked_at": {
+      "type": "datetime"
+    },
+    "expires_at": {
+      "type": "datetime"
+    },
+    "status": {
+      "type": "enumeration",
+      "enum": [
+        "active",
+        "expired",
+        "revoked"
+      ],
+      "default": "active"
+    },
+    "grade_subject": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::grade-subject.grade-subject",
+      "inversedBy": "user_unlocked_subjects"
+    }
+  }
+}

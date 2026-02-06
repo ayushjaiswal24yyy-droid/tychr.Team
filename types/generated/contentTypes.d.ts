@@ -1049,6 +1049,16 @@ export interface PluginUsersPermissionsUser extends Schema.CollectionType {
       'oneToMany',
       'api::lecture-feedback.lecture-feedback'
     >;
+    user_content_plans: Attribute.Relation<
+      'plugin::users-permissions.user',
+      'oneToMany',
+      'api::user-content-plan.user-content-plan'
+    >;
+    user_unlocked_subjects: Attribute.Relation<
+      'plugin::users-permissions.user',
+      'oneToMany',
+      'api::user-unlocked-subject.user-unlocked-subject'
+    >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     createdBy: Attribute.Relation<
@@ -1780,6 +1790,50 @@ export interface ApiCommunityCommunity extends Schema.CollectionType {
   };
 }
 
+export interface ApiContentPlanContentPlan extends Schema.CollectionType {
+  collectionName: 'content_plans';
+  info: {
+    singularName: 'content-plan';
+    pluralName: 'content-plans';
+    displayName: 'content-plan';
+    description: '';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    title: Attribute.String;
+    description: Attribute.Text;
+    subject_limit: Attribute.Enumeration<['limit_1', 'limit_3', 'limit_6']>;
+    duration_months: Attribute.Enumeration<
+      ['months_3', 'months_6', 'months_12']
+    >;
+    price: Attribute.Decimal & Attribute.Required;
+    currency: Attribute.Enumeration<['INR', 'USD']>;
+    active: Attribute.Boolean & Attribute.DefaultTo<true>;
+    user_content_plans: Attribute.Relation<
+      'api::content-plan.content-plan',
+      'oneToMany',
+      'api::user-content-plan.user-content-plan'
+    >;
+    createdAt: Attribute.DateTime;
+    updatedAt: Attribute.DateTime;
+    publishedAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<
+      'api::content-plan.content-plan',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+    updatedBy: Attribute.Relation<
+      'api::content-plan.content-plan',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+  };
+}
+
 export interface ApiCounsellingVideoCounsellingVideo
   extends Schema.CollectionType {
   collectionName: 'counselling_videos';
@@ -2445,6 +2499,11 @@ export interface ApiGradeSubjectGradeSubject extends Schema.CollectionType {
       'api::grade-subject.grade-subject',
       'manyToMany',
       'plugin::users-permissions.user'
+    >;
+    user_unlocked_subjects: Attribute.Relation<
+      'api::grade-subject.grade-subject',
+      'oneToMany',
+      'api::user-unlocked-subject.user-unlocked-subject'
     >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
@@ -5187,6 +5246,60 @@ export interface ApiUniversityUniversity extends Schema.CollectionType {
   };
 }
 
+export interface ApiUserContentPlanUserContentPlan
+  extends Schema.CollectionType {
+  collectionName: 'user_content_plans';
+  info: {
+    singularName: 'user-content-plan';
+    pluralName: 'user-content-plans';
+    displayName: 'user-content-plan';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    student: Attribute.Relation<
+      'api::user-content-plan.user-content-plan',
+      'manyToOne',
+      'plugin::users-permissions.user'
+    >;
+    content_plan: Attribute.Relation<
+      'api::user-content-plan.user-content-plan',
+      'manyToOne',
+      'api::content-plan.content-plan'
+    >;
+    expires_at: Attribute.DateTime;
+    purchased_at: Attribute.DateTime;
+    remaining_subjects: Attribute.Integer;
+    status: Attribute.Enumeration<
+      ['active', 'expired', 'cancelled', 'refunded']
+    >;
+    razorpay_payment_id: Attribute.String;
+    total_paid: Attribute.Decimal;
+    currency: Attribute.Enumeration<['INR', 'USD']>;
+    unlocked_subjects: Attribute.Relation<
+      'api::user-content-plan.user-content-plan',
+      'oneToMany',
+      'api::user-unlocked-subject.user-unlocked-subject'
+    >;
+    createdAt: Attribute.DateTime;
+    updatedAt: Attribute.DateTime;
+    publishedAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<
+      'api::user-content-plan.user-content-plan',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+    updatedBy: Attribute.Relation<
+      'api::user-content-plan.user-content-plan',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+  };
+}
+
 export interface ApiUserGradePlanUserGradePlan extends Schema.CollectionType {
   collectionName: 'user_grade_plans';
   info: {
@@ -5292,6 +5405,55 @@ export interface ApiUserPlanUserPlan extends Schema.CollectionType {
       Attribute.Private;
     updatedBy: Attribute.Relation<
       'api::user-plan.user-plan',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+  };
+}
+
+export interface ApiUserUnlockedSubjectUserUnlockedSubject
+  extends Schema.CollectionType {
+  collectionName: 'user_unlocked_subjects';
+  info: {
+    singularName: 'user-unlocked-subject';
+    pluralName: 'user-unlocked-subjects';
+    displayName: 'user-unlocked-subject';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    student: Attribute.Relation<
+      'api::user-unlocked-subject.user-unlocked-subject',
+      'manyToOne',
+      'plugin::users-permissions.user'
+    >;
+    user_content_plan: Attribute.Relation<
+      'api::user-unlocked-subject.user-unlocked-subject',
+      'manyToOne',
+      'api::user-content-plan.user-content-plan'
+    >;
+    unlocked_at: Attribute.DateTime;
+    expires_at: Attribute.DateTime;
+    status: Attribute.Enumeration<['active', 'expired', 'revoked']> &
+      Attribute.DefaultTo<'active'>;
+    grade_subject: Attribute.Relation<
+      'api::user-unlocked-subject.user-unlocked-subject',
+      'manyToOne',
+      'api::grade-subject.grade-subject'
+    >;
+    createdAt: Attribute.DateTime;
+    updatedAt: Attribute.DateTime;
+    publishedAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<
+      'api::user-unlocked-subject.user-unlocked-subject',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+    updatedBy: Attribute.Relation<
+      'api::user-unlocked-subject.user-unlocked-subject',
       'oneToOne',
       'admin::user'
     > &
@@ -5420,6 +5582,7 @@ declare module '@strapi/types' {
       'api::comment.comment': ApiCommentComment;
       'api::commission-setting.commission-setting': ApiCommissionSettingCommissionSetting;
       'api::community.community': ApiCommunityCommunity;
+      'api::content-plan.content-plan': ApiContentPlanContentPlan;
       'api::counselling-video.counselling-video': ApiCounsellingVideoCounsellingVideo;
       'api::course-plan.course-plan': ApiCoursePlanCoursePlan;
       'api::credential.credential': ApiCredentialCredential;
@@ -5484,8 +5647,10 @@ declare module '@strapi/types' {
       'api::tutors.tutors': ApiTutorsTutors;
       'api::tutors-website.tutors-website': ApiTutorsWebsiteTutorsWebsite;
       'api::university.university': ApiUniversityUniversity;
+      'api::user-content-plan.user-content-plan': ApiUserContentPlanUserContentPlan;
       'api::user-grade-plan.user-grade-plan': ApiUserGradePlanUserGradePlan;
       'api::user-plan.user-plan': ApiUserPlanUserPlan;
+      'api::user-unlocked-subject.user-unlocked-subject': ApiUserUnlockedSubjectUserUnlockedSubject;
       'api::webinar.webinar': ApiWebinarWebinar;
       'api::whats-new.whats-new': ApiWhatsNewWhatsNew;
     }
