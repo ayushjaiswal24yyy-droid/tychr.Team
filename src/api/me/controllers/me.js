@@ -127,8 +127,15 @@ module.exports = {
 
         // 4️⃣ Return notes
         return {
-            notes: subtopic.notes || [],
+            notes: subtopic.notes.map((n) => ({
+                id: n.id,
+                attributes: {
+                    title: n.note?.title,
+                    note: n.note?.note,
+                },
+            })),
         };
+
     }
 
 };
