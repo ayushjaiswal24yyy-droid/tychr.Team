@@ -683,7 +683,7 @@ module.exports = createCoreController(
         for (const ans of answers) {
           const paperId = ans.test_series?.id;
           if (!paperId) continue;
-
+    
           answerByPaperId[paperId] = {
             id: ans.id,
             marks: ans.marks,
@@ -692,9 +692,16 @@ module.exports = createCoreController(
 
           totalTimeTaken += ans.time_taken || 0;
         }
-        const marker = attemptMarkers[0];
-        let phase = marker.phase;
-        let phaseStartedAt = new Date(marker.phase_started_at);
+        let marker = null;
+        let phase = null;
+        let phaseStartedAt = null;
+
+        if (hasAttempt) {
+          marker = attemptMarkers[0];
+          phase = marker.phase;
+          phaseStartedAt = new Date(marker.phase_started_at);
+        }
+
         const now = new Date();
         const readingTimeSeconds = (Number(series.reading_time) || 0) * 60;
 
@@ -703,7 +710,7 @@ module.exports = createCoreController(
         const totalAllowedSeconds =
           readingTimeSeconds + testDurationSeconds;
 
-        if (phase === "reading") {
+        if (hasAttempt && phase === "reading") {
           const elapsed = (now.getTime() - phaseStartedAt.getTime()) / 1000;
 
           if (elapsed >= readingTimeSeconds) {
@@ -868,8 +875,8 @@ module.exports = createCoreController(
           lastAttempt.length > 0 ? lastAttempt[0].attempt_id + 1 : 1;
 
         // Determine initial phase
- const readingTimeMinutes = Number(series.reading_time) || 0;
-const initialPhase = readingTimeMinutes > 0 ? "reading" : "answering";
+        const readingTimeMinutes = Number(series.reading_time) || 0;
+        const initialPhase = readingTimeMinutes > 0 ? "reading" : "answering";
 
         // Create attempt marker
         const attemptMarker = await strapi.entityService.create("api::answer.answer", {
