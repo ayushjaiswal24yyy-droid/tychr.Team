@@ -10,5 +10,11 @@ module.exports = {
         policies: ["global::is-authenticated"],
       },
     },
+    {
+  method: "GET",
+  path: "/me/subtopic-notes/:id",
+  handler: "me.subtopicNotes",
+}
+
   ],
 };
