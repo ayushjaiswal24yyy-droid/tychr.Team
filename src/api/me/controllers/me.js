@@ -1,9 +1,6 @@
 "use strict";
 
 module.exports = {
-  /**
-   * GET /me/content-plan
-   */
   async contentPlan(ctx) {
     const user = ctx.state.user;
 
@@ -11,29 +8,30 @@ module.exports = {
       return ctx.unauthorized();
     }
 
+    // 1️⃣ Find active plan (allow expires_at = null)
     const activePlan = await strapi.db
       .query("api::user-content-plan.user-content-plan")
       .findOne({
         where: {
           student: user.id,
           status: "active",
-          expires_at: {
-            $gt: new Date(),
-          },
+          $or: [
+            { expires_at: { $gt: new Date() } },
+            { expires_at: null },
+          ],
         },
         orderBy: { purchased_at: "desc" },
-        populate: {
-          content_plan: true,
-        },
+        populate: ["content_plan"],
       });
 
-    if (!activePlan) {
+    if (!activePlan || !activePlan.content_plan) {
       return {
         plan: null,
         unlocked_subject_ids: [],
       };
     }
 
+    // 2️⃣ Fetch unlocked subjects
     const unlockedSubjects = await strapi.db
       .query("api::user-unlocked-subject.user-unlocked-subject")
       .findMany({
