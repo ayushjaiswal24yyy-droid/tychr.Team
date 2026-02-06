@@ -1,9 +1,14 @@
-'use strict';
+"use strict";
 
-/**
- * user-unlocked-subject router
- */
-
-const { createCoreRouter } = require('@strapi/strapi').factories;
-
-module.exports = createCoreRouter('api::user-unlocked-subject.user-unlocked-subject');
+module.exports = {
+  routes: [
+    {
+      method: "POST",
+      path: "/user-unlocked-subjects/unlock",
+      handler: "user-unlocked-subject.unlock",
+      config: {
+        policies: ["global::is-authenticated"],
+      },
+    },
+  ],
+};

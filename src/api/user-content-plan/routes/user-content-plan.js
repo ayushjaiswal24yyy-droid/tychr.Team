@@ -1,9 +1,22 @@
-'use strict';
+"use strict";
 
-/**
- * user-content-plan router
- */
-
-const { createCoreRouter } = require('@strapi/strapi').factories;
-
-module.exports = createCoreRouter('api::user-content-plan.user-content-plan');
+module.exports = {
+  routes: [
+    {
+      method: "POST",
+      path: "/user-content-plans/create-order",
+      handler: "user-content-plan.createOrder",
+      config: {
+        policies: ["global::is-authenticated"],
+      },
+    },
+    {
+      method: "POST",
+      path: "/user-content-plans/verify-payment",
+      handler: "user-content-plan.verifyPayment",
+      config: {
+        policies: ["global::is-authenticated"],
+      },
+    },
+  ],
+};
