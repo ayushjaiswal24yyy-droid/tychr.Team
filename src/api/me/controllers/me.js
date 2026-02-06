@@ -66,7 +66,7 @@ module.exports = {
             ),
         };
     },
- async subtopicNotes(ctx) {
+  async subtopicNotes(ctx) {
   const user = ctx.state.user;
   const subtopicId = Number(ctx.params.id);
 
@@ -80,9 +80,14 @@ module.exports = {
         topic: {
           populate: {
             grade_subject: true,
+            subtopics: {
+              sort: ["id:asc"], // IMPORTANT
+            },
           },
         },
-        notes: true, // ✅ IMPORTANT
+        notes: {
+          populate: ["note"],
+        },
       },
     }
   );
@@ -91,30 +96,30 @@ module.exports = {
     return ctx.notFound("Subtopic not found");
   }
 
-  const gradeSubjectId = subtopic.topic?.grade_subject?.id;
+  const topic = subtopic.topic;
+  const gradeSubjectId = topic?.grade_subject?.id;
 
   if (!gradeSubjectId) {
     return ctx.badRequest("Invalid subtopic mapping");
   }
 
-  const isFree =
-    subtopic.topic?.order === 0 &&
-    subtopic.order === 0;
+  // ✅ determine preview subtopic by position
+  const firstSubtopicId = topic.subtopics?.[0]?.id;
+  const isFree = firstSubtopicId === subtopic.id;
 
-  // ✅ Free preview
   if (isFree) {
     return {
       notes: subtopic.notes.map((n) => ({
         id: n.id,
         attributes: {
-          title: n.title,
-          note: n.note,
+          title: n.note?.title,
+          note: n.note?.note,
         },
       })),
     };
   }
 
-  // 🔐 Check unlock
+  // 🔐 entitlement check
   const unlocked = await strapi.db
     .query("api::user-unlocked-subject.user-unlocked-subject")
     .findOne({
@@ -129,17 +134,17 @@ module.exports = {
     return ctx.forbidden("Subject not unlocked");
   }
 
-  // ✅ Return Strapi-shaped notes
   return {
     notes: subtopic.notes.map((n) => ({
       id: n.id,
       attributes: {
-        title: n.title,
-        note: n.note,
+        title: n.note?.title,
+        note: n.note?.note,
       },
     })),
   };
 }
+
 
 
 };
