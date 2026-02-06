@@ -66,76 +66,80 @@ module.exports = {
             ),
         };
     },
-    async subtopicNotes(ctx) {
-        const user = ctx.state.user;
-        const subtopicId = Number(ctx.params.id);
+ async subtopicNotes(ctx) {
+  const user = ctx.state.user;
+  const subtopicId = Number(ctx.params.id);
 
-        if (!user) return ctx.unauthorized();
+  if (!user) return ctx.unauthorized();
 
-        const subtopic = await strapi.entityService.findOne(
-            "api::subtopic.subtopic",
-            subtopicId,
-            {
-                populate: {
-                    topic: {
-                        populate: {
-                            grade_subject: true,
-                        },
-                    },
-                    notes: {
-                        populate: ["note"],
-                    },
-                },
-            }
-        );
-
-        if (!subtopic) {
-            return ctx.notFound("Subtopic not found");
-        }
-
-        const gradeSubjectId =
-            subtopic.topic?.grade_subject?.id;
-
-        if (!gradeSubjectId) {
-            return ctx.badRequest("Invalid subtopic mapping");
-        }
-
-        const topic = subtopic.topic;
-
-        const isFree =
-            topic.order === 0 && subtopic.order === 0;
-
-        if (isFree) {
-            return {
-                notes: subtopic.notes || [],
-            };
-        }
-
-        const unlocked = await strapi.db
-            .query("api::user-unlocked-subject.user-unlocked-subject")
-            .findOne({
-                where: {
-                    student: { id: user.id },
-                    grade_subject: { id: gradeSubjectId },
-                    status: "active",
-                },
-            });
-
-        if (!unlocked) {
-            return ctx.forbidden("Subject not unlocked");
-        }
-
-        // 4️⃣ Return notes
-        return {
-            notes: subtopic.notes.map((n) => ({
-                id: n.id,
-                attributes: {
-                    title: n.note?.title,
-                    note: n.note?.note,
-                },
-            })),
-        };
-
+  const subtopic = await strapi.entityService.findOne(
+    "api::subtopic.subtopic",
+    subtopicId,
+    {
+      populate: {
+        topic: {
+          populate: {
+            grade_subject: true,
+          },
+        },
+        notes: true, // ✅ IMPORTANT
+      },
     }
+  );
+
+  if (!subtopic) {
+    return ctx.notFound("Subtopic not found");
+  }
+
+  const gradeSubjectId = subtopic.topic?.grade_subject?.id;
+
+  if (!gradeSubjectId) {
+    return ctx.badRequest("Invalid subtopic mapping");
+  }
+
+  const isFree =
+    subtopic.topic?.order === 0 &&
+    subtopic.order === 0;
+
+  // ✅ Free preview
+  if (isFree) {
+    return {
+      notes: subtopic.notes.map((n) => ({
+        id: n.id,
+        attributes: {
+          title: n.title,
+          note: n.note,
+        },
+      })),
+    };
+  }
+
+  // 🔐 Check unlock
+  const unlocked = await strapi.db
+    .query("api::user-unlocked-subject.user-unlocked-subject")
+    .findOne({
+      where: {
+        student: user.id,
+        grade_subject: gradeSubjectId,
+        status: "active",
+      },
+    });
+
+  if (!unlocked) {
+    return ctx.forbidden("Subject not unlocked");
+  }
+
+  // ✅ Return Strapi-shaped notes
+  return {
+    notes: subtopic.notes.map((n) => ({
+      id: n.id,
+      attributes: {
+        title: n.title,
+        note: n.note,
+      },
+    })),
+  };
+}
+
 
 };
