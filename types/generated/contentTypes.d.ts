@@ -3679,9 +3679,9 @@ export interface ApiProgramProgram extends Schema.CollectionType {
     >;
     intakes: Attribute.Component<'cycles.cycle', true>;
     tution_fees: Attribute.Component<'university.tution-fees'>;
-    admission_requirements: Attribute.Component<'university.admission-requirements'>;
     world_rank: Attribute.Integer;
     financial_aids: Attribute.Component<'university.financial-aids'>;
+    admission_requirements: Attribute.Component<'exams.exams', true>;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
@@ -5196,7 +5196,7 @@ export interface ApiUniversityUniversity extends Schema.CollectionType {
     university_type: Attribute.String;
     year_of_establishment: Attribute.Integer;
     world_rank: Attribute.Integer;
-    acceptance_rate: Attribute.String;
+    acceptance_rate: Attribute.Decimal;
     stats: Attribute.Component<'university.key-stats'>;
     global_ranking: Attribute.Component<'university.global-ranking'>;
     subject_ranking: Attribute.Component<'university.subject-ranking'>;
@@ -5228,6 +5228,7 @@ export interface ApiUniversityUniversity extends Schema.CollectionType {
       'oneToMany',
       'api::counselling-video.counselling-video'
     >;
+    verified: Attribute.Boolean;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;

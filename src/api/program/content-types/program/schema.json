@@ -65,11 +65,6 @@
       "repeatable": false,
       "component": "university.tution-fees"
     },
-    "admission_requirements": {
-      "type": "component",
-      "repeatable": false,
-      "component": "university.admission-requirements"
-    },
     "world_rank": {
       "type": "integer"
     },
@@ -77,6 +72,11 @@
       "type": "component",
       "repeatable": false,
       "component": "university.financial-aids"
+    },
+    "admission_requirements": {
+      "type": "component",
+      "repeatable": true,
+      "component": "exams.exams"
     }
   }
 }

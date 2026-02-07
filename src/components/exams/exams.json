@@ -1,0 +1,38 @@
+{
+  "collectionName": "components_exams_exams",
+  "info": {
+    "displayName": "exams"
+  },
+  "options": {},
+  "attributes": {
+    "name": {
+      "type": "string"
+    },
+    "exam_requirement": {
+      "type": "enumeration",
+      "enum": [
+        "test-free",
+        "test-optional",
+        "test-needed"
+      ]
+    },
+    "exam_waiver": {
+      "type": "text"
+    },
+    "min_score_required": {
+      "type": "string"
+    },
+    "max_score": {
+      "type": "string"
+    },
+    "category": {
+      "type": "enumeration",
+      "enum": [
+        "high_school_diploma",
+        "academic_test",
+        "english_test",
+        "subject_specific_test"
+      ]
+    }
+  }
+}

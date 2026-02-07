@@ -28,7 +28,7 @@
       "type": "integer"
     },
     "acceptance_rate": {
-      "type": "string"
+      "type": "decimal"
     },
     "stats": {
       "type": "component",
@@ -88,6 +88,9 @@
       "relation": "oneToMany",
       "target": "api::counselling-video.counselling-video",
       "mappedBy": "university"
+    },
+    "verified": {
+      "type": "boolean"
     }
   }
 }

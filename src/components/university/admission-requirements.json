@@ -6,32 +6,11 @@
   },
   "options": {},
   "attributes": {
-    "high_school_diploma": {
-      "type": "boolean"
-    },
-    "sat": {
-      "type": "boolean"
-    },
-    "ap": {
-      "type": "boolean"
-    },
-    "subject_specific_requirements": {
-      "type": "boolean"
-    },
-    "ielts_score": {
-      "type": "decimal"
-    },
-    "toefl_score": {
-      "type": "integer"
-    },
-    "cambridge_score": {
-      "type": "string"
-    },
-    "duolingo_score": {
-      "type": "decimal"
-    },
-    "min_gpa": {
-      "type": "string"
+    "exams": {
+      "displayName": "exams",
+      "type": "component",
+      "repeatable": true,
+      "component": "exams.exams"
     }
   }
 }
