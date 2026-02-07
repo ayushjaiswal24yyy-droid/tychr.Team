@@ -13,6 +13,16 @@ export interface WhyTychrWhyTychr extends Schema.Component {
   };
 }
 
+export interface WhyChooseDataWhyChooseData extends Schema.Component {
+  collectionName: 'components_why_choose_data_why_choose_data';
+  info: {
+    displayName: 'why_choose_data';
+  };
+  attributes: {
+    string: Attribute.Text;
+  };
+}
+
 export interface WhyChooseTutorWhyChooseTutor extends Schema.Component {
   collectionName: 'components_why_choose_tutor_why_choose_tutors';
   info: {
@@ -28,16 +38,6 @@ export interface WhyChooseTutorWhyChooseTutor extends Schema.Component {
     enabled: Attribute.Boolean;
     theme: Attribute.Enumeration<['light', 'dark']>;
     bullet_points: Attribute.JSON;
-  };
-}
-
-export interface WhyChooseDataWhyChooseData extends Schema.Component {
-  collectionName: 'components_why_choose_data_why_choose_data';
-  info: {
-    displayName: 'why_choose_data';
-  };
-  attributes: {
-    string: Attribute.Text;
   };
 }
 
@@ -307,6 +307,18 @@ export interface UniversityAdditionalCosts extends Schema.Component {
   };
 }
 
+export interface TutorsWebsiteBestOnlineTutors extends Schema.Component {
+  collectionName: 'components_tutors_website_best_online_tutors';
+  info: {
+    displayName: 'best_online_tutors';
+    icon: 'code';
+    description: '';
+  };
+  attributes: {
+    title: Attribute.Text;
+  };
+}
+
 export interface TutorPriceTutorPrice extends Schema.Component {
   collectionName: 'components_tutor_price_tutor_prices';
   info: {
@@ -318,18 +330,6 @@ export interface TutorPriceTutorPrice extends Schema.Component {
     studentCount: Attribute.Integer;
     tychr_usd_price: Attribute.Decimal;
     tychr_inr_price: Attribute.Decimal;
-  };
-}
-
-export interface TutorsWebsiteBestOnlineTutors extends Schema.Component {
-  collectionName: 'components_tutors_website_best_online_tutors';
-  info: {
-    displayName: 'best_online_tutors';
-    icon: 'code';
-    description: '';
-  };
-  attributes: {
-    title: Attribute.Text;
   };
 }
 
@@ -516,18 +516,6 @@ export interface StepsSteps extends Schema.Component {
   };
 }
 
-export interface StandOutFeatureStandOutFeature extends Schema.Component {
-  collectionName: 'components_stand_out_feature_stand_out_features';
-  info: {
-    displayName: 'stand_out_feature';
-  };
-  attributes: {
-    title: Attribute.String;
-    description: Attribute.String;
-    icon: Attribute.Media<'images' | 'files' | 'videos' | 'audios', true>;
-  };
-}
-
 export interface StatsStats extends Schema.Component {
   collectionName: 'components_stats_stats';
   info: {
@@ -547,6 +535,18 @@ export interface StatItemStatItem extends Schema.Component {
   attributes: {
     value: Attribute.String;
     label: Attribute.String;
+  };
+}
+
+export interface StandOutFeatureStandOutFeature extends Schema.Component {
+  collectionName: 'components_stand_out_feature_stand_out_features';
+  info: {
+    displayName: 'stand_out_feature';
+  };
+  attributes: {
+    title: Attribute.String;
+    description: Attribute.String;
+    icon: Attribute.Media<'images' | 'files' | 'videos' | 'audios', true>;
   };
 }
 
@@ -571,55 +571,6 @@ export interface SemestersSemesters extends Schema.Component {
   attributes: {
     label: Attribute.String;
     steps: Attribute.Component<'steps.steps', true>;
-  };
-}
-
-export interface SchemaSchemaVideo extends Schema.Component {
-  collectionName: 'components_schema_schema_videos';
-  info: {
-    displayName: 'schema_video';
-  };
-  attributes: {
-    name: Attribute.String;
-    description: Attribute.String;
-    thumbnail: Attribute.String;
-    uploadDate: Attribute.Date;
-    url: Attribute.String;
-  };
-}
-
-export interface SchemaSchemaReviews extends Schema.Component {
-  collectionName: 'components_schema_schema_reviews';
-  info: {
-    displayName: 'schema_reviews';
-  };
-  attributes: {
-    author: Attribute.String;
-    rating: Attribute.Decimal;
-    text: Attribute.String;
-  };
-}
-
-export interface SchemaSchemaResults extends Schema.Component {
-  collectionName: 'components_schema_schema_results';
-  info: {
-    displayName: 'schema-results';
-  };
-  attributes: {
-    year: Attribute.String;
-    global: Attribute.String;
-    tychr: Attribute.String;
-  };
-}
-
-export interface SchemaSchemaFaqs extends Schema.Component {
-  collectionName: 'components_schema_schema_faqs';
-  info: {
-    displayName: 'schema-faqs';
-  };
-  attributes: {
-    q: Attribute.String;
-    a: Attribute.String;
   };
 }
 
@@ -814,6 +765,55 @@ export interface PlanGradePlan extends Schema.Component {
     recorded_lectures: Attribute.Boolean & Attribute.DefaultTo<true>;
     live_lectures: Attribute.Boolean & Attribute.DefaultTo<false>;
     qna: Attribute.Boolean & Attribute.DefaultTo<true>;
+  };
+}
+
+export interface SchemaSchemaVideo extends Schema.Component {
+  collectionName: 'components_schema_schema_videos';
+  info: {
+    displayName: 'schema_video';
+  };
+  attributes: {
+    name: Attribute.String;
+    description: Attribute.String;
+    thumbnail: Attribute.String;
+    uploadDate: Attribute.Date;
+    url: Attribute.String;
+  };
+}
+
+export interface SchemaSchemaReviews extends Schema.Component {
+  collectionName: 'components_schema_schema_reviews';
+  info: {
+    displayName: 'schema_reviews';
+  };
+  attributes: {
+    author: Attribute.String;
+    rating: Attribute.Decimal;
+    text: Attribute.String;
+  };
+}
+
+export interface SchemaSchemaResults extends Schema.Component {
+  collectionName: 'components_schema_schema_results';
+  info: {
+    displayName: 'schema-results';
+  };
+  attributes: {
+    year: Attribute.String;
+    global: Attribute.String;
+    tychr: Attribute.String;
+  };
+}
+
+export interface SchemaSchemaFaqs extends Schema.Component {
+  collectionName: 'components_schema_schema_faqs';
+  info: {
+    displayName: 'schema-faqs';
+  };
+  attributes: {
+    q: Attribute.String;
+    a: Attribute.String;
   };
 }
 
@@ -1527,8 +1527,8 @@ declare module '@strapi/types' {
   export module Shared {
     export interface Components {
       'why-tychr.why-tychr': WhyTychrWhyTychr;
-      'why-choose-tutor.why-choose-tutor': WhyChooseTutorWhyChooseTutor;
       'why-choose-data.why-choose-data': WhyChooseDataWhyChooseData;
+      'why-choose-tutor.why-choose-tutor': WhyChooseTutorWhyChooseTutor;
       'user.user-experience': UserUserExperience;
       'user.student-plan': UserStudentPlan;
       'user.extra-activity': UserExtraActivity;
@@ -1545,8 +1545,8 @@ declare module '@strapi/types' {
       'university.application-cycle-deadline': UniversityApplicationCycleDeadline;
       'university.admission-requirements': UniversityAdmissionRequirements;
       'university.additional-costs': UniversityAdditionalCosts;
-      'tutor-price.tutor-price': TutorPriceTutorPrice;
       'tutors-website.best-online-tutors': TutorsWebsiteBestOnlineTutors;
+      'tutor-price.tutor-price': TutorPriceTutorPrice;
       'top-colleges.top-colleges': TopCollegesTopColleges;
       'time-slots.time-slots': TimeSlotsTimeSlots;
       'test-steps.test-steps': TestStepsTestSteps;
@@ -1560,15 +1560,11 @@ declare module '@strapi/types' {
       'students-by-subjects.student-by-subjects': StudentsBySubjectsStudentBySubjects;
       'student-data.student-data': StudentDataStudentData;
       'steps.steps': StepsSteps;
-      'stand-out-feature.stand-out-feature': StandOutFeatureStandOutFeature;
       'stats.stats': StatsStats;
       'stat-item.stat-item': StatItemStatItem;
+      'stand-out-feature.stand-out-feature': StandOutFeatureStandOutFeature;
       'stand-out.stand-out': StandOutStandOut;
       'semesters.semesters': SemestersSemesters;
-      'schema.schema-video': SchemaSchemaVideo;
-      'schema.schema-reviews': SchemaSchemaReviews;
-      'schema.schema-results': SchemaSchemaResults;
-      'schema.schema-faqs': SchemaSchemaFaqs;
       'results-data.results-data': ResultsDataResultsData;
       'resources.resources': ResourcesResources;
       'requested-by.requested-by': RequestedByRequestedBy;
@@ -1581,6 +1577,10 @@ declare module '@strapi/types' {
       'question-bank.hints': QuestionBankHints;
       'progress-data.progress-data': ProgressDataProgressData;
       'plan.grade-plan': PlanGradePlan;
+      'schema.schema-video': SchemaSchemaVideo;
+      'schema.schema-reviews': SchemaSchemaReviews;
+      'schema.schema-results': SchemaSchemaResults;
+      'schema.schema-faqs': SchemaSchemaFaqs;
       'online-tutors.best-online-tutors': OnlineTutorsBestOnlineTutors;
       'notification.notes': NotificationNotes;
       'notification.history': NotificationHistory;

@@ -5255,7 +5255,7 @@ export interface ApiUserContentPlanUserContentPlan
     displayName: 'user-content-plan';
   };
   options: {
-    draftAndPublish: true;
+    draftAndPublish: false;
   };
   attributes: {
     student: Attribute.Relation<
@@ -5284,7 +5284,6 @@ export interface ApiUserContentPlanUserContentPlan
     >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
-    publishedAt: Attribute.DateTime;
     createdBy: Attribute.Relation<
       'api::user-content-plan.user-content-plan',
       'oneToOne',

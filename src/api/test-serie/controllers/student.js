@@ -187,6 +187,118 @@ module.exports = createCoreController(
         ctx.throw(500, error.message);
       }
     },
+    async getStudentTestSeriesByGrade(ctx) {
+      try {
+        const { gradeSubjectId } = ctx.params;
+        const user = ctx.state.user;
+
+        if (!gradeSubjectId) {
+          return ctx.badRequest("Grade subject ID is required");
+        }
+
+        if (!user) {
+          return ctx.unauthorized("User not authenticated");
+        }
+
+        const testSeries = await strapi.entityService.findMany(
+          "api::test-serie.test-serie",
+          {
+            filters: {
+              grade_subject: { id: gradeSubjectId },
+              test_type: { $eq: "Test Series" },
+              entity_type: { $eq: "series" },
+              publishedAt: { $notNull: true },
+            },
+            populate: {
+              question_banks: {
+                fields: ["id", "question_type", "question", "marks"],
+              },
+              papers: true,
+              grade_subject: {
+                fields: ["id", "name"],
+              },
+              answers: {
+                filters: {
+                  student: user.id,
+                },
+                fields: [
+                  "id",
+                  "submission_date",
+                  "marks",
+                  "evaluation_status",
+                  "completed",
+                  "time_taken",
+                ],
+              },
+            },
+            sort: { createdAt: "desc" },
+          }
+        );
+
+        const now = new Date();
+
+        const transformedData = testSeries.map((series) => {
+          const startDate = series.start_date ? new Date(series.start_date) : null;
+          const isUnlocked = !startDate || startDate <= now;
+
+          const userAnswers = series.answers || [];
+          const hasSubmitted = userAnswers.length > 0;
+
+          const latestAnswer = hasSubmitted
+            ? userAnswers.reduce((latest, current) =>
+              new Date(current.submission_date) >
+                new Date(latest.submission_date)
+                ? current
+                : latest
+            )
+            : null;
+
+          const completedAnswers = userAnswers.filter(a => a.completed);
+          const evaluatedAnswers = completedAnswers.filter(
+            a => a.evaluation_status === "evaluated"
+          );
+
+          if (!isUnlocked) {
+            return {
+              id: series.id,
+              title: series.title,
+              test_mode: series.test_mode,
+              test_type: series.test_type,
+              test_duration: series.test_duration,
+              start_date: series.start_date,
+              status: "upcoming",
+              is_locked: true,
+            };
+          }
+
+          return {
+            id: series.id,
+            title: series.title,
+            test_mode: series.test_mode,
+            test_type: series.test_type,
+            test_duration: series.test_duration,
+            question_banks: series.question_banks,
+            papers: series.papers,
+            grade_subject: series.grade_subject,
+            answer_status: {
+              has_attempted: hasSubmitted,
+              total_attempts: userAnswers.length,
+              completed_attempts: completedAnswers.length,
+              evaluated_attempts: evaluatedAnswers.length,
+              latest_attempt: latestAnswer,
+              all_attempts: userAnswers,
+            },
+            createdAt: series.createdAt,
+          };
+        });
+
+        return { data: transformedData };
+      } catch (error) {
+        console.error("Error in getStudentTestSeriesByGrade:", error);
+        ctx.throw(500, error.message);
+      }
+    }
+    ,
     async getStudentPracticeSeries(ctx) {
       try {
         const { classroomId } = ctx.params;
@@ -683,7 +795,7 @@ module.exports = createCoreController(
         for (const ans of answers) {
           const paperId = ans.test_series?.id;
           if (!paperId) continue;
-    
+
           answerByPaperId[paperId] = {
             id: ans.id,
             marks: ans.marks,
