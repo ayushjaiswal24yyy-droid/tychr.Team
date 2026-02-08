@@ -19,9 +19,32 @@
     "description": {
       "type": "text"
     },
-    "zoom_url": {
+    "teams_join_url": {
       "type": "string",
       "required": true
+    },
+    "teams_meeting_id": {
+      "type": "string",
+      "required": true,
+      "description": "Microsoft Graph onlineMeeting.id"
+    },
+    "recording_url": {
+      "type": "string",
+      "description": "SharePoint or OneDrive playback URL"
+    },
+    "recording_file_id": {
+      "type": "string",
+      "description": "Drive item id from Microsoft Graph"
+    },
+    "recorded_at": {
+      "type": "datetime"
+    },
+    "recording_duration_seconds": {
+      "type": "integer"
+    },
+    "has_recording": {
+      "type": "boolean",
+      "default": false
     },
     "schedule": {
       "type": "datetime",
@@ -61,6 +84,15 @@
     "is_cancelled": {
       "type": "boolean",
       "default": false
+    },
+    "recording_status": {
+      "type": "enumeration",
+      "enum": [
+        "pending",
+        "available",
+        "failed"
+      ],
+      "default": "pending"
     },
     "cancellation_reason": {
       "type": "text"

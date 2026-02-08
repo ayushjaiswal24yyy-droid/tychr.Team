@@ -16,7 +16,7 @@ module.exports = createCoreController(
       title,
       description,
       topicname,
-      zoom_url,
+      teams_join_url,
       formattedSchedule,
       tutor,
     }) => {
@@ -32,7 +32,7 @@ ${title}
 
 Topic: ${topicname?.name || "N/A"}
 Description: ${description}
-Class Link: ${zoom_url}
+Class Link: ${teams_join_url}
 Scheduled for: ${formattedSchedule}
 
 Best regards,
@@ -43,7 +43,7 @@ ${tutor?.fullName || "Your Tutor"}
           <p>${title}</p>
           <p><strong>Topic:</strong> ${topicname?.name || "N/A"}</p>
           <p><strong>Description:</strong> ${description}</p>
-          <p><strong>Zoom Link:</strong> <a href="${zoom_url}">${zoom_url}</a></p>
+          <p><strong>Zoom Link:</strong> <a href="${teams_join_url}">${teams_join_url}</a></p>
           <p><strong>Scheduled for:</strong> ${formattedSchedule}</p>
           <br/>
           <p>Best regards,<br/>${tutor?.fullName || "Your Tutor"}</p>
@@ -73,7 +73,7 @@ ${tutor?.fullName || "Your Tutor"}
           // First, create the live lecture
           response = await super.create(ctx);
 
-          const { title, description, zoom_url, schedule, topic, classrooms } =
+          const { title, description, teams_join_url, schedule, topic, classrooms } =
             ctx.request.body.data;
 
           // Get topic details
@@ -126,7 +126,7 @@ ${tutor?.fullName || "Your Tutor"}
                   subject: `New Live Lecture: ${title}`,
                   description,
                   topicname,
-                  zoom_url,
+                  teams_join_url,
                   formattedSchedule,
                   tutor: classroom.tutor, // Changed from classroom.tutors[0] to classroom.tutor
                 }).then(() => {
@@ -233,7 +233,7 @@ ${tutor?.fullName || "Your Tutor"}
             title: "Your class starts in less than 30 minutes",
             description: lecture.description,
             topicname: lecture.topic,
-            zoom_url: lecture.zoom_url,
+            teams_join_url: lecture.teams_join_url,
             formattedSchedule,
             tutor: classrooms[0]?.tutor,
           });
