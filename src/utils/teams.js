@@ -24,7 +24,11 @@ async function getTeamsAccessToken(refreshToken, userId) {
     );
   }
 
-  return res.data.access_token;
+  // ✅ FIX: Return the full object, not just access_token
+  return {
+    accessToken: res.data.access_token,
+    refreshToken: res.data.refresh_token
+  };
 }
 
 async function createTeamsMeeting({
