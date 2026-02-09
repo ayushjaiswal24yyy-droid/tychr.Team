@@ -2988,7 +2988,13 @@ export interface ApiLiveLectureLiveLecture extends Schema.CollectionType {
   attributes: {
     title: Attribute.String & Attribute.Required;
     description: Attribute.Text;
-    zoom_url: Attribute.String & Attribute.Required;
+    teams_join_url: Attribute.String & Attribute.Required;
+    teams_meeting_id: Attribute.String & Attribute.Required;
+    recording_url: Attribute.String;
+    recording_file_id: Attribute.String;
+    recorded_at: Attribute.DateTime;
+    recording_duration_seconds: Attribute.Integer;
+    has_recording: Attribute.Boolean & Attribute.DefaultTo<false>;
     schedule: Attribute.DateTime & Attribute.Required;
     isFree: Attribute.Boolean & Attribute.DefaultTo<false>;
     price: Attribute.Decimal;
@@ -3013,6 +3019,10 @@ export interface ApiLiveLectureLiveLecture extends Schema.CollectionType {
       'api::class-request.class-request'
     >;
     is_cancelled: Attribute.Boolean & Attribute.DefaultTo<false>;
+    recording_status: Attribute.Enumeration<
+      ['pending', 'available', 'failed']
+    > &
+      Attribute.DefaultTo<'pending'>;
     cancellation_reason: Attribute.Text;
     is_resheduled: Attribute.Boolean;
     reschedule_count: Attribute.Integer & Attribute.DefaultTo<0>;
