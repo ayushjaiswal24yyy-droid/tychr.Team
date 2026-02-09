@@ -7,7 +7,15 @@ module.exports = {
       path: "/cron/send-lecture-reminders",
       handler: "live-lecture.sendLectureReminders",
       config: {
-        policies: [], 
+        auth: false,
+      },
+    },
+    {
+      method: "POST",
+      path: "/cron/sync-teams-recordings",
+      handler: "live-lecture.syncRecordings",
+      config: {
+        auth: false,
       },
     },
   ],

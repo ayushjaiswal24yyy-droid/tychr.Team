@@ -5,6 +5,7 @@
  */
 
 const { createCoreController } = require("@strapi/strapi").factories;
+const axios = require("axios");
 const { createTeamsMeeting, getTeamsAccessToken } = require("../../../utils/teams")
 module.exports = createCoreController(
   "api::live-lecture.live-lecture",
@@ -180,75 +181,189 @@ ${tutor?.fullName || "Your Tutor"}
           ctx.throw(500, error.message || "Failed to create live lecture");
         }
       },
-async sendLectureReminders(ctx) {
-  const secret = ctx.request.headers["x-cron-key"];
-  if (secret !== process.env.CRON_SECRET) {
-    return ctx.unauthorized("Invalid cron key");
-  }
+      async sendLectureReminders(ctx) {
+        const secret = ctx.request.headers["x-cron-key"];
+        if (secret !== process.env.CRON_SECRET) {
+          return ctx.unauthorized("Invalid cron key");
+        }
 
-  const now = new Date();
-  const to = new Date(now.getTime() + 30 * 60 * 1000);
+        const now = new Date();
+        const to = new Date(now.getTime() + 30 * 60 * 1000);
 
-  const lectures = await strapi.entityService.findMany(
-    "api::live-lecture.live-lecture",
-    {
-      filters: {
-        schedule: {
-          $gt: now,
-          $lte: to,
-        },
-        reminderSent: false,
+        const lectures = await strapi.entityService.findMany(
+          "api::live-lecture.live-lecture",
+          {
+            filters: {
+              schedule: {
+                $gt: now,
+                $lte: to,
+              },
+              reminderSent: false,
+            },
+            populate: {
+              topic: true,
+              classroom: {  // ✅ Changed from 'classrooms' to 'classroom'
+                populate: {
+                  students: true,
+                  tutor: true,
+                },
+              },
+            },
+          }
+        );
+
+        let processed = 0;
+
+        for (const lecture of lectures) {
+          const classroom = lecture.classroom;  // ✅ Now a single object
+
+          // ✅ Skip if no classroom or no students
+          if (!classroom?.students?.length) continue;
+
+          const students = classroom.students;
+          const tutor = classroom.tutor;
+
+          const formattedSchedule = new Intl.DateTimeFormat("en-GB", {
+            dateStyle: "long",
+            timeStyle: "short",
+          }).format(new Date(lecture.schedule));
+
+          await sendLectureNotifications({
+            students,
+            subject: "⏰ Live Lecture Starting Soon",
+            title: "Your class starts in less than 30 minutes",
+            description: lecture.description,
+            topicname: lecture.topic,
+            teams_join_url: lecture.teams_join_url,
+            formattedSchedule,
+            tutor,
+          });
+
+          await strapi.entityService.update(
+            "api::live-lecture.live-lecture",
+            lecture.id,
+            { data: { reminderSent: true } }
+          );
+
+          processed++;
+        }
+
+        return { ok: true, processed };
       },
-      populate: {
-        topic: true,
-        classroom: {  // ✅ Changed from 'classrooms' to 'classroom'
-          populate: {
-            students: true,
-            tutor: true,
-          },
-        },
+      async syncRecordings(ctx) {
+        // 🔐 Protect endpoint
+        const secret = ctx.request.headers["x-cron-key"];
+        if (secret !== process.env.CRON_SECRET) {
+          return ctx.unauthorized("Invalid cron key");
+        }
+
+        const lectures = await strapi.entityService.findMany(
+          "api::live-lecture.live-lecture",
+          {
+            filters: {
+              lecture_status: "completed",
+              recording_status: "pending",
+              teams_meeting_id: { $notNull: true },
+            },
+            populate: {
+              classroom: {
+                populate: {
+                  tutor: true,
+                },
+              },
+            },
+          }
+        );
+
+        let processed = 0;
+        let updated = 0;
+        let failed = 0;
+
+        for (const lecture of lectures) {
+          processed++;
+
+          try {
+            const tutor = lecture.classroom?.tutor;
+
+            if (!tutor?.teams_refresh_token) {
+              failed++;
+              continue;
+            }
+
+            // 🔑 Refresh access token
+            const accessToken = await getTeamsAccessToken(
+              tutor.teams_refresh_token,
+              tutor.id
+            );
+
+            // 📞 Fetch call records
+            const recordsRes = await axios.get(
+              "https://graph.microsoft.com/v1.0/communications/callRecords",
+              {
+                headers: {
+                  Authorization: `Bearer ${accessToken}`,
+                },
+              }
+            );
+
+            const callRecords = recordsRes.data.value || [];
+
+            // 🔍 Match by meeting ID
+            const matched = callRecords.find(
+              (r) => r.meetingId === lecture.teams_meeting_id
+            );
+
+            if (!matched) continue;
+
+            // 🎥 Extract recording
+            let recordingMedia = null;
+
+            for (const session of matched.sessions || []) {
+              for (const segment of session.segments || []) {
+                recordingMedia = segment.media?.find(
+                  (m) => m.label === "recording"
+                );
+                if (recordingMedia) break;
+              }
+              if (recordingMedia) break;
+            }
+
+            if (!recordingMedia?.contentUrl) continue;
+
+            // 💾 Save to lecture
+            await strapi.entityService.update(
+              "api::live-lecture.live-lecture",
+              lecture.id,
+              {
+                data: {
+                  recording_url: recordingMedia.contentUrl,
+                  has_recording: true,
+                  recording_status: "available",
+                  recorded_at: new Date(matched.startDateTime),
+                  recording_duration_seconds: recordingMedia.duration
+                    ? parseInt(recordingMedia.duration.replace(/\D/g, ""))
+                    : null,
+                },
+              }
+            );
+
+            updated++;
+          } catch (err) {
+            failed++;
+            strapi.log.error(
+              `Recording sync failed for lecture ${lecture.id}`,
+              err
+            );
+          }
+        }
+
+        return ctx.send({
+          ok: true,
+          processed,
+          updated,
+          failed,
+        });
       },
-    }
-  );
-
-  let processed = 0;
-
-  for (const lecture of lectures) {
-    const classroom = lecture.classroom;  // ✅ Now a single object
-
-    // ✅ Skip if no classroom or no students
-    if (!classroom?.students?.length) continue;
-
-    const students = classroom.students;
-    const tutor = classroom.tutor;
-
-    const formattedSchedule = new Intl.DateTimeFormat("en-GB", {
-      dateStyle: "long",
-      timeStyle: "short",
-    }).format(new Date(lecture.schedule));
-
-    await sendLectureNotifications({
-      students,
-      subject: "⏰ Live Lecture Starting Soon",
-      title: "Your class starts in less than 30 minutes",
-      description: lecture.description,
-      topicname: lecture.topic,
-      teams_join_url: lecture.teams_join_url,
-      formattedSchedule,
-      tutor,
-    });
-
-    await strapi.entityService.update(
-      "api::live-lecture.live-lecture",
-      lecture.id,
-      { data: { reminderSent: true } }
-    );
-
-    processed++;
-  }
-
-  return { ok: true, processed };
-}
 
     };
   }
