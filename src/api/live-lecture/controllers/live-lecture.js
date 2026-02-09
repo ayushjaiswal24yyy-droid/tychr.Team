@@ -5,7 +5,7 @@
  */
 
 const { createCoreController } = require("@strapi/strapi").factories;
-const { createTeamsMeeting } = require("../../../services/teams")
+const { createTeamsMeeting, getTeamsAccessToken } = require("../../../utils/teams")
 module.exports = createCoreController(
   "api::live-lecture.live-lecture",
   ({ strapi }) => {
@@ -43,7 +43,7 @@ ${tutor?.fullName || "Your Tutor"}
           <p>${title}</p>
           <p><strong>Topic:</strong> ${topicname?.name || "N/A"}</p>
           <p><strong>Description:</strong> ${description}</p>
-          <p><strong>Zoom Link:</strong> <a href="${teams_join_url}">${teams_join_url}</a></p>
+          <p><strong>Teams Link:</strong> <a href="${teams_join_url}">${teams_join_url}</a></p>
           <p><strong>Scheduled for:</strong> ${formattedSchedule}</p>
           <br/>
           <p>Best regards,<br/>${tutor?.fullName || "Your Tutor"}</p>
@@ -60,43 +60,68 @@ ${tutor?.fullName || "Your Tutor"}
 
     return {
       async create(ctx) {
-        let classroom = null;
-        let students = [];
         let response = null;
-        let notificationResult = {
-          attempted: [],
-          succeeded: [],
-          failed: []
-        };
 
         try {
-          const { title, description, schedule, topic, classrooms } =
-            ctx.request.body.data;
+          const {
+            schedule,
+            classrooms,
+            title,
+            description,
+            topic,
+          } = ctx.request.body.data;
 
-          // 1️⃣ Create Teams meeting FIRST
-          let meeting;
-          try {
-            meeting = await createTeamsMeeting({
-              title,
-              startTime: schedule,
-              durationMinutes: 60,
-            });
-          } catch (err) {
-            strapi.log.error("Teams meeting creation failed", err);
-            ctx.throw(500, "Failed to create Teams meeting");
+          // 1️⃣ Resolve classroom (manyToMany safe)
+          const classroomIds = Array.isArray(classrooms)
+            ? classrooms
+            : [classrooms];
+
+          const classroom = await strapi.entityService.findOne(
+            "api::enrollment.enrollment",
+            classroomIds[0],
+            {
+              populate: {
+                tutor: true,
+                students: true,
+              },
+            }
+          );
+
+          if (!classroom) {
+            ctx.throw(400, "Classroom not found");
           }
 
-          const teams_join_url = meeting.joinUrl;
-          const teams_meeting_id = meeting.id;
+          const tutor = classroom.tutor;
+          const students = classroom.students || [];
 
-          // 2️⃣ Inject Teams data BEFORE saving
-          ctx.request.body.data.teams_join_url = teams_join_url;
-          ctx.request.body.data.teams_meeting_id = teams_meeting_id;
+          if (!tutor?.teams_refresh_token) {
+            ctx.throw(400, "Tutor has not connected Microsoft Teams");
+          }
 
-          // 3️⃣ Create lecture ONCE
+          // 2️⃣ Get Teams access token
+          const accessToken = await getTeamsAccessToken(
+            tutor.teams_refresh_token
+          );
+
+          // 3️⃣ Create Teams meeting
+          const start = new Date(schedule);
+          const end = new Date(start.getTime() + 60 * 60 * 1000); // 1 hour
+
+          const meeting = await createTeamsMeeting({
+            accessToken,
+            title,
+            startTime: start.toISOString(),
+            endTime: end.toISOString(),
+          });
+
+          // 4️⃣ Inject Teams data into lecture payload
+          ctx.request.body.data.teams_join_url = meeting.joinUrl;
+          ctx.request.body.data.teams_meeting_id = meeting.meetingId;
+
+          // 5️⃣ Create lecture
           response = await super.create(ctx);
 
-          // 4️⃣ Fetch topic
+          // 6️⃣ Topic lookup (optional)
           let topicname = null;
           if (topic) {
             topicname = await strapi.entityService.findOne(
@@ -105,60 +130,47 @@ ${tutor?.fullName || "Your Tutor"}
             );
           }
 
-          // 5️⃣ Fetch classroom + students
-          if (classrooms) {
-            classroom = await strapi.entityService.findOne(
-              "api::enrollment.enrollment",
-              classrooms,
-              {
-                populate: {
-                  students: true,
-                  tutor: true,
-                },
-              }
+          // 7️⃣ Format date
+          const formattedSchedule = new Intl.DateTimeFormat("en-GB", {
+            dateStyle: "long",
+            timeStyle: "short",
+          }).format(new Date(schedule));
+
+          // 8️⃣ Send notifications (non-blocking)
+          if (students.length > 0) {
+            sendLectureNotifications({
+              students,
+              subject: `New Live Lecture: ${title}`,
+              title,
+              description,
+              topicname,
+              teams_join_url: meeting.joinUrl,
+              formattedSchedule,
+              tutor,
+            }).catch((err) =>
+              strapi.log.error("Lecture notification failed:", err)
             );
-
-            if (classroom) {
-              students = classroom.students || [];
-
-              const formattedSchedule = new Intl.DateTimeFormat("en-GB", {
-                dateStyle: "long",
-                timeStyle: "short",
-              }).format(new Date(schedule));
-
-              if (students.length > 0) {
-                notificationResult.attempted = students.map(s => s.email);
-
-                sendLectureNotifications({
-                  students,
-                  title,
-                  subject: `New Live Lecture: ${title}`,
-                  description,
-                  topicname,
-                  teams_join_url,
-                  formattedSchedule,
-                  tutor: classroom.tutor,
-                }).then(() => {
-                  notificationResult.succeeded = students.map(s => s.email);
-                }).catch(() => {
-                  notificationResult.failed = students.map(s => s.email);
-                });
-              }
-            }
           }
 
           return ctx.send({
             message: "Live lecture created successfully",
             data: response.data || response,
-            notification: notificationResult,
           });
-
         } catch (error) {
           strapi.log.error("Error creating live lecture:", error);
+
+          if (response) {
+            return ctx.send({
+              message: "Live lecture created with errors",
+              data: response.data || response,
+              error: error.message,
+            });
+          }
 
           ctx.throw(500, "Failed to create live lecture");
         }
       },
+
       async sendLectureReminders(ctx) {
         const secret = ctx.request.headers["x-cron-key"];
         if (secret !== process.env.CRON_SECRET) {
@@ -240,4 +252,3 @@ ${tutor?.fullName || "Your Tutor"}
     };
   }
 );
-
