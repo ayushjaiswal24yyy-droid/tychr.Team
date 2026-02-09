@@ -65,27 +65,20 @@ ${tutor?.fullName || "Your Tutor"}
         try {
           const {
             schedule,
-            classrooms,
+            classroom,  // ✅ Now singular
             title,
             description,
             topic,
           } = ctx.request.body.data;
 
-          // 1️⃣ Resolve classroom (manyToMany safe)
-         let classroomIds = [];
+          // ✅ Simple validation
+          if (!classroom) {
+            ctx.throw(400, "Classroom is required");
+          }
 
-if (Array.isArray(classrooms)) {
-  classroomIds = classrooms;
-} else if (typeof classrooms === "number") {
-  classroomIds = [classrooms];
-} else if (classrooms?.connect && Array.isArray(classrooms.connect)) {
-  classroomIds = classrooms.connect;
-} else {
-  ctx.throw(400, "Invalid classrooms format");
-}
-          const classroom = await strapi.entityService.findOne(
+          const classroomData = await strapi.entityService.findOne(
             "api::enrollment.enrollment",
-            classroomIds[0],
+            classroom,
             {
               populate: {
                 tutor: true,
@@ -94,25 +87,26 @@ if (Array.isArray(classrooms)) {
             }
           );
 
-          if (!classroom) {
+          if (!classroomData) {
             ctx.throw(400, "Classroom not found");
           }
 
-          const tutor = classroom.tutor;
-          const students = classroom.students || [];
+          const tutor = classroomData.tutor;
+          const students = classroomData.students || [];
 
           if (!tutor?.teams_refresh_token) {
             ctx.throw(400, "Tutor has not connected Microsoft Teams");
           }
 
-          // 2️⃣ Get Teams access token
-          const { accessToken } =
-            await getTeamsAccessToken(tutor.teams_refresh_token, tutor.id);
+          // Get Teams access token
+          const { accessToken } = await getTeamsAccessToken(
+            tutor.teams_refresh_token,
+            tutor.id
+          );
 
-
-          // 3️⃣ Create Teams meeting
+          // Create Teams meeting
           const start = new Date(schedule);
-          const end = new Date(start.getTime() + 60 * 60 * 1000); // 1 hour
+          const end = new Date(start.getTime() + 60 * 60 * 1000);
 
           const meeting = await createTeamsMeeting({
             accessToken,
@@ -121,14 +115,23 @@ if (Array.isArray(classrooms)) {
             endTime: end.toISOString(),
           });
 
-          // 4️⃣ Inject Teams data into lecture payload
-          ctx.request.body.data.teams_join_url = meeting.joinUrl;
-          ctx.request.body.data.teams_meeting_id = meeting.meetingId;
+          // ✅ Create lecture with all data at once
+          response = await strapi.entityService.create(
+            "api::live-lecture.live-lecture",
+            {
+              data: {
+                title,
+                description,
+                schedule,
+                topic,
+                classroom,  // ✅ Direct relation
+                teams_join_url: meeting.joinUrl,
+                teams_meeting_id: meeting.meetingId,
+              },
+            }
+          );
 
-          // 5️⃣ Create lecture
-          response = await super.create(ctx);
-
-          // 6️⃣ Topic lookup (optional)
+          // Topic lookup (optional)
           let topicname = null;
           if (topic) {
             topicname = await strapi.entityService.findOne(
@@ -137,13 +140,13 @@ if (Array.isArray(classrooms)) {
             );
           }
 
-          // 7️⃣ Format date
+          // Format date
           const formattedSchedule = new Intl.DateTimeFormat("en-GB", {
             dateStyle: "long",
             timeStyle: "short",
           }).format(new Date(schedule));
 
-          // 8️⃣ Send notifications (non-blocking)
+          // Send notifications (non-blocking)
           if (students.length > 0) {
             sendLectureNotifications({
               students,
@@ -161,7 +164,7 @@ if (Array.isArray(classrooms)) {
 
           return ctx.send({
             message: "Live lecture created successfully",
-            data: response.data || response,
+            data: response,
           });
         } catch (error) {
           strapi.log.error("Error creating live lecture:", error);
@@ -169,92 +172,83 @@ if (Array.isArray(classrooms)) {
           if (response) {
             return ctx.send({
               message: "Live lecture created with errors",
-              data: response.data || response,
+              data: response,
               error: error.message,
             });
           }
 
-          ctx.throw(500, "Failed to create live lecture");
+          ctx.throw(500, error.message || "Failed to create live lecture");
         }
       },
+async sendLectureReminders(ctx) {
+  const secret = ctx.request.headers["x-cron-key"];
+  if (secret !== process.env.CRON_SECRET) {
+    return ctx.unauthorized("Invalid cron key");
+  }
 
-      async sendLectureReminders(ctx) {
-        const secret = ctx.request.headers["x-cron-key"];
-        if (secret !== process.env.CRON_SECRET) {
-          return ctx.unauthorized("Invalid cron key");
-        }
+  const now = new Date();
+  const to = new Date(now.getTime() + 30 * 60 * 1000);
 
-        const now = new Date();
-        const to = new Date(now.getTime() + 30 * 60 * 1000);
+  const lectures = await strapi.entityService.findMany(
+    "api::live-lecture.live-lecture",
+    {
+      filters: {
+        schedule: {
+          $gt: now,
+          $lte: to,
+        },
+        reminderSent: false,
+      },
+      populate: {
+        topic: true,
+        classroom: {  // ✅ Changed from 'classrooms' to 'classroom'
+          populate: {
+            students: true,
+            tutor: true,
+          },
+        },
+      },
+    }
+  );
 
-        const lectures = await strapi.entityService.findMany(
-          "api::live-lecture.live-lecture",
-          {
-            filters: {
-              schedule: {
-                $gt: now,
-                $lte: to,
-              },
-              reminderSent: false,
-            },
-            populate: {
-              topic: true,
-              classrooms: {
-                populate: {
-                  students: true,
-                  tutor: true,
-                },
-              },
-            },
-          }
-        );
+  let processed = 0;
 
-        let processed = 0;
+  for (const lecture of lectures) {
+    const classroom = lecture.classroom;  // ✅ Now a single object
 
-        for (const lecture of lectures) {
-          const classrooms = lecture.classrooms || [];
+    // ✅ Skip if no classroom or no students
+    if (!classroom?.students?.length) continue;
 
-          let allStudents = [];
-          for (const classroom of classrooms) {
-            if (classroom?.students?.length) {
-              allStudents.push(...classroom.students);
-            }
-          }
+    const students = classroom.students;
+    const tutor = classroom.tutor;
 
-          if (!allStudents.length) continue;
+    const formattedSchedule = new Intl.DateTimeFormat("en-GB", {
+      dateStyle: "long",
+      timeStyle: "short",
+    }).format(new Date(lecture.schedule));
 
-          const uniqueStudents = Array.from(
-            new Map(allStudents.map(s => [s.email, s])).values()
-          );
-          const formattedSchedule = new Intl.DateTimeFormat("en-GB", {
-            dateStyle: "long",
-            timeStyle: "short",
-          }).format(new Date(lecture.schedule));
+    await sendLectureNotifications({
+      students,
+      subject: "⏰ Live Lecture Starting Soon",
+      title: "Your class starts in less than 30 minutes",
+      description: lecture.description,
+      topicname: lecture.topic,
+      teams_join_url: lecture.teams_join_url,
+      formattedSchedule,
+      tutor,
+    });
 
-          await sendLectureNotifications({
-            students: uniqueStudents,
-            subject: "⏰ Live Lecture Starting Soon",
-            title: "Your class starts in less than 30 minutes",
-            description: lecture.description,
-            topicname: lecture.topic,
-            teams_join_url: lecture.teams_join_url,
-            formattedSchedule,
-            tutor: classrooms[0]?.tutor,
-          });
+    await strapi.entityService.update(
+      "api::live-lecture.live-lecture",
+      lecture.id,
+      { data: { reminderSent: true } }
+    );
 
-          await strapi.entityService.update(
-            "api::live-lecture.live-lecture",
-            lecture.id,
-            { data: { reminderSent: true } }
-          );
+    processed++;
+  }
 
-          processed++;
-        }
-
-
-        return { ok: true, processed };
-      }
-
+  return { ok: true, processed };
+}
 
     };
   }

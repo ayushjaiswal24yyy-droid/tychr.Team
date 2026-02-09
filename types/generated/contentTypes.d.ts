@@ -2263,11 +2263,6 @@ export interface ApiEnrollmentEnrollment extends Schema.CollectionType {
       'manyToOne',
       'api::course-plan.course-plan'
     >;
-    live_lectures: Attribute.Relation<
-      'api::enrollment.enrollment',
-      'manyToMany',
-      'api::live-lecture.live-lecture'
-    >;
     tabs: Attribute.Component<'lectures.lecture-header', true>;
     recorded_lectures: Attribute.Relation<
       'api::enrollment.enrollment',
@@ -2369,6 +2364,11 @@ export interface ApiEnrollmentEnrollment extends Schema.CollectionType {
     >;
     plan_of_action: Attribute.Media<'images' | 'files' | 'videos' | 'audios'>;
     labels: Attribute.JSON;
+    live_lectures: Attribute.Relation<
+      'api::enrollment.enrollment',
+      'oneToMany',
+      'api::live-lecture.live-lecture'
+    >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     createdBy: Attribute.Relation<
@@ -3011,9 +3011,9 @@ export interface ApiLiveLectureLiveLecture extends Schema.CollectionType {
       'manyToOne',
       'api::topic.topic'
     >;
-    classrooms: Attribute.Relation<
+    classroom: Attribute.Relation<
       'api::live-lecture.live-lecture',
-      'manyToMany',
+      'manyToOne',
       'api::enrollment.enrollment'
     >;
     class_requests: Attribute.Relation<

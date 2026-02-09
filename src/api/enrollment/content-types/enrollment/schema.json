@@ -47,12 +47,6 @@
       "target": "api::course-plan.course-plan",
       "inversedBy": "classrooms"
     },
-    "live_lectures": {
-      "type": "relation",
-      "relation": "manyToMany",
-      "target": "api::live-lecture.live-lecture",
-      "mappedBy": "classrooms"
-    },
     "tabs": {
       "type": "component",
       "repeatable": true,
@@ -234,6 +228,12 @@
     },
     "labels": {
       "type": "json"
+    },
+    "live_lectures": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::live-lecture.live-lecture",
+      "mappedBy": "classroom"
     }
   }
 }
