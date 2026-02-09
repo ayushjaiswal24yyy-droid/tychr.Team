@@ -38,6 +38,11 @@
       "repeatable": true,
       "component": "stand-out-feature.stand-out-feature"
     },
+        "tutors": {
+      "type": "component",
+      "repeatable": true,
+      "component": "certified-tutors.certified-tutors"
+    },
     "free_resources": {
       "type": "component",
       "repeatable": false,
