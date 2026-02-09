@@ -1,4 +1,4 @@
-import axios from "axios";
+const axios = require("axios");
 
 const MS_AUTH_URL =
   "https://login.microsoftonline.com/common/oauth2/v2.0/authorize";
@@ -6,12 +6,12 @@ const MS_TOKEN_URL =
   "https://login.microsoftonline.com/common/oauth2/v2.0/token";
 const MS_GRAPH_ME = "https://graph.microsoft.com/v1.0/me";
 
-export default {
+module.exports = {
   async redirect(ctx) {
     const params = new URLSearchParams({
-      client_id: process.env.MICROSOFT_CLIENT_ID!,
+      client_id: process.env.MICROSOFT_CLIENT_ID,
       response_type: "code",
-      redirect_uri: process.env.MICROSOFT_REDIRECT_URI!,
+      redirect_uri: process.env.MICROSOFT_REDIRECT_URI,
       response_mode: "query",
       scope:
         "openid profile email offline_access User.Read OnlineMeetings.ReadWrite",
@@ -32,11 +32,11 @@ export default {
       const tokenRes = await axios.post(
         MS_TOKEN_URL,
         new URLSearchParams({
-          client_id: process.env.MICROSOFT_CLIENT_ID!,
-          client_secret: process.env.MICROSOFT_CLIENT_SECRET!,
-          code: code as string,
+          client_id: process.env.MICROSOFT_CLIENT_ID,
+          client_secret: process.env.MICROSOFT_CLIENT_SECRET,
+          code: code,
           grant_type: "authorization_code",
-          redirect_uri: process.env.MICROSOFT_REDIRECT_URI!,
+          redirect_uri: process.env.MICROSOFT_REDIRECT_URI,
         }),
         {
           headers: { "Content-Type": "application/x-www-form-urlencoded" },
