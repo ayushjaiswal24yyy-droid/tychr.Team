@@ -8,11 +8,11 @@ const MS_GRAPH_ME = "https://graph.microsoft.com/v1.0/me";
 
 export default {
     async redirect(ctx) {
-        const jwt = ctx.cookies.get("jwt");
+        const token = ctx.query.token;
 
-        if (!jwt) {
-            return ctx.unauthorized("Not logged in");
-        }
+  if (!token) {
+    return ctx.unauthorized("Not logged in");
+  }
         const params = new URLSearchParams({
             client_id: process.env.MICROSOFT_CLIENT_ID,
             response_type: "code",
@@ -20,7 +20,7 @@ export default {
             response_mode: "query",
             scope:
                 "openid profile email offline_access User.Read OnlineMeetings.ReadWrite",
-            state: jwt, // 👈 IMPORTANT
+            state: token, // 👈 IMPORTANT
         });
 
         ctx.redirect(`${MS_AUTH_URL}?${params.toString()}`);
