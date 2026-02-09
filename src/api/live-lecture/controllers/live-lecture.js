@@ -72,10 +72,17 @@ ${tutor?.fullName || "Your Tutor"}
           } = ctx.request.body.data;
 
           // 1️⃣ Resolve classroom (manyToMany safe)
-          const classroomIds = Array.isArray(classrooms)
-            ? classrooms
-            : [classrooms];
+         let classroomIds = [];
 
+if (Array.isArray(classrooms)) {
+  classroomIds = classrooms;
+} else if (typeof classrooms === "number") {
+  classroomIds = [classrooms];
+} else if (classrooms?.connect && Array.isArray(classrooms.connect)) {
+  classroomIds = classrooms.connect;
+} else {
+  ctx.throw(400, "Invalid classrooms format");
+}
           const classroom = await strapi.entityService.findOne(
             "api::enrollment.enrollment",
             classroomIds[0],
