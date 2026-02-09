@@ -1059,6 +1059,9 @@ export interface PluginUsersPermissionsUser extends Schema.CollectionType {
       'oneToMany',
       'api::user-unlocked-subject.user-unlocked-subject'
     >;
+    teams_id: Attribute.String;
+    teams_email: Attribute.String;
+    teams_refresh_token: Attribute.Text;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     createdBy: Attribute.Relation<

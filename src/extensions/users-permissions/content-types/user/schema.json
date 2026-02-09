@@ -533,6 +533,15 @@
       "relation": "oneToMany",
       "target": "api::user-unlocked-subject.user-unlocked-subject",
       "mappedBy": "student"
+    },
+    "teams_id": {
+      "type": "string"
+    },
+    "teams_email": {
+      "type": "string"
+    },
+    "teams_refresh_token": {
+      "type": "text"
     }
   }
 }
