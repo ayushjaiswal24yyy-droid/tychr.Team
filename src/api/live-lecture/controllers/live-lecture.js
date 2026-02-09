@@ -99,9 +99,9 @@ ${tutor?.fullName || "Your Tutor"}
           }
 
           // 2️⃣ Get Teams access token
-          const accessToken = await getTeamsAccessToken(
-            tutor.teams_refresh_token
-          );
+          const { accessToken } =
+            await getTeamsAccessToken(tutor.teams_refresh_token, tutor.id);
+
 
           // 3️⃣ Create Teams meeting
           const start = new Date(schedule);
