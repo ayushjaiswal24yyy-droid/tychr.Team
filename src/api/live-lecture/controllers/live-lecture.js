@@ -128,6 +128,7 @@ ${tutor?.fullName || "Your Tutor"}
                 classroom,  // ✅ Direct relation
                 teams_join_url: meeting.joinUrl,
                 teams_meeting_id: meeting.meetingId,
+                publishedAt: new Date(),
               },
             }
           );
