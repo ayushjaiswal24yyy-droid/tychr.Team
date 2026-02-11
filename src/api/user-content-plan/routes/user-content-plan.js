@@ -18,5 +18,15 @@ module.exports = {
         policies: ["global::is-authenticated"],
       },
     },
+    {
+      method: "GET",
+      path: "/user-content-plans/upgrade-preview",
+      handler: "user-content-plan.upgradePreview",
+      config: {
+        policies: [],
+        middlewares: [],
+      },
+    }
+
   ],
 };

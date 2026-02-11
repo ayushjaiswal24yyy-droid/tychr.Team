@@ -334,6 +334,98 @@ module.exports = {
       strapi.log.error("Verify payment error", err);
       return ctx.internalServerError("Payment verification failed");
     }
+  },
+  async upgradePreview(ctx) {
+  try {
+    const { content_plan_id } = ctx.query;
+
+    if (!content_plan_id) {
+      return ctx.badRequest("content_plan_id is required");
+    }
+
+    const user = ctx.state.user;
+    if (!user) return ctx.unauthorized("Unauthorized");
+
+    const contentPlan = await strapi.entityService.findOne(
+      "api::content-plan.content-plan",
+      content_plan_id
+    );
+
+    if (!contentPlan || !contentPlan.active) {
+      return ctx.badRequest("Invalid or inactive content plan");
+    }
+
+    const activePlan = await strapi.db
+      .query("api::user-content-plan.user-content-plan")
+      .findOne({
+        where: {
+          student: user.id,
+          status: "active",
+          expires_at: { $gt: new Date() },
+        },
+        populate: ["content_plan"],
+      });
+
+    let creditedAmount = 0;
+    let finalPayable = Number(contentPlan.price);
+    let isUpgrade = false;
+
+    if (activePlan) {
+      const oldPlan = activePlan.content_plan;
+
+      // Currency safety
+      if (oldPlan.currency !== contentPlan.currency) {
+        return ctx.badRequest("Currency mismatch. Cannot upgrade.");
+      }
+
+      // Downgrade prevention
+      if (Number(contentPlan.price) <= Number(oldPlan.price)) {
+        return ctx.badRequest("Cannot downgrade or repurchase same tier.");
+      }
+
+      isUpgrade = true;
+
+      const now = new Date();
+      const totalDuration =
+        DURATION_MAP[oldPlan.duration_months] * 30 * 24 * 60 * 60 * 1000;
+
+      const remainingTime =
+        new Date(activePlan.expires_at).getTime() - now.getTime();
+
+      const remainingRatio = Math.max(remainingTime / totalDuration, 0);
+
+      creditedAmount =
+        Number(oldPlan.price) * remainingRatio;
+
+      finalPayable = Math.max(
+        Number(contentPlan.price) - creditedAmount,
+        0
+      );
+    }
+
+    return {
+      success: true,
+      is_upgrade: isUpgrade,
+      current_plan: activePlan
+        ? {
+            id: activePlan.id,
+            title: activePlan.content_plan.title,
+            expires_at: activePlan.expires_at,
+          }
+        : null,
+      new_plan: {
+        id: contentPlan.id,
+        title: contentPlan.title,
+      },
+      credited_amount: Number(creditedAmount.toFixed(2)),
+      final_payable: Number(finalPayable.toFixed(2)),
+      currency: contentPlan.currency,
+    };
+  } catch (err) {
+    strapi.log.error("Upgrade preview error", err);
+    return ctx.internalServerError("Failed to calculate upgrade preview");
   }
+}
+
 
 };
