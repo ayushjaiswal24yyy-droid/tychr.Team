@@ -131,6 +131,7 @@ module.exports = createCoreController(
 
 
           await strapi.plugin("email").service("email").send({
+            ...(campaign.fromName && campaign.fromEmail ? { from: `${campaign.fromName} <${campaign.fromEmail}>` } : {}),
             to: lead.email,
             subject: campaign.subject,
             html: rendered,
