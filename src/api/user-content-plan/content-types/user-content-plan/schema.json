@@ -54,6 +54,14 @@
         "USD"
       ]
     },
+    "credited_amount": {
+      "type": "decimal"
+    },
+    "upgrade_from": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::user-content-plan.user-content-plan"
+    },
     "unlocked_subjects": {
       "type": "relation",
       "relation": "oneToMany",

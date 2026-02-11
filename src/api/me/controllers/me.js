@@ -75,6 +75,7 @@ module.exports = {
                     title: activePlan.content_plan.title,
                     subject_limit: activePlan.content_plan.subject_limit,
                     duration_months: activePlan.content_plan.duration_months,
+                    
                 },
             },
             unlocked_subject_ids: unlockedSubjects.map(
