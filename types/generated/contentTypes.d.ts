@@ -2675,6 +2675,7 @@ export interface ApiIbSubjectIbSubject extends Schema.SingleType {
       'stand-out-feature.stand-out-feature',
       true
     >;
+    tutors: Attribute.Component<'certified-tutors.certified-tutors', true>;
     free_resources: Attribute.Component<'free-resources.free-resourced'>;
     test: Attribute.Component<'test.test'>;
     createdAt: Attribute.DateTime;
@@ -5291,6 +5292,12 @@ export interface ApiUserContentPlanUserContentPlan
     razorpay_payment_id: Attribute.String;
     total_paid: Attribute.Decimal;
     currency: Attribute.Enumeration<['INR', 'USD']>;
+    credited_amount: Attribute.Decimal;
+    upgrade_from: Attribute.Relation<
+      'api::user-content-plan.user-content-plan',
+      'oneToOne',
+      'api::user-content-plan.user-content-plan'
+    >;
     unlocked_subjects: Attribute.Relation<
       'api::user-content-plan.user-content-plan',
       'oneToMany',

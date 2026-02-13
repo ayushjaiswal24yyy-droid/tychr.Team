@@ -72,10 +72,30 @@ ${tutor?.fullName || "Your Tutor"}
             topic,
           } = ctx.request.body.data;
 
+
           // ✅ Simple validation
           if (!classroom) {
             ctx.throw(400, "Classroom is required");
           }
+
+          // 🔒 DUPLICATE PROTECTION
+          const existingLecture = await strapi.entityService.findMany(
+            "api::live-lecture.live-lecture",
+            {
+              filters: {
+                classroom: classroom,
+                schedule: schedule,
+              },
+            }
+          );
+
+          if (existingLecture.length > 0) {
+            return ctx.send({
+              message: "Lecture already exists for this time slot",
+              data: existingLecture[0],
+            });
+          }
+
 
           const classroomData = await strapi.entityService.findOne(
             "api::enrollment.enrollment",
