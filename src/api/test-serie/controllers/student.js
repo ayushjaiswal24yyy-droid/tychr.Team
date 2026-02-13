@@ -863,6 +863,22 @@ module.exports = createCoreController(
           0
         );
 
+// 🔥 AUTO-END IF TIME EXPIRED
+if (hasAttempt && !attemptCompleted && elapsedSinceStart >= totalAllowedSeconds) {
+  await strapi.entityService.update(
+    "api::answer.answer",
+    marker.id,
+    {
+      data: {
+        completed: true,
+        phase: "completed",
+      },
+    }
+  );
+
+  attemptCompleted = true;
+  phase = "completed";
+}
 
 
 
