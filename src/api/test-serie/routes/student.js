@@ -73,5 +73,13 @@ module.exports = {
         policies: [],
       },
     },
+    {
+      method: "POST",
+      path: "/test-series/:seriesId/violation",
+      handler: "student.incrementViolation",
+      config: {
+        policies: [],
+      },
+    },
   ],
 };

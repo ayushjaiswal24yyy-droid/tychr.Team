@@ -1268,6 +1268,16 @@ export interface ApiAnswerAnswer extends Schema.CollectionType {
     phase: Attribute.Enumeration<['reading', 'answering', 'completed']>;
     phase_started_at: Attribute.DateTime;
     started_at: Attribute.DateTime;
+    violation_count: Attribute.Integer & Attribute.DefaultTo<0>;
+    auto_submitted: Attribute.Boolean & Attribute.DefaultTo<false>;
+    resume_requested: Attribute.Boolean & Attribute.DefaultTo<false>;
+    resume_status: Attribute.Enumeration<
+      ['none', 'requested', 'approved', 'rejected']
+    > &
+      Attribute.DefaultTo<'none'>;
+    resume_requested_at: Attribute.DateTime;
+    resume_approved_at: Attribute.DateTime;
+    resume_reason: Attribute.Text;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;

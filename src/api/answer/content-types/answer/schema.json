@@ -104,6 +104,37 @@
     },
     "started_at": {
       "type": "datetime"
+    },
+    "violation_count": {
+      "type": "integer",
+      "default": 0
+    },
+    "auto_submitted": {
+      "type": "boolean",
+      "default": false
+    },
+    "resume_requested": {
+      "type": "boolean",
+      "default": false
+    },
+    "resume_status": {
+      "type": "enumeration",
+      "enum": [
+        "none",
+        "requested",
+        "approved",
+        "rejected"
+      ],
+      "default": "none"
+    },
+    "resume_requested_at": {
+      "type": "datetime"
+    },
+    "resume_approved_at": {
+      "type": "datetime"
+    },
+    "resume_reason": {
+      "type": "text"
     }
   }
 }
