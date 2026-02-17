@@ -702,7 +702,6 @@ module.exports = createCoreController(
               "phase_started_at",
               "started_at",
               "violation_count",
-              "max_violations",
               "auto_submitted",
               "resume_status",
             ],
@@ -823,7 +822,7 @@ module.exports = createCoreController(
           phaseStartedAt = new Date(marker.phase_started_at);
 
           violationCount = marker.violation_count || 0;
-          maxViolations = marker.max_violations || 3;
+          maxViolations =3;
           autoSubmitted = marker.auto_submitted || false;
           resumeStatus = marker.resume_status || "none";
           if (resumeStatus === "approved") {
@@ -1185,7 +1184,6 @@ async incrementViolation(ctx) {
         fields: [
           "id",
           "violation_count",
-          "max_violations",
           "completed",
           "auto_submitted",
           "resume_status",
@@ -1204,7 +1202,7 @@ async incrementViolation(ctx) {
       return {
         data: {
           count: marker.violation_count || 0,
-          max: marker.max_violations || 3,
+          max: 3,
           remaining: 0,
           auto_submitted: marker.auto_submitted || false,
         },
@@ -1212,7 +1210,7 @@ async incrementViolation(ctx) {
     }
 
     const currentCount = marker.violation_count || 0;
-    const maxViolations = marker.max_violations || 3;
+    const maxViolations =  3;
 
     const newCount = currentCount + 1;
 
