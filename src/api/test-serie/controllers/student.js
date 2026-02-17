@@ -1071,10 +1071,10 @@ module.exports = createCoreController(
         ctx.throw(500, error.message);
       }
     },
- async endAttempt(ctx) {
+async endAttempt(ctx) {
   const { seriesId } = ctx.params;
   const user = ctx.state.user;
-
+  
   if (!user) {
     return ctx.unauthorized();
   }
@@ -1085,7 +1085,7 @@ module.exports = createCoreController(
     {
       filters: {
         student: user.id,
-        test_series: seriesId,
+        test_series: seriesId, // ✅ Attempt marker uses series ID
         is_attempt_marker: true,
         completed: false,
       },
@@ -1100,11 +1100,18 @@ module.exports = createCoreController(
 
   const marker = markers[0];
 
-  // 2. Fetch series
+  // 2. Fetch series with papers
   const series = await strapi.entityService.findOne(
     "api::test-serie.test-serie",
     seriesId,
-    { fields: ["reading_time", "test_duration"] }
+    { 
+      fields: ["reading_time", "test_duration"],
+      populate: {
+        papers: {
+          fields: ["id"], // ✅ Get paper IDs
+        },
+      },
+    }
   );
 
   const readingTimeSeconds = Number(series.reading_time) * 60 || 0;
@@ -1114,13 +1121,25 @@ module.exports = createCoreController(
   const elapsedSeconds =
     (Date.now() - new Date(marker.started_at).getTime()) / 1000;
 
-  // 3. Count submitted papers
+  // 3. Get total papers and paper IDs
+  const totalPapers = series.papers?.length || 0;
+  const paperIds = series.papers?.map(p => p.id) || [];
+
+  if (totalPapers === 0) {
+    console.error('No papers found in series:', seriesId);
+    return ctx.badRequest("No papers found in this series");
+  }
+
+  // 4. Count submitted paper answers
+  // ✅ CRITICAL FIX: Query by paper IDs, not series ID
   const submittedAnswers = await strapi.entityService.findMany(
     "api::answer.answer",
     {
       filters: {
         student: user.id,
-        test_series: seriesId,
+        test_series: { 
+          id: { $in: paperIds } // ✅ Answer test_series field has paper IDs
+        },
         attempt_id: marker.attempt_id,
         completed: true,
         is_attempt_marker: { $ne: true },
@@ -1129,25 +1148,22 @@ module.exports = createCoreController(
     }
   );
 
-  const totalPapers = await strapi.entityService.count(
-    "api::test-serie.test-serie",
-    {
-      filters: {
-        parent_test_series: seriesId,
-        entity_type: "paper",
-      },
-    }
-  );
-
   const allPapersSubmitted = submittedAnswers.length === totalPapers;
   const timeExpired = elapsedSeconds >= totalAllowedSeconds;
 
-  // 4. ✅ FIXED: Allow ending if EITHER all papers submitted OR time expired
+  console.log('End attempt check:', {
+    totalPapers,
+    submittedCount: submittedAnswers.length,
+    allPapersSubmitted,
+    timeExpired,
+  });
+
+  // 5. Allow ending if EITHER all papers submitted OR time expired
   if (!allPapersSubmitted && !timeExpired) {
     return ctx.badRequest("Attempt still active - papers remaining and time left");
   }
 
-  // 5. End attempt
+  // 6. End attempt
   await strapi.entityService.update(
     "api::answer.answer",
     marker.id,
@@ -1155,7 +1171,6 @@ module.exports = createCoreController(
       data: {
         completed: true,
         phase: "completed",
-        // ✅ OPTIONAL: Track end reason for analytics
         end_reason: allPapersSubmitted ? "all_papers_submitted" : "time_expired",
       },
     }
