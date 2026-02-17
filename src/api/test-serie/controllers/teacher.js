@@ -25,7 +25,7 @@ module.exports = createCoreController(
             },
             populate: {
               student: {
-                fields: ["id", "username", "email", "firstName", "lastName"],
+                fields: ["id", "fullName", "email"], // ✅ Fixed: removed firstName, lastName
               },
               test_series: {
                 fields: ["id", "title"],
@@ -50,9 +50,7 @@ module.exports = createCoreController(
           attempt_id: req.attempt_id,
           student: {
             id: req.student?.id,
-            name: req.student?.firstName && req.student?.lastName
-              ? `${req.student.firstName} ${req.student.lastName}`
-              : req.student?.username || "Unknown Student",
+            name: req.student?.fullName || "Unknown Student", // ✅ Fixed: use fullName only
             email: req.student?.email,
           },
           series: {
@@ -102,7 +100,7 @@ module.exports = createCoreController(
             filters,
             populate: {
               student: {
-                fields: ["id", "username", "email", "firstName", "lastName"],
+                fields: ["id", "fullName", "email"], // ✅ Fixed: removed firstName, lastName
               },
               test_series: {
                 fields: ["id", "title"],
@@ -128,9 +126,7 @@ module.exports = createCoreController(
           attempt_id: req.attempt_id,
           student: {
             id: req.student?.id,
-            name: req.student?.firstName && req.student?.lastName
-              ? `${req.student.firstName} ${req.student.lastName}`
-              : req.student?.username || "Unknown Student",
+            name: req.student?.fullName || "Unknown Student", // ✅ Fixed: use fullName only
             email: req.student?.email,
           },
           series: {
