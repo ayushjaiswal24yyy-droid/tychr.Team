@@ -1,15 +1,7 @@
 'use strict';
 
-const { createCoreRouter } = require('@strapi/strapi').factories;
 
-module.exports = createCoreRouter('api::test-serie.test-serie', {
-  config: {
-    find: {
-      auth: {
-        scope: ['find'],
-      },
-    },
-  },
+module.exports ={
   routes: [
     {
       method: 'GET',
@@ -24,4 +16,4 @@ module.exports = createCoreRouter('api::test-serie.test-serie', {
       },
     },
   ],
-});
+}
