@@ -8,9 +8,7 @@ module.exports ={
       path: '/test-series/:id/results',
       handler: 'results.results',
       config: {
-        auth: {
-          scope: ['find'],
-        },
+        
         policies: [],
         middlewares: [],
       },
