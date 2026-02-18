@@ -6,9 +6,8 @@
  * Query params:
  *   - classroomId (optional) — filter stats to a specific enrollment/classroom
  *
- * Returns aggregated results for a parent test series and all its papers,
- * including the logged-in student's scores, global (or classroom-scoped) stats,
- * rank, and percentile.
+ * fullMarks per paper = sum of question_bank.marks for all question banks
+ * linked to that paper (marks already includes parts totals per schema).
  */
 
 const { createCoreController } = require('@strapi/strapi').factories;
@@ -32,6 +31,12 @@ module.exports = createCoreController('api::test-serie.test-serie', ({ strapi })
         populate: {
           papers: {
             fields: ['id', 'title', 'entity_type', 'start_date', 'test_duration', 'pass_mark'],
+            // Populate each paper's question banks so we can sum marks → fullMarks
+            populate: {
+              question_banks: {
+                fields: ['id', 'marks'],
+              },
+            },
           },
           grade_subject: { fields: ['id', 'name'] },
         },
@@ -64,7 +69,6 @@ module.exports = createCoreController('api::test-serie.test-serie', ({ strapi })
     }
 
     // ── 2. Build base filters for "all completed answers" ────────────────────
-    // We only consider is_attempt_marker = false (actual submissions) that are completed.
     const baseAnswerFilter = {
       test_series: { id: { $in: paperIds } },
       completed: { $eq: true },
@@ -72,7 +76,6 @@ module.exports = createCoreController('api::test-serie.test-serie', ({ strapi })
       evaluation_status: { $eq: 'evaluated' },
     };
 
-    // Optionally scope to a classroom
     if (classroomId) {
       baseAnswerFilter.tutor_classroom = { id: { $eq: classroomId } };
     }
@@ -88,11 +91,7 @@ module.exports = createCoreController('api::test-serie.test-serie', ({ strapi })
       pagination: { limit: -1 },
     });
 
-    // ── 4. Fetch the logged-in student's own answers ─────────────────────────
-    const myAnswers = allAnswers.filter((a) => a.student?.id === studentId);
-
-    // ── 5. Aggregate per-paper stats ─────────────────────────────────────────
-    // Group all answers by paper id
+    // ── 4. Group all answers by paper id ─────────────────────────────────────
     const byPaper = {};
     for (const paperId of paperIds) {
       byPaper[paperId] = { all: [], mine: null };
@@ -103,7 +102,6 @@ module.exports = createCoreController('api::test-serie.test-serie', ({ strapi })
       if (pid && byPaper[pid]) {
         byPaper[pid].all.push(answer.marks ?? 0);
         if (answer.student?.id === studentId) {
-          // Keep the latest attempt
           if (
             !byPaper[pid].mine ||
             new Date(answer.submission_date) > new Date(byPaper[pid].mine.submission_date)
@@ -114,33 +112,38 @@ module.exports = createCoreController('api::test-serie.test-serie', ({ strapi })
       }
     }
 
-    // ── 6. Build per-paper result objects ────────────────────────────────────
+    // ── 5. Build per-paper result objects ─────────────────────────────────────
     const paperResults = series.papers.map((paper) => {
       const data = byPaper[paper.id] || { all: [], mine: null };
       const allMarks = data.all;
       const myAnswer = data.mine;
 
+      // fullMarks = sum of all linked question_bank.marks
+      // (marks on each QB already accounts for parts per the schema)
+      const fullMarks = (paper.question_banks || []).reduce(
+        (sum, qb) => sum + (qb.marks ?? 0),
+        0
+      );
+
       const highestScore = allMarks.length ? Math.max(...allMarks) : null;
-      const meanScore =
-        allMarks.length
-          ? parseFloat((allMarks.reduce((s, m) => s + m, 0) / allMarks.length).toFixed(2))
-          : null;
+      const meanScore = allMarks.length
+        ? parseFloat((allMarks.reduce((s, m) => s + m, 0) / allMarks.length).toFixed(2))
+        : null;
       const sortedMarks = [...allMarks].sort((a, b) => a - b);
-      const medianScore =
-        sortedMarks.length
-          ? sortedMarks.length % 2 === 0
-            ? (sortedMarks[sortedMarks.length / 2 - 1] + sortedMarks[sortedMarks.length / 2]) / 2
-            : sortedMarks[Math.floor(sortedMarks.length / 2)]
-          : null;
+      const medianScore = sortedMarks.length
+        ? sortedMarks.length % 2 === 0
+          ? (sortedMarks[sortedMarks.length / 2 - 1] + sortedMarks[sortedMarks.length / 2]) / 2
+          : sortedMarks[Math.floor(sortedMarks.length / 2)]
+        : null;
 
       const myScore = myAnswer?.marks ?? null;
+
       const totalStudents = new Set(
-        (byPaper[paper.id]?.all ? allAnswers.filter((a) => a.test_series?.id === paper.id) : []).map(
-          (a) => a.student?.id
-        )
+        allAnswers
+          .filter((a) => a.test_series?.id === paper.id)
+          .map((a) => a.student?.id)
       ).size;
 
-      // Rank: how many students scored strictly higher than me?
       let rank = null;
       let percentile = null;
       if (myScore !== null && allMarks.length) {
@@ -154,7 +157,6 @@ module.exports = createCoreController('api::test-serie.test-serie', ({ strapi })
               uniqueStudentScores[sid] = m;
             }
           });
-
         const scores = Object.values(uniqueStudentScores);
         const scoredHigher = scores.filter((s) => s > myScore).length;
         rank = scoredHigher + 1;
@@ -172,6 +174,7 @@ module.exports = createCoreController('api::test-serie.test-serie', ({ strapi })
         start_date: paper.start_date,
         test_duration: paper.test_duration,
         pass_mark: paper.pass_mark,
+        fullMarks,           // ← total marks possible for this paper
         totalStudents,
         myScore,
         highestScore,
@@ -186,14 +189,14 @@ module.exports = createCoreController('api::test-serie.test-serie', ({ strapi })
       };
     });
 
-    // ── 7. Series-level aggregate stats ─────────────────────────────────────
-    const attemptedPapers = paperResults.filter((p) => p.attempted);
-    const seriesMyTotal = attemptedPapers.reduce((s, p) => s + (p.myScore ?? 0), 0);
-    const seriesHighest = paperResults.reduce((s, p) => s + (p.highestScore ?? 0), 0);
-    const seriesMean = paperResults.reduce((s, p) => s + (p.meanScore ?? 0), 0);
-    const seriesMedian = paperResults.reduce((s, p) => s + (p.medianScore ?? 0), 0);
+    // ── 6. Series-level aggregate stats ──────────────────────────────────────
+    const attemptedPapers   = paperResults.filter((p) => p.attempted);
+    const seriesMyTotal     = attemptedPapers.reduce((s, p) => s + (p.myScore ?? 0), 0);
+    const seriesHighest     = paperResults.reduce((s, p) => s + (p.highestScore ?? 0), 0);
+    const seriesMean        = paperResults.reduce((s, p) => s + (p.meanScore ?? 0), 0);
+    const seriesMedian      = paperResults.reduce((s, p) => s + (p.medianScore ?? 0), 0);
+    const seriesFullMarks   = paperResults.reduce((s, p) => s + (p.fullMarks ?? 0), 0);
 
-    // Global rank: sum of myScores vs all students who attempted all/any papers
     const allStudentTotals = {};
     for (const answer of allAnswers) {
       const sid = answer.student?.id;
@@ -203,55 +206,58 @@ module.exports = createCoreController('api::test-serie.test-serie', ({ strapi })
     const totalScores = Object.values(allStudentTotals);
     const myTotal = allStudentTotals[studentId] ?? 0;
     const globalRank = totalScores.filter((s) => s > myTotal).length + 1;
-    const globalPercentile =
-      totalScores.length > 0
-        ? parseFloat((((totalScores.length - globalRank) / totalScores.length) * 100).toFixed(1))
-        : null;
+    const globalPercentile = totalScores.length > 0
+      ? parseFloat((((totalScores.length - globalRank) / totalScores.length) * 100).toFixed(1))
+      : null;
 
-    // ── 8. Chart data ────────────────────────────────────────────────────────
+    // ── 7. Chart data ─────────────────────────────────────────────────────────
     const chart = paperResults.map((p) => ({
-      paperId: p.id,
-      paperTitle: p.title,
+      paperId:      p.id,
+      paperTitle:   p.title,
+      fullMarks:    p.fullMarks,
       highestScore: p.highestScore,
-      myScore: p.myScore,
-      meanScore: p.meanScore,
+      myScore:      p.myScore,
+      meanScore:    p.meanScore,
     }));
 
-    // ── 9. Table data (sorted by paper order / start_date) ───────────────────
+    // ── 8. Table data ─────────────────────────────────────────────────────────
     const table = paperResults
       .filter((p) => p.attempted)
       .map((p, idx) => ({
-        sno: idx + 1,
-        paperId: p.id,
-        paperTitle: p.title,
-        rank: p.rank,
-        percentile: p.percentile,
-        myScore: p.myScore,
-        highestScore: p.highestScore,
-        meanScore: p.meanScore,
-        passed: p.passed,
+        sno:            idx + 1,
+        paperId:        p.id,
+        paperTitle:     p.title,
+        fullMarks:      p.fullMarks,
+        rank:           p.rank,
+        percentile:     p.percentile,
+        myScore:        p.myScore,
+        highestScore:   p.highestScore,
+        meanScore:      p.meanScore,
+        passed:         p.passed,
         submissionDate: p.submissionDate,
-        timeTaken: p.timeTaken,
+        timeTaken:      p.timeTaken,
       }));
 
     return ctx.send({
       series: {
-        id: series.id,
-        title: series.title,
-        program_type: series.program_type,
-        grade_subject: series.grade_subject,
-        totalPapers: paperIds.length,
+        id:             series.id,
+        title:          series.title,
+        program_type:   series.program_type,
+        grade_subject:  series.grade_subject,
+        totalPapers:    paperIds.length,
         attemptedPapers: attemptedPapers.length,
+        fullMarks:      seriesFullMarks,  // total possible marks across the whole series
       },
       stats: {
-        myTotal: seriesMyTotal,
-        highestTotal: seriesHighest,
-        meanTotal: parseFloat(seriesMean.toFixed(2)),
-        medianTotal: parseFloat(seriesMedian.toFixed(2)),
+        myTotal:         seriesMyTotal,
+        highestTotal:    seriesHighest,
+        fullMarksTotal:  seriesFullMarks,  // also exposed here for convenience
+        meanTotal:       parseFloat(seriesMean.toFixed(2)),
+        medianTotal:     parseFloat(seriesMedian.toFixed(2)),
         globalRank,
         globalPercentile,
-        totalStudents: Object.keys(allStudentTotals).length,
-        scopedToClassroom: classroomId ? true : false,
+        totalStudents:   Object.keys(allStudentTotals).length,
+        scopedToClassroom: !!classroomId,
       },
       papers: paperResults,
       chart,
