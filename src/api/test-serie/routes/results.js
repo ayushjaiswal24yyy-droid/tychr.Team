@@ -6,7 +6,7 @@ module.exports ={
     {
       method: 'GET',
       path: '/test-series/:id/results',
-      handler: 'test-serie.results',
+      handler: 'results.results',
       config: {
         auth: {
           scope: ['find'],
