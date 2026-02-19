@@ -311,22 +311,30 @@ module.exports = {
         headless: chromium.headless,
       });
 
-      const page = await browser.newPage();
-      await page.setContent(html, { waitUntil: "networkidle0" });
+ const page = await browser.newPage();
 
-      await page.evaluate(async () => {
-        const win = window;
-        if (win.MathJax?.typesetPromise) {
-          await win.MathJax.typesetPromise();
-        }
-      });
+// Set content with a simpler wait condition
+await page.setContent(html, { waitUntil: "domcontentloaded" });
 
-      const pdf = await page.pdf({
-        format: "A4",
-        printBackground: true,
-        margin: { top: "20mm", bottom: "20mm", left: "25mm", right: "20mm" },
-      });
+// Manually wait for MathJax to load and render
+await page.waitForFunction(() => typeof window.MathJax !== "undefined", {
+  timeout: 10000,
+}).catch(() => {}); // don't fail if MathJax doesn't load
 
+await page.evaluate(async () => {
+  if (window.MathJax?.typesetPromise) {
+    await window.MathJax.typesetPromise();
+  }
+}).catch(() => {});
+
+// Small buffer for any remaining renders
+await new Promise((resolve) => setTimeout(resolve, 1000));
+
+const pdf = await page.pdf({
+  format: "A4",
+  printBackground: true,
+  margin: { top: "20mm", bottom: "20mm", left: "25mm", right: "20mm" },
+});
       await browser.close();
 
       const filename = `${(paper.title || "test-paper").replace(/[^a-z0-9]/gi, "_")}.pdf`;
