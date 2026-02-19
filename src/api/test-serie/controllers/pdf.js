@@ -1,4 +1,6 @@
-const puppeteer = require("puppeteer");
+
+const puppeteer = require("puppeteer-core");
+const chromium = require("@sparticuz/chromium");
 
 // Strapi richtext is stored as markdown - convert basic markdown to HTML
 const richTextToHtml = (content) => {
@@ -295,46 +297,34 @@ module.exports = {
         }
       );
 
-      if (!paper) {
-        return ctx.notFound("Test paper not found");
-      }
-
+      if (!paper) return ctx.notFound("Test paper not found");
       if (paper.test_mode !== "offline") {
         return ctx.badRequest("PDF generation is only allowed for offline papers");
       }
 
       const html = buildHtml(paper);
 
-   const browser = await puppeteer.launch({
-  headless: true,
-  args: [
-    "--no-sandbox",
-    "--disable-setuid-sandbox",
-    "--disable-dev-shm-usage",
-    "--disable-gpu",
-  ],
-});
+      const browser = await puppeteer.launch({
+        args: chromium.args,
+        defaultViewport: chromium.defaultViewport,
+        executablePath: await chromium.executablePath(),
+        headless: chromium.headless,
+      });
 
       const page = await browser.newPage();
-
       await page.setContent(html, { waitUntil: "networkidle0" });
 
-      // Wait for MathJax to finish rendering if present
       await page.evaluate(async () => {
-        if (window.MathJax?.typesetPromise) {
-          await window.MathJax.typesetPromise();
+        const win = window;
+        if (win.MathJax?.typesetPromise) {
+          await win.MathJax.typesetPromise();
         }
       });
 
       const pdf = await page.pdf({
         format: "A4",
         printBackground: true,
-        margin: {
-          top: "20mm",
-          bottom: "20mm",
-          left: "25mm",
-          right: "20mm",
-        },
+        margin: { top: "20mm", bottom: "20mm", left: "25mm", right: "20mm" },
       });
 
       await browser.close();
