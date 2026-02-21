@@ -542,6 +542,18 @@
     },
     "teams_refresh_token": {
       "type": "text"
+    },
+    "fav_universities": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::university.university",
+      "inversedBy": "users"
+    },
+    "fav_programs": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::program.program",
+      "inversedBy": "users"
     }
   }
 }

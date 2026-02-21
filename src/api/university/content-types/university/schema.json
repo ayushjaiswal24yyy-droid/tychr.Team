@@ -91,6 +91,12 @@
     },
     "verified": {
       "type": "boolean"
+    },
+    "users": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "plugin::users-permissions.user",
+      "mappedBy": "fav_universities"
     }
   }
 }

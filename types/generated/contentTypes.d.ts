@@ -1062,6 +1062,16 @@ export interface PluginUsersPermissionsUser extends Schema.CollectionType {
     teams_id: Attribute.String;
     teams_email: Attribute.String;
     teams_refresh_token: Attribute.Text;
+    fav_universities: Attribute.Relation<
+      'plugin::users-permissions.user',
+      'manyToMany',
+      'api::university.university'
+    >;
+    fav_programs: Attribute.Relation<
+      'plugin::users-permissions.user',
+      'manyToMany',
+      'api::program.program'
+    >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     createdBy: Attribute.Relation<
@@ -3706,6 +3716,11 @@ export interface ApiProgramProgram extends Schema.CollectionType {
     world_rank: Attribute.Integer;
     financial_aids: Attribute.Component<'university.financial-aids'>;
     admission_requirements: Attribute.Component<'exams.exams', true>;
+    users: Attribute.Relation<
+      'api::program.program',
+      'manyToMany',
+      'plugin::users-permissions.user'
+    >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
@@ -5253,6 +5268,11 @@ export interface ApiUniversityUniversity extends Schema.CollectionType {
       'api::counselling-video.counselling-video'
     >;
     verified: Attribute.Boolean;
+    users: Attribute.Relation<
+      'api::university.university',
+      'manyToMany',
+      'plugin::users-permissions.user'
+    >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;

@@ -822,7 +822,7 @@ module.exports = createCoreController(
           phaseStartedAt = new Date(marker.phase_started_at);
 
           violationCount = marker.violation_count || 0;
-          maxViolations =3;
+          maxViolations = 3;
           autoSubmitted = marker.auto_submitted || false;
           resumeStatus = marker.resume_status || "none";
           if (resumeStatus === "approved") {
@@ -1021,20 +1021,20 @@ module.exports = createCoreController(
             },
             sort: { attempt_id: "desc" },
             limit: 1,
-            fields: ["attempt_id", "completed","resume_status"],
+            fields: ["attempt_id", "completed", "resume_status"],
           }
         );
 
         // Prevent starting a new attempt if there's an active one
-  if (
-  lastAttempt.length > 0 &&
-  (
-    !lastAttempt[0].completed ||
-    lastAttempt[0].resume_status === "requested"
-  )
-) {
-  return ctx.badRequest("An active or pending attempt already exists.");
-}
+        if (
+          lastAttempt.length > 0 &&
+          (
+            !lastAttempt[0].completed ||
+            lastAttempt[0].resume_status === "requested"
+          )
+        ) {
+          return ctx.badRequest("An active or pending attempt already exists.");
+        }
 
 
         const nextAttemptId =
@@ -1071,294 +1071,294 @@ module.exports = createCoreController(
         ctx.throw(500, error.message);
       }
     },
-async endAttempt(ctx) {
-  const { seriesId } = ctx.params;
-  const user = ctx.state.user;
-  
-  if (!user) {
-    return ctx.unauthorized();
-  }
+    async endAttempt(ctx) {
+      const { seriesId } = ctx.params;
+      const user = ctx.state.user;
 
-  // 1. Find active attempt marker
-  const markers = await strapi.entityService.findMany(
-    "api::answer.answer",
-    {
-      filters: {
-        student: user.id,
-        test_series: seriesId, // ✅ Attempt marker uses series ID
-        is_attempt_marker: true,
-        completed: false,
-      },
-      limit: 1,
-      fields: ["id", "started_at", "attempt_id"],
-    }
-  );
-
-  if (!markers.length) {
-    return { success: true }; // idempotent
-  }
-
-  const marker = markers[0];
-
-  // 2. Fetch series with papers
-  const series = await strapi.entityService.findOne(
-    "api::test-serie.test-serie",
-    seriesId,
-    { 
-      fields: ["reading_time", "test_duration"],
-      populate: {
-        papers: {
-          fields: ["id"], // ✅ Get paper IDs
-        },
-      },
-    }
-  );
-
-  const readingTimeSeconds = Number(series.reading_time) * 60 || 0;
-  const testDurationSeconds = Number(series.test_duration) * 60 || 0;
-  const totalAllowedSeconds = readingTimeSeconds + testDurationSeconds;
-
-  const elapsedSeconds =
-    (Date.now() - new Date(marker.started_at).getTime()) / 1000;
-
-  // 3. Get total papers and paper IDs
-  const totalPapers = series.papers?.length || 0;
-  const paperIds = series.papers?.map(p => p.id) || [];
-
-  if (totalPapers === 0) {
-    console.error('No papers found in series:', seriesId);
-    return ctx.badRequest("No papers found in this series");
-  }
-
-  // 4. Count submitted paper answers
-  // ✅ CRITICAL FIX: Query by paper IDs, not series ID
-  const submittedAnswers = await strapi.entityService.findMany(
-    "api::answer.answer",
-    {
-      filters: {
-        student: user.id,
-        test_series: { 
-          id: { $in: paperIds } // ✅ Answer test_series field has paper IDs
-        },
-        attempt_id: marker.attempt_id,
-        completed: true,
-        is_attempt_marker: { $ne: true },
-      },
-      fields: ["id"],
-    }
-  );
-
-  const allPapersSubmitted = submittedAnswers.length === totalPapers;
-  const timeExpired = elapsedSeconds >= totalAllowedSeconds;
-
-  console.log('End attempt check:', {
-    totalPapers,
-    submittedCount: submittedAnswers.length,
-    allPapersSubmitted,
-    timeExpired,
-  });
-
-  // 5. Allow ending if EITHER all papers submitted OR time expired
-  if (!allPapersSubmitted && !timeExpired) {
-    return ctx.badRequest("Attempt still active - papers remaining and time left");
-  }
-
-  // 6. End attempt
-  await strapi.entityService.update(
-    "api::answer.answer",
-    marker.id,
-    {
-      data: {
-        completed: true,
-        phase: "completed",
-        end_reason: allPapersSubmitted ? "all_papers_submitted" : "time_expired",
-      },
-    }
-  );
-
-  return { 
-    success: true,
-    end_reason: allPapersSubmitted ? "all_papers_submitted" : "time_expired",
-  };
-},
-async incrementViolation(ctx) {
-  try {
-    const { seriesId } = ctx.params;
-    const user = ctx.state.user;
-
-    if (!user || !seriesId) {
-      return ctx.badRequest("Invalid request");
-    }
-
-    // 1️⃣ Find active attempt marker
-    const markers = await strapi.entityService.findMany(
-      "api::answer.answer",
-      {
-        filters: {
-          student: user.id,
-          test_series: seriesId,
-          is_attempt_marker: true,
-        },
-        sort: { attempt_id: "desc" },
-        limit: 1,
-        fields: [
-          "id",
-          "violation_count",
-          "completed",
-          "auto_submitted",
-          "resume_status",
-        ],
+      if (!user) {
+        return ctx.unauthorized();
       }
-    );
 
-    if (!markers.length) {
-      return ctx.badRequest("No active attempt found");
-    }
+      // 1. Find active attempt marker
+      const markers = await strapi.entityService.findMany(
+        "api::answer.answer",
+        {
+          filters: {
+            student: user.id,
+            test_series: seriesId, // ✅ Attempt marker uses series ID
+            is_attempt_marker: true,
+            completed: false,
+          },
+          limit: 1,
+          fields: ["id", "started_at", "attempt_id"],
+        }
+      );
 
-    const marker = markers[0];
+      if (!markers.length) {
+        return { success: true }; // idempotent
+      }
 
-    // 2️⃣ If already completed → do nothing (idempotent safety)
-    if (marker.completed) {
-      return {
-        data: {
-          count: marker.violation_count || 0,
-          max: 3,
-          remaining: 0,
-          auto_submitted: marker.auto_submitted || false,
-        },
-      };
-    }
+      const marker = markers[0];
 
-    const currentCount = marker.violation_count || 0;
-    const maxViolations =  3;
+      // 2. Fetch series with papers
+      const series = await strapi.entityService.findOne(
+        "api::test-serie.test-serie",
+        seriesId,
+        {
+          fields: ["reading_time", "test_duration"],
+          populate: {
+            papers: {
+              fields: ["id"], // ✅ Get paper IDs
+            },
+          },
+        }
+      );
 
-    const newCount = currentCount + 1;
+      const readingTimeSeconds = Number(series.reading_time) * 60 || 0;
+      const testDurationSeconds = Number(series.test_duration) * 60 || 0;
+      const totalAllowedSeconds = readingTimeSeconds + testDurationSeconds;
 
-    // 3️⃣ If limit reached → auto submit
-    if (newCount >= maxViolations) {
+      const elapsedSeconds =
+        (Date.now() - new Date(marker.started_at).getTime()) / 1000;
+
+      // 3. Get total papers and paper IDs
+      const totalPapers = series.papers?.length || 0;
+      const paperIds = series.papers?.map(p => p.id) || [];
+
+      if (totalPapers === 0) {
+        console.error('No papers found in series:', seriesId);
+        return ctx.badRequest("No papers found in this series");
+      }
+
+      // 4. Count submitted paper answers
+      // ✅ CRITICAL FIX: Query by paper IDs, not series ID
+      const submittedAnswers = await strapi.entityService.findMany(
+        "api::answer.answer",
+        {
+          filters: {
+            student: user.id,
+            test_series: {
+              id: { $in: paperIds } // ✅ Answer test_series field has paper IDs
+            },
+            attempt_id: marker.attempt_id,
+            completed: true,
+            is_attempt_marker: { $ne: true },
+          },
+          fields: ["id"],
+        }
+      );
+
+      const allPapersSubmitted = submittedAnswers.length === totalPapers;
+      const timeExpired = elapsedSeconds >= totalAllowedSeconds;
+
+      console.log('End attempt check:', {
+        totalPapers,
+        submittedCount: submittedAnswers.length,
+        allPapersSubmitted,
+        timeExpired,
+      });
+
+      // 5. Allow ending if EITHER all papers submitted OR time expired
+      if (!allPapersSubmitted && !timeExpired) {
+        return ctx.badRequest("Attempt still active - papers remaining and time left");
+      }
+
+      // 6. End attempt
       await strapi.entityService.update(
         "api::answer.answer",
         marker.id,
         {
           data: {
-            violation_count: newCount,
             completed: true,
-            auto_submitted: true,
             phase: "completed",
+            end_reason: allPapersSubmitted ? "all_papers_submitted" : "time_expired",
           },
         }
       );
 
       return {
-        data: {
-          count: newCount,
-          max: maxViolations,
-          remaining: 0,
-          auto_submitted: true,
-          message: "Test auto-submitted due to violations",
-        },
-      };
-    }
-
-    // 4️⃣ Otherwise just increment
-    await strapi.entityService.update(
-      "api::answer.answer",
-      marker.id,
-      {
-        data: {
-          violation_count: newCount,
-        },
-      }
-    );
-
-    return {
-      data: {
-        count: newCount,
-        max: maxViolations,
-        remaining: maxViolations - newCount,
-        auto_submitted: false,
-      },
-    };
-  } catch (error) {
-    console.error("Error in incrementViolation:", error);
-    ctx.throw(500, error.message);
-  }
-},
-async requestResume(ctx) {
-  try {
-    const { seriesId } = ctx.params;
-    const user = ctx.state.user;
-    const { reason } = ctx.request.body;
-
-    if (!user || !seriesId) {
-      return ctx.badRequest("Invalid request");
-    }
-
-    // 1️⃣ Find latest attempt marker
-    const markers = await strapi.entityService.findMany(
-      "api::answer.answer",
-      {
-        filters: {
-          student: user.id,
-          test_series: seriesId,
-          is_attempt_marker: true,
-        },
-        sort: { attempt_id: "desc" },
-        limit: 1,
-        fields: [
-          "id",
-          "completed",
-          "auto_submitted",
-          "resume_status",
-        ],
-      }
-    );
-
-    if (!markers.length) {
-      return ctx.badRequest("No attempt found");
-    }
-
-    const marker = markers[0];
-
-    // 2️⃣ Validation Rules
-
-    if (!marker.auto_submitted) {
-      return ctx.badRequest("Resume can only be requested for auto-submitted attempts");
-    }
-
-    if (!marker.completed) {
-      return ctx.badRequest("Attempt is still active");
-    }
-
-    if (marker.resume_status && marker.resume_status !== "none") {
-      return ctx.badRequest("Resume already requested or processed");
-    }
-
-    // 3️⃣ Update marker
-    await strapi.entityService.update(
-      "api::answer.answer",
-      marker.id,
-      {
-        data: {
-          resume_status: "requested",
-          resume_requested_at: new Date(),
-          resume_reason: reason || null,
-        },
-      }
-    );
-
-    return {
-      data: {
         success: true,
-        resume_status: "requested",
-        message: "Resume request submitted to teacher",
-      },
-    };
-  } catch (error) {
-    console.error("Error in requestResume:", error);
-    ctx.throw(500, error.message);
-  }
-},
+        end_reason: allPapersSubmitted ? "all_papers_submitted" : "time_expired",
+      };
+    },
+    async incrementViolation(ctx) {
+      try {
+        const { seriesId } = ctx.params;
+        const user = ctx.state.user;
+
+        if (!user || !seriesId) {
+          return ctx.badRequest("Invalid request");
+        }
+
+        // 1️⃣ Find active attempt marker
+        const markers = await strapi.entityService.findMany(
+          "api::answer.answer",
+          {
+            filters: {
+              student: user.id,
+              test_series: seriesId,
+              is_attempt_marker: true,
+            },
+            sort: { attempt_id: "desc" },
+            limit: 1,
+            fields: [
+              "id",
+              "violation_count",
+              "completed",
+              "auto_submitted",
+              "resume_status",
+            ],
+          }
+        );
+
+        if (!markers.length) {
+          return ctx.badRequest("No active attempt found");
+        }
+
+        const marker = markers[0];
+
+        // 2️⃣ If already completed → do nothing (idempotent safety)
+        if (marker.completed) {
+          return {
+            data: {
+              count: marker.violation_count || 0,
+              max: 3,
+              remaining: 0,
+              auto_submitted: marker.auto_submitted || false,
+            },
+          };
+        }
+
+        const currentCount = marker.violation_count || 0;
+        const maxViolations = 3;
+
+        const newCount = currentCount + 1;
+
+        // 3️⃣ If limit reached → auto submit
+        if (newCount >= maxViolations) {
+          await strapi.entityService.update(
+            "api::answer.answer",
+            marker.id,
+            {
+              data: {
+                violation_count: newCount,
+                completed: true,
+                auto_submitted: true,
+                phase: "completed",
+              },
+            }
+          );
+
+          return {
+            data: {
+              count: newCount,
+              max: maxViolations,
+              remaining: 0,
+              auto_submitted: true,
+              message: "Test auto-submitted due to violations",
+            },
+          };
+        }
+
+        // 4️⃣ Otherwise just increment
+        await strapi.entityService.update(
+          "api::answer.answer",
+          marker.id,
+          {
+            data: {
+              violation_count: newCount,
+            },
+          }
+        );
+
+        return {
+          data: {
+            count: newCount,
+            max: maxViolations,
+            remaining: maxViolations - newCount,
+            auto_submitted: false,
+          },
+        };
+      } catch (error) {
+        console.error("Error in incrementViolation:", error);
+        ctx.throw(500, error.message);
+      }
+    },
+    async requestResume(ctx) {
+      try {
+        const { seriesId } = ctx.params;
+        const user = ctx.state.user;
+        const { reason } = ctx.request.body;
+
+        if (!user || !seriesId) {
+          return ctx.badRequest("Invalid request");
+        }
+
+        // 1️⃣ Find latest attempt marker
+        const markers = await strapi.entityService.findMany(
+          "api::answer.answer",
+          {
+            filters: {
+              student: user.id,
+              test_series: seriesId,
+              is_attempt_marker: true,
+            },
+            sort: { attempt_id: "desc" },
+            limit: 1,
+            fields: [
+              "id",
+              "completed",
+              "auto_submitted",
+              "resume_status",
+            ],
+          }
+        );
+
+        if (!markers.length) {
+          return ctx.badRequest("No attempt found");
+        }
+
+        const marker = markers[0];
+
+        // 2️⃣ Validation Rules
+
+        if (!marker.auto_submitted) {
+          return ctx.badRequest("Resume can only be requested for auto-submitted attempts");
+        }
+
+        if (!marker.completed) {
+          return ctx.badRequest("Attempt is still active");
+        }
+
+        if (marker.resume_status && marker.resume_status !== "none") {
+          return ctx.badRequest("Resume already requested or processed");
+        }
+
+        // 3️⃣ Update marker
+        await strapi.entityService.update(
+          "api::answer.answer",
+          marker.id,
+          {
+            data: {
+              resume_status: "requested",
+              resume_requested_at: new Date(),
+              resume_reason: reason || null,
+            },
+          }
+        );
+
+        return {
+          data: {
+            success: true,
+            resume_status: "requested",
+            message: "Resume request submitted to teacher",
+          },
+        };
+      } catch (error) {
+        console.error("Error in requestResume:", error);
+        ctx.throw(500, error.message);
+      }
+    },
 
     async getPaperSubmissions(ctx) {
       try {
@@ -1510,9 +1510,5 @@ async requestResume(ctx) {
         ctx.throw(500, error.message);
       }
     }
-
-
-
-
   })
 );
