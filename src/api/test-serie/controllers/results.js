@@ -19,11 +19,9 @@ module.exports = createCoreController('api::test-serie.test-serie', ({ strapi })
     const { classroomId } = ctx.query;
     const studentId = ctx.state.user?.id;
 
-    if (!studentId) {
-      return ctx.unauthorized('You must be logged in to view results.');
-    }
+    if (!studentId) return ctx.unauthorized('You must be logged in to view results.');
 
-    // ── 1. Fetch the parent test series ──────────────────────────────────────
+    // ── 1. Fetch series ──────────────────────────────────────────────────────
     const series = await strapi.entityService.findOne(
       'api::test-serie.test-serie',
       id,
@@ -31,10 +29,12 @@ module.exports = createCoreController('api::test-serie.test-serie', ({ strapi })
         populate: {
           papers: {
             fields: ['id', 'title', 'entity_type', 'start_date', 'test_duration', 'pass_mark'],
-            // Populate each paper's question banks so we can sum marks → fullMarks
             populate: {
               question_banks: {
                 fields: ['id', 'marks'],
+                populate: {
+                  unit: { fields: ['id', 'name'] },  // ← ADD THIS
+                },
               },
             },
           },
@@ -43,88 +43,69 @@ module.exports = createCoreController('api::test-serie.test-serie', ({ strapi })
       }
     );
 
-    if (!series) {
-      return ctx.notFound('Test series not found.');
-    }
-
-    if (series.entity_type !== 'series') {
-      return ctx.badRequest('Provided ID is not a parent test series.');
-    }
+    if (!series) return ctx.notFound('Test series not found.');
+    if (series.entity_type !== 'series') return ctx.badRequest('Provided ID is not a parent test series.');
 
     const paperIds = (series.papers || []).map((p) => p.id);
-
     if (paperIds.length === 0) {
-      return ctx.send({
-        series: {
-          id: series.id,
-          title: series.title,
-          program_type: series.program_type,
-          grade_subject: series.grade_subject,
-        },
-        stats: null,
-        papers: [],
-        chart: [],
-        table: [],
-      });
+      return ctx.send({ series: { id: series.id, title: series.title }, stats: null, papers: [], chart: [], table: [], unitAnalysis: [] });
     }
 
-    // ── 2. Build base filters for "all completed answers" ────────────────────
+    // ── 2. Base filter ───────────────────────────────────────────────────────
     const baseAnswerFilter = {
       test_series: { id: { $in: paperIds } },
       completed: { $eq: true },
       is_attempt_marker: { $eq: false },
       evaluation_status: { $eq: 'evaluated' },
     };
+    if (classroomId) baseAnswerFilter.tutor_classroom = { id: { $eq: classroomId } };
 
-    if (classroomId) {
-      baseAnswerFilter.tutor_classroom = { id: { $eq: classroomId } };
-    }
-
-    // ── 3. Fetch ALL evaluated answers for these papers ──────────────────────
+    // ── 3. Fetch all evaluated answers ──────────────────────────────────────
+    // ── 3. Fetch all evaluated answers (updated populate) ───────────────────
     const allAnswers = await strapi.entityService.findMany('api::answer.answer', {
       filters: baseAnswerFilter,
       fields: ['id', 'marks', 'submission_date', 'time_taken'],
       populate: {
         student: { fields: ['id'] },
         test_series: { fields: ['id', 'title', 'pass_mark'] },
+        question_n_answer: {
+          populate: {
+            question: {
+              fields: ['id'],
+              populate: {
+                unit: { fields: ['id', 'name'] },
+              },
+            },
+            // part_evaluations if you need per-part marks later
+          },
+        },
       },
       pagination: { limit: -1 },
     });
 
-    // ── 4. Group all answers by paper id ─────────────────────────────────────
+    // ── 4. Group answers by paper ────────────────────────────────────────────
     const byPaper = {};
-    for (const paperId of paperIds) {
-      byPaper[paperId] = { all: [], mine: null };
-    }
+    for (const paperId of paperIds) byPaper[paperId] = { all: [], mine: null };
 
     for (const answer of allAnswers) {
       const pid = answer.test_series?.id;
       if (pid && byPaper[pid]) {
         byPaper[pid].all.push(answer.marks ?? 0);
         if (answer.student?.id === studentId) {
-          if (
-            !byPaper[pid].mine ||
-            new Date(answer.submission_date) > new Date(byPaper[pid].mine.submission_date)
-          ) {
+          if (!byPaper[pid].mine || new Date(answer.submission_date) > new Date(byPaper[pid].mine.submission_date)) {
             byPaper[pid].mine = answer;
           }
         }
       }
     }
 
-    // ── 5. Build per-paper result objects ─────────────────────────────────────
+    // ── 5. Per-paper results (unchanged) ────────────────────────────────────
     const paperResults = series.papers.map((paper) => {
       const data = byPaper[paper.id] || { all: [], mine: null };
       const allMarks = data.all;
       const myAnswer = data.mine;
 
-      // fullMarks = sum of all linked question_bank.marks
-      // (marks on each QB already accounts for parts per the schema)
-      const fullMarks = (paper.question_banks || []).reduce(
-        (sum, qb) => sum + (qb.marks ?? 0),
-        0
-      );
-
+      const fullMarks = (paper.question_banks || []).reduce((sum, qb) => sum + (qb.marks ?? 0), 0);
       const highestScore = allMarks.length ? Math.max(...allMarks) : null;
       const meanScore = allMarks.length
         ? parseFloat((allMarks.reduce((s, m) => s + m, 0) / allMarks.length).toFixed(2))
@@ -135,17 +116,12 @@ module.exports = createCoreController('api::test-serie.test-serie', ({ strapi })
           ? (sortedMarks[sortedMarks.length / 2 - 1] + sortedMarks[sortedMarks.length / 2]) / 2
           : sortedMarks[Math.floor(sortedMarks.length / 2)]
         : null;
-
       const myScore = myAnswer?.marks ?? null;
-
       const totalStudents = new Set(
-        allAnswers
-          .filter((a) => a.test_series?.id === paper.id)
-          .map((a) => a.student?.id)
+        allAnswers.filter((a) => a.test_series?.id === paper.id).map((a) => a.student?.id)
       ).size;
 
-      let rank = null;
-      let percentile = null;
+      let rank = null, percentile = null;
       if (myScore !== null && allMarks.length) {
         const uniqueStudentScores = {};
         allAnswers
@@ -153,20 +129,13 @@ module.exports = createCoreController('api::test-serie.test-serie', ({ strapi })
           .forEach((a) => {
             const sid = a.student?.id;
             const m = a.marks ?? 0;
-            if (!uniqueStudentScores[sid] || m > uniqueStudentScores[sid]) {
-              uniqueStudentScores[sid] = m;
-            }
+            if (!uniqueStudentScores[sid] || m > uniqueStudentScores[sid]) uniqueStudentScores[sid] = m;
           });
         const scores = Object.values(uniqueStudentScores);
         const scoredHigher = scores.filter((s) => s > myScore).length;
         rank = scoredHigher + 1;
-        percentile = parseFloat(
-          (((scores.length - rank) / scores.length) * 100).toFixed(1)
-        );
+        percentile = parseFloat((((scores.length - rank) / scores.length) * 100).toFixed(1));
       }
-
-      const passed =
-        paper.pass_mark !== null && myScore !== null ? myScore >= paper.pass_mark : null;
 
       return {
         id: paper.id,
@@ -174,7 +143,7 @@ module.exports = createCoreController('api::test-serie.test-serie', ({ strapi })
         start_date: paper.start_date,
         test_duration: paper.test_duration,
         pass_mark: paper.pass_mark,
-        fullMarks,           // ← total marks possible for this paper
+        fullMarks,
         totalStudents,
         myScore,
         highestScore,
@@ -182,20 +151,122 @@ module.exports = createCoreController('api::test-serie.test-serie', ({ strapi })
         medianScore,
         rank,
         percentile,
-        passed,
+        passed: paper.pass_mark !== null && myScore !== null ? myScore >= paper.pass_mark : null,
         submissionDate: myAnswer?.submission_date ?? null,
         timeTaken: myAnswer?.time_taken ?? null,
         attempted: myAnswer !== null,
       };
     });
 
-    // ── 6. Series-level aggregate stats ──────────────────────────────────────
-    const attemptedPapers   = paperResults.filter((p) => p.attempted);
-    const seriesMyTotal     = attemptedPapers.reduce((s, p) => s + (p.myScore ?? 0), 0);
-    const seriesHighest     = paperResults.reduce((s, p) => s + (p.highestScore ?? 0), 0);
-    const seriesMean        = paperResults.reduce((s, p) => s + (p.meanScore ?? 0), 0);
-    const seriesMedian      = paperResults.reduce((s, p) => s + (p.medianScore ?? 0), 0);
-    const seriesFullMarks   = paperResults.reduce((s, p) => s + (p.fullMarks ?? 0), 0);
+    // ── 6. ✨ Unit-wise analysis ─────────────────────────────────────────────
+    //
+    // Each answer has question_n_answer[] components.
+    // Each component has:
+    //   .question.id        → links to question_bank
+    //   .question.unit      → the unit
+    //   .question_awarded_marks → marks scored on that question
+    //
+    // We walk every answer's question_n_answer array to build per-unit scores.
+
+    // unitAgg[unitKey] = {
+    //   unitId, unitName,
+    //   possibleMarks,            ← sum of qb.marks for all QBs in this unit (from series)
+    //   studentScores: { sid: totalAwarded }
+    // }
+    const unitAgg = {};
+
+    // Helper: ensure unit entry exists
+    const ensureUnitEntry = (unitId, unitName) => {
+      const key = unitId ?? 'unassigned';
+      if (!unitAgg[key]) {
+        unitAgg[key] = {
+          unitId: unitId ?? null,
+          unitName: unitName ?? 'Unassigned',
+          possibleMarks: 0,
+          studentScores: {},
+        };
+      }
+      return key;
+    };
+
+    // Pass 1: register all units + their possible marks from the series question banks
+    // (so even unattempted units show up)
+    for (const paper of series.papers) {
+      for (const qb of paper.question_banks || []) {
+        const unitId = qb.unit?.id ?? null;
+        const unitName = qb.unit?.name ?? 'Unassigned';
+        const key = ensureUnitEntry(unitId, unitName);
+        unitAgg[key].possibleMarks += qb.marks ?? 0;
+      }
+    }
+
+    // Pass 2: walk every answer's question_n_answer components → accumulate awarded marks per unit
+    for (const answer of allAnswers) {
+      const sid = answer.student?.id;
+      if (!sid) continue;
+
+      const qnas = answer.question_n_answer ?? [];
+      for (const qna of qnas) {
+        const q = qna.question;
+        if (!q) continue;
+
+        const unitId = q.unit?.id ?? null;
+        const unitName = q.unit?.name ?? 'Unassigned';
+        const key = ensureUnitEntry(unitId, unitName);
+
+        const awarded = qna.question_awarded_marks ?? 0;
+
+        unitAgg[key].studentScores[sid] =
+          (unitAgg[key].studentScores[sid] ?? 0) + awarded;
+      }
+    }
+
+    // Build final unitAnalysis array
+    const unitAnalysis = Object.values(unitAgg)
+      .map((u) => {
+        const scores = Object.values(u.studentScores);
+        const myMarks = u.studentScores[studentId] ?? 0;
+        const highestScore = scores.length ? Math.max(...scores) : null;
+        const meanScore = scores.length
+          ? parseFloat((scores.reduce((a, b) => a + b, 0) / scores.length).toFixed(2))
+          : null;
+
+        let rank = null, percentile = null;
+        if (scores.length > 0) {
+          const scoredHigher = scores.filter((s) => s > myMarks).length;
+          rank = scoredHigher + 1;
+          percentile = parseFloat(
+            (((scores.length - rank) / scores.length) * 100).toFixed(1)
+          );
+        }
+
+        const myPct =
+          u.possibleMarks > 0
+            ? parseFloat(((myMarks / u.possibleMarks) * 100).toFixed(1))
+            : null;
+
+        return {
+          unitId: u.unitId,
+          unitName: u.unitName,
+          possibleMarks: u.possibleMarks,
+          myMarks,
+          highestScore,
+          meanScore,
+          rank,
+          percentile,
+          myPct,
+          totalStudents: scores.length,
+        };
+      })
+      .sort((a, b) => (b.myMarks ?? 0) - (a.myMarks ?? 0));
+
+    // ── 7. Series-level aggregate stats ─────────────────────────────────────
+    const attemptedPapers = paperResults.filter((p) => p.attempted);
+    const seriesMyTotal = attemptedPapers.reduce((s, p) => s + (p.myScore ?? 0), 0);
+    const seriesHighest = paperResults.reduce((s, p) => s + (p.highestScore ?? 0), 0);
+    const seriesMean = paperResults.reduce((s, p) => s + (p.meanScore ?? 0), 0);
+    const seriesMedian = paperResults.reduce((s, p) => s + (p.medianScore ?? 0), 0);
+    const seriesFullMarks = paperResults.reduce((s, p) => s + (p.fullMarks ?? 0), 0);
 
     const allStudentTotals = {};
     for (const answer of allAnswers) {
@@ -210,58 +281,39 @@ module.exports = createCoreController('api::test-serie.test-serie', ({ strapi })
       ? parseFloat((((totalScores.length - globalRank) / totalScores.length) * 100).toFixed(1))
       : null;
 
-    // ── 7. Chart data ─────────────────────────────────────────────────────────
+    // ── 8. Chart & Table ────────────────────────────────────────────────────
     const chart = paperResults.map((p) => ({
-      paperId:      p.id,
-      paperTitle:   p.title,
-      fullMarks:    p.fullMarks,
-      highestScore: p.highestScore,
-      myScore:      p.myScore,
-      meanScore:    p.meanScore,
+      paperId: p.id, paperTitle: p.title, fullMarks: p.fullMarks,
+      highestScore: p.highestScore, myScore: p.myScore, meanScore: p.meanScore,
     }));
 
-    // ── 8. Table data ─────────────────────────────────────────────────────────
     const table = paperResults
       .filter((p) => p.attempted)
       .map((p, idx) => ({
-        sno:            idx + 1,
-        paperId:        p.id,
-        paperTitle:     p.title,
-        fullMarks:      p.fullMarks,
-        rank:           p.rank,
-        percentile:     p.percentile,
-        myScore:        p.myScore,
-        highestScore:   p.highestScore,
-        meanScore:      p.meanScore,
-        passed:         p.passed,
-        submissionDate: p.submissionDate,
-        timeTaken:      p.timeTaken,
+        sno: idx + 1, paperId: p.id, paperTitle: p.title, fullMarks: p.fullMarks,
+        rank: p.rank, percentile: p.percentile, myScore: p.myScore,
+        highestScore: p.highestScore, meanScore: p.meanScore, passed: p.passed,
+        submissionDate: p.submissionDate, timeTaken: p.timeTaken,
       }));
 
     return ctx.send({
       series: {
-        id:             series.id,
-        title:          series.title,
-        program_type:   series.program_type,
-        grade_subject:  series.grade_subject,
-        totalPapers:    paperIds.length,
-        attemptedPapers: attemptedPapers.length,
-        fullMarks:      seriesFullMarks,  // total possible marks across the whole series
+        id: series.id, title: series.title, program_type: series.program_type,
+        grade_subject: series.grade_subject, totalPapers: paperIds.length,
+        attemptedPapers: attemptedPapers.length, fullMarks: seriesFullMarks,
       },
       stats: {
-        myTotal:         seriesMyTotal,
-        highestTotal:    seriesHighest,
-        fullMarksTotal:  seriesFullMarks,  // also exposed here for convenience
-        meanTotal:       parseFloat(seriesMean.toFixed(2)),
-        medianTotal:     parseFloat(seriesMedian.toFixed(2)),
-        globalRank,
-        globalPercentile,
-        totalStudents:   Object.keys(allStudentTotals).length,
+        myTotal: seriesMyTotal, highestTotal: seriesHighest, fullMarksTotal: seriesFullMarks,
+        meanTotal: parseFloat(seriesMean.toFixed(2)),
+        medianTotal: parseFloat(seriesMedian.toFixed(2)),
+        globalRank, globalPercentile,
+        totalStudents: Object.keys(allStudentTotals).length,
         scopedToClassroom: !!classroomId,
       },
       papers: paperResults,
       chart,
       table,
+      unitAnalysis,   // ← NEW
     });
   },
 }));
