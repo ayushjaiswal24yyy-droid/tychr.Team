@@ -1072,6 +1072,11 @@ export interface PluginUsersPermissionsUser extends Schema.CollectionType {
       'manyToMany',
       'api::program.program'
     >;
+    academic_records: Attribute.Component<
+      'academic-records.academic-records',
+      true
+    >;
+    entrance_exams: Attribute.Component<'entrance-exams.entrance-exams', true>;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     createdBy: Attribute.Relation<

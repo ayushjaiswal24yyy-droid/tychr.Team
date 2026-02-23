@@ -1,0 +1,35 @@
+{
+  "collectionName": "components_entrance_exams_entrance_exams",
+  "info": {
+    "displayName": "entranceExams"
+  },
+  "options": {},
+  "attributes": {
+    "examName": {
+      "type": "string"
+    },
+    "score": {
+      "type": "decimal"
+    },
+    "maxScore": {
+      "type": "decimal"
+    },
+    "year": {
+      "type": "integer"
+    },
+    "gradeLetter": {
+      "type": "string"
+    },
+    "gradingType": {
+      "type": "enumeration",
+      "enum": [
+        "numeric",
+        "band",
+        "percentile",
+        "percentage",
+        "grade",
+        "pass/fail"
+      ]
+    }
+  }
+}

@@ -554,6 +554,18 @@
       "relation": "manyToMany",
       "target": "api::program.program",
       "inversedBy": "users"
+    },
+    "academic_records": {
+      "displayName": "academic_records",
+      "type": "component",
+      "repeatable": true,
+      "component": "academic-records.academic-records"
+    },
+    "entrance_exams": {
+      "displayName": "entranceExams",
+      "type": "component",
+      "repeatable": true,
+      "component": "entrance-exams.entrance-exams"
     }
   }
 }

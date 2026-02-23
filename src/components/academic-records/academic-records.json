@@ -1,0 +1,40 @@
+{
+  "collectionName": "components_academic_records_academic_records",
+  "info": {
+    "displayName": "academic_records",
+    "description": ""
+  },
+  "options": {},
+  "attributes": {
+    "qualificationLevel": {
+      "type": "string"
+    },
+    "board": {
+      "type": "string"
+    },
+    "institution": {
+      "type": "string"
+    },
+    "yearOfCompletion": {
+      "type": "integer"
+    },
+    "gradingType": {
+      "type": "enumeration",
+      "enum": [
+        "percentage",
+        "gpa",
+        "grade",
+        "letter"
+      ]
+    },
+    "maxScore": {
+      "type": "decimal"
+    },
+    "score": {
+      "type": "decimal"
+    },
+    "gradeLetter": {
+      "type": "string"
+    }
+  }
+}
