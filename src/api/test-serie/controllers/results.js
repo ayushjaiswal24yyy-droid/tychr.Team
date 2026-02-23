@@ -384,4 +384,341 @@ module.exports = createCoreController('api::test-serie.test-serie', ({ strapi })
       unitAnalysis,   // ← NEW
     });
   },
+  async progress(ctx) {
+    const { gradeSubjectId } = ctx.params;
+    const { classroomId } = ctx.query;
+    const studentId = ctx.state.user?.id;
+
+    if (!studentId) return ctx.unauthorized('You must be logged in.');
+
+    // ── 1. Verify the grade subject exists ───────────────────────────────────
+    const gradeSubject = await strapi.entityService.findOne(
+      'api::grade-subject.grade-subject',
+      gradeSubjectId,
+      { fields: ['id', 'name'] }
+    );
+    if (!gradeSubject) return ctx.notFound('Grade subject not found.');
+
+    // ── 2. Find all test series + standalone papers under this grade subject ─
+    // We want entity_type = 'paper' directly linked to this grade_subject,
+    // OR entity_type = 'series' (we'll get their papers too).
+    // Simplest: fetch all test_series with this grade_subject regardless of entity_type,
+    // then separately fetch all papers (children) of any series found.
+    const allSeriesAndPapers = await strapi.entityService.findMany(
+      'api::test-serie.test-serie',
+      {
+        filters: {
+          grade_subject: { id: { $eq: gradeSubjectId } },
+          publishedAt: { $notNull: true },
+        },
+        fields: ['id', 'title', 'entity_type', 'start_date', 'test_duration', 'pass_mark', 'program_type', 'year'],
+        populate: {
+          question_banks: {
+            fields: ['id', 'marks'],
+            populate: { unit: { fields: ['id', 'name'] } },
+          },
+          papers: {
+            fields: ['id', 'title', 'entity_type', 'start_date', 'test_duration', 'pass_mark'],
+            populate: {
+              question_banks: {
+                fields: ['id', 'marks'],
+                populate: { unit: { fields: ['id', 'name'] } },
+              },
+            },
+          },
+        },
+        pagination: { limit: -1 },
+      }
+    );
+
+    // Flatten: collect all paper-level test IDs the student could have answered
+    // A "paper" can be:
+    //   (a) entity_type === 'paper' directly under grade_subject
+    //   (b) children (papers) of a series under grade_subject
+    const testableItems = []; // { id, title, parentSeriesId, parentSeriesTitle, fullMarks, pass_mark, start_date, question_banks }
+
+    for (const item of allSeriesAndPapers) {
+      if (item.entity_type === 'paper') {
+        testableItems.push({
+          id: item.id,
+          title: item.title,
+          parentSeriesId: null,
+          parentSeriesTitle: null,
+          programType: item.program_type,
+          year: item.year,
+          pass_mark: item.pass_mark,
+          start_date: item.start_date,
+          question_banks: item.question_banks ?? [],
+        });
+      } else if (item.entity_type === 'series') {
+        for (const paper of item.papers ?? []) {
+          testableItems.push({
+            id: paper.id,
+            title: paper.title,
+            parentSeriesId: item.id,
+            parentSeriesTitle: item.title,
+            programType: item.program_type,
+            year: item.year,
+            pass_mark: paper.pass_mark,
+            start_date: paper.start_date,
+            question_banks: paper.question_banks ?? [],
+          });
+        }
+      }
+    }
+
+    if (testableItems.length === 0) {
+      return ctx.send({
+        gradeSubject,
+        summary: null,
+        tests: [],
+        unitAnalysis: [],
+        scoreTimeline: [],
+      });
+    }
+
+    const allTestIds = testableItems.map((t) => t.id);
+
+    // ── 3. Fetch all evaluated answers for these tests ───────────────────────
+    const baseFilter = {
+      test_series: { id: { $in: allTestIds } },
+      completed: { $eq: true },
+      is_attempt_marker: { $eq: false },
+      evaluation_status: { $eq: 'evaluated' },
+    };
+    if (classroomId) baseFilter.tutor_classroom = { id: { $eq: classroomId } };
+
+    const allAnswers = await strapi.entityService.findMany('api::answer.answer', {
+      filters: baseFilter,
+      fields: ['id', 'marks', 'submission_date', 'time_taken'],
+      populate: {
+        student: { fields: ['id'] },
+        test_series: { fields: ['id'] },
+        question_n_answer: {
+          populate: {
+            question: {
+              fields: ['id'],
+              populate: { unit: { fields: ['id', 'name'] } },
+            },
+          },
+        },
+      },
+      pagination: { limit: -1 },
+    });
+
+    // ── 4. Deduplicate: best attempt per student per test ────────────────────
+    const bestAttempt = {};       // testId → { studentId → answer }
+    const myAllAttempts = {};     // testId → answer[] (only mine, for timeline)
+
+    for (const answer of allAnswers) {
+      const tid = answer.test_series?.id;
+      const sid = answer.student?.id;
+      if (!tid || !sid) continue;
+
+      // Track my attempts for timeline
+      if (sid === studentId) {
+        if (!myAllAttempts[tid]) myAllAttempts[tid] = [];
+        myAllAttempts[tid].push(answer);
+      }
+
+      // Best attempt per student per test
+      if (!bestAttempt[tid]) bestAttempt[tid] = {};
+      const current = bestAttempt[tid][sid];
+      const currentMarks = current?.marks ?? -Infinity;
+      const newMarks = answer.marks ?? 0;
+      if (
+        newMarks > currentMarks ||
+        (newMarks === currentMarks &&
+          new Date(answer.submission_date) > new Date(current?.submission_date))
+      ) {
+        bestAttempt[tid][sid] = answer;
+      }
+    }
+
+    const deduplicatedAnswers = Object.values(bestAttempt).flatMap((students) =>
+      Object.values(students)
+    );
+
+    // ── 5. Per-test stats ────────────────────────────────────────────────────
+    const testResults = testableItems.map((test) => {
+      const studentAnswers = Object.values(bestAttempt[test.id] ?? {});
+      const allMarks = studentAnswers.map((a) => a.marks ?? 0);
+      const myBest = bestAttempt[test.id]?.[studentId] ?? null;
+      const myScore = myBest?.marks ?? null;
+
+      const fullMarks = test.question_banks.reduce((s, qb) => s + (qb.marks ?? 0), 0);
+      const highestScore = allMarks.length ? Math.max(...allMarks) : null;
+      const meanScore = allMarks.length
+        ? parseFloat((allMarks.reduce((a, b) => a + b, 0) / allMarks.length).toFixed(2))
+        : null;
+
+      let rank = null, percentile = null;
+      if (myScore !== null && allMarks.length) {
+        const scoredHigher = allMarks.filter((s) => s > myScore).length;
+        rank = scoredHigher + 1;
+        percentile = parseFloat((((allMarks.length - rank) / allMarks.length) * 100).toFixed(1));
+      }
+
+      const myAttempts = (myAllAttempts[test.id] ?? [])
+        .sort((a, b) => new Date(a.submission_date) - new Date(b.submission_date));
+
+      return {
+        testId: test.id,
+        title: test.title,
+        parentSeriesId: test.parentSeriesId,
+        parentSeriesTitle: test.parentSeriesTitle,
+        programType: test.programType,
+        year: test.year,
+        fullMarks,
+        pass_mark: test.pass_mark,
+        start_date: test.start_date,
+        totalStudents: studentAnswers.length,
+        // My stats
+        attempted: myBest !== null,
+        myScore,
+        myBestDate: myBest?.submission_date ?? null,
+        myTimeTaken: myBest?.time_taken ?? null,
+        passed: test.pass_mark != null && myScore != null ? myScore >= test.pass_mark : null,
+        attemptCount: myAttempts.length,
+        // Class stats
+        highestScore,
+        meanScore,
+        rank,
+        percentile,
+        // All my attempts (for micro-sparkline on frontend)
+        myAttempts: myAttempts.map((a, idx) => ({
+          attemptNumber: idx + 1,
+          marks: a.marks ?? null,
+          submissionDate: a.submission_date,
+          timeTaken: a.time_taken ?? null,
+        })),
+      };
+    });
+
+    // ── 6. Unit-wise analysis (aggregated across all tests) ─────────────────
+    const unitAgg = {};
+
+    const ensureUnit = (unitId, unitName) => {
+      const key = unitId ?? 'unassigned';
+      if (!unitAgg[key]) {
+        unitAgg[key] = {
+          unitId: unitId ?? null,
+          unitName: unitName ?? 'Unassigned',
+          possibleMarks: 0,
+          studentScores: {},
+        };
+      }
+      return key;
+    };
+
+    // Pass 1: register all units from all question banks
+    for (const test of testableItems) {
+      for (const qb of test.question_banks) {
+        const key = ensureUnit(qb.unit?.id ?? null, qb.unit?.name ?? 'Unassigned');
+        unitAgg[key].possibleMarks += qb.marks ?? 0;
+      }
+    }
+
+    // Pass 2: accumulate awarded marks per unit from best attempts
+    for (const answer of deduplicatedAnswers) {
+      const sid = answer.student?.id;
+      if (!sid) continue;
+      for (const qna of answer.question_n_answer ?? []) {
+        const q = qna.question;
+        if (!q) continue;
+        const key = ensureUnit(q.unit?.id ?? null, q.unit?.name ?? 'Unassigned');
+        unitAgg[key].studentScores[sid] =
+          (unitAgg[key].studentScores[sid] ?? 0) + (qna.question_awarded_marks ?? 0);
+      }
+    }
+
+    const unitAnalysis = Object.values(unitAgg).map((u) => {
+      const scores = Object.values(u.studentScores);
+      const myMarks = u.studentScores[studentId] ?? 0;
+      const highestScore = scores.length ? Math.max(...scores) : null;
+      const meanScore = scores.length
+        ? parseFloat((scores.reduce((a, b) => a + b, 0) / scores.length).toFixed(2))
+        : null;
+
+      let rank = null, percentile = null;
+      if (scores.length > 0) {
+        const scoredHigher = scores.filter((s) => s > myMarks).length;
+        rank = scoredHigher + 1;
+        percentile = parseFloat((((scores.length - rank) / scores.length) * 100).toFixed(1));
+      }
+
+      const myPct = u.possibleMarks > 0
+        ? parseFloat(((myMarks / u.possibleMarks) * 100).toFixed(1))
+        : null;
+
+      return {
+        unitId: u.unitId,
+        unitName: u.unitName,
+        possibleMarks: u.possibleMarks,
+        myMarks,
+        highestScore,
+        meanScore,
+        rank,
+        percentile,
+        myPct,
+        totalStudents: scores.length,
+      };
+    }).sort((a, b) => (b.myMarks ?? 0) - (a.myMarks ?? 0));
+
+    // ── 7. Score timeline ────────────────────────────────────────────────────
+    // Chronological list of all MY attempts across all tests, for a progress graph
+    const scoreTimeline = Object.entries(myAllAttempts)
+      .flatMap(([testId, attempts]) => {
+        const test = testableItems.find((t) => t.id === Number(testId));
+        return attempts.map((a) => ({
+          date: a.submission_date,
+          testId: Number(testId),
+          testTitle: test?.title ?? `Test #${testId}`,
+          parentSeriesTitle: test?.parentSeriesTitle ?? null,
+          marks: a.marks ?? null,
+          fullMarks: test?.question_banks.reduce((s, qb) => s + (qb.marks ?? 0), 0) ?? null,
+        }));
+      })
+      .sort((a, b) => new Date(a.date) - new Date(b.date));
+
+    // ── 8. Summary stats ─────────────────────────────────────────────────────
+    const attemptedTests = testResults.filter((t) => t.attempted);
+    const totalMyMarks = attemptedTests.reduce((s, t) => s + (t.myScore ?? 0), 0);
+    const totalPossible = attemptedTests.reduce((s, t) => s + (t.fullMarks ?? 0), 0);
+    const totalHighest = attemptedTests.reduce((s, t) => s + (t.highestScore ?? 0), 0);
+    const totalMean = attemptedTests.reduce((s, t) => s + (t.meanScore ?? 0), 0);
+
+    // Overall rank across all students (sum of best attempts)
+    const allStudentTotals = {};
+    for (const answer of deduplicatedAnswers) {
+      const sid = answer.student?.id;
+      if (!sid) continue;
+      allStudentTotals[sid] = (allStudentTotals[sid] ?? 0) + (answer.marks ?? 0);
+    }
+    const totalScores = Object.values(allStudentTotals);
+    const myGrandTotal = allStudentTotals[studentId] ?? 0;
+    const overallRank = totalScores.filter((s) => s > myGrandTotal).length + 1;
+    const overallPercentile = totalScores.length > 0
+      ? parseFloat((((totalScores.length - overallRank) / totalScores.length) * 100).toFixed(1))
+      : null;
+
+    return ctx.send({
+      gradeSubject,
+      summary: {
+        totalTests: testableItems.length,
+        attemptedTests: attemptedTests.length,
+        myTotal: totalMyMarks,
+        possibleTotal: totalPossible,
+        highestTotal: totalHighest,
+        meanTotal: parseFloat(totalMean.toFixed(2)),
+        overallRank,
+        overallPercentile,
+        totalStudents: Object.keys(allStudentTotals).length,
+        scopedToClassroom: !!classroomId,
+      },
+      tests: testResults,
+      unitAnalysis,
+      scoreTimeline,
+    });
+  }
 }));

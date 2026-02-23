@@ -13,5 +13,15 @@ module.exports ={
         middlewares: [],
       },
     },
+    {
+      method: 'GET',
+      path: '/test-series/:gradeSubjectId/progress',
+      handler: 'results.progress',
+      config: {
+        
+        policies: [],
+        middlewares: [],
+      },
+    },
   ],
 }
