@@ -82,12 +82,45 @@ module.exports = createCoreController('api::test-serie.test-serie', ({ strapi })
       },
       pagination: { limit: -1 },
     });
+    // After fetching allAnswers, build a deduplicated map:
+    // bestAttempt[paperId][studentId] = the answer with highest marks (or latest if tied)
+    const bestAttempt = {};   // paperId → { [studentId]: answer }
+    const allAttemptsByStudent = {};  // studentId → paperId → answer[] (for progression)
 
+    for (const answer of allAnswers) {
+      const pid = answer.test_series?.id;
+      const sid = answer.student?.id;
+      if (!pid || !sid) continue;
+
+      // Track ALL attempts per student per paper (for progression feature)
+      if (!allAttemptsByStudent[sid]) allAttemptsByStudent[sid] = {};
+      if (!allAttemptsByStudent[sid][pid]) allAttemptsByStudent[sid][pid] = [];
+      allAttemptsByStudent[sid][pid].push(answer);
+
+      // Keep best attempt (highest marks, latest on tie)
+      if (!bestAttempt[pid]) bestAttempt[pid] = {};
+      const current = bestAttempt[pid][sid];
+      const currentMarks = current?.marks ?? -Infinity;
+      const newMarks = answer.marks ?? 0;
+      if (
+        newMarks > currentMarks ||
+        (newMarks === currentMarks &&
+          new Date(answer.submission_date) > new Date(current?.submission_date))
+      ) {
+        bestAttempt[pid][sid] = answer;
+      }
+    }
+
+    // Flatten to a clean "one row per student per paper" array
+    // Use this everywhere instead of allAnswers for stats
+    const deduplicatedAnswers = Object.entries(bestAttempt).flatMap(([pid, students]) =>
+      Object.values(students)
+    );
     // ── 4. Group answers by paper ────────────────────────────────────────────
     const byPaper = {};
     for (const paperId of paperIds) byPaper[paperId] = { all: [], mine: null };
 
-    for (const answer of allAnswers) {
+    for (const answer of deduplicatedAnswers) {
       const pid = answer.test_series?.id;
       if (pid && byPaper[pid]) {
         byPaper[pid].all.push(answer.marks ?? 0);
@@ -118,13 +151,13 @@ module.exports = createCoreController('api::test-serie.test-serie', ({ strapi })
         : null;
       const myScore = myAnswer?.marks ?? null;
       const totalStudents = new Set(
-        allAnswers.filter((a) => a.test_series?.id === paper.id).map((a) => a.student?.id)
+        deduplicatedAnswers.filter((a) => a.test_series?.id === paper.id).map((a) => a.student?.id)
       ).size;
 
       let rank = null, percentile = null;
       if (myScore !== null && allMarks.length) {
         const uniqueStudentScores = {};
-        allAnswers
+        deduplicatedAnswers
           .filter((a) => a.test_series?.id === paper.id)
           .forEach((a) => {
             const sid = a.student?.id;
@@ -201,7 +234,7 @@ module.exports = createCoreController('api::test-serie.test-serie', ({ strapi })
     }
 
     // Pass 2: walk every answer's question_n_answer components → accumulate awarded marks per unit
-    for (const answer of allAnswers) {
+    for (const answer of deduplicatedAnswers) {
       const sid = answer.student?.id;
       if (!sid) continue;
 
@@ -269,7 +302,7 @@ module.exports = createCoreController('api::test-serie.test-serie', ({ strapi })
     const seriesFullMarks = paperResults.reduce((s, p) => s + (p.fullMarks ?? 0), 0);
 
     const allStudentTotals = {};
-    for (const answer of allAnswers) {
+    for (const answer of deduplicatedAnswers) {
       const sid = answer.student?.id;
       if (!sid) continue;
       allStudentTotals[sid] = (allStudentTotals[sid] ?? 0) + (answer.marks ?? 0);
@@ -296,6 +329,40 @@ module.exports = createCoreController('api::test-serie.test-serie', ({ strapi })
         submissionDate: p.submissionDate, timeTaken: p.timeTaken,
       }));
 
+    // ── 9. Attempt progression (my attempts only, per paper) ────────────────
+    const myProgression = paperIds.map((paperId) => {
+      const myAttempts = (allAttemptsByStudent[studentId]?.[paperId] ?? [])
+        .sort((a, b) => new Date(a.submission_date) - new Date(b.submission_date))
+        .map((attempt, idx) => ({
+          attemptNumber: idx + 1,
+          marks: attempt.marks ?? null,
+          submissionDate: attempt.submission_date,
+          timeTaken: attempt.time_taken ?? null,
+          // Unit breakdown per attempt (walk question_n_answer)
+          unitBreakdown: (() => {
+            const breakdown = {};
+            for (const qna of attempt.question_n_answer ?? []) {
+              const unitId = qna.question?.unit?.id ?? 'unassigned';
+              const unitName = qna.question?.unit?.name ?? 'Unassigned';
+              if (!breakdown[unitId]) breakdown[unitId] = { unitId, unitName, awarded: 0 };
+              breakdown[unitId].awarded += qna.question_awarded_marks ?? 0;
+            }
+            return Object.values(breakdown);
+          })(),
+        }));
+
+      const paper = series.papers.find((p) => p.id === paperId);
+      return {
+        paperId,
+        paperTitle: paper?.title ?? `Paper #${paperId}`,
+        fullMarks: (paper?.question_banks ?? []).reduce((s, qb) => s + (qb.marks ?? 0), 0),
+        attempts: myAttempts,
+        improved: myAttempts.length >= 2
+          ? (myAttempts.at(-1).marks ?? 0) - (myAttempts[0].marks ?? 0)
+          : null,
+      };
+    }).filter((p) => p.attempts.length > 0);
+
     return ctx.send({
       series: {
         id: series.id, title: series.title, program_type: series.program_type,
@@ -313,6 +380,7 @@ module.exports = createCoreController('api::test-serie.test-serie', ({ strapi })
       papers: paperResults,
       chart,
       table,
+      myProgression,
       unitAnalysis,   // ← NEW
     });
   },
