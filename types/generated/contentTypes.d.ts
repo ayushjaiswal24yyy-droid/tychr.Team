@@ -4342,6 +4342,10 @@ export interface ApiStudentUniApplicationStudentUniApplication
     lor: Attribute.Component<'lor.lor', true>;
     essay_submissions: Attribute.Component<'essays.essay-submission', true>;
     lor_requests: Attribute.Component<'lor-requests.lor-requests', true>;
+    resume: Attribute.Media<'images' | 'files' | 'videos' | 'audios'>;
+    statement_of_purpose: Attribute.Media<
+      'images' | 'files' | 'videos' | 'audios'
+    >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     createdBy: Attribute.Relation<

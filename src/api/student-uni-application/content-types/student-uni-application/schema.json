@@ -127,6 +127,26 @@
       "type": "component",
       "repeatable": true,
       "component": "lor-requests.lor-requests"
+    },
+    "resume": {
+      "allowedTypes": [
+        "images",
+        "files",
+        "videos",
+        "audios"
+      ],
+      "type": "media",
+      "multiple": false
+    },
+    "statement_of_purpose": {
+      "allowedTypes": [
+        "images",
+        "files",
+        "videos",
+        "audios"
+      ],
+      "type": "media",
+      "multiple": false
     }
   }
 }
