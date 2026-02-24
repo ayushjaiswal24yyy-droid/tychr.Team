@@ -1,0 +1,29 @@
+{
+  "collectionName": "components_lor_requests_lor_requests",
+  "info": {
+    "displayName": "lor_requests"
+  },
+  "options": {},
+  "attributes": {
+    "teacher_name": {
+      "type": "string"
+    },
+    "school_name": {
+      "type": "string"
+    },
+    "teacher_email": {
+      "type": "string"
+    },
+    "student_notes": {
+      "type": "text"
+    },
+    "requested_at": {
+      "type": "datetime"
+    },
+    "locked": {
+      "type": "boolean",
+      "default": true,
+      "required": true
+    }
+  }
+}

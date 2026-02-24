@@ -122,10 +122,11 @@
       "repeatable": true,
       "component": "essays.essay-submission"
     },
-    "lor_submissions": {
+    "lor_requests": {
+      "displayName": "lor_requests",
       "type": "component",
       "repeatable": true,
-      "component": "lor.lor-submission"
+      "component": "lor-requests.lor-requests"
     }
   }
 }
