@@ -10,13 +10,13 @@
       "type": "string"
     },
     "early_decision": {
-      "type": "string"
+      "type": "date"
     },
     "regular_decision": {
-      "type": "string"
+      "type": "date"
     },
     "early_action": {
-      "type": "string"
+      "type": "date"
     }
   }
 }

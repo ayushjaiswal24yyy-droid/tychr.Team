@@ -2,7 +2,8 @@
   "collectionName": "components_university_application_cycle_deadlines",
   "info": {
     "displayName": "Application Cycle Deadline",
-    "icon": "collapse"
+    "icon": "collapse",
+    "description": ""
   },
   "options": {},
   "attributes": {
@@ -19,6 +20,9 @@
     "deadline": {
       "type": "date",
       "required": true
+    },
+    "name": {
+      "type": "string"
     }
   }
 }
