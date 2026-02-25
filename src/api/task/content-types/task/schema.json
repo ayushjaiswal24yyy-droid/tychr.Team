@@ -75,7 +75,7 @@
       "type": "boolean",
       "default": false
     },
-    "student_uni_applications": {
+    "student_uni_application": {
       "type": "relation",
       "relation": "manyToMany",
       "target": "api::student-uni-application.student-uni-application",

@@ -154,7 +154,7 @@
       "type": "relation",
       "relation": "manyToMany",
       "target": "api::task.task",
-      "mappedBy": "student_uni_applications"
+      "mappedBy": "student_uni_application"
     }
   }
 }

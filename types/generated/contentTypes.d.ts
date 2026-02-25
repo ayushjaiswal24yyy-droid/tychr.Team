@@ -4699,7 +4699,7 @@ export interface ApiTaskTask extends Schema.CollectionType {
     > &
       Attribute.Required;
     isImportant: Attribute.Boolean & Attribute.DefaultTo<false>;
-    student_uni_applications: Attribute.Relation<
+    student_uni_application: Attribute.Relation<
       'api::task.task',
       'manyToMany',
       'api::student-uni-application.student-uni-application'
