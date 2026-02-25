@@ -44,12 +44,6 @@
       "relation": "oneToOne",
       "target": "plugin::users-permissions.user"
     },
-    "university": {
-      "type": "relation",
-      "relation": "manyToOne",
-      "target": "api::university.university",
-      "inversedBy": "student_application_tasks"
-    },
     "progress": {
       "type": "integer",
       "max": 100,
@@ -80,6 +74,12 @@
     "isImportant": {
       "type": "boolean",
       "default": false
+    },
+    "student_uni_applications": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::student-uni-application.student-uni-application",
+      "inversedBy": "tasks"
     }
   }
 }

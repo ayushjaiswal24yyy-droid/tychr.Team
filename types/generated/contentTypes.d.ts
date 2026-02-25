@@ -4346,6 +4346,11 @@ export interface ApiStudentUniApplicationStudentUniApplication
     statement_of_purpose: Attribute.Media<
       'images' | 'files' | 'videos' | 'audios'
     >;
+    tasks: Attribute.Relation<
+      'api::student-uni-application.student-uni-application',
+      'manyToMany',
+      'api::task.task'
+    >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     createdBy: Attribute.Relation<
@@ -4672,11 +4677,6 @@ export interface ApiTaskTask extends Schema.CollectionType {
       'oneToOne',
       'plugin::users-permissions.user'
     >;
-    university: Attribute.Relation<
-      'api::task.task',
-      'manyToOne',
-      'api::university.university'
-    >;
     progress: Attribute.Integer &
       Attribute.SetMinMax<
         {
@@ -4699,6 +4699,11 @@ export interface ApiTaskTask extends Schema.CollectionType {
     > &
       Attribute.Required;
     isImportant: Attribute.Boolean & Attribute.DefaultTo<false>;
+    student_uni_applications: Attribute.Relation<
+      'api::task.task',
+      'manyToMany',
+      'api::student-uni-application.student-uni-application'
+    >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
@@ -5251,11 +5256,6 @@ export interface ApiUniversityUniversity extends Schema.CollectionType {
     overview: Attribute.Component<'university.overview'>;
     financial_aids: Attribute.Component<'university.financial-aids'>;
     additional_costs: Attribute.Component<'university.additional-costs'>;
-    student_application_tasks: Attribute.Relation<
-      'api::university.university',
-      'oneToMany',
-      'api::task.task'
-    >;
     university_articles: Attribute.Relation<
       'api::university.university',
       'oneToMany',

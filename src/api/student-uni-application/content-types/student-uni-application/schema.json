@@ -149,6 +149,12 @@
         "videos",
         "audios"
       ]
+    },
+    "tasks": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::task.task",
+      "mappedBy": "student_uni_applications"
     }
   }
 }
