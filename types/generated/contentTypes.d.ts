@@ -1434,6 +1434,7 @@ export interface ApiArticleArticle extends Schema.CollectionType {
       'manyToOne',
       'api::college.college'
     >;
+    slug: Attribute.UID<'api::article.article', 'title'>;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     createdBy: Attribute.Relation<
