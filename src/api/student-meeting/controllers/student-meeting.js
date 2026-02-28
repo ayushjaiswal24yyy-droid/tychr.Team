@@ -98,50 +98,55 @@ module.exports = createCoreController(
     const user = ctx.state.user;
     if (!user) return ctx.unauthorized("Unauthorized");
 
-    const plans = await strapi.db
-      .query("api::user-plan.user-plan")
-      .findMany({
-        where: { student: user.id, status: "active" },
+    const plans = await strapi.entityService.findMany(
+      "api::user-plan.user-plan",
+      {
+        filters: { student: user.id, status: "active" },
         populate: {
           premium_plan: {
             populate: {
               created_by_user: {
-                populate: { avatar: true },
+                populate: ["avatar"],
               },
             },
           },
         },
-        orderBy: { purchased_at: "desc" },
-      });
+        sort: { purchased_at: "desc" },
+      }
+    );
 
     return {
       success: true,
-      data: plans.map((plan) => ({
+      data: (plans ?? []).map((plan) => ({
         id: plan.id,
         remaining_hours: plan.remaining_hours,
         status: plan.status,
         purchased_at: plan.purchased_at,
         total_paid: plan.total_paid,
         currency: plan.currency,
-        premium_plan: plan.premium_plan ? {
-          id: plan.premium_plan.id,
-          title: plan.premium_plan.title,
-          type: plan.premium_plan.type,
-          hours_included: plan.premium_plan.hours_included,
-          price: plan.premium_plan.price,
-          currency: plan.premium_plan.currency,
-          created_by_user: plan.premium_plan.created_by_user ? {
-            id: plan.premium_plan.created_by_user.id,
-            fullName: plan.premium_plan.created_by_user.fullName,
-            username: plan.premium_plan.created_by_user.username,
-            graduated_from: plan.premium_plan.created_by_user.graduated_from,
-            highest_educational_qualification:
-              plan.premium_plan.created_by_user.highest_educational_qualification,
-            avatar: plan.premium_plan.created_by_user.avatar
-              ? { url: plan.premium_plan.created_by_user.avatar.url }
-              : null,
-          } : null,
-        } : null,
+        premium_plan: plan.premium_plan
+          ? {
+              id: plan.premium_plan.id,
+              title: plan.premium_plan.title,
+              type: plan.premium_plan.type,
+              hours_included: plan.premium_plan.hours_included,
+              price: plan.premium_plan.price,
+              currency: plan.premium_plan.currency,
+              created_by_user: plan.premium_plan.created_by_user
+                ? {
+                    id: plan.premium_plan.created_by_user.id,
+                    fullName: plan.premium_plan.created_by_user.fullName,
+                    username: plan.premium_plan.created_by_user.username,
+                    graduated_from: plan.premium_plan.created_by_user.graduated_from,
+                    highest_educational_qualification:
+                      plan.premium_plan.created_by_user.highest_educational_qualification,
+                    avatar: plan.premium_plan.created_by_user.avatar
+                      ? { url: plan.premium_plan.created_by_user.avatar.url }
+                      : null,
+                  }
+                : null,
+            }
+          : null,
       })),
     };
   } catch (err) {
