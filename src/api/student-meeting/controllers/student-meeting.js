@@ -93,49 +93,35 @@ module.exports = createCoreController(
      * GET /student-meetings/my-plans
      * Returns all active user_plans for the logged-in student with remaining hours
      */
-  async myPlans(ctx) {
-      try {
-const user = ctx.state.user;
-if (!user) return ctx.unauthorized("Unauthorized");
-const plans = await strapi.db
-          .query("api::user-plan.user-plan")
-          .findMany({
-where: {
-student: user.id,
-status: "active",
-            },
-populate: {
-premium_plan: {
-select: [
-"id",
-"title",
-"description",
-"type",
-"hours_included",
-"currency",
-"price",
-                ],
-              },
-            },
-orderBy: { purchased_at: "desc" },
-          });
-return {
-success: true,
-data: plans.map((plan) => ({
-id: plan.id,
-remaining_hours: plan.remaining_hours,
-status: plan.status,
-purchased_at: plan.purchased_at,
-total_paid: plan.total_paid,
-currency: plan.currency,
-premium_plan: plan.premium_plan,
-          })),
-        };
-      } catch (err) {
-strapi.log.error("myPlans error:", err);
-return ctx.internalServerError("Failed to fetch plans");
-      }
-    },
+async myPlans(ctx) {
+  try {
+    const user = ctx.state.user;
+    if (!user) return ctx.unauthorized("Unauthorized");
+
+    strapi.log.info("myPlans: user id = " + user.id);
+
+    // Step 1: try without any populate first
+    const plans = await strapi.db
+      .query("api::user-plan.user-plan")
+      .findMany({
+        where: {
+          student: user.id,
+          status: "active",
+        },
+      });
+
+    strapi.log.info("myPlans: raw plans count = " + plans.length);
+
+    return {
+      success: true,
+      data: plans,
+    };
+  } catch (err) {
+    strapi.log.error("myPlans error:", err.message);
+    strapi.log.error("myPlans stack:", err.stack);
+    return ctx.internalServerError("Failed to fetch plans");
+  }
+},
 
     /**
      * GET /student-meetings/my-meetings
