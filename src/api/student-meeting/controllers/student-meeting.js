@@ -94,53 +94,48 @@ module.exports = createCoreController(
      * Returns all active user_plans for the logged-in student with remaining hours
      */
   async myPlans(ctx) {
-  try {
-    const user = ctx.state.user;
-    if (!user) return ctx.unauthorized("Unauthorized");
-
-    const plans = await strapi.entityService.findMany(
-      "api::user-plan.user-plan",
-      {
-        filters: {
-          student: user.id,
-          status: "active",
-        },
-        populate: {
-          premium_plan: {
-            fields: ["id", "title", "description", "type", "hours_included", "currency", "price"],
-            populate: {
-              created_by_user: {
-                fields: ["id", "fullName", "username", "graduated_from", "highest_educational_qualification"],
-                populate: {
-                  avatar: {
-                    fields: ["url"],
-                  },
-                },
+      try {
+const user = ctx.state.user;
+if (!user) return ctx.unauthorized("Unauthorized");
+const plans = await strapi.db
+          .query("api::user-plan.user-plan")
+          .findMany({
+where: {
+student: user.id,
+status: "active",
+            },
+populate: {
+premium_plan: {
+select: [
+"id",
+"title",
+"description",
+"type",
+"hours_included",
+"currency",
+"price",
+                ],
               },
             },
-          },
-        },
-        orderBy: { purchased_at: "desc" },
+orderBy: { purchased_at: "desc" },
+          });
+return {
+success: true,
+data: plans.map((plan) => ({
+id: plan.id,
+remaining_hours: plan.remaining_hours,
+status: plan.status,
+purchased_at: plan.purchased_at,
+total_paid: plan.total_paid,
+currency: plan.currency,
+premium_plan: plan.premium_plan,
+          })),
+        };
+      } catch (err) {
+strapi.log.error("myPlans error:", err);
+return ctx.internalServerError("Failed to fetch plans");
       }
-    );
-
-    return {
-      success: true,
-      data: (plans ?? []).map((plan) => ({
-        id: plan.id,
-        remaining_hours: plan.remaining_hours,
-        status: plan.status,
-        purchased_at: plan.purchased_at,
-        total_paid: plan.total_paid,
-        currency: plan.currency,
-        premium_plan: plan.premium_plan ?? null,
-      })),
-    };
-  } catch (err) {
-    strapi.log.error("myPlans error:", err);
-    return ctx.internalServerError("Failed to fetch plans");
-  }
-},
+    },
 
     /**
      * GET /student-meetings/my-meetings
