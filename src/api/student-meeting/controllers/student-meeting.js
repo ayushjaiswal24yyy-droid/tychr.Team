@@ -93,7 +93,7 @@ module.exports = createCoreController(
      * GET /student-meetings/my-plans
      * Returns all active user_plans for the logged-in student with remaining hours
      */
- async myPlans(ctx) {
+  async myPlans(ctx) {
   try {
     const user = ctx.state.user;
     if (!user) return ctx.unauthorized("Unauthorized");
@@ -101,17 +101,26 @@ module.exports = createCoreController(
     const plans = await strapi.entityService.findMany(
       "api::user-plan.user-plan",
       {
-        filters: { student: user.id, status: "active" },
+        filters: {
+          student: user.id,
+          status: "active",
+        },
         populate: {
           premium_plan: {
+            fields: ["id", "title", "description", "type", "hours_included", "currency", "price"],
             populate: {
               created_by_user: {
-                populate: ["avatar"],
+                fields: ["id", "fullName", "username", "graduated_from", "highest_educational_qualification"],
+                populate: {
+                  avatar: {
+                    fields: ["url"],
+                  },
+                },
               },
             },
           },
         },
-        sort: { purchased_at: "desc" },
+        orderBy: { purchased_at: "desc" },
       }
     );
 
@@ -124,29 +133,7 @@ module.exports = createCoreController(
         purchased_at: plan.purchased_at,
         total_paid: plan.total_paid,
         currency: plan.currency,
-        premium_plan: plan.premium_plan
-          ? {
-              id: plan.premium_plan.id,
-              title: plan.premium_plan.title,
-              type: plan.premium_plan.type,
-              hours_included: plan.premium_plan.hours_included,
-              price: plan.premium_plan.price,
-              currency: plan.premium_plan.currency,
-              created_by_user: plan.premium_plan.created_by_user
-                ? {
-                    id: plan.premium_plan.created_by_user.id,
-                    fullName: plan.premium_plan.created_by_user.fullName,
-                    username: plan.premium_plan.created_by_user.username,
-                    graduated_from: plan.premium_plan.created_by_user.graduated_from,
-                    highest_educational_qualification:
-                      plan.premium_plan.created_by_user.highest_educational_qualification,
-                    avatar: plan.premium_plan.created_by_user.avatar
-                      ? { url: plan.premium_plan.created_by_user.avatar.url }
-                      : null,
-                  }
-                : null,
-            }
-          : null,
+        premium_plan: plan.premium_plan ?? null,
       })),
     };
   } catch (err) {
