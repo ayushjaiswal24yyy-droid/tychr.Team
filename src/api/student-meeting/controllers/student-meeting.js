@@ -98,31 +98,57 @@ async myPlans(ctx) {
     const user = ctx.state.user;
     if (!user) return ctx.unauthorized("Unauthorized");
 
-    strapi.log.info("myPlans: user id = " + user.id);
-
-    // Step 1: try without any populate first
     const plans = await strapi.db
       .query("api::user-plan.user-plan")
       .findMany({
-        where: {
-          student: user.id,
-          status: "active",
+        where: { student: user.id, status: "active" },
+        populate: {
+          premium_plan: {
+            populate: {
+              created_by_user: {
+                populate: { avatar: true },
+              },
+            },
+          },
         },
+        orderBy: { purchased_at: "desc" },
       });
-
-    strapi.log.info("myPlans: raw plans count = " + plans.length);
 
     return {
       success: true,
-      data: plans,
+      data: plans.map((plan) => ({
+        id: plan.id,
+        remaining_hours: plan.remaining_hours,
+        status: plan.status,
+        purchased_at: plan.purchased_at,
+        total_paid: plan.total_paid,
+        currency: plan.currency,
+        premium_plan: plan.premium_plan ? {
+          id: plan.premium_plan.id,
+          title: plan.premium_plan.title,
+          type: plan.premium_plan.type,
+          hours_included: plan.premium_plan.hours_included,
+          price: plan.premium_plan.price,
+          currency: plan.premium_plan.currency,
+          created_by_user: plan.premium_plan.created_by_user ? {
+            id: plan.premium_plan.created_by_user.id,
+            fullName: plan.premium_plan.created_by_user.fullName,
+            username: plan.premium_plan.created_by_user.username,
+            graduated_from: plan.premium_plan.created_by_user.graduated_from,
+            highest_educational_qualification:
+              plan.premium_plan.created_by_user.highest_educational_qualification,
+            avatar: plan.premium_plan.created_by_user.avatar
+              ? { url: plan.premium_plan.created_by_user.avatar.url }
+              : null,
+          } : null,
+        } : null,
+      })),
     };
   } catch (err) {
-    strapi.log.error("myPlans error:", err.message);
-    strapi.log.error("myPlans stack:", err.stack);
+    strapi.log.error("myPlans error:", err);
     return ctx.internalServerError("Failed to fetch plans");
   }
 },
-
     /**
      * GET /student-meetings/my-meetings
      * Returns meeting history for the logged-in student
