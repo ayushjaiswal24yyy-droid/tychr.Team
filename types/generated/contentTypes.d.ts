@@ -3652,7 +3652,7 @@ export interface ApiPremiumPlanPremiumPlan extends Schema.CollectionType {
     type: Attribute.Enumeration<['mentor', 'counselor']> & Attribute.Required;
     price: Attribute.Decimal & Attribute.Required;
     hours_included: Attribute.Integer;
-    active: Attribute.Boolean;
+    active: Attribute.Boolean & Attribute.Required & Attribute.DefaultTo<true>;
     user_plans: Attribute.Relation<
       'api::premium-plan.premium-plan',
       'oneToMany',
@@ -4177,7 +4177,14 @@ export interface ApiStudentMeetingStudentMeeting extends Schema.CollectionType {
       'api::user-plan.user-plan'
     >;
     status: Attribute.Enumeration<
-      ['scheduled', 'in_progress', 'completed', 'canceled', 'no_show']
+      [
+        'scheduled',
+        'in_progress',
+        'completed',
+        'canceled',
+        'no_show',
+        'interrupted'
+      ]
     > &
       Attribute.DefaultTo<'scheduled'>;
     meeting_notes: Attribute.Text;
@@ -5024,10 +5031,9 @@ export interface ApiTransactionOutTransactionOut extends Schema.CollectionType {
     singularName: 'transaction-out';
     pluralName: 'transaction-outs';
     displayName: 'Admin: Transaction Out';
-    description: '';
   };
   options: {
-    draftAndPublish: true;
+    draftAndPublish: false;
   };
   attributes: {
     student_meeting: Attribute.Relation<
@@ -5045,10 +5051,10 @@ export interface ApiTransactionOutTransactionOut extends Schema.CollectionType {
       'manyToOne',
       'api::user-plan.user-plan'
     >;
-    transaction_date: Attribute.DateTime;
-    amount: Attribute.Decimal;
-    currency: Attribute.Enumeration<['INR', 'USD']>;
-    duration_minutes: Attribute.Integer;
+    transaction_date: Attribute.DateTime & Attribute.Required;
+    duration_minutes: Attribute.Integer & Attribute.Required;
+    amount: Attribute.Decimal & Attribute.Required;
+    currency: Attribute.Enumeration<['INR', 'USD']> & Attribute.Required;
     payment_status: Attribute.Enumeration<
       ['pending', 'processing', 'paid', 'failed']
     > &
@@ -5056,14 +5062,8 @@ export interface ApiTransactionOutTransactionOut extends Schema.CollectionType {
     payment_reference: Attribute.String;
     payment_method: Attribute.String;
     notes: Attribute.Text;
-    calculated_rate_per_minute: Attribute.Decimal;
-    total_plan_minutes: Attribute.Decimal;
-    total_plan_amount: Attribute.Decimal;
-    commission_deducted: Attribute.Decimal;
-    net_amount: Attribute.Decimal;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
-    publishedAt: Attribute.DateTime;
     createdBy: Attribute.Relation<
       'api::transaction-out.transaction-out',
       'oneToOne',
@@ -5417,7 +5417,6 @@ export interface ApiUserPlanUserPlan extends Schema.CollectionType {
     singularName: 'user-plan';
     pluralName: 'user-plans';
     displayName: '\u2B50Student: UserPlan';
-    description: '';
   };
   options: {
     draftAndPublish: false;
@@ -5433,18 +5432,15 @@ export interface ApiUserPlanUserPlan extends Schema.CollectionType {
       'manyToOne',
       'api::premium-plan.premium-plan'
     >;
-    remaining_hours: Attribute.Decimal;
-    expires_at: Attribute.DateTime;
-    purchased_at: Attribute.DateTime;
-    status: Attribute.Enumeration<['active', 'expired', 'used_up']> &
+    remaining_hours: Attribute.Decimal & Attribute.Required;
+    status: Attribute.Enumeration<['active', 'used_up']> &
       Attribute.DefaultTo<'active'>;
+    purchased_at: Attribute.DateTime & Attribute.Required;
+    price_at_purchase: Attribute.Decimal & Attribute.Required;
+    total_paid: Attribute.Decimal & Attribute.Required;
+    currency: Attribute.Enumeration<['INR', 'USD']> & Attribute.Required;
     razorpay_payment_id: Attribute.String;
     razorpay_order_id: Attribute.String;
-    razorpay_signature: Attribute.String;
-    price_at_purchase: Attribute.Decimal & Attribute.Required;
-    commission_percentage_applied: Attribute.Decimal & Attribute.Required;
-    commission_amount: Attribute.Decimal & Attribute.Required;
-    total_paid: Attribute.Decimal & Attribute.Required;
     student_meetings: Attribute.Relation<
       'api::user-plan.user-plan',
       'oneToMany',

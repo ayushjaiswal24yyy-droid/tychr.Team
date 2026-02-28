@@ -4,13 +4,9 @@
   "info": {
     "singularName": "user-plan",
     "pluralName": "user-plans",
-    "displayName": "⭐Student: UserPlan",
-    "description": ""
+    "displayName": "⭐Student: UserPlan"
   },
-  "options": {
-    "draftAndPublish": false
-  },
-  "pluginOptions": {},
+  "options": { "draftAndPublish": false },
   "attributes": {
     "student": {
       "type": "relation",
@@ -25,48 +21,36 @@
       "inversedBy": "user_plans"
     },
     "remaining_hours": {
-      "type": "decimal"
-    },
-    "expires_at": {
-      "type": "datetime"
-    },
-    "purchased_at": {
-      "type": "datetime",
-      "required": false
+      "type": "decimal",
+      "required": true
     },
     "status": {
       "type": "enumeration",
-      "enum": [
-        "active",
-        "expired",
-        "used_up"
-      ],
+      "enum": ["active", "used_up"],
       "default": "active"
     },
-    "razorpay_payment_id": {
-      "type": "string"
-    },
-    "razorpay_order_id": {
-      "type": "string"
-    },
-    "razorpay_signature": {
-      "type": "string"
+    "purchased_at": {
+      "type": "datetime",
+      "required": true
     },
     "price_at_purchase": {
-      "type": "decimal",
-      "required": true
-    },
-    "commission_percentage_applied": {
-      "type": "decimal",
-      "required": true
-    },
-    "commission_amount": {
       "type": "decimal",
       "required": true
     },
     "total_paid": {
       "type": "decimal",
       "required": true
+    },
+    "currency": {
+      "type": "enumeration",
+      "enum": ["INR", "USD"],
+      "required": true
+    },
+    "razorpay_payment_id": {
+      "type": "string"
+    },
+    "razorpay_order_id": {
+      "type": "string"
     },
     "student_meetings": {
       "type": "relation",

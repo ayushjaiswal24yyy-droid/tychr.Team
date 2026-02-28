@@ -62,7 +62,8 @@
         "in_progress",
         "completed",
         "canceled",
-        "no_show"
+        "no_show",
+        "interrupted"
       ],
       "default": "scheduled"
     },

@@ -4,13 +4,9 @@
   "info": {
     "singularName": "transaction-out",
     "pluralName": "transaction-outs",
-    "displayName": "Admin: Transaction Out",
-    "description": ""
+    "displayName": "Admin: Transaction Out"
   },
-  "options": {
-    "draftAndPublish": true
-  },
-  "pluginOptions": {},
+  "options": { "draftAndPublish": false },
   "attributes": {
     "student_meeting": {
       "type": "relation",
@@ -31,29 +27,25 @@
       "inversedBy": "admin_transaction_outs"
     },
     "transaction_date": {
-      "type": "datetime"
+      "type": "datetime",
+      "required": true
+    },
+    "duration_minutes": {
+      "type": "integer",
+      "required": true
     },
     "amount": {
-      "type": "decimal"
+      "type": "decimal",
+      "required": true
     },
     "currency": {
       "type": "enumeration",
-      "enum": [
-        "INR",
-        "USD"
-      ]
-    },
-    "duration_minutes": {
-      "type": "integer"
+      "enum": ["INR", "USD"],
+      "required": true
     },
     "payment_status": {
       "type": "enumeration",
-      "enum": [
-        "pending",
-        "processing",
-        "paid",
-        "failed"
-      ],
+      "enum": ["pending", "processing", "paid", "failed"],
       "default": "pending"
     },
     "payment_reference": {
@@ -64,21 +56,6 @@
     },
     "notes": {
       "type": "text"
-    },
-    "calculated_rate_per_minute": {
-      "type": "decimal"
-    },
-    "total_plan_minutes": {
-      "type": "decimal"
-    },
-    "total_plan_amount": {
-      "type": "decimal"
-    },
-    "commission_deducted": {
-      "type": "decimal"
-    },
-    "net_amount": {
-      "type": "decimal"
     }
   }
 }
