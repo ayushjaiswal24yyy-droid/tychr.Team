@@ -566,6 +566,12 @@
       "type": "component",
       "repeatable": true,
       "component": "entrance-exams.entrance-exams"
+    },
+    "conversations": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::conversation.conversation",
+      "mappedBy": "participants"
     }
   }
 }

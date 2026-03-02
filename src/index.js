@@ -1,47 +1,190 @@
-"use strict";
-const { Server } = require("socket.io");
+'use strict';
+
+const { Server } = require('socket.io');
 
 module.exports = {
   register({ strapi }) {
     const allowedOrigins =
-      process.env.NODE_ENV === "production"
-        ? ["https://tychr.pages.dev/"]
-        : "*";
+      process.env.NODE_ENV === 'production'
+        ? ['https://tychr.pages.dev/']
+        : '*';
 
     const io = new Server(strapi.server.httpServer, {
       cors: {
         origin: allowedOrigins,
-        methods: ["GET", "POST"],
+        methods: ['GET', 'POST'],
+        credentials: true,
       },
-      path: "/socket.io",
+      path: '/socket.io',
     });
 
     strapi.io = io;
+    strapi.log.info('WebSocket server initialized');
 
-    strapi.log.info("WebSocket server initialized");
+    // ── Auth Middleware ─────────────────────────────────────────────────────
+    io.use(async (socket, next) => {
+      try {
+        const token =
+          socket.handshake.auth?.token ||
+          socket.handshake.headers?.authorization?.replace('Bearer ', '');
 
-    io.on("connection", (socket) => {
-      strapi.log.info(`Client connected: ${socket.id}`);
+        if (!token) return next(new Error('No token provided'));
 
-      socket.on("disconnect", () => {
-        strapi.log.info(`Client disconnected: ${socket.id}`);
+        const decoded = await strapi
+          .plugin('users-permissions')
+          .service('jwt')
+          .verify(token);
+
+        const user = await strapi.entityService.findOne(
+          'plugin::users-permissions.user',
+          decoded.id,
+          { fields: ['id', 'username', 'email'] }
+        );
+
+        if (!user) return next(new Error('User not found'));
+
+        socket.user = user;
+        next();
+      } catch (err) {
+        next(new Error('Authentication failed'));
+      }
+    });
+
+    // ── Connection ──────────────────────────────────────────────────────────
+    io.on('connection', async (socket) => {
+      strapi.log.info(`Client connected: ${socket.id} (user: ${socket.user.id})`);
+
+      // Join personal room + all conversation rooms
+      await joinUserRooms(socket, strapi);
+
+      // ── Join a conversation room (subject groups — lazy join) ─────────────
+      socket.on('conversation:join', async ({ conversationId }) => {
+        try {
+          const allowed = await canAccessConversation(socket.user.id, conversationId, strapi);
+          if (!allowed) return socket.emit('error', { message: 'Access denied' });
+
+          // For subject_group: add as participant if not already
+          await addParticipantIfNeeded(socket.user.id, conversationId, strapi);
+
+          socket.join(`conversation:${conversationId}`);
+
+          socket.to(`conversation:${conversationId}`).emit('conversation:user_joined', {
+            conversationId,
+            user: { id: socket.user.id, username: socket.user.username },
+          });
+        } catch (err) {
+          strapi.log.error(`conversation:join error — ${err.message}`);
+        }
       });
 
-      socket.on("error", (err) => {
+      // ── Leave a conversation room ─────────────────────────────────────────
+      socket.on('conversation:leave', ({ conversationId }) => {
+        socket.leave(`conversation:${conversationId}`);
+        socket.to(`conversation:${conversationId}`).emit('conversation:user_left', {
+          conversationId,
+          user: { id: socket.user.id, username: socket.user.username },
+        });
+      });
+
+      // ── Typing indicators ─────────────────────────────────────────────────
+      socket.on('typing:start', ({ conversationId }) => {
+        socket.to(`conversation:${conversationId}`).emit('typing:start', {
+          conversationId,
+          user: { id: socket.user.id, username: socket.user.username },
+        });
+      });
+
+      socket.on('typing:stop', ({ conversationId }) => {
+        socket.to(`conversation:${conversationId}`).emit('typing:stop', {
+          conversationId,
+          user: { id: socket.user.id, username: socket.user.username },
+        });
+      });
+
+      // ── Disconnect ────────────────────────────────────────────────────────
+      socket.on('disconnect', () => {
+        strapi.log.info(`Client disconnected: ${socket.id} (user: ${socket.user.id})`);
+      });
+
+      socket.on('error', (err) => {
         strapi.log.error(`WebSocket error: ${err.message}`);
       });
     });
 
-    process.on("SIGINT", () => {
-      strapi.log.info("Shutting down WebSocket server...");
+    // ── Graceful shutdown ───────────────────────────────────────────────────
+    process.on('SIGINT', () => {
+      strapi.log.info('Shutting down WebSocket server...');
       io.close(() => {
-        strapi.log.info("WebSocket server closed");
+        strapi.log.info('WebSocket server closed');
         process.exit(0);
       });
     });
   },
 
- 
-  bootstrap() {
-  },
+  bootstrap() {},
 };
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+
+async function joinUserRooms(socket, strapi) {
+  // Personal room — used for conversation:created notifications
+  socket.join(`user:${socket.user.id}`);
+
+  // All active conversations user is a participant of
+  const conversations = await strapi.entityService.findMany(
+    'api::conversation.conversation',
+    {
+      filters: {
+        participants: { id: socket.user.id },
+        is_active: true,
+      },
+      fields: ['id', 'type'],
+    }
+  );
+
+  for (const convo of conversations) {
+    socket.join(`conversation:${convo.id}`);
+  }
+
+  strapi.log.info(
+    `User ${socket.user.id} auto-joined ${conversations.length} conversation rooms`
+  );
+}
+
+async function canAccessConversation(userId, conversationId, strapi) {
+  const convo = await strapi.entityService.findOne(
+    'api::conversation.conversation',
+    conversationId,
+    { populate: ['participants'] }
+  );
+
+  if (!convo || !convo.is_active) return false;
+
+  // Subject groups are open to all authenticated users
+  if (convo.type === 'subject_group') return true;
+
+  // Classroom + direct: must already be a participant
+  return convo.participants.some((p) => p.id === userId);
+}
+
+async function addParticipantIfNeeded(userId, conversationId, strapi) {
+  const convo = await strapi.entityService.findOne(
+    'api::conversation.conversation',
+    conversationId,
+    { populate: ['participants'] }
+  );
+
+  // Only auto-add for subject groups
+  if (convo.type !== 'subject_group') return;
+
+  const alreadyIn = convo.participants.some((p) => p.id === userId);
+  if (alreadyIn) return;
+
+  const updatedIds = [...convo.participants.map((p) => p.id), userId];
+
+  await strapi.entityService.update(
+    'api::conversation.conversation',
+    conversationId,
+    { data: { participants: updatedIds } }
+  );
+}

@@ -1,0 +1,75 @@
+{
+  "kind": "collectionType",
+  "collectionName": "conversations",
+  "info": {
+    "singularName": "conversation",
+    "pluralName": "conversations",
+    "displayName": "Conversation"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "type": {
+      "type": "enumeration",
+      "enum": [
+        "classroom",
+        "subject_group",
+        "direct"
+      ],
+      "required": true
+    },
+    "name": {
+      "type": "string"
+    },
+    "image": {
+      "type": "media",
+      "multiple": false
+    },
+    "classroom": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::enrollment.enrollment"
+    },
+    "community": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::community.community"
+    },
+    "participants": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "plugin::users-permissions.user"
+    },
+    "user_plan": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::user-plan.user-plan"
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true
+    },
+    "write_access": {
+      "type": "enumeration",
+      "enum": [
+        "all",
+        "admins_only"
+      ],
+      "default": "all"
+    },
+    "last_message_at": {
+      "type": "datetime"
+    },
+    "messages": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::message.message",
+      "mappedBy": "conversation"
+    },
+    "last_activity": {
+      "type": "datetime"
+    }
+  }
+}

@@ -234,6 +234,12 @@
       "relation": "oneToMany",
       "target": "api::live-lecture.live-lecture",
       "mappedBy": "classroom"
+    },
+    "conversation": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::conversation.conversation",
+      "mappedBy": "classroom"
     }
   }
 }

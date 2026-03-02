@@ -1077,6 +1077,11 @@ export interface PluginUsersPermissionsUser extends Schema.CollectionType {
       true
     >;
     entrance_exams: Attribute.Component<'entrance-exams.entrance-exams', true>;
+    conversations: Attribute.Relation<
+      'plugin::users-permissions.user',
+      'manyToMany',
+      'api::conversation.conversation'
+    >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     createdBy: Attribute.Relation<
@@ -1779,6 +1784,11 @@ export interface ApiCommunityCommunity extends Schema.CollectionType {
     type: Attribute.Enumeration<['public', 'private']> &
       Attribute.Required &
       Attribute.DefaultTo<'public'>;
+    conversation: Attribute.Relation<
+      'api::community.community',
+      'oneToOne',
+      'api::conversation.conversation'
+    >;
     members: Attribute.Relation<
       'api::community.community',
       'manyToMany',
@@ -1856,6 +1866,68 @@ export interface ApiContentPlanContentPlan extends Schema.CollectionType {
       Attribute.Private;
     updatedBy: Attribute.Relation<
       'api::content-plan.content-plan',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+  };
+}
+
+export interface ApiConversationConversation extends Schema.CollectionType {
+  collectionName: 'conversations';
+  info: {
+    singularName: 'conversation';
+    pluralName: 'conversations';
+    displayName: 'Conversation';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    type: Attribute.Enumeration<['classroom', 'subject_group', 'direct']> &
+      Attribute.Required;
+    name: Attribute.String;
+    image: Attribute.Media;
+    classroom: Attribute.Relation<
+      'api::conversation.conversation',
+      'oneToOne',
+      'api::enrollment.enrollment'
+    >;
+    community: Attribute.Relation<
+      'api::conversation.conversation',
+      'oneToOne',
+      'api::community.community'
+    >;
+    participants: Attribute.Relation<
+      'api::conversation.conversation',
+      'manyToMany',
+      'plugin::users-permissions.user'
+    >;
+    user_plan: Attribute.Relation<
+      'api::conversation.conversation',
+      'manyToOne',
+      'api::user-plan.user-plan'
+    >;
+    is_active: Attribute.Boolean & Attribute.DefaultTo<true>;
+    write_access: Attribute.Enumeration<['all', 'admins_only']> &
+      Attribute.DefaultTo<'all'>;
+    last_message_at: Attribute.DateTime;
+    messages: Attribute.Relation<
+      'api::conversation.conversation',
+      'oneToMany',
+      'api::message.message'
+    >;
+    last_activity: Attribute.DateTime;
+    createdAt: Attribute.DateTime;
+    updatedAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<
+      'api::conversation.conversation',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+    updatedBy: Attribute.Relation<
+      'api::conversation.conversation',
       'oneToOne',
       'admin::user'
     > &
@@ -2394,6 +2466,11 @@ export interface ApiEnrollmentEnrollment extends Schema.CollectionType {
       'api::enrollment.enrollment',
       'oneToMany',
       'api::live-lecture.live-lecture'
+    >;
+    conversation: Attribute.Relation<
+      'api::enrollment.enrollment',
+      'oneToOne',
+      'api::conversation.conversation'
     >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
@@ -3313,24 +3390,37 @@ export interface ApiMessageMessage extends Schema.CollectionType {
     description: '';
   };
   options: {
-    draftAndPublish: true;
+    draftAndPublish: false;
   };
   attributes: {
+    content: Attribute.Text;
+    message_type: Attribute.Enumeration<['text', 'attachment', 'system']> &
+      Attribute.Required &
+      Attribute.DefaultTo<'text'>;
     sender: Attribute.Relation<
       'api::message.message',
       'manyToOne',
       'plugin::users-permissions.user'
     >;
-    receiver: Attribute.Relation<
+    conversation: Attribute.Relation<
       'api::message.message',
       'manyToOne',
+      'api::conversation.conversation'
+    >;
+    attachment: Attribute.Media<'images' | 'files' | 'videos' | 'audios', true>;
+    parent_message: Attribute.Relation<
+      'api::message.message',
+      'manyToOne',
+      'api::message.message'
+    >;
+    is_deleted: Attribute.Boolean & Attribute.DefaultTo<false>;
+    read_by: Attribute.Relation<
+      'api::message.message',
+      'manyToMany',
       'plugin::users-permissions.user'
     >;
-    attachment: Attribute.Media<'images' | 'files' | 'videos' | 'audios'>;
-    message: Attribute.Text;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
-    publishedAt: Attribute.DateTime;
     createdBy: Attribute.Relation<
       'api::message.message',
       'oneToOne',
@@ -5639,6 +5729,7 @@ declare module '@strapi/types' {
       'api::commission-setting.commission-setting': ApiCommissionSettingCommissionSetting;
       'api::community.community': ApiCommunityCommunity;
       'api::content-plan.content-plan': ApiContentPlanContentPlan;
+      'api::conversation.conversation': ApiConversationConversation;
       'api::counselling-video.counselling-video': ApiCounsellingVideoCounsellingVideo;
       'api::course-plan.course-plan': ApiCoursePlanCoursePlan;
       'api::credential.credential': ApiCredentialCredential;

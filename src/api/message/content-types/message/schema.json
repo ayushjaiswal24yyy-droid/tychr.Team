@@ -8,26 +8,37 @@
     "description": ""
   },
   "options": {
-    "draftAndPublish": true
+    "draftAndPublish": false
   },
   "pluginOptions": {},
   "attributes": {
+    "content": {
+      "type": "text"
+    },
+    "message_type": {
+      "type": "enumeration",
+      "enum": [
+        "text",
+        "attachment",
+        "system"
+      ],
+      "default": "text",
+      "required": true
+    },
     "sender": {
       "type": "relation",
       "relation": "manyToOne",
-      "target": "plugin::users-permissions.user",
-      "inversedBy": "messages"
+      "target": "plugin::users-permissions.user"
     },
-    "receiver": {
+    "conversation": {
       "type": "relation",
       "relation": "manyToOne",
-      "target": "plugin::users-permissions.user",
+      "target": "api::conversation.conversation",
       "inversedBy": "messages"
     },
     "attachment": {
       "type": "media",
-      "multiple": false,
-      "required": false,
+      "multiple": true,
       "allowedTypes": [
         "images",
         "files",
@@ -35,8 +46,19 @@
         "audios"
       ]
     },
-    "message": {
-      "type": "text"
+    "parent_message": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::message.message"
+    },
+    "is_deleted": {
+      "type": "boolean",
+      "default": false
+    },
+    "read_by": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "plugin::users-permissions.user"
     }
   }
 }
