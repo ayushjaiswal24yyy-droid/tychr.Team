@@ -1,0 +1,12 @@
+{
+  "collectionName": "components_review_document_feedbacks",
+  "info": { "displayName": "document-feedback" },
+  "attributes": {
+    "document_type": {
+      "type": "enumeration",
+      "enum": ["resume", "statement_of_purpose", "essay", "lor"]
+    },
+    "document_label": { "type": "string" },
+    "feedback": { "type": "text" }
+  }
+}

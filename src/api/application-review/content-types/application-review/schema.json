@@ -1,0 +1,35 @@
+{
+  "kind": "collectionType",
+  "collectionName": "application_reviews",
+  "info": {
+    "singularName": "application-review",
+    "pluralName": "application-reviews",
+    "displayName": "Application Review",
+    "description": ""
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "student_uni_application": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::student-uni-application.student-uni-application"
+    },
+    "counsellor": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "plugin::users-permissions.user"
+    },
+    "overall_review": {
+      "type": "text"
+    },
+    "document_feedback": {
+      "displayName": "document-feedback",
+      "type": "component",
+      "repeatable": true,
+      "component": "document-feedback.document-feedback"
+    }
+  }
+}

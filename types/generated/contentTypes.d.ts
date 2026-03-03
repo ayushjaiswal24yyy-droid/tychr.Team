@@ -1394,6 +1394,52 @@ export interface ApiApSubjectApSubject extends Schema.SingleType {
   };
 }
 
+export interface ApiApplicationReviewApplicationReview
+  extends Schema.CollectionType {
+  collectionName: 'application_reviews';
+  info: {
+    singularName: 'application-review';
+    pluralName: 'application-reviews';
+    displayName: 'Application Review';
+    description: '';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    student_uni_application: Attribute.Relation<
+      'api::application-review.application-review',
+      'manyToOne',
+      'api::student-uni-application.student-uni-application'
+    >;
+    counsellor: Attribute.Relation<
+      'api::application-review.application-review',
+      'manyToOne',
+      'plugin::users-permissions.user'
+    >;
+    overall_review: Attribute.Text;
+    document_feedback: Attribute.Component<
+      'document-feedback.document-feedback',
+      true
+    >;
+    createdAt: Attribute.DateTime;
+    updatedAt: Attribute.DateTime;
+    publishedAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<
+      'api::application-review.application-review',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+    updatedBy: Attribute.Relation<
+      'api::application-review.application-review',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+  };
+}
+
 export interface ApiArticleArticle extends Schema.CollectionType {
   collectionName: 'articles';
   info: {
@@ -5720,6 +5766,7 @@ declare module '@strapi/types' {
       'api::answer.answer': ApiAnswerAnswer;
       'api::ap-city.ap-city': ApiApCityApCity;
       'api::ap-subject.ap-subject': ApiApSubjectApSubject;
+      'api::application-review.application-review': ApiApplicationReviewApplicationReview;
       'api::article.article': ApiArticleArticle;
       'api::attendance.attendance': ApiAttendanceAttendance;
       'api::class.class': ApiClassClass;
