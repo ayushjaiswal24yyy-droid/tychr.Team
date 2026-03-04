@@ -289,11 +289,12 @@ module.exports = {
       }
 
       // Fee gate
-      if (!application.application_fee_paid) {
-        return ctx.paymentRequired(
-          "Application fee must be paid before submitting"
-        );
-      }
+   const hasFee = application.program?.application_fee != null &&
+               Number(application.program.application_fee) > 0;
+
+if (hasFee && !application.application_fee_paid) {
+  return ctx.paymentRequired("Application fee must be paid before submitting");
+}
 
       // Already submitted
       if (application.Category === "Submitted") {
