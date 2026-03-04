@@ -83,6 +83,20 @@
       "relation": "manyToMany",
       "target": "plugin::users-permissions.user",
       "mappedBy": "fav_programs"
+    },
+    "application_fee": {
+      "type": "decimal"
+    },
+    "application_fee_currency": {
+      "type": "enumeration",
+      "enum": [
+        "INR",
+        "USD",
+        "GBP",
+        "EUR",
+        "AUD",
+        "CAD"
+      ]
     }
   }
 }

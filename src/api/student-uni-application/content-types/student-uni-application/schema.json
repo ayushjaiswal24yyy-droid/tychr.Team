@@ -155,6 +155,16 @@
       "relation": "manyToMany",
       "target": "api::task.task",
       "mappedBy": "student_uni_application"
+    },
+    "application_fee_paid": {
+      "type": "boolean",
+      "default": false
+    },
+    "payment": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::payment.payment",
+      "inversedBy": "student_uni_application"
     }
   }
 }

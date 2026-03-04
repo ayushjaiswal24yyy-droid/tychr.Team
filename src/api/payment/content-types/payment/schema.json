@@ -25,7 +25,8 @@
         "classroom_with_live",
         "live_lectures_only",
         "test_series_only",
-        "live_lectures_addon"
+        "live_lectures_addon",
+        "application_fee"
       ],
       "required": true
     },
@@ -93,6 +94,12 @@
       "relation": "manyToOne",
       "target": "api::enrollment.enrollment",
       "inversedBy": "payments"
+    },
+    "student_uni_application": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::student-uni-application.student-uni-application",
+      "mappedBy": "payment"
     }
   }
 }

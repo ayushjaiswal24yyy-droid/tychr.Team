@@ -3666,7 +3666,8 @@ export interface ApiPaymentPayment extends Schema.CollectionType {
         'classroom_with_live',
         'live_lectures_only',
         'test_series_only',
-        'live_lectures_addon'
+        'live_lectures_addon',
+        'application_fee'
       ]
     > &
       Attribute.Required;
@@ -3709,6 +3710,11 @@ export interface ApiPaymentPayment extends Schema.CollectionType {
       'api::payment.payment',
       'manyToOne',
       'api::enrollment.enrollment'
+    >;
+    student_uni_application: Attribute.Relation<
+      'api::payment.payment',
+      'oneToOne',
+      'api::student-uni-application.student-uni-application'
     >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
@@ -3862,6 +3868,10 @@ export interface ApiProgramProgram extends Schema.CollectionType {
       'api::program.program',
       'manyToMany',
       'plugin::users-permissions.user'
+    >;
+    application_fee: Attribute.Decimal;
+    application_fee_currency: Attribute.Enumeration<
+      ['INR', 'USD', 'GBP', 'EUR', 'AUD', 'CAD']
     >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
@@ -4494,6 +4504,12 @@ export interface ApiStudentUniApplicationStudentUniApplication
       'api::student-uni-application.student-uni-application',
       'manyToMany',
       'api::task.task'
+    >;
+    application_fee_paid: Attribute.Boolean & Attribute.DefaultTo<false>;
+    payment: Attribute.Relation<
+      'api::student-uni-application.student-uni-application',
+      'oneToOne',
+      'api::payment.payment'
     >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
