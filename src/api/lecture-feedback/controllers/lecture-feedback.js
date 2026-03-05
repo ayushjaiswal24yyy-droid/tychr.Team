@@ -10,55 +10,38 @@ module.exports = createCoreController(
                 const user = ctx.state.user;
                 const { lectureId, rating, review } = ctx.request.body;
 
-                if (!user) {
-                    return ctx.unauthorized('You must be logged in');
-                }
+                if (!user) return ctx.unauthorized('You must be logged in');
+                if (!lectureId || !rating) return ctx.badRequest('Lecture and rating are required');
+                if (rating < 1 || rating > 5) return ctx.badRequest('Rating must be between 1 and 5');
 
-                if (!lectureId || !rating) {
-                    return ctx.badRequest('Lecture and rating are required');
-                }
-
-                if (rating < 1 || rating > 5) {
-                    return ctx.badRequest('Rating must be between 1 and 5');
-                }
-
-                // 1️⃣ Attendance check (correct for your schema)
                 const attended = await strapi.db
                     .query('api::attendance.attendance')
                     .findOne({
                         where: {
                             student: user.id,
                             live_lecture: lectureId,
-                            status: {
-                                $in: ['present', 'late'],
-                            },
+                            status: { $in: ['present', 'late'] },
                         },
                     });
 
-                if (!attended) {
-                    return ctx.forbidden('You did not attend this lecture');
-                }
+                if (!attended) return ctx.forbidden('You did not attend this lecture');
 
-                // 2️⃣ Check existing review
                 const existing = await strapi.db
                     .query('api::lecture-feedback.lecture-feedback')
                     .findOne({
                         where: {
-                            lecture: lectureId,
+                            live_lecture: lectureId, 
                             user: user.id,
                         },
                     });
 
-                if (existing) {
-                    return ctx.conflict('You have already reviewed this lecture');
-                }
+                if (existing) return ctx.conflict('You have already reviewed this lecture');
 
-                // 3️⃣ Create feedback
                 const feedback = await strapi.db
                     .query('api::lecture-feedback.lecture-feedback')
                     .create({
                         data: {
-                            lecture: lectureId,
+                            live_lecture: lectureId, 
                             user: user.id,
                             rating,
                             review,
@@ -71,13 +54,11 @@ module.exports = createCoreController(
                 return ctx.internalServerError('Failed to submit review');
             }
         },
+
         async pendingReview(ctx) {
             try {
                 const user = ctx.state.user;
-
-                if (!user) {
-                    return ctx.unauthorized();
-                }
+                if (!user) return ctx.unauthorized();
 
                 const attendances = await strapi.db
                     .query('api::attendance.attendance')
@@ -86,9 +67,7 @@ module.exports = createCoreController(
                             student: user.id,
                             status: { $in: ['present', 'late'] },
                         },
-                        populate: {
-                            live_lecture: true,
-                        },
+                        populate: { live_lecture: true },
                     });
 
                 const sorted = attendances
@@ -102,8 +81,9 @@ module.exports = createCoreController(
                 for (const attendance of sorted) {
                     const lecture = attendance.live_lecture;
                     if (!lecture) continue;
-
                     if (lecture.lecture_status !== 'completed') continue;
+                    if (!lecture.is_counted) continue;   // fix: skip invalid lectures
+                    if (lecture.is_cancelled) continue;  // fix: skip cancelled lectures
 
                     const existingFeedback = await strapi.db
                         .query('api::lecture-feedback.lecture-feedback')
@@ -125,8 +105,5 @@ module.exports = createCoreController(
                 return ctx.internalServerError('Failed to get pending review');
             }
         }
-
-
-
     })
 );
