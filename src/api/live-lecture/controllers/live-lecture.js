@@ -297,8 +297,13 @@ ${tutor?.fullName || "Your Tutor"}
         let updated = 0;
         let failed = 0;
 
-        // Single app token for all lectures
-        const appAccessToken = await getAppAccessToken();
+        let appAccessToken;
+        try {
+          appAccessToken = await getAppAccessToken();
+        } catch (err) {
+          strapi.log.error("Failed to get app access token:", err?.response?.data || err.message);
+          return ctx.badRequest(err?.response?.data?.error_description || "Failed to get app token");
+        }
 
         for (const lecture of lectures) {
           processed++;
@@ -306,23 +311,31 @@ ${tutor?.fullName || "Your Tutor"}
           try {
             const tutor = lecture.classroom?.tutor;
 
-            // 📞 Fetch call record by joinWebUrl
+            // Step 1: Find call record by joinWebUrl
             const recordsRes = await axios.get(
-              `https://graph.microsoft.com/v1.0/communications/callRecords?$filter=joinWebUrl eq '${lecture.teams_join_url}'&$expand=sessions($expand=segments)`,
+              `https://graph.microsoft.com/v1.0/communications/callRecords?$filter=joinWebUrl eq '${lecture.teams_join_url}'`,
               { headers: { Authorization: `Bearer ${appAccessToken}` } }
             );
 
             const callRecords = recordsRes.data.value || [];
-            const matched = callRecords[0]; // filtered by joinWebUrl so first result is correct
+            const matched = callRecords[0];
 
             if (!matched) {
               strapi.log.info(`No call record found yet for lecture ${lecture.id}`);
               continue;
             }
 
+            // Step 2: Fetch full detail with sessions + segments
+            const detailRes = await axios.get(
+              `https://graph.microsoft.com/v1.0/communications/callRecords/${matched.id}?$expand=sessions($expand=segments)`,
+              { headers: { Authorization: `Bearer ${appAccessToken}` } }
+            );
+
+            const record = detailRes.data;
+
             // 🎥 Extract recording URL
             let recordingUrl = null;
-            for (const session of matched.sessions || []) {
+            for (const session of record.sessions || []) {
               for (const segment of session.segments || []) {
                 const recordingMedia = segment.media?.find((m) => m.label === "recording");
                 if (recordingMedia?.contentUrl) {
@@ -337,7 +350,7 @@ ${tutor?.fullName || "Your Tutor"}
             let tutorDurationSeconds = 0;
             const tutorEmail = tutor?.email?.toLowerCase();
 
-            for (const session of matched.sessions || []) {
+            for (const session of record.sessions || []) {
               for (const segment of session.segments || []) {
                 for (const participant of segment.participants || []) {
                   if (
@@ -363,8 +376,8 @@ ${tutor?.fullName || "Your Tutor"}
                   recording_url: recordingUrl,
                   has_recording: !!recordingUrl,
                   recording_status: recordingUrl ? "available" : "pending",
-                  recorded_at: recordingUrl ? new Date(matched.startDateTime) : null,
-                  recording_duration_seconds: matched.durationSeconds || null,
+                  recorded_at: recordingUrl ? new Date(record.startDateTime) : null,
+                  recording_duration_seconds: record.durationSeconds || null,
                   tutor_duration_minutes: tutorDurationMinutes,
                   is_counted: isCounted,
                   tutor_attendance_status: isCounted ? "passed" : "failed",
