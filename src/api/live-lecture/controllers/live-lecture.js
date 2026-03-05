@@ -385,6 +385,11 @@ ${tutor?.fullName || "Your Tutor"}
           } catch (err) {
             failed++;
             strapi.log.error(`Recording sync failed for lecture ${lecture.id}`, err);
+
+            // Temporarily save error to lecture for debugging
+            await strapi.entityService.update('api::live-lecture.live-lecture', lecture.id, {
+              data: { cancellation_reason: err?.message || JSON.stringify(err) }
+            });
           }
         }
 
