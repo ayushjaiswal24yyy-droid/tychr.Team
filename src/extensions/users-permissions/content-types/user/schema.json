@@ -572,6 +572,12 @@
       "relation": "manyToMany",
       "target": "api::conversation.conversation",
       "mappedBy": "participants"
+    },
+    "tutor_disputes": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::tutor-dispute.tutor-dispute",
+      "mappedBy": "tutor"
     }
   }
 }

@@ -272,7 +272,6 @@ ${tutor?.fullName || "Your Tutor"}
         return { ok: true, processed };
       },
       async syncRecordings(ctx) {
-        // 🔐 Protect endpoint
         const secret = ctx.request.headers["x-cron-key"];
         if (secret !== process.env.CRON_SECRET) {
           return ctx.unauthorized("Invalid cron key");
@@ -288,9 +287,7 @@ ${tutor?.fullName || "Your Tutor"}
             },
             populate: {
               classroom: {
-                populate: {
-                  tutor: true,
-                },
+                populate: { tutor: true },
               },
             },
           }
@@ -311,25 +308,18 @@ ${tutor?.fullName || "Your Tutor"}
               continue;
             }
 
-            // 🔑 Refresh access token
-            const accessToken = await getTeamsAccessToken(
+            const { accessToken } = await getTeamsAccessToken(
               tutor.teams_refresh_token,
               tutor.id
             );
 
-            // 📞 Fetch call records
             const recordsRes = await axios.get(
               "https://graph.microsoft.com/v1.0/communications/callRecords",
-              {
-                headers: {
-                  Authorization: `Bearer ${accessToken}`,
-                },
-              }
+              { headers: { Authorization: `Bearer ${accessToken}` } }
             );
 
             const callRecords = recordsRes.data.value || [];
 
-            // 🔍 Match by meeting ID
             const matched = callRecords.find(
               (r) => r.meetingId === lecture.teams_meeting_id
             );
@@ -338,12 +328,9 @@ ${tutor?.fullName || "Your Tutor"}
 
             // 🎥 Extract recording
             let recordingMedia = null;
-
             for (const session of matched.sessions || []) {
               for (const segment of session.segments || []) {
-                recordingMedia = segment.media?.find(
-                  (m) => m.label === "recording"
-                );
+                recordingMedia = segment.media?.find((m) => m.label === "recording");
                 if (recordingMedia) break;
               }
               if (recordingMedia) break;
@@ -351,7 +338,29 @@ ${tutor?.fullName || "Your Tutor"}
 
             if (!recordingMedia?.contentUrl) continue;
 
-            // 💾 Save to lecture
+            // 👨‍🏫 Extract tutor duration
+            let tutorDurationSeconds = 0;
+            const tutorEmail = tutor.email?.toLowerCase();
+
+            for (const session of matched.sessions || []) {
+              for (const segment of session.segments || []) {
+                for (const participant of segment.participants || []) {
+                  if (
+                    participant.identity?.user?.userPrincipalName?.toLowerCase() === tutorEmail
+                  ) {
+                    const start = new Date(segment.startDateTime);
+                    const end = new Date(segment.endDateTime);
+                    tutorDurationSeconds += (end.getTime() - start.getTime()) / 1000;
+                  }
+                }
+              }
+            }
+
+            const MEETING_DURATION_SECONDS = 60 * 60;
+            const tutorDurationMinutes = Math.round(tutorDurationSeconds / 60);
+            const isCounted = tutorDurationSeconds >= MEETING_DURATION_SECONDS * 0.8;
+
+            // 💾 Single update with everything
             await strapi.entityService.update(
               "api::live-lecture.live-lecture",
               lecture.id,
@@ -364,6 +373,10 @@ ${tutor?.fullName || "Your Tutor"}
                   recording_duration_seconds: recordingMedia.duration
                     ? parseInt(recordingMedia.duration.replace(/\D/g, ""))
                     : null,
+                  tutor_duration_minutes: tutorDurationMinutes,
+                  is_counted: isCounted,
+                  tutor_attendance_status: isCounted ? "passed" : "failed",
+                  tutor_attendance_flagged_at: !isCounted ? new Date() : null,
                 },
               }
             );
@@ -371,21 +384,12 @@ ${tutor?.fullName || "Your Tutor"}
             updated++;
           } catch (err) {
             failed++;
-            strapi.log.error(
-              `Recording sync failed for lecture ${lecture.id}`,
-              err
-            );
+            strapi.log.error(`Recording sync failed for lecture ${lecture.id}`, err);
           }
         }
 
-        return ctx.send({
-          ok: true,
-          processed,
-          updated,
-          failed,
-        });
+        return ctx.send({ ok: true, processed, updated, failed });
       },
-
     };
   }
 );

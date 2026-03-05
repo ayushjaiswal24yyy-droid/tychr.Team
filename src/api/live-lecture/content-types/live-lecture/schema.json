@@ -140,6 +140,34 @@
       "relation": "oneToMany",
       "target": "api::lecture-feedback.lecture-feedback",
       "mappedBy": "live_lecture"
+    },
+    "tutor_duration_minutes": {
+      "type": "integer",
+      "description": "Actual minutes the tutor was present in the meeting"
+    },
+    "is_counted": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether this lecture meets the 80% attendance threshold"
+    },
+    "tutor_attendance_status": {
+      "type": "enumeration",
+      "enum": [
+        "pending",
+        "passed",
+        "failed"
+      ],
+      "default": "pending"
+    },
+    "tutor_attendance_flagged_at": {
+      "type": "datetime",
+      "description": "When the system flagged this lecture as not counted"
+    },
+    "tutor_dispute": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::tutor-dispute.tutor-dispute",
+      "inversedBy": "live_lecture"
     }
   }
 }

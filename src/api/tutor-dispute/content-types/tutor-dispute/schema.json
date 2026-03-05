@@ -1,0 +1,57 @@
+{
+  "kind": "collectionType",
+  "collectionName": "tutor_disputes",
+  "info": {
+    "singularName": "tutor-dispute",
+    "pluralName": "tutor-disputes",
+    "displayName": "Tutor_Dispute",
+    "description": "Disputes raised by tutors against flagged lectures"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "attributes": {
+    "tutor": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "plugin::users-permissions.user",
+      "inversedBy": "tutor_disputes"
+    },
+    "live_lecture": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::live-lecture.live-lecture",
+      "inversedBy": "tutor_dispute"
+    },
+    "reason": {
+      "type": "text",
+      "required": true,
+      "description": "Tutor's explanation for the dispute"
+    },
+    "status": {
+      "type": "enumeration",
+      "enum": [
+        "open",
+        "under_review",
+        "resolved_valid",
+        "resolved_invalid"
+      ],
+      "default": "open"
+    },
+    "admin_notes": {
+      "type": "text",
+      "description": "Admin's internal notes on the dispute"
+    },
+    "resolved_at": {
+      "type": "datetime"
+    },
+    "resolved_by": {
+      "type": "string",
+      "description": "Admin username who resolved it"
+    },
+    "evidence_urls": {
+      "type": "json",
+      "description": "Array of URLs tutor can attach as evidence"
+    }
+  }
+}

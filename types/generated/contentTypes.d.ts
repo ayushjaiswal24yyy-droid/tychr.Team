@@ -1082,6 +1082,11 @@ export interface PluginUsersPermissionsUser extends Schema.CollectionType {
       'manyToMany',
       'api::conversation.conversation'
     >;
+    tutor_disputes: Attribute.Relation<
+      'plugin::users-permissions.user',
+      'oneToMany',
+      'api::tutor-dispute.tutor-dispute'
+    >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     createdBy: Attribute.Relation<
@@ -3197,6 +3202,18 @@ export interface ApiLiveLectureLiveLecture extends Schema.CollectionType {
       'oneToMany',
       'api::lecture-feedback.lecture-feedback'
     >;
+    tutor_duration_minutes: Attribute.Integer;
+    is_counted: Attribute.Boolean & Attribute.DefaultTo<false>;
+    tutor_attendance_status: Attribute.Enumeration<
+      ['pending', 'passed', 'failed']
+    > &
+      Attribute.DefaultTo<'pending'>;
+    tutor_attendance_flagged_at: Attribute.DateTime;
+    tutor_dispute: Attribute.Relation<
+      'api::live-lecture.live-lecture',
+      'oneToOne',
+      'api::tutor-dispute.tutor-dispute'
+    >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
@@ -5231,6 +5248,54 @@ export interface ApiTransactionOutTransactionOut extends Schema.CollectionType {
   };
 }
 
+export interface ApiTutorDisputeTutorDispute extends Schema.CollectionType {
+  collectionName: 'tutor_disputes';
+  info: {
+    singularName: 'tutor-dispute';
+    pluralName: 'tutor-disputes';
+    displayName: 'Tutor_Dispute';
+    description: 'Disputes raised by tutors against flagged lectures';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    tutor: Attribute.Relation<
+      'api::tutor-dispute.tutor-dispute',
+      'manyToOne',
+      'plugin::users-permissions.user'
+    >;
+    live_lecture: Attribute.Relation<
+      'api::tutor-dispute.tutor-dispute',
+      'oneToOne',
+      'api::live-lecture.live-lecture'
+    >;
+    reason: Attribute.Text & Attribute.Required;
+    status: Attribute.Enumeration<
+      ['open', 'under_review', 'resolved_valid', 'resolved_invalid']
+    > &
+      Attribute.DefaultTo<'open'>;
+    admin_notes: Attribute.Text;
+    resolved_at: Attribute.DateTime;
+    resolved_by: Attribute.String;
+    evidence_urls: Attribute.JSON;
+    createdAt: Attribute.DateTime;
+    updatedAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<
+      'api::tutor-dispute.tutor-dispute',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+    updatedBy: Attribute.Relation<
+      'api::tutor-dispute.tutor-dispute',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+  };
+}
+
 export interface ApiTutorPlanTutorPlan extends Schema.CollectionType {
   collectionName: 'tutor_plans';
   info: {
@@ -5853,6 +5918,7 @@ declare module '@strapi/types' {
       'api::topic.topic': ApiTopicTopic;
       'api::tp-applicant.tp-applicant': ApiTpApplicantTpApplicant;
       'api::transaction-out.transaction-out': ApiTransactionOutTransactionOut;
+      'api::tutor-dispute.tutor-dispute': ApiTutorDisputeTutorDispute;
       'api::tutor-plan.tutor-plan': ApiTutorPlanTutorPlan;
       'api::tutors.tutors': ApiTutorsTutors;
       'api::tutors-website.tutors-website': ApiTutorsWebsiteTutorsWebsite;
