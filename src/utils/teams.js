@@ -31,6 +31,8 @@ async function getTeamsAccessToken(refreshToken, userId) {
   };
 }
 
+
+
 async function createTeamsMeeting({
   accessToken,
   title,
@@ -72,5 +74,19 @@ async function createTeamsMeeting({
   }
 }
 
+async function getAppAccessToken() {
+  const res = await axios.post(
+    `https://login.microsoftonline.com/${process.env.MICROSOFT_TENANT_ID}/oauth2/v2.0/token`,
+    new URLSearchParams({
+      client_id: process.env.MICROSOFT_CLIENT_ID,
+      client_secret: process.env.MICROSOFT_CLIENT_SECRET,
+      grant_type: 'client_credentials',
+      scope: 'https://graph.microsoft.com/.default',
+    }),
+    { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } }
+  );
+  return res.data.access_token;
+}
 
-module.exports={getTeamsAccessToken, createTeamsMeeting}
+
+module.exports = { getTeamsAccessToken, createTeamsMeeting, getAppAccessToken };

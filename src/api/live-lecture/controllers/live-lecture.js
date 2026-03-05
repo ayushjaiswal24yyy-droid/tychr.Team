@@ -6,7 +6,7 @@
 
 const { createCoreController } = require("@strapi/strapi").factories;
 const axios = require("axios");
-const { createTeamsMeeting, getTeamsAccessToken } = require("../../../utils/teams")
+const { createTeamsMeeting, getTeamsAccessToken, getAppAccessToken } = require("../../../utils/teams")
 module.exports = createCoreController(
   "api::live-lecture.live-lecture",
   ({ strapi }) => {
@@ -297,50 +297,45 @@ ${tutor?.fullName || "Your Tutor"}
         let updated = 0;
         let failed = 0;
 
+        // Single app token for all lectures
+        const appAccessToken = await getAppAccessToken();
+
         for (const lecture of lectures) {
           processed++;
 
           try {
             const tutor = lecture.classroom?.tutor;
 
-            if (!tutor?.teams_refresh_token) {
-              failed++;
-              continue;
-            }
-
-            const { accessToken } = await getTeamsAccessToken(
-              tutor.teams_refresh_token,
-              tutor.id
-            );
-
+            // 📞 Fetch call record by joinWebUrl
             const recordsRes = await axios.get(
-              "https://graph.microsoft.com/v1.0/communications/callRecords",
-              { headers: { Authorization: `Bearer ${accessToken}` } }
+              `https://graph.microsoft.com/v1.0/communications/callRecords?$filter=joinWebUrl eq '${lecture.teams_join_url}'&$expand=sessions($expand=segments)`,
+              { headers: { Authorization: `Bearer ${appAccessToken}` } }
             );
 
             const callRecords = recordsRes.data.value || [];
+            const matched = callRecords[0]; // filtered by joinWebUrl so first result is correct
 
-            const matched = callRecords.find(
-              (r) => r.meetingId === lecture.teams_meeting_id
-            );
-
-            if (!matched) continue;
-
-            // 🎥 Extract recording
-            let recordingMedia = null;
-            for (const session of matched.sessions || []) {
-              for (const segment of session.segments || []) {
-                recordingMedia = segment.media?.find((m) => m.label === "recording");
-                if (recordingMedia) break;
-              }
-              if (recordingMedia) break;
+            if (!matched) {
+              strapi.log.info(`No call record found yet for lecture ${lecture.id}`);
+              continue;
             }
 
-            if (!recordingMedia?.contentUrl) continue;
+            // 🎥 Extract recording URL
+            let recordingUrl = null;
+            for (const session of matched.sessions || []) {
+              for (const segment of session.segments || []) {
+                const recordingMedia = segment.media?.find((m) => m.label === "recording");
+                if (recordingMedia?.contentUrl) {
+                  recordingUrl = recordingMedia.contentUrl;
+                  break;
+                }
+              }
+              if (recordingUrl) break;
+            }
 
             // 👨‍🏫 Extract tutor duration
             let tutorDurationSeconds = 0;
-            const tutorEmail = tutor.email?.toLowerCase();
+            const tutorEmail = tutor?.email?.toLowerCase();
 
             for (const session of matched.sessions || []) {
               for (const segment of session.segments || []) {
@@ -360,19 +355,16 @@ ${tutor?.fullName || "Your Tutor"}
             const tutorDurationMinutes = Math.round(tutorDurationSeconds / 60);
             const isCounted = tutorDurationSeconds >= MEETING_DURATION_SECONDS * 0.8;
 
-            // 💾 Single update with everything
             await strapi.entityService.update(
               "api::live-lecture.live-lecture",
               lecture.id,
               {
                 data: {
-                  recording_url: recordingMedia.contentUrl,
-                  has_recording: true,
-                  recording_status: "available",
-                  recorded_at: new Date(matched.startDateTime),
-                  recording_duration_seconds: recordingMedia.duration
-                    ? parseInt(recordingMedia.duration.replace(/\D/g, ""))
-                    : null,
+                  recording_url: recordingUrl,
+                  has_recording: !!recordingUrl,
+                  recording_status: recordingUrl ? "available" : "pending",
+                  recorded_at: recordingUrl ? new Date(matched.startDateTime) : null,
+                  recording_duration_seconds: matched.durationSeconds || null,
                   tutor_duration_minutes: tutorDurationMinutes,
                   is_counted: isCounted,
                   tutor_attendance_status: isCounted ? "passed" : "failed",
@@ -384,12 +376,17 @@ ${tutor?.fullName || "Your Tutor"}
             updated++;
           } catch (err) {
             failed++;
-            strapi.log.error(`Recording sync failed for lecture ${lecture.id}`, err);
+            const errorMsg = err?.response?.data
+              ? JSON.stringify(err.response.data)
+              : err.message;
 
-            // Temporarily save error to lecture for debugging
-            await strapi.entityService.update('api::live-lecture.live-lecture', lecture.id, {
-              data: { cancellation_reason: err?.message || JSON.stringify(err) }
-            });
+            strapi.log.error(`Recording sync failed for lecture ${lecture.id}`, errorMsg);
+
+            await strapi.entityService.update(
+              "api::live-lecture.live-lecture",
+              lecture.id,
+              { data: { cancellation_reason: `[sync_error] ${errorMsg}` } }
+            );
           }
         }
 
