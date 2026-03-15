@@ -18,6 +18,19 @@ const renderRichText = (content) => {
   return `<div class="rich-text">${richTextToHtml(content)}</div>`;
 };
 
+// Returns true if any question content contains LaTeX delimiters
+const paperHasMath = (questions) => {
+  const mathPattern = /\$|\\\(|\\\[/;
+  return questions.some((q) => {
+    const fields = [
+      q.question,
+      q.instructions,
+      ...(q.parts || []).map((p) => p.question_text),
+    ];
+    return fields.some((f) => f && mathPattern.test(f));
+  });
+};
+
 // ---------------------------------------------------------------------------
 // Question-type renderers
 // ---------------------------------------------------------------------------
@@ -52,9 +65,15 @@ const renderMatchColumns = (options) => {
     return "";
   }
   const left =
-    parsed?.left?.content?.split("---OPTION---").map((s) => s.trim()).filter(Boolean) || [];
+    parsed?.left?.content
+      ?.split("---OPTION---")
+      .map((s) => s.trim())
+      .filter(Boolean) || [];
   const right =
-    parsed?.right?.content?.split("---OPTION---").map((s) => s.trim()).filter(Boolean) || [];
+    parsed?.right?.content
+      ?.split("---OPTION---")
+      .map((s) => s.trim())
+      .filter(Boolean) || [];
   const rows = Math.max(left.length, right.length);
   if (!rows) return "";
   return `
@@ -80,9 +99,6 @@ const renderFillInTheBlanks = (options) => {
   if (!options) return "";
   try {
     const parsed = typeof options === "string" ? JSON.parse(options) : options;
-    // parsed.content is a plain markdown string — render it directly, don't
-    // double-wrap through renderRichText which would nest <div class="rich-text">
-    // inside itself.
     const content = parsed?.content;
     if (!content || typeof content !== "string") return "";
     return `<div class="rich-text fitb">${richTextToHtml(content)}</div>`;
@@ -122,14 +138,15 @@ const renderQuestionBody = (q) => {
   const isSinglePart = parts.length <= 1;
   const singlePart = parts[0] || {};
 
-  // Top-level question stem (always rendered)
   let bodyHtml = renderRichText(q.question);
 
   if (isSinglePart) {
-    // Only render the part's question_text when it carries genuinely different
-    // content from the top-level stem (avoids printing the same text twice).
     const partText = singlePart.question_text;
-    if (partText && typeof partText === "string" && partText.trim() !== (q.question || "").trim()) {
+    if (
+      partText &&
+      typeof partText === "string" &&
+      partText.trim() !== (q.question || "").trim()
+    ) {
       bodyHtml += renderRichText(partText);
     }
 
@@ -160,16 +177,15 @@ const renderQuestionBody = (q) => {
 
 const resolveQuestionMarks = (q) => {
   if (q.marks != null && q.marks > 0) return q.marks;
-  // Fall back to summing part marks
   const parts = q.parts || [];
   return parts.reduce((sum, p) => sum + (p.marks || 0), 0);
 };
 
 // ---------------------------------------------------------------------------
-// HTML template
+// HTML template — needsMath is computed in the controller and passed in
 // ---------------------------------------------------------------------------
 
-const buildHtml = (paper) => {
+const buildHtml = (paper, needsMath) => {
   const questions = paper.question_banks || [];
   const totalMarks = questions.reduce((sum, q) => sum + resolveQuestionMarks(q), 0);
 
@@ -180,6 +196,7 @@ const buildHtml = (paper) => {
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>${paper.title || "Test Paper"}</title>
+  ${needsMath ? `
   <script>
     window.MathJax = {
       tex: { inlineMath: [['$', '$'], ['\\\\(', '\\\\)']] },
@@ -187,15 +204,13 @@ const buildHtml = (paper) => {
       startup: {
         ready() {
           MathJax.startup.defaultReady();
-          // Signal that typesetting is done so Puppeteer can proceed
-          MathJax.startup.promise.then(() => {
-            window.__mathJaxDone = true;
-          });
+          MathJax.startup.promise.then(() => { window.__mathJaxDone = true; });
         }
       }
     };
   </script>
   <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js" id="MathJax-script"></script>
+  ` : ""}
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
@@ -223,12 +238,6 @@ const buildHtml = (paper) => {
     .questions { margin-top: 16px; }
     .question {
       margin-bottom: 24px;
-      /*
-        page-break-inside: avoid is unreliable in Chrome for tall blocks.
-        We use break-inside: avoid (the modern property) + the legacy one.
-        For very long questions Chrome will still break — that is unavoidable
-        without injecting manual page breaks, which we don't do here.
-      */
       break-inside: avoid;
       page-break-inside: avoid;
     }
@@ -328,27 +337,47 @@ module.exports = {
         return ctx.badRequest("PDF generation is only allowed for offline papers");
       }
 
-      const html = buildHtml(paper);
-// ✅ v133+ API
-const browser = await puppeteer.launch({
-  args: [...chromium.args, "--no-sandbox", "--disable-setuid-sandbox"],
-  executablePath: await chromium.executablePath(),
-  headless: true,
-});
+      // Compute needsMath once and pass into buildHtml so both the
+      // <script> tag injection and the Puppeteer request filter stay in sync
+      const questions = paper.question_banks || [];
+      const needsMath = paperHasMath(questions);
+      const html = buildHtml(paper, needsMath);
+
+      const browser = await puppeteer.launch({
+        args: [...chromium.args, "--no-sandbox", "--disable-setuid-sandbox"],
+        executablePath: await chromium.executablePath(),
+        headless: true,
+      });
+
       const page = await browser.newPage();
 
-      // Load content — networkidle0 lets MathJax's CDN request complete before
-      // we start waiting for typesetting.
-      await page.setContent(html, { waitUntil: "networkidle0", timeout: 30000 });
+      // Block MathJax CDN when not needed — prevents the page from hanging
+      // on servers where outbound requests to jsdelivr.net are slow or blocked
+      await page.setRequestInterception(true);
+      page.on("request", (req) => {
+        const url = req.url();
+        const isMathJax = url.includes("mathjax") || url.includes("jsdelivr");
+        if (isMathJax && !needsMath) {
+          req.abort();
+        } else {
+          req.continue();
+        }
+      });
 
-      // Wait for MathJax to finish typesetting (signalled via window.__mathJaxDone).
-      // If the page has no math or MathJax fails to load, we time out gracefully
-      // after 15 s and proceed anyway.
-      await page
-        .waitForFunction(() => window.__mathJaxDone === true, { timeout: 15000 })
-        .catch(() => {
-          strapi.log.warn("MathJax did not signal completion — proceeding without it.");
-        });
+      // domcontentloaded is sufficient — HTML is self-contained
+      // MathJax (if needed) is waited on separately below
+      await page.setContent(html, { waitUntil: "domcontentloaded", timeout: 15000 });
+
+      if (needsMath) {
+        await page
+          .waitForFunction(() => window.__mathJaxDone === true, { timeout: 20000 })
+          .catch(() => {
+            strapi.log.warn("MathJax did not complete — PDF will render without math formatting.");
+          });
+      } else {
+        // Small buffer for CSS rendering (fonts, borders etc.)
+        await new Promise((resolve) => setTimeout(resolve, 300));
+      }
 
       const pdf = await page.pdf({
         format: "A4",
