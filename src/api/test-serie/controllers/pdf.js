@@ -1,10 +1,12 @@
-
 const puppeteer = require("puppeteer-core");
 const chromium = require("@sparticuz/chromium");
 
-// Strapi richtext is stored as markdown - convert basic markdown to HTML
+// ---------------------------------------------------------------------------
+// Rich-text helpers (Strapi v4 stores rich text as markdown strings)
+// ---------------------------------------------------------------------------
+
 const richTextToHtml = (content) => {
-  if (!content) return "";
+  if (!content || typeof content !== "string") return "";
   return content
     .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
     .replace(/\*(.*?)\*/g, "<em>$1</em>")
@@ -12,12 +14,16 @@ const richTextToHtml = (content) => {
 };
 
 const renderRichText = (content) => {
-  if (!content) return "";
+  if (!content || typeof content !== "string") return "";
   return `<div class="rich-text">${richTextToHtml(content)}</div>`;
 };
 
+// ---------------------------------------------------------------------------
+// Question-type renderers
+// ---------------------------------------------------------------------------
+
 const renderMCQOptions = (options) => {
-  if (!options) return "";
+  if (!options || typeof options !== "string") return "";
   const opts = options
     .split("---OPTION---")
     .map((o) => o.trim())
@@ -45,8 +51,10 @@ const renderMatchColumns = (options) => {
   } catch {
     return "";
   }
-  const left = parsed?.left?.content?.split("---OPTION---").filter(Boolean) || [];
-  const right = parsed?.right?.content?.split("---OPTION---").filter(Boolean) || [];
+  const left =
+    parsed?.left?.content?.split("---OPTION---").map((s) => s.trim()).filter(Boolean) || [];
+  const right =
+    parsed?.right?.content?.split("---OPTION---").map((s) => s.trim()).filter(Boolean) || [];
   const rows = Math.max(left.length, right.length);
   if (!rows) return "";
   return `
@@ -72,11 +80,20 @@ const renderFillInTheBlanks = (options) => {
   if (!options) return "";
   try {
     const parsed = typeof options === "string" ? JSON.parse(options) : options;
-    return renderRichText(parsed?.content);
+    // parsed.content is a plain markdown string — render it directly, don't
+    // double-wrap through renderRichText which would nest <div class="rich-text">
+    // inside itself.
+    const content = parsed?.content;
+    if (!content || typeof content !== "string") return "";
+    return `<div class="rich-text fitb">${richTextToHtml(content)}</div>`;
   } catch {
     return "";
   }
 };
+
+// ---------------------------------------------------------------------------
+// Multi-part renderer
+// ---------------------------------------------------------------------------
 
 const renderSubParts = (parts) => {
   return parts
@@ -87,30 +104,35 @@ const renderSubParts = (parts) => {
           <span class="sub-part-label">(${String.fromCharCode(97 + index)})</span>
           <span class="sub-part-marks">[${part.marks || 0} mark${part.marks !== 1 ? "s" : ""}]</span>
         </div>
-        <div class="sub-part-text">${renderRichText(part.question_text)}</div>
-        ${part.answer_type === "Fill In The Blanks" ? renderFillInTheBlanks(part.options) : ""}
+        <div class="sub-part-text">
+          ${renderRichText(part.question_text)}
+          ${part.answer_type === "Fill In The Blanks" ? renderFillInTheBlanks(part.options) : ""}
+        </div>
       </div>`
     )
     .join("");
 };
+
+// ---------------------------------------------------------------------------
+// Main question body builder
+// ---------------------------------------------------------------------------
 
 const renderQuestionBody = (q) => {
   const parts = q.parts || [];
   const isSinglePart = parts.length <= 1;
   const singlePart = parts[0] || {};
 
-  // Main question text: use q.question (the top-level richtext field)
-  const mainQuestionHtml = renderRichText(q.question);
-
-  // For single-part questions, also render the part's question_text if different
-  const partTextHtml =
-    isSinglePart && singlePart.question_text && singlePart.question_text !== q.question
-      ? renderRichText(singlePart.question_text)
-      : "";
-
-  let bodyHtml = mainQuestionHtml + partTextHtml;
+  // Top-level question stem (always rendered)
+  let bodyHtml = renderRichText(q.question);
 
   if (isSinglePart) {
+    // Only render the part's question_text when it carries genuinely different
+    // content from the top-level stem (avoids printing the same text twice).
+    const partText = singlePart.question_text;
+    if (partText && typeof partText === "string" && partText.trim() !== (q.question || "").trim()) {
+      bodyHtml += renderRichText(partText);
+    }
+
     switch (q.question_type) {
       case "mcq":
       case "mcq_multiple":
@@ -126,16 +148,30 @@ const renderQuestionBody = (q) => {
         break;
     }
   } else {
-    // Multi-part question
     bodyHtml += `<div class="sub-parts">${renderSubParts(parts)}</div>`;
   }
 
   return bodyHtml;
 };
 
+// ---------------------------------------------------------------------------
+// Marks total — sums part-level marks when q.marks is absent/zero
+// ---------------------------------------------------------------------------
+
+const resolveQuestionMarks = (q) => {
+  if (q.marks != null && q.marks > 0) return q.marks;
+  // Fall back to summing part marks
+  const parts = q.parts || [];
+  return parts.reduce((sum, p) => sum + (p.marks || 0), 0);
+};
+
+// ---------------------------------------------------------------------------
+// HTML template
+// ---------------------------------------------------------------------------
+
 const buildHtml = (paper) => {
   const questions = paper.question_banks || [];
-  const totalMarks = questions.reduce((sum, q) => sum + (q.marks || 0), 0);
+  const totalMarks = questions.reduce((sum, q) => sum + resolveQuestionMarks(q), 0);
 
   return `
 <!DOCTYPE html>
@@ -147,10 +183,19 @@ const buildHtml = (paper) => {
   <script>
     window.MathJax = {
       tex: { inlineMath: [['$', '$'], ['\\\\(', '\\\\)']] },
-      svg: { fontCache: 'global' }
+      svg: { fontCache: 'global' },
+      startup: {
+        ready() {
+          MathJax.startup.defaultReady();
+          // Signal that typesetting is done so Puppeteer can proceed
+          MathJax.startup.promise.then(() => {
+            window.__mathJaxDone = true;
+          });
+        }
+      }
     };
   </script>
-  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js" id="MathJax-script" async></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js" id="MathJax-script"></script>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
@@ -166,15 +211,8 @@ const buildHtml = (paper) => {
       border-bottom: 2px solid #000;
       padding-bottom: 12px;
     }
-    .header h1 {
-      font-size: 18pt;
-      font-weight: bold;
-      margin-bottom: 6px;
-    }
-    .header .meta {
-      font-size: 11pt;
-      color: #333;
-    }
+    .header h1 { font-size: 18pt; font-weight: bold; margin-bottom: 6px; }
+    .header .meta { font-size: 11pt; color: #333; }
     .instructions {
       margin-bottom: 20px;
       padding: 10px;
@@ -185,6 +223,13 @@ const buildHtml = (paper) => {
     .questions { margin-top: 16px; }
     .question {
       margin-bottom: 24px;
+      /*
+        page-break-inside: avoid is unreliable in Chrome for tall blocks.
+        We use break-inside: avoid (the modern property) + the legacy one.
+        For very long questions Chrome will still break — that is unavoidable
+        without injecting manual page breaks, which we don't do here.
+      */
+      break-inside: avoid;
       page-break-inside: avoid;
     }
     .question-header {
@@ -193,31 +238,14 @@ const buildHtml = (paper) => {
       align-items: flex-start;
       margin-bottom: 6px;
     }
-    .question-number {
-      font-weight: bold;
-      font-size: 12pt;
-      min-width: 40px;
-    }
-    .question-marks {
-      font-size: 11pt;
-      color: #333;
-      white-space: nowrap;
-      margin-left: 8px;
-    }
+    .question-number { font-weight: bold; font-size: 12pt; min-width: 40px; }
+    .question-marks { font-size: 11pt; color: #333; white-space: nowrap; margin-left: 8px; }
     .question-body { margin-left: 8px; }
     .rich-text { margin-bottom: 6px; }
     .options { margin-top: 8px; margin-left: 16px; }
-    .option {
-      display: flex;
-      gap: 8px;
-      margin-bottom: 4px;
-    }
+    .option { display: flex; gap: 8px; margin-bottom: 4px; }
     .option-label { font-weight: bold; min-width: 20px; }
-    .match-table {
-      border-collapse: collapse;
-      margin-top: 8px;
-      width: 80%;
-    }
+    .match-table { border-collapse: collapse; margin-top: 8px; width: 80%; }
     .match-table th, .match-table td {
       border: 1px solid #666;
       padding: 6px 12px;
@@ -234,14 +262,8 @@ const buildHtml = (paper) => {
     }
     .sub-part-marks { color: #555; font-weight: normal; }
     .sub-part-text { margin-left: 24px; }
-    .answer-line {
-      border-bottom: 1px solid #999;
-      margin-top: 8px;
-      height: 24px;
-    }
     @media print {
       body { padding: 0; }
-      .question { page-break-inside: avoid; }
     }
   </style>
 </head>
@@ -267,7 +289,7 @@ const buildHtml = (paper) => {
       <div class="question">
         <div class="question-header">
           <span class="question-number">Q${index + 1}.</span>
-          <span class="question-marks">[${q.marks || 0} mark${q.marks !== 1 ? "s" : ""}]</span>
+          <span class="question-marks">[${resolveQuestionMarks(q)} mark${resolveQuestionMarks(q) !== 1 ? "s" : ""}]</span>
         </div>
         <div class="question-body">
           ${renderQuestionBody(q)}
@@ -279,6 +301,10 @@ const buildHtml = (paper) => {
 </body>
 </html>`;
 };
+
+// ---------------------------------------------------------------------------
+// Controller
+// ---------------------------------------------------------------------------
 
 module.exports = {
   async generate(ctx) {
@@ -303,45 +329,39 @@ module.exports = {
       }
 
       const html = buildHtml(paper);
+// ✅ v133+ API
+const browser = await puppeteer.launch({
+  args: [...chromium.args, "--no-sandbox", "--disable-setuid-sandbox"],
+  executablePath: await chromium.executablePath(),
+  headless: true,
+});
+      const page = await browser.newPage();
 
-      const browser = await puppeteer.launch({
-        args: chromium.args,
-        defaultViewport: chromium.defaultViewport,
-        executablePath: await chromium.executablePath(),
-        headless: chromium.headless,
+      // Load content — networkidle0 lets MathJax's CDN request complete before
+      // we start waiting for typesetting.
+      await page.setContent(html, { waitUntil: "networkidle0", timeout: 30000 });
+
+      // Wait for MathJax to finish typesetting (signalled via window.__mathJaxDone).
+      // If the page has no math or MathJax fails to load, we time out gracefully
+      // after 15 s and proceed anyway.
+      await page
+        .waitForFunction(() => window.__mathJaxDone === true, { timeout: 15000 })
+        .catch(() => {
+          strapi.log.warn("MathJax did not signal completion — proceeding without it.");
+        });
+
+      const pdf = await page.pdf({
+        format: "A4",
+        printBackground: true,
+        margin: { top: "20mm", bottom: "20mm", left: "25mm", right: "20mm" },
       });
 
- const page = await browser.newPage();
-
-// Set content with a simpler wait condition
-await page.setContent(html, { waitUntil: "domcontentloaded" });
-
-// Manually wait for MathJax to load and render
-await page.waitForFunction(() => typeof window.MathJax !== "undefined", {
-  timeout: 10000,
-}).catch(() => {}); // don't fail if MathJax doesn't load
-
-await page.evaluate(async () => {
-  if (window.MathJax?.typesetPromise) {
-    await window.MathJax.typesetPromise();
-  }
-}).catch(() => {});
-
-// Small buffer for any remaining renders
-await new Promise((resolve) => setTimeout(resolve, 1000));
-
-const pdf = await page.pdf({
-  format: "A4",
-  printBackground: true,
-  margin: { top: "20mm", bottom: "20mm", left: "25mm", right: "20mm" },
-});
       await browser.close();
 
       const filename = `${(paper.title || "test-paper").replace(/[^a-z0-9]/gi, "_")}.pdf`;
       ctx.set("Content-Type", "application/pdf");
       ctx.set("Content-Disposition", `attachment; filename="${filename}"`);
       ctx.body = pdf;
-
     } catch (err) {
       strapi.log.error("PDF generation failed:", err);
       return ctx.internalServerError(`PDF generation failed: ${err.message}`);
