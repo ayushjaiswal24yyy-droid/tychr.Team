@@ -43,8 +43,7 @@ module.exports = {
       }
 
       // Lambda returns { body: base64string, isBase64Encoded: true, ... }
-      const lambdaResult = await response.json();
-      const pdfBuffer = Buffer.from(lambdaResult.body, "base64");
+ const pdfBuffer = Buffer.from(await response.arrayBuffer());
       const filename = `${(paper.title || "paper").replace(/[^a-z0-9]/gi, "_")}.pdf`;
 
       // Upload to Strapi media library
