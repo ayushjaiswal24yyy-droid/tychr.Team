@@ -1,9 +1,3 @@
-// src/api/test-serie/controllers/pdf.js
-//
-// This controller no longer runs Puppeteer itself.
-// It fetches the paper from Strapi, then calls the Lambda PDF service
-// and pipes the response back to the client.
-
 module.exports = {
   async generate(ctx) {
     try {
@@ -30,19 +24,9 @@ module.exports = {
       const secret = process.env.PDF_SECRET;
 
       if (!lambdaUrl || !secret) {
-        strapi.log.error("PDF_LAMBDA_URL or PDF_SECRET env vars are not set");
         return ctx.internalServerError("PDF service is not configured");
       }
-strapi.log.info("Sending to Lambda: " + JSON.stringify({
-  id: paper.id,
-  title: paper.title,
-  entity_type: paper.entity_type,
-  question_count: paper.question_banks?.length,
-  first_question: paper.question_banks?.[0]?.question,
-}));
 
-
-      // Call the Lambda function with the full paper payload
       const response = await fetch(lambdaUrl, {
         method: "POST",
         headers: {
@@ -50,24 +34,49 @@ strapi.log.info("Sending to Lambda: " + JSON.stringify({
           "x-pdf-secret": secret,
         },
         body: JSON.stringify(paper),
-        // 55s — just under Lambda's 60s timeout, gives room for network overhead
         signal: AbortSignal.timeout(55000),
       });
 
       if (!response.ok) {
         const errBody = await response.json().catch(() => ({ error: "Unknown error" }));
-        strapi.log.error("Lambda PDF service error:", errBody);
-        return ctx.internalServerError(
-          errBody?.error || "PDF generation failed"
-        );
+        return ctx.internalServerError(errBody?.error || "PDF generation failed");
       }
 
-      const pdfBuffer = Buffer.from(await response.arrayBuffer());
-      const filename = `${(paper.title || "test-paper").replace(/[^a-z0-9]/gi, "_")}.pdf`;
+      // Lambda returns { body: base64string, isBase64Encoded: true, ... }
+      const lambdaResult = await response.json();
+      const pdfBuffer = Buffer.from(lambdaResult.body, "base64");
+      const filename = `${(paper.title || "paper").replace(/[^a-z0-9]/gi, "_")}.pdf`;
 
-      ctx.set("Content-Type", "application/pdf");
-      ctx.set("Content-Disposition", `attachment; filename="${filename}"`);
-      ctx.body = pdfBuffer;
+      // Upload to Strapi media library
+      const uploadedFiles = await strapi.plugins.upload.services.upload.upload({
+        data: {},
+        files: {
+          path: null,
+          name: filename,
+          type: "application/pdf",
+          size: pdfBuffer.length,
+          buffer: pdfBuffer,
+        },
+      });
+
+      const uploadedFile = uploadedFiles[0];
+
+      // Save to offline_pdf field on the paper
+      await strapi.entityService.update(
+        "api::test-serie.test-serie",
+        id,
+        { data: { offline_pdf: uploadedFile.id } }
+      );
+
+      return ctx.send({
+        success: true,
+        file: {
+          id: uploadedFile.id,
+          url: uploadedFile.url,
+          name: uploadedFile.name,
+        },
+      });
+
     } catch (err) {
       strapi.log.error("PDF controller error:", err);
       return ctx.internalServerError(`PDF generation failed: ${err.message}`);
