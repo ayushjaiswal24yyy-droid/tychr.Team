@@ -26,8 +26,10 @@ module.exports = {
 
       const lambdaUrl = process.env.PDF_LAMBDA_URL;
       const secret = process.env.PDF_SECRET;
+      const strapiUrl = process.env.STRAPI_URL || "http://localhost:1337";
+      const strapiToken = process.env.STRAPI_API_TOKEN;
 
-      if (!lambdaUrl || !secret) {
+      if (!lambdaUrl || !secret || !strapiToken) {
         return ctx.internalServerError("PDF service is not configured");
       }
 
@@ -37,53 +39,22 @@ module.exports = {
           "Content-Type": "application/json",
           "x-pdf-secret": secret,
         },
-        body: JSON.stringify(paper),
+        body: JSON.stringify({
+          paper,
+          paperId: id,
+          strapiUrl,
+          strapiToken,
+        }),
         signal: AbortSignal.timeout(55000),
       });
 
+      const result = await response.json();
+
       if (!response.ok) {
-        const errBody = await response.json().catch(() => ({ error: "Unknown error" }));
-        return ctx.internalServerError(errBody?.error || "PDF generation failed");
+        return ctx.internalServerError(result?.error || "PDF generation failed");
       }
-const pdfBuffer = Buffer.from(await response.arrayBuffer());
-const filename = `${(paper.title || "paper").replace(/[^a-z0-9]/gi, "_")}.pdf`
 
-const tmpPath = path.join(os.tmpdir(), filename);
-fs.writeFileSync(tmpPath, pdfBuffer);
-
-      // Upload to Strapi media library
-   const uploadedFiles = await strapi.plugins.upload.services.upload.upload({
-  data: {},
-  files: {
-    path: tmpPath,
-    name: filename,
-    type: "application/pdf",
-    size: pdfBuffer.length,
-  },
-});
-
-
-fs.unlinkSync(tmpPath);
-
-const uploadedFile = uploadedFiles[0];
-
-      // Save to offline_pdf field on the paper
-await strapi.entityService.update(
-  "api::test-serie.test-serie",
-  id,
-  { data: { offline_pdf: uploadedFile.id } }
-);
-
-
-      return ctx.send({
-        success: true,
-        file: {
-          id: uploadedFile.id,
-          url: uploadedFile.url,
-          name: uploadedFile.name,
-        },
-      });
-
+      return ctx.send(result);
     } catch (err) {
       strapi.log.error("PDF controller error:", err);
       return ctx.internalServerError(`PDF generation failed: ${err.message}`);
