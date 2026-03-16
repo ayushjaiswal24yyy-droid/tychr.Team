@@ -45,9 +45,6 @@ module.exports = {
         const errBody = await response.json().catch(() => ({ error: "Unknown error" }));
         return ctx.internalServerError(errBody?.error || "PDF generation failed");
       }
-const debugHtml = await response.text();
-strapi.log.info("HTML: " + debugHtml.substring(0, 2000));
-return ctx.send({ html: debugHtml.substring(0, 5000) });
 const pdfBuffer = Buffer.from(await response.arrayBuffer());
 const filename = `${(paper.title || "paper").replace(/[^a-z0-9]/gi, "_")}.pdf`
 
