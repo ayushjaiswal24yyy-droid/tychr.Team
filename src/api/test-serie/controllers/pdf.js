@@ -33,7 +33,23 @@ module.exports = {
         strapi.log.error("PDF_LAMBDA_URL or PDF_SECRET env vars are not set");
         return ctx.internalServerError("PDF service is not configured");
       }
+strapi.log.info("Sending to Lambda: " + JSON.stringify({
+  id: paper.id,
+  title: paper.title,
+  entity_type: paper.entity_type,
+  question_count: paper.question_banks?.length,
+  first_question: paper.question_banks?.[0]?.question,
+}));
 
+return ctx.send({
+  debug: {
+    id: paper.id,
+    title: paper.title,
+    entity_type: paper.entity_type,
+    question_count: paper.question_banks?.length,
+    questions: paper.question_banks?.map(q => ({ id: q.id, question: q.question })),
+  }
+});
       // Call the Lambda function with the full paper payload
       const response = await fetch(lambdaUrl, {
         method: "POST",
