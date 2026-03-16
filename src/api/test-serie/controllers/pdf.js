@@ -1,3 +1,7 @@
+const os = require("os");
+const fs = require("fs");
+const path = require("path");
+
 module.exports = {
   async generate(ctx) {
     try {
@@ -42,30 +46,35 @@ module.exports = {
         return ctx.internalServerError(errBody?.error || "PDF generation failed");
       }
 
-      // Lambda returns { body: base64string, isBase64Encoded: true, ... }
- const pdfBuffer = Buffer.from(await response.arrayBuffer());
-      const filename = `${(paper.title || "paper").replace(/[^a-z0-9]/gi, "_")}.pdf`;
+const pdfBuffer = Buffer.from(await response.arrayBuffer());
+const filename = `${(paper.title || "paper").replace(/[^a-z0-9]/gi, "_")}.pdf`
+
+const tmpPath = path.join(os.tmpdir(), filename);
+fs.writeFileSync(tmpPath, pdfBuffer);
 
       // Upload to Strapi media library
-      const uploadedFiles = await strapi.plugins.upload.services.upload.upload({
-        data: {},
-        files: {
-          path: null,
-          name: filename,
-          type: "application/pdf",
-          size: pdfBuffer.length,
-          buffer: pdfBuffer,
-        },
-      });
+   const uploadedFiles = await strapi.plugins.upload.services.upload.upload({
+  data: {},
+  files: {
+    path: tmpPath,
+    name: filename,
+    type: "application/pdf",
+    size: pdfBuffer.length,
+  },
+});
 
-      const uploadedFile = uploadedFiles[0];
+
+fs.unlinkSync(tmpPath);
+
+const uploadedFile = uploadedFiles[0];
 
       // Save to offline_pdf field on the paper
-      await strapi.entityService.update(
-        "api::test-serie.test-serie",
-        id,
-        { data: { offline_pdf: uploadedFile.id } }
-      );
+await strapi.entityService.update(
+  "api::test-serie.test-serie",
+  id,
+  { data: { offline_pdf: uploadedFile.id } }
+);
+
 
       return ctx.send({
         success: true,
