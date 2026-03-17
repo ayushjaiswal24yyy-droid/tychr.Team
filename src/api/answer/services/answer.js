@@ -124,10 +124,17 @@ module.exports = createCoreService("api::answer.answer", () => ({
         }
 
         totalSubmissionMarks += qnaTotalMarks;
-
-        // 5. Prepare the updated QnA block
+// 5. Prepare the updated QnA block
         updatedQuestionNAnswers.push({
           id: qna.id,
+          // CRITICAL: Pass back the relation ID so Strapi doesn't disconnect the question
+          question: qna.question ? qna.question.id : null,
+          // CRITICAL: Pass back the existing student answer
+          answer: qna.answer,
+          // Pass back the original richtext if it exists
+          question_n_answer: qna.question_n_answer,
+          
+          // Now, apply our newly calculated evaluations
           question_awarded_marks: qnaTotalMarks,
           question_feedback: qnaFeedbackArray.join('\n\n'),
           part_evaluations: updatedPartEvaluations,
