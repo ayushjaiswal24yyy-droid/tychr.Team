@@ -3,7 +3,7 @@
 const { createCoreService } = require("@strapi/strapi").factories;
 
 module.exports = createCoreService("api::answer.answer", () => ({
-  
+
   async processBulkEvaluation(answerIds) {
     let evaluatedCount = 0;
     const evaluationResults = [];
@@ -16,9 +16,9 @@ module.exports = createCoreService("api::answer.answer", () => ({
           question_n_answer: {
             populate: {
               question: {
-                populate: ['parts'] 
+                populate: ['parts']
               },
-              part_evaluations: true 
+              part_evaluations: true
             }
           }
         }
@@ -26,13 +26,13 @@ module.exports = createCoreService("api::answer.answer", () => ({
 
       // 2. Offline & Status Guardrails
       if (!submission || submission.evaluation_status === 'evaluated') continue;
-      
+
       if (
-        submission.test_series?.test_mode === 'offline' || 
+        submission.test_series?.test_mode === 'offline' ||
         submission.submission_type === 'offline'
       ) {
         console.log(`Skipping submission ${answerId} because it is offline.`);
-        continue; 
+        continue;
       }
 
       let totalSubmissionMarks = 0;
@@ -42,8 +42,8 @@ module.exports = createCoreService("api::answer.answer", () => ({
       // 3. Iterate through Q&A blocks
       for (const qna of submission.question_n_answer || []) {
         const questionData = qna.question;
-        const studentAnswerJson = qna.answer; 
-        
+        const studentAnswerJson = qna.answer;
+
         if (!questionData || !studentAnswerJson) {
           updatedQuestionNAnswers.push({ id: qna.id });
           continue;
@@ -52,7 +52,7 @@ module.exports = createCoreService("api::answer.answer", () => ({
         let qnaTotalMarks = 0;
         const qnaFeedbackArray = [];
         const updatedPartEvaluations = [];
-        
+
         const parts = questionData.parts || [];
 
         // 4. MULTI-PART LOOP
@@ -67,7 +67,7 @@ module.exports = createCoreService("api::answer.answer", () => ({
           const isSubjective = ['short_answer', 'long_answer'].includes(questionData.question_type);
 
           // GUARDRAIL: Check if the question actually has a correct answer/rubric to grade against
-      
+
           const canEvaluate = !!(partDef.correct_answer && partDef.correct_answer.replace(/<[^>]*>?/gm, '').trim() !== '');
 
           if (!canEvaluate) {
@@ -75,21 +75,21 @@ module.exports = createCoreService("api::answer.answer", () => ({
             isFullyEvaluated = false;
             partAwardedMarks = existingEval ? existingEval.marks : 0; // Preserve existing marks if any
             partFeedback = 'Pending manual evaluation: No rubric or correct answer provided in the question bank.';
-          } 
+          }
           else if (isSubjective) {
             // Subjective AI Grading
             try {
-              const cleanResponse = typeof studentPartResponse === 'string' 
-                ? studentPartResponse.replace(/<[^>]*>?/gm, '').trim() 
+              const cleanResponse = typeof studentPartResponse === 'string'
+                ? studentPartResponse.replace(/<[^>]*>?/gm, '').trim()
                 : JSON.stringify(studentPartResponse);
 
               const aiResult = await this.evaluateWithAI(
-                partDef.question_text || questionData.question, 
+                partDef.question_text || questionData.question,
                 cleanResponse,
-                partDef.marks, 
-                partDef.correct_answer 
+                partDef.marks,
+                partDef.correct_answer
               );
-              
+
               partAwardedMarks = aiResult.awardedMarks;
               partFeedback = aiResult.feedback;
             } catch (error) {
@@ -113,7 +113,7 @@ module.exports = createCoreService("api::answer.answer", () => ({
 
           updatedPartEvaluations.push({
             ...(existingEval ? { id: existingEval.id } : {}),
-            marks: partAwardedMarks, 
+            marks: partAwardedMarks,
             feedback: partFeedback,
           });
         }
@@ -132,9 +132,9 @@ module.exports = createCoreService("api::answer.answer", () => ({
       // 6. Final Update
       // If we couldn't evaluate everything, set it to "in_progress" instead of "evaluated"
       const finalStatus = isFullyEvaluated ? 'evaluated' : 'in_progress';
-      
-      const finalTutorFeedback = isFullyEvaluated 
-        ? 'Automatically evaluated by system.' 
+
+      const finalTutorFeedback = isFullyEvaluated
+        ? 'Automatically evaluated by system.'
         : 'Partially evaluated. Some questions require manual grading due to missing answer keys/rubrics.';
 
       const updatedSubmission = await strapi.entityService.update('api::answer.answer', answerId, {
@@ -142,7 +142,7 @@ module.exports = createCoreService("api::answer.answer", () => ({
           marks: totalSubmissionMarks,
           evaluation_status: finalStatus,
           tutor_feedback: finalTutorFeedback,
-          question_n_answer: updatedQuestionNAnswers, 
+          question_n_answer: updatedQuestionNAnswers,
         },
       });
 
@@ -153,10 +153,10 @@ module.exports = createCoreService("api::answer.answer", () => ({
     return { evaluatedCount, results: evaluationResults };
   },
 
-evaluateObjectivePart(studentPartResponse, partDef) {
+  evaluateObjectivePart(studentPartResponse, partDef) {
     if (!studentPartResponse || !partDef.correct_answer) return false;
 
-    // 1. Strip the HTML tags that Strapi's RichText editor wraps around the text/JSON
+    // 1. Strip the HTML tags that Strapi's editor might wrap around the JSON
     let rawCorrect = partDef.correct_answer.replace(/<[^>]*>?/gm, '').trim();
     let parsedCorrect;
 
@@ -164,12 +164,12 @@ evaluateObjectivePart(studentPartResponse, partDef) {
     try {
       parsedCorrect = JSON.parse(rawCorrect);
     } catch (e) {
-      parsedCorrect = rawCorrect; // Fallback: it's just a normal string, not JSON
+      parsedCorrect = rawCorrect; // Fallback: normal string
     }
 
     // --- MATCH COLUMNS / FILL IN THE BLANKS (Object grading) ---
+    // (This handles your complex {"options": ["are", "Are"]} structure)
     if (typeof studentPartResponse === 'object') {
-      // Use the parsed JSON object. If it didn't parse, fallback to correctMatchingPairs just in case.
       const correctObj = (typeof parsedCorrect === 'object' && !parsedCorrect.format) 
         ? parsedCorrect 
         : (partDef.correctMatchingPairs || {});
@@ -178,10 +178,20 @@ evaluateObjectivePart(studentPartResponse, partDef) {
       if (keys.length === 0) return false;
 
       for (const key of keys) {
-        // Compare values as strings, completely ignoring the garbage "part_0" key in student response
-        if (String(studentPartResponse[key]).trim() !== String(correctObj[key]).trim()) {
-          return false;
+        let studentVal = studentPartResponse[key] !== undefined ? String(studentPartResponse[key]).trim() : "";
+        let isMatch = false;
+
+        if (typeof correctObj[key] === 'object' && correctObj[key] !== null) {
+          if (Array.isArray(correctObj[key].options)) {
+            isMatch = correctObj[key].options.some(opt => String(opt).trim() === studentVal);
+          } else {
+            isMatch = String(studentPartResponse[key]) === String(correctObj[key]);
+          }
+        } else {
+          isMatch = studentVal === String(correctObj[key]).trim();
         }
+
+        if (!isMatch) return false; 
       }
       return true;
     }
@@ -190,18 +200,18 @@ evaluateObjectivePart(studentPartResponse, partDef) {
     const cleanString = (str) => {
       if (typeof str !== 'string') return '';
       return str
-        .replace(/<[^>]*>?/gm, '')     // Remove HTML tags
-        .replace(/&[a-zA-Z0-9#]+;/g, ' ') // Replace HTML entities
-        .replace(/[\u200B-\u200D\uFEFF]/g, '') // Remove zero-width characters
-        .replace(/\s+/g, ' ')          // Normalize whitespace
+        .replace(/<[^>]*>?/gm, '')     // Remove HTML
+        .replace(/&[a-zA-Z0-9#]+;/g, ' ') // Remove entities like &nbsp;
+        .replace(/[\u200B-\u200D\uFEFF]/g, '') // Remove zero-width chars
+        .replace(/\s+/g, ' ')          // Collapse multi-spaces and newlines
         .trim();
     };
 
     const studentChoice = cleanString(studentPartResponse);
     
-    // Extract the actual answer if the DB string is the {"format":"richtext", "content": "..."} JSON wrapper
+    // Extract the actual answer from the JSON wrapper if it exists (handles both "html" and "richtext" formats)
     let correctChoice = '';
-    if (typeof parsedCorrect === 'object' && parsedCorrect !== null && parsedCorrect.format === 'richtext') {
+    if (typeof parsedCorrect === 'object' && parsedCorrect !== null && parsedCorrect.content) {
       correctChoice = cleanString(parsedCorrect.content);
     } else {
       correctChoice = cleanString(rawCorrect);
