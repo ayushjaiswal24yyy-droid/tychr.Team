@@ -67,13 +67,8 @@ module.exports = createCoreService("api::answer.answer", () => ({
           const isSubjective = ['short_answer', 'long_answer'].includes(questionData.question_type);
 
           // GUARDRAIL: Check if the question actually has a correct answer/rubric to grade against
-          let canEvaluate = false;
-          if (typeof studentPartResponse === 'object' && !isSubjective) {
-             canEvaluate = !!partDef.correctMatchingPairs; // For Match Columns
-          } else {
-             // Ensure correct_answer exists and is not just an empty string
-             canEvaluate = !!(partDef.correct_answer && partDef.correct_answer.replace(/<[^>]*>?/gm, '').trim() !== '');
-          }
+      
+          const canEvaluate = !!(partDef.correct_answer && partDef.correct_answer.replace(/<[^>]*>?/gm, '').trim() !== '');
 
           if (!canEvaluate) {
             // Skip evaluation for this part because the teacher didn't provide an answer key
@@ -158,21 +153,33 @@ module.exports = createCoreService("api::answer.answer", () => ({
     return { evaluatedCount, results: evaluationResults };
   },
 
-  evaluateObjectivePart(studentPartResponse, partDef) {
-    if (!studentPartResponse) return false;
+evaluateObjectivePart(studentPartResponse, partDef) {
+    if (!studentPartResponse || !partDef.correct_answer) return false;
 
-    // --- MATCH COLUMNS / OBJECT GRADING ---
+    // 1. Strip the HTML tags that Strapi's RichText editor wraps around the text/JSON
+    let rawCorrect = partDef.correct_answer.replace(/<[^>]*>?/gm, '').trim();
+    let parsedCorrect;
+
+    // 2. Try to parse the cleaned string as JSON
+    try {
+      parsedCorrect = JSON.parse(rawCorrect);
+    } catch (e) {
+      parsedCorrect = rawCorrect; // Fallback: it's just a normal string, not JSON
+    }
+
+    // --- MATCH COLUMNS / FILL IN THE BLANKS (Object grading) ---
     if (typeof studentPartResponse === 'object') {
-      const correctMapping = partDef.correctMatchingPairs || {};
-      const keys = Object.keys(correctMapping);
-      
-      // If the teacher didn't set a correct mapping, we can't evaluate it
+      // Use the parsed JSON object. If it didn't parse, fallback to correctMatchingPairs just in case.
+      const correctObj = (typeof parsedCorrect === 'object' && !parsedCorrect.format) 
+        ? parsedCorrect 
+        : (partDef.correctMatchingPairs || {});
+
+      const keys = Object.keys(correctObj);
       if (keys.length === 0) return false;
 
-      // Loop only through the correct keys (ignoring garbage keys like "part_0" in the student's response)
       for (const key of keys) {
-        // Compare as strings to prevent number/string type mismatches (e.g., 1 vs "1")
-        if (String(studentPartResponse[key]) !== String(correctMapping[key])) {
+        // Compare values as strings, completely ignoring the garbage "part_0" key in student response
+        if (String(studentPartResponse[key]).trim() !== String(correctObj[key]).trim()) {
           return false;
         }
       }
@@ -180,28 +187,30 @@ module.exports = createCoreService("api::answer.answer", () => ({
     }
     
     // --- MCQ / STRING GRADING ---
-    if (!partDef.correct_answer) return false;
-
-    // Robust string cleaner to handle rich text artifacts, entities, and weird spacing
     const cleanString = (str) => {
       if (typeof str !== 'string') return '';
       return str
-        .replace(/<[^>]*>?/gm, '')     // 1. Remove all HTML tags
-        .replace(/&[a-zA-Z0-9#]+;/g, ' ') // 2. Replace HTML entities (like &nbsp;, &amp;) with a space
-        .replace(/[\u200B-\u200D\uFEFF]/g, '') // 3. Remove zero-width spaces
-        .replace(/\s+/g, ' ')          // 4. Normalize all whitespace/newlines to a single space
-        .trim();                       // 5. Trim leading/trailing spaces
+        .replace(/<[^>]*>?/gm, '')     // Remove HTML tags
+        .replace(/&[a-zA-Z0-9#]+;/g, ' ') // Replace HTML entities
+        .replace(/[\u200B-\u200D\uFEFF]/g, '') // Remove zero-width characters
+        .replace(/\s+/g, ' ')          // Normalize whitespace
+        .trim();
     };
 
     const studentChoice = cleanString(studentPartResponse);
-    const correctChoice = cleanString(partDef.correct_answer);
+    
+    // Extract the actual answer if the DB string is the {"format":"richtext", "content": "..."} JSON wrapper
+    let correctChoice = '';
+    if (typeof parsedCorrect === 'object' && parsedCorrect !== null && parsedCorrect.format === 'richtext') {
+      correctChoice = cleanString(parsedCorrect.content);
+    } else {
+      correctChoice = cleanString(rawCorrect);
+    }
 
-    // Failsafe: if cleaning completely wiped the string, don't auto-mark correct
     if (correctChoice === '') return false;
 
     return studentChoice === correctChoice;
   },
-
   async evaluateWithAI(questionText, studentResponse, maxMarks, idealAnswer) {
     if (!studentResponse || studentResponse.trim() === '') {
       return { awardedMarks: 0, feedback: "No answer provided." };
