@@ -160,8 +160,7 @@ module.exports = createCoreService("api::answer.answer", () => ({
 
   evaluateObjectivePart(studentPartResponse, partDef) {
     if (!studentPartResponse || !partDef.correct_answer) return false;
-    console.log("studentresponse",studentPartResponse)
-    console.log("Part def",partDef);
+
     if (typeof studentPartResponse === 'object') {
       return JSON.stringify(studentPartResponse) === JSON.stringify(partDef.correctMatchingPairs);
     }
