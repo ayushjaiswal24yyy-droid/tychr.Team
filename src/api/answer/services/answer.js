@@ -159,14 +159,46 @@ module.exports = createCoreService("api::answer.answer", () => ({
   },
 
   evaluateObjectivePart(studentPartResponse, partDef) {
-    if (!studentPartResponse || !partDef.correct_answer) return false;
+    if (!studentPartResponse) return false;
 
+    // --- MATCH COLUMNS / OBJECT GRADING ---
     if (typeof studentPartResponse === 'object') {
-      return JSON.stringify(studentPartResponse) === JSON.stringify(partDef.correctMatchingPairs);
+      const correctMapping = partDef.correctMatchingPairs || {};
+      const keys = Object.keys(correctMapping);
+      
+      // If the teacher didn't set a correct mapping, we can't evaluate it
+      if (keys.length === 0) return false;
+
+      // Loop only through the correct keys (ignoring garbage keys like "part_0" in the student's response)
+      for (const key of keys) {
+        // Compare as strings to prevent number/string type mismatches (e.g., 1 vs "1")
+        if (String(studentPartResponse[key]) !== String(correctMapping[key])) {
+          return false;
+        }
+      }
+      return true;
     }
     
-    const studentChoice = studentPartResponse.replace(/<[^>]*>?/gm, '').trim(); 
-    const correctChoice = partDef.correct_answer.replace(/<[^>]*>?/gm, '').trim();
+    // --- MCQ / STRING GRADING ---
+    if (!partDef.correct_answer) return false;
+
+    // Robust string cleaner to handle rich text artifacts, entities, and weird spacing
+    const cleanString = (str) => {
+      if (typeof str !== 'string') return '';
+      return str
+        .replace(/<[^>]*>?/gm, '')     // 1. Remove all HTML tags
+        .replace(/&[a-zA-Z0-9#]+;/g, ' ') // 2. Replace HTML entities (like &nbsp;, &amp;) with a space
+        .replace(/[\u200B-\u200D\uFEFF]/g, '') // 3. Remove zero-width spaces
+        .replace(/\s+/g, ' ')          // 4. Normalize all whitespace/newlines to a single space
+        .trim();                       // 5. Trim leading/trailing spaces
+    };
+
+    const studentChoice = cleanString(studentPartResponse);
+    const correctChoice = cleanString(partDef.correct_answer);
+
+    // Failsafe: if cleaning completely wiped the string, don't auto-mark correct
+    if (correctChoice === '') return false;
+
     return studentChoice === correctChoice;
   },
 
