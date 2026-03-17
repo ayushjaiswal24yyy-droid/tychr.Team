@@ -2,7 +2,6 @@
 
 const { createCoreService } = require("@strapi/strapi").factories;
 
-
 module.exports = createCoreService("api::answer.answer", () => ({
   
   async processBulkEvaluation(answerIds) {
@@ -19,7 +18,7 @@ module.exports = createCoreService("api::answer.answer", () => ({
               question: {
                 populate: ['parts'] 
               },
-              part_evaluations: true // Get existing evaluations to update by ID
+              part_evaluations: true 
             }
           }
         }
@@ -28,7 +27,6 @@ module.exports = createCoreService("api::answer.answer", () => ({
       // 2. Offline & Status Guardrails
       if (!submission || submission.evaluation_status === 'evaluated') continue;
       
-      // Skip if the test series itself is offline OR if this specific submission is offline
       if (
         submission.test_series?.test_mode === 'offline' || 
         submission.submission_type === 'offline'
@@ -38,6 +36,7 @@ module.exports = createCoreService("api::answer.answer", () => ({
       }
 
       let totalSubmissionMarks = 0;
+      let isFullyEvaluated = true; // Track if every single question had a rubric/correct answer
       const updatedQuestionNAnswers = [];
 
       // 3. Iterate through Q&A blocks
@@ -56,21 +55,35 @@ module.exports = createCoreService("api::answer.answer", () => ({
         
         const parts = questionData.parts || [];
 
-        // 4. MULTI-PART LOOP: Iterate through each part of the question
+        // 4. MULTI-PART LOOP
         for (let i = 0; i < parts.length; i++) {
           const partDef = parts[i];
           const studentPartResponse = studentAnswerJson[`part_${i}`];
-          const existingEval = qna.part_evaluations?.[i]; // For preserving the component ID
+          const existingEval = qna.part_evaluations?.[i];
 
           let partAwardedMarks = 0;
           let partFeedback = '';
 
-          // Check if this specific part is subjective based on the main question type
           const isSubjective = ['short_answer', 'long_answer'].includes(questionData.question_type);
 
-          if (isSubjective) {
+          // GUARDRAIL: Check if the question actually has a correct answer/rubric to grade against
+          let canEvaluate = false;
+          if (typeof studentPartResponse === 'object' && !isSubjective) {
+             canEvaluate = !!partDef.correctMatchingPairs; // For Match Columns
+          } else {
+             // Ensure correct_answer exists and is not just an empty string
+             canEvaluate = !!(partDef.correct_answer && partDef.correct_answer.replace(/<[^>]*>?/gm, '').trim() !== '');
+          }
+
+          if (!canEvaluate) {
+            // Skip evaluation for this part because the teacher didn't provide an answer key
+            isFullyEvaluated = false;
+            partAwardedMarks = existingEval ? existingEval.marks : 0; // Preserve existing marks if any
+            partFeedback = 'Pending manual evaluation: No rubric or correct answer provided in the question bank.';
+          } 
+          else if (isSubjective) {
+            // Subjective AI Grading
             try {
-              // Strip HTML for the AI if it's rich text
               const cleanResponse = typeof studentPartResponse === 'string' 
                 ? studentPartResponse.replace(/<[^>]*>?/gm, '').trim() 
                 : JSON.stringify(studentPartResponse);
@@ -78,7 +91,7 @@ module.exports = createCoreService("api::answer.answer", () => ({
               const aiResult = await this.evaluateWithAI(
                 partDef.question_text || questionData.question, 
                 cleanResponse,
-                partDef.marks, // Max marks for THIS specific part
+                partDef.marks, 
                 partDef.correct_answer 
               );
               
@@ -87,9 +100,10 @@ module.exports = createCoreService("api::answer.answer", () => ({
             } catch (error) {
               console.error(`AI Eval failed for QNA ${qna.id}, Part ${i}:`, error);
               partFeedback = 'AI Evaluation failed. Needs manual review.';
+              isFullyEvaluated = false; // Mark incomplete so tutor can fix it
             }
           } else {
-            // Objective Grading per part
+            // Objective Grading
             const isCorrect = this.evaluateObjectivePart(studentPartResponse, partDef);
             if (isCorrect) {
               partAwardedMarks = partDef.marks;
@@ -102,9 +116,8 @@ module.exports = createCoreService("api::answer.answer", () => ({
           qnaTotalMarks += Number(partAwardedMarks);
           qnaFeedbackArray.push(`Part ${i + 1}: ${partFeedback}`);
 
-          // Add to the part_evaluations component array
           updatedPartEvaluations.push({
-            ...(existingEval ? { id: existingEval.id } : {}), // Keep Strapi ID if it exists
+            ...(existingEval ? { id: existingEval.id } : {}),
             marks: partAwardedMarks, 
             feedback: partFeedback,
           });
@@ -122,34 +135,70 @@ module.exports = createCoreService("api::answer.answer", () => ({
       }
 
       // 6. Final Update
+      // If we couldn't evaluate everything, set it to "in_progress" instead of "evaluated"
+      const finalStatus = isFullyEvaluated ? 'evaluated' : 'in_progress';
+      
+      const finalTutorFeedback = isFullyEvaluated 
+        ? 'Automatically evaluated by system.' 
+        : 'Partially evaluated. Some questions require manual grading due to missing answer keys/rubrics.';
+
       const updatedSubmission = await strapi.entityService.update('api::answer.answer', answerId, {
         data: {
           marks: totalSubmissionMarks,
-          evaluation_status: 'evaluated',
-          tutor_feedback: 'Automatically evaluated by system.',
+          evaluation_status: finalStatus,
+          tutor_feedback: finalTutorFeedback,
           question_n_answer: updatedQuestionNAnswers, 
         },
       });
 
-      evaluationResults.push({ id: updatedSubmission.id, marks: totalSubmissionMarks });
+      evaluationResults.push({ id: updatedSubmission.id, marks: totalSubmissionMarks, status: finalStatus });
       evaluatedCount++;
     }
 
     return { evaluatedCount, results: evaluationResults };
   },
 
-  evaluateObjectivePart(studentPartResponse, partDef) {
-    if (!studentPartResponse || !partDef.correct_answer) return false;
+evaluateObjectivePart(studentPartResponse, partDef) {
+    if (!studentPartResponse) return false;
 
-    // Handle Match Columns (comparing JSON objects)
+    // --- MATCH COLUMNS / OBJECT GRADING ---
     if (typeof studentPartResponse === 'object') {
-      // Add deep equality check here for match columns/drag drop
-      return JSON.stringify(studentPartResponse) === JSON.stringify(partDef.correctMatchingPairs);
+      const correctMapping = partDef.correctMatchingPairs || {};
+      const keys = Object.keys(correctMapping);
+      
+      // If the teacher didn't set a correct mapping, we can't evaluate it
+      if (keys.length === 0) return false;
+
+      // Loop only through the correct keys (ignoring garbage keys like "part_0" in the student's response)
+      for (const key of keys) {
+        // Compare as strings to prevent number/string type mismatches (e.g., 1 vs "1")
+        if (String(studentPartResponse[key]) !== String(correctMapping[key])) {
+          return false;
+        }
+      }
+      return true;
     }
     
-    // Handle standard exact string match (MCQ)
-    const studentChoice = studentPartResponse.replace(/<[^>]*>?/gm, '').trim(); 
-    const correctChoice = partDef.correct_answer.replace(/<[^>]*>?/gm, '').trim();
+    // --- MCQ / STRING GRADING ---
+    if (!partDef.correct_answer) return false;
+
+    // Robust string cleaner to handle rich text artifacts, entities, and weird spacing
+    const cleanString = (str) => {
+      if (typeof str !== 'string') return '';
+      return str
+        .replace(/<[^>]*>?/gm, '')     // 1. Remove all HTML tags
+        .replace(/&[a-zA-Z0-9#]+;/g, ' ') // 2. Replace HTML entities (like &nbsp;, &amp;) with a space
+        .replace(/[\u200B-\u200D\uFEFF]/g, '') // 3. Remove zero-width spaces
+        .replace(/\s+/g, ' ')          // 4. Normalize all whitespace/newlines to a single space
+        .trim();                       // 5. Trim leading/trailing spaces
+    };
+
+    const studentChoice = cleanString(studentPartResponse);
+    const correctChoice = cleanString(partDef.correct_answer);
+
+    // Failsafe: if cleaning completely wiped the string, don't auto-mark correct
+    if (correctChoice === '') return false;
+
     return studentChoice === correctChoice;
   },
 
