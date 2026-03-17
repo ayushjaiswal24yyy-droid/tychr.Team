@@ -37,6 +37,7 @@ module.exports = createCoreService("api::answer.answer", () => ({
 
       let totalSubmissionMarks = 0;
       let isFullyEvaluated = true; // Track if every single question had a rubric/correct answer
+      let hasAIEvaluation = false; // NEW: Track if AI was used for any part of this test
       const updatedQuestionNAnswers = [];
 
       // 3. Iterate through Q&A blocks
@@ -45,7 +46,12 @@ module.exports = createCoreService("api::answer.answer", () => ({
         const studentAnswerJson = qna.answer;
 
         if (!questionData || !studentAnswerJson) {
-          updatedQuestionNAnswers.push({ id: qna.id });
+          updatedQuestionNAnswers.push({
+            id: qna.id,
+            question: qna.question ? qna.question.id : null,
+            answer: qna.answer,
+            question_n_answer: qna.question_n_answer,
+          });
           continue;
         }
 
@@ -64,20 +70,50 @@ module.exports = createCoreService("api::answer.answer", () => ({
           let partAwardedMarks = 0;
           let partFeedback = '';
 
-          const isSubjective = ['short_answer', 'long_answer'].includes(questionData.question_type);
+        const isSubjective = ['short_answer', 'long_answer'].includes(questionData.question_type);
 
-          // GUARDRAIL: Check if the question actually has a correct answer/rubric to grade against
+          // --- NEW: Unpack the correct answer carefully ---
+          let extractedCorrectAnswer = "";
+          let hasValidObjectRubric = false;
 
-          const canEvaluate = !!(partDef.correct_answer && partDef.correct_answer.replace(/<[^>]*>?/gm, '').trim() !== '');
+          if (partDef.correct_answer) {
+            // Strip any outer HTML tags first
+            let rawCorrect = partDef.correct_answer.replace(/<[^>]*>?/gm, '').trim();
+            try {
+              const parsed = JSON.parse(rawCorrect);
+              if (parsed && typeof parsed === 'object') {
+                if (parsed.content !== undefined) {
+                  // It's the {"format":"richtext","content":""} wrapper. Extract the content.
+                  extractedCorrectAnswer = parsed.content.replace(/<[^>]*>?/gm, '').trim();
+                } else {
+                  // It's a valid JSON object map like {"1":"are"}
+                  hasValidObjectRubric = Object.keys(parsed).length > 0;
+                  extractedCorrectAnswer = rawCorrect; 
+                }
+              }
+            } catch (e) {
+              // It's just a normal string
+              extractedCorrectAnswer = rawCorrect;
+            }
+          }
+
+          // GUARDRAIL: Now check if the extracted answer is actually empty
+          let canEvaluate = false;
+          if (typeof studentPartResponse === 'object' && !isSubjective) {
+             canEvaluate = hasValidObjectRubric || !!partDef.correctMatchingPairs; 
+          } else {
+             canEvaluate = extractedCorrectAnswer !== '';
+          }
 
           if (!canEvaluate) {
-            // Skip evaluation for this part because the teacher didn't provide an answer key
+            // Skip evaluation because the teacher left the rubric/answer completely blank
             isFullyEvaluated = false;
-            partAwardedMarks = existingEval ? existingEval.marks : 0; // Preserve existing marks if any
+            partAwardedMarks = existingEval ? existingEval.marks : 0; 
             partFeedback = 'Pending manual evaluation: No rubric or correct answer provided in the question bank.';
           }
           else if (isSubjective) {
             // Subjective AI Grading
+            hasAIEvaluation = true;
             try {
               const cleanResponse = typeof studentPartResponse === 'string'
                 ? studentPartResponse.replace(/<[^>]*>?/gm, '').trim()
@@ -87,7 +123,7 @@ module.exports = createCoreService("api::answer.answer", () => ({
                 partDef.question_text || questionData.question,
                 cleanResponse,
                 partDef.marks,
-                partDef.correct_answer
+                extractedCorrectAnswer // Pass the CLEAN, extracted text to the AI!
               );
 
               partAwardedMarks = aiResult.awardedMarks;
@@ -95,10 +131,10 @@ module.exports = createCoreService("api::answer.answer", () => ({
             } catch (error) {
               console.error(`AI Eval failed for QNA ${qna.id}, Part ${i}:`, error);
               partFeedback = 'AI Evaluation failed. Needs manual review.';
-              isFullyEvaluated = false; // Mark incomplete so tutor can fix it
+              isFullyEvaluated = false; 
             }
           } else {
-            // Objective Grading
+            // Objective Grading (evaluateObjectivePart already parses it properly)
             const isCorrect = this.evaluateObjectivePart(studentPartResponse, partDef);
             if (isCorrect) {
               partAwardedMarks = partDef.marks;
@@ -123,19 +159,27 @@ module.exports = createCoreService("api::answer.answer", () => ({
         // 5. Prepare the updated QnA block
         updatedQuestionNAnswers.push({
           id: qna.id,
+          question: qna.question ? qna.question.id : null,
+          answer: qna.answer,
+          question_n_answer: qna.question_n_answer,
           question_awarded_marks: qnaTotalMarks,
           question_feedback: qnaFeedbackArray.join('\n\n'),
           part_evaluations: updatedPartEvaluations,
         });
       }
 
-      // 6. Final Update
-      // If we couldn't evaluate everything, set it to "in_progress" instead of "evaluated"
-      const finalStatus = isFullyEvaluated ? 'evaluated' : 'in_progress';
+      // 6. Final Update Logic
+      let finalStatus = 'evaluated';
+      let finalTutorFeedback = 'Automatically evaluated by system.';
 
-      const finalTutorFeedback = isFullyEvaluated
-        ? 'Automatically evaluated by system.'
-        : 'Partially evaluated. Some questions require manual grading due to missing answer keys/rubrics.';
+      if (!isFullyEvaluated) {
+        finalStatus = 'in_progress';
+        finalTutorFeedback = 'Partially evaluated. Some questions require manual grading due to missing answer keys/rubrics.';
+      } else if (hasAIEvaluation) {
+        // NEW: Force to in_progress if AI was used, even if everything was technically evaluated
+        finalStatus = 'in_progress';
+        finalTutorFeedback = 'Evaluated by AI. Please review and finalize the subjective scores.';
+      }
 
       const updatedSubmission = await strapi.entityService.update('api::answer.answer', answerId, {
         data: {
@@ -170,8 +214,8 @@ module.exports = createCoreService("api::answer.answer", () => ({
     // --- MATCH COLUMNS / FILL IN THE BLANKS (Object grading) ---
     // (This handles your complex {"options": ["are", "Are"]} structure)
     if (typeof studentPartResponse === 'object') {
-      const correctObj = (typeof parsedCorrect === 'object' && !parsedCorrect.format) 
-        ? parsedCorrect 
+      const correctObj = (typeof parsedCorrect === 'object' && !parsedCorrect.format)
+        ? parsedCorrect
         : (partDef.correctMatchingPairs || {});
 
       const keys = Object.keys(correctObj);
@@ -191,11 +235,11 @@ module.exports = createCoreService("api::answer.answer", () => ({
           isMatch = studentVal === String(correctObj[key]).trim();
         }
 
-        if (!isMatch) return false; 
+        if (!isMatch) return false;
       }
       return true;
     }
-    
+
     // --- MCQ / STRING GRADING ---
     const cleanString = (str) => {
       if (typeof str !== 'string') return '';
@@ -208,7 +252,7 @@ module.exports = createCoreService("api::answer.answer", () => ({
     };
 
     const studentChoice = cleanString(studentPartResponse);
-    
+
     // Extract the actual answer from the JSON wrapper if it exists (handles both "html" and "richtext" formats)
     let correctChoice = '';
     if (typeof parsedCorrect === 'object' && parsedCorrect !== null && parsedCorrect.content) {
