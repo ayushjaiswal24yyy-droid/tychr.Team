@@ -28,6 +28,16 @@
     },
     "question_feedback": {
       "type": "text"
+    },
+    "question_audio_feedback": {
+      "allowedTypes": [
+        "images",
+        "files",
+        "videos",
+        "audios"
+      ],
+      "type": "media",
+      "multiple": false
     }
   }
 }

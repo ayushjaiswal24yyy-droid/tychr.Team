@@ -1,7 +1,8 @@
 {
   "collectionName": "components_evaluation_evaluations",
   "info": {
-    "displayName": "evaluation"
+    "displayName": "evaluation",
+    "description": ""
   },
   "options": {},
   "attributes": {
@@ -13,6 +14,16 @@
     },
     "feedback": {
       "type": "text"
+    },
+    "audio_feedback": {
+      "allowedTypes": [
+        "images",
+        "files",
+        "videos",
+        "audios"
+      ],
+      "type": "media",
+      "multiple": false
     }
   }
 }
