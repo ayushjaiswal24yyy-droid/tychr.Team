@@ -1303,6 +1303,7 @@ export interface ApiAnswerAnswer extends Schema.CollectionType {
     resume_requested_at: Attribute.DateTime;
     resume_approved_at: Attribute.DateTime;
     resume_reason: Attribute.Text;
+    audio_feedback: Attribute.Media<'images' | 'files' | 'videos' | 'audios'>;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;

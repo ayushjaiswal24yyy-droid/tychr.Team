@@ -135,6 +135,16 @@
     },
     "resume_reason": {
       "type": "text"
+    },
+    "audio_feedback": {
+      "allowedTypes": [
+        "images",
+        "files",
+        "videos",
+        "audios"
+      ],
+      "type": "media",
+      "multiple": false
     }
   }
 }
