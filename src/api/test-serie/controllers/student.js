@@ -529,10 +529,12 @@ module.exports = createCoreController(
 
                   },
                   part_evaluations: true,
+                  question_audio_feedback: true
 
                 },
               },
               uploaded_answer_sheet: true,
+              audio_feedback: true,
             },
             sort: { submission_date: "asc" },
           }
@@ -618,7 +620,7 @@ module.exports = createCoreController(
               time_taken: paperAnswer.time_taken,
               submission_type: paperAnswer.submission_type,
               uploaded_answer_sheet: paperAnswer.uploaded_answer_sheet,
-
+              audio_feedback: paperAnswer.audio_feedback ?? null,  // ← add
               question_answers: paperAnswer.question_n_answer?.map(qna => ({
                 question_id: qna.question?.id,
                 question: qna.question?.question,
@@ -630,6 +632,7 @@ module.exports = createCoreController(
                   part_index: pe.part_index,
                   awarded_marks: pe.awarded_marks,
                   feedback: pe.feedback,
+                  audio_feedback: qna.question_audio_feedback ?? null,  // ← add
                 })) || [],
                 awarded_marks: qna.question_awarded_marks ?? 0,
                 feedback: qna.feedback,
