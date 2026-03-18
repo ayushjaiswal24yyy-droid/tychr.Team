@@ -632,10 +632,11 @@ module.exports = createCoreController(
                   part_index: pe.part_index,
                   awarded_marks: pe.awarded_marks,
                   feedback: pe.feedback,
-                  audio_feedback: qna.question_audio_feedback ?? null,  // ← add
+                  audio_feedback: pe.audio_feedback ?? null,   // ← pe-level audio (part feedback)
                 })) || [],
                 awarded_marks: qna.question_awarded_marks ?? 0,
-                feedback: qna.feedback,
+                feedback: qna.question_feedback,
+                audio_feedback: qna.question_audio_feedback ?? null,  // ← qna-level audio ✓
               })),
             })),
           };
