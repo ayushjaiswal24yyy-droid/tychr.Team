@@ -4978,6 +4978,7 @@ export interface ApiTestSerieTestSerie extends Schema.CollectionType {
     entity_type: Attribute.Enumeration<['series', 'paper']>;
     offline_pdf: Attribute.Media<'images' | 'files' | 'videos' | 'audios'>;
     reading_time: Attribute.Integer;
+    solution_pdf: Attribute.Media<'images' | 'files' | 'videos' | 'audios'>;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;

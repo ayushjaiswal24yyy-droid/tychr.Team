@@ -163,6 +163,16 @@
     },
     "reading_time": {
       "type": "integer"
+    },
+    "solution_pdf": {
+      "allowedTypes": [
+        "images",
+        "files",
+        "videos",
+        "audios"
+      ],
+      "type": "media",
+      "multiple": false
     }
   }
 }
