@@ -71,8 +71,12 @@ module.exports = {
         id,
         {
           populate: {
-            question_banks: {
-              populate: ["parts"],
+            papers: {
+              populate: {
+                question_banks: {
+                  populate: ["parts"],
+                },
+              },
             },
             grade_subject: {
               fields: ["id", "name"],
@@ -105,11 +109,14 @@ module.exports = {
       if (!lambdaUrl || !secret || !strapiToken) {
         return ctx.internalServerError("PDF service is not configured");
       }
+      const allQuestions = (series.papers || []).flatMap(
+        (paper) => paper.question_banks || []
+      );
 
       const seriesData = {
         title: series.title,
         grade_subject: series.grade_subject,
-        questions: (series.question_banks || []).map((q) => ({
+        questions: allQuestions.map((q) => ({
           id: q.id,
           question: q.question,
           question_type: q.question_type,
