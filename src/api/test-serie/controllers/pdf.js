@@ -74,7 +74,9 @@ module.exports = {
             papers: {
               populate: {
                 question_banks: {
-                  populate: ["parts"],
+                  parts: {
+                    populate: ["correct_answer"], // ✅ IMPORTANT
+                  },
                 },
               },
             },
@@ -126,7 +128,7 @@ module.exports = {
             marks: p.marks,
             answer_type: p.answer_type,
             options: p.options,
-            correct_answer: p.correct_answer,
+            correct_answer: p.correct_answer?.content || p.correct_answer,
           })),
         })),
       };
