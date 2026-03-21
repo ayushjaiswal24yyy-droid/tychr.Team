@@ -1,17 +1,5 @@
 // src/api/test-serie/controllers/pdf.js
-const normalizeRichText = (val) => {
-  if (!val) return "";
 
-  // Already HTML string
-  if (typeof val === "string") return val;
-
-  // New editor format
-  if (typeof val === "object") {
-    return val.content || "";
-  }
-
-  return "";
-};
 module.exports = {
   // ── Offline test paper PDF ─────────────────────────────────────────────────
   async generate(ctx) {
@@ -175,145 +163,143 @@ module.exports = {
   },
 
   // ── Student result PDF ─────────────────────────────────────────────────────
- async result(ctx) {
-  try {
-    const { id } = ctx.params;
-    const { attempt_id } = ctx.query;
+  async result(ctx) {
+    try {
+      const { id } = ctx.params;
+      const { attempt_id } = ctx.query;
 
-    if (!attempt_id) return ctx.badRequest("attempt_id query param is required");
+      if (!attempt_id) return ctx.badRequest("attempt_id query param is required");
 
-    const series = await strapi.entityService.findOne(
-      "api::test-serie.test-serie",
-      id,
-      { fields: ["id", "title", "program_type", "test_mode", "test_duration"] }
-    );
+      const series = await strapi.entityService.findOne(
+        "api::test-serie.test-serie",
+        id,
+        { fields: ["id", "title", "program_type", "test_mode", "test_duration"] }
+      );
 
-    if (!series) return ctx.notFound("Test series not found");
+      if (!series) return ctx.notFound("Test series not found");
 
-    const answers = await strapi.entityService.findMany(
-      "api::answer.answer",
-      {
-        filters: {
-          attempt_id: Number(attempt_id),
-          completed: true,
-          is_attempt_marker: { $ne: true },
-        },
-        populate: {
-          test_series: { fields: ["id", "title"] },
-          question_n_answer: {
-            populate: {
-              question: { populate: ["parts"] },
-              part_evaluations: true,
+      const answers = await strapi.entityService.findMany(
+        "api::answer.answer",
+        {
+          filters: {
+            attempt_id: Number(attempt_id),
+            completed: true,
+            is_attempt_marker: { $ne: true },
+          },
+          populate: {
+            test_series: { fields: ["id", "title"] },
+            question_n_answer: {
+              populate: {
+                question: { populate: ["parts"] },
+                part_evaluations: true,
+              },
             },
           },
-        },
-      }
-    );
+        }
+      );
 
-    if (!answers?.length) return ctx.notFound("No answers found for this attempt");
+      if (!answers?.length) return ctx.notFound("No answers found for this attempt");
 
-    const submissionDate = answers
-      .map((a) => new Date(a.submission_date))
-      .sort((a, b) => b - a)[0];
+      const submissionDate = answers
+        .map((a) => new Date(a.submission_date))
+        .sort((a, b) => b - a)[0];
 
-    const totalMarks = answers.reduce((sum, a) => sum + (a.marks || 0), 0);
+      const totalMarks = answers.reduce((sum, a) => sum + (a.marks || 0), 0);
+      const allQuestions = answers.flatMap(
+        (ans) => (ans.question_n_answer || []).map((qna) => ({
+          id: qna.question?.id,
+          marks: qna.question?.marks || 0,
+        }))
+      );
 
-    const attempt = {
-      attempt_no: 1,
-      attempt_id: Number(attempt_id),
-      submission_date: submissionDate,
-      total_marks: totalMarks,
-      evaluation_status: answers.every((a) => a.evaluation_status === "evaluated")
-        ? "evaluated"
-        : "pending",
 
-      papers: answers.map((ans) => ({
-        id: ans.id,
-        paper_id: ans.test_series?.id,
-        paper_title: ans.test_series?.title,
-        marks: ans.marks,
-        time_taken: ans.time_taken,
-
-        question_answers: (ans.question_n_answer || []).map((qna) => ({
-          question_id: qna.question?.id,
-
-          // ✅ FIX: normalize question
-          question: normalizeRichText(qna.question?.question),
-
-          // ✅ FIX: normalize parts
-          parts: (qna.question?.parts || []).map((p) => ({
-            ...p,
-            question_text: normalizeRichText(p.question_text),
-            correct_answer: normalizeRichText(p.correct_answer),
-            options: normalizeRichText(p.options),
+      const attempt = {
+        attempt_no: 1,
+        attempt_id: Number(attempt_id),
+        submission_date: submissionDate,
+        total_marks: totalMarks,
+        evaluation_status: answers.every((a) => a.evaluation_status === "evaluated")
+          ? "evaluated"
+          : "pending",
+        questions: allQuestions,
+        papers: answers.map((ans) => ({
+          id: ans.id,
+          paper_id: ans.test_series?.id,
+          paper_title: ans.test_series?.title,
+          marks: ans.marks,
+          time_taken: ans.time_taken,
+          question_answers: (ans.question_n_answer || []).map((qna) => ({
+            question_id: qna.question?.id,
+            question: qna.question?.question,
+            parts: qna.question?.parts || [],
+            question_type: qna.question?.question_type,
+            marks: qna.question?.marks,
+            student_answer: (() => {
+              if (!qna.answer) return null;
+              try {
+                const parsed = typeof qna.answer === "string" ? JSON.parse(qna.answer) : qna.answer;
+                return parsed?.content || qna.answer;
+              } catch {
+                return qna.answer;
+              }
+            })(),
+            part_evaluations: (qna.part_evaluations || []).map((pe) => ({
+              part_index: pe.part_index,
+              awarded_marks: pe.awarded_marks,
+              feedback: pe.feedback,
+            })),
+            awarded_marks: qna.question_awarded_marks ?? 0,
+            feedback: qna.question_feedback,
           })),
-
-          question_type: qna.question?.question_type,
-          marks: qna.question?.marks,
-
-          // ✅ FIX: normalize student answer
-          student_answer: normalizeRichText(qna.answer),
-
-          part_evaluations: (qna.part_evaluations || []).map((pe) => ({
-            part_index: pe.part_index,
-            awarded_marks: pe.awarded_marks,
-            feedback: pe.feedback,
-          })),
-
-          awarded_marks: qna.question_awarded_marks ?? 0,
-
-          // ✅ FIX: normalize feedback (important)
-          feedback: normalizeRichText(qna.question_feedback),
         })),
-      })),
-    };
+      };
 
-    const user = ctx.state.user;
-    const student = {
-      fullName: user?.fullName || user?.username,
-      email: user?.email,
-      schoolname: user?.schoolname,
-    };
+      const user = ctx.state.user;
+      const student = {
+        fullName: user?.fullName || user?.username,
+        email: user?.email,
+        schoolname: user?.schoolname,
+      };
 
-    const lambdaUrl = process.env.PDF_LAMBDA_URL;
-    const secret = process.env.PDF_SECRET;
-    const strapiUrl = process.env.STRAPI_URL || "http://localhost:1337";
-    const strapiToken = process.env.STRAPI_API_TOKEN;
+      const lambdaUrl = process.env.PDF_LAMBDA_URL;
+      const secret = process.env.PDF_SECRET;
+      const strapiUrl = process.env.STRAPI_URL || "http://localhost:1337";
+      const strapiToken = process.env.STRAPI_API_TOKEN;
 
-    if (!lambdaUrl || !secret || !strapiToken) {
-      return ctx.internalServerError("PDF service is not configured");
-    }
+      if (!lambdaUrl || !secret || !strapiToken) {
+        return ctx.internalServerError("PDF service is not configured");
+      }
 
-    const response = await fetch(lambdaUrl, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-pdf-secret": secret,
-      },
-      body: JSON.stringify({
-        type: "result",
-        student,
-        series: {
-          title: series.title,
-          program_type: series.program_type,
+      const response = await fetch(lambdaUrl, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-pdf-secret": secret,
         },
-        attempt,
-        strapiUrl,
-        strapiToken,
-      }),
-      signal: AbortSignal.timeout(55000),
-    });
+        body: JSON.stringify({
+          type: "result",
+          student,
+          series: {
+            title: series.title,
+            program_type: series.program_type,
+          },
+          attempt,
+          strapiUrl,
+          strapiToken,
+        }),
+        signal: AbortSignal.timeout(55000),
+      });
 
-    const result = await response.json();
+      const result = await response.json();
 
-    if (!response.ok) {
-      return ctx.internalServerError(result?.error || "Result PDF generation failed");
+      if (!response.ok) {
+        return ctx.internalServerError(result?.error || "Result PDF generation failed");
+      }
+
+      return ctx.send(result);
+    } catch (err) {
+      strapi.log.error("Result PDF error:", err);
+      return ctx.internalServerError(`Result PDF generation failed: ${err.message}`);
     }
-
-    return ctx.send(result);
-  } catch (err) {
-    strapi.log.error("Result PDF error:", err);
-    return ctx.internalServerError(`Result PDF generation failed: ${err.message}`);
-  }
-}
+  },
 };
