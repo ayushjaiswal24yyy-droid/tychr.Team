@@ -276,7 +276,7 @@ module.exports = {
       if (!onlineAnswers.length) {
         return ctx.badRequest("No online paper answers found for this attempt");
       }
-
+      const totalMarks = onlineAnswers.reduce((sum, a) => sum + (a.marks || 0), 0);
       const submissionDate = onlineAnswers
         .map((a) => new Date(a.submission_date))
         .sort((a, b) => b - a)[0];
@@ -285,7 +285,7 @@ module.exports = {
         attempt_no: 1,
         attempt_id: Number(attempt_id),
         submission_date: submissionDate,
-        total_marks: onlineAnswers.reduce((sum, a) => sum + (a.marks || 0), 0),
+        total_marks: totalMarks,
         evaluation_status: onlineAnswers.every((a) => a.evaluation_status === "evaluated")
           ? "evaluated"
           : "pending",
