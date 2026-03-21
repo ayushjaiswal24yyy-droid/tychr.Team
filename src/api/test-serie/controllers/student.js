@@ -626,6 +626,8 @@ module.exports = createCoreController(
                 question: qna.question?.question,
                 parts: qna.question?.parts || [],
                 question_type: qna.question?.question_type,
+                annotations: qna.annotations ?? null,
+                improved_answer: qna.improved_answer ?? null,
                 marks: qna.question?.marks,
                 student_answer: qna.answer,
                 part_evaluations: qna.part_evaluations?.map(pe => ({

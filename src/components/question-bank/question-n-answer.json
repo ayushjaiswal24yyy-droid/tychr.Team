@@ -14,6 +14,12 @@
     "answer": {
       "type": "json"
     },
+    "annotations": {
+      "type": "json"
+    },
+    "improved_answer": {
+      "type": "text"
+    },
     "question_n_answer": {
       "type": "richtext"
     },

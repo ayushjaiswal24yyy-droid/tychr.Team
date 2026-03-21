@@ -54,6 +54,7 @@
       "type": "enumeration",
       "enum": [
         "evaluated",
+        "needs_review",
         "pending",
         "in_progress"
       ],
