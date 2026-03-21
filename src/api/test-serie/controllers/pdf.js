@@ -178,34 +178,40 @@ module.exports = {
 
       if (!series) return ctx.notFound("Test series not found");
 
-      const answers = await strapi.entityService.findMany(
-        "api::answer.answer",
-        {
-          filters: {
-            attempt_id: Number(attempt_id),
-            completed: true,
-            is_attempt_marker: { $ne: true },
-          },
-          populate: {
-            test_series: { fields: ["id", "title"] },
-            question_n_answer: {
-              populate: {
-                question: { populate: ["parts"] },
-                part_evaluations: true,
-              },
-            },
-          },
-        }
-      );
+  const answers = await strapi.entityService.findMany(
+  "api::answer.answer",
+  {
+    filters: {
+      attempt_id: Number(attempt_id),
+      completed: true,
+      is_attempt_marker: { $ne: true },
+    },
+    populate: {
+      test_series: { fields: ["id", "title", "test_mode"] }, // ← add test_mode
+      question_n_answer: {
+        populate: {
+          question: { populate: ["parts"] },
+          part_evaluations: true,
+        },
+      },
+    },
+  }
+);
 
-      if (!answers?.length) return ctx.notFound("No answers found for this attempt");
+// Then filter out offline papers before building the attempt:
+const onlineAnswers = answers.filter(
+  (ans) => ans.test_series?.test_mode !== "offline"
+);
 
-      const submissionDate = answers
+
+      if (!onlineAnswers?.length) return ctx.notFound("No answers found for this attempt");
+
+      const submissionDate = onlineAnswers
         .map((a) => new Date(a.submission_date))
         .sort((a, b) => b - a)[0];
 
-      const totalMarks = answers.reduce((sum, a) => sum + (a.marks || 0), 0);
-      const allQuestions = answers.flatMap(
+      const totalMarks = onlineAnswers.reduce((sum, a) => sum + (a.marks || 0), 0);
+      const allQuestions = onlineAnswers.flatMap(
         (ans) => (ans.question_n_answer || []).map((qna) => ({
           id: qna.question?.id,
           marks: qna.question?.marks || 0,
@@ -219,11 +225,11 @@ module.exports = {
         attempt_id: Number(attempt_id),
         submission_date: submissionDate,
         total_marks: totalMarks,
-        evaluation_status: answers.every((a) => a.evaluation_status === "evaluated")
+        evaluation_status: onlineAnswers.every((a) => a.evaluation_status === "evaluated")
           ? "evaluated"
           : "pending",
         questions: allQuestions,
-        papers: answers.map((ans) => ({
+        papers: onlineAnswers.map((ans) => ({
           id: ans.id,
           paper_id: ans.test_series?.id,
           paper_title: ans.test_series?.title,
@@ -241,19 +247,49 @@ module.exports = {
             };
 
             const parseStudentAnswer = (answer) => {
-              if (!answer) return null;
-              try {
-                const parsed = typeof answer === "string" ? JSON.parse(answer) : answer;
-                if (typeof parsed === "object" && parsed !== null) {
-                  return Object.values(parsed)
-                    .map((v) => (typeof v === "string" ? v : JSON.stringify(v)))
-                    .join("<br/>");
-                }
-                return String(parsed);
-              } catch {
-                return typeof answer === "string" ? answer : null;
-              }
-            };
+  if (!answer) return null;
+  try {
+    const parsed = typeof answer === "string" ? JSON.parse(answer) : answer;
+    if (typeof parsed !== "object" || parsed === null) {
+      return typeof answer === "string" ? answer : null;
+    }
+
+    // Canvas JSON — has "objects" key with fabric.js shapes
+    if (parsed.objects) {
+      return "__CANVAS__"; // signal to skip rendering
+    }
+
+    // Fill in the blanks / match columns — numeric keys + part_0
+    // e.g. {"1": "are", "2": "doing", "part_0": ""}
+    const entries = Object.entries(parsed);
+    const partEntries = entries.filter(([k]) => k.startsWith("part_"));
+    const blankEntries = entries.filter(([k]) => !k.startsWith("part_") && k !== "format" && k !== "content" && k !== "_v");
+
+    // Richtext wrapper: {"format":"richtext","content":"...","_v":"1.0"}
+    if (parsed.format && parsed.content !== undefined) {
+      return parsed.content || null;
+    }
+
+    // Fill in the blanks: numeric keys like {"1":"are","2":"doing"}
+    if (blankEntries.length > 0) {
+      return blankEntries
+        .sort(([a], [b]) => Number(a) - Number(b))
+        .map(([k, v]) => "Blank " + k + ": <strong>" + (v || "—") + "</strong>")
+        .join("<br/>");
+    }
+
+    // Part map: {"part_0": "<p>...</p>"}
+    if (partEntries.length > 0) {
+      return partEntries
+        .map(([, v]) => (typeof v === "string" ? v : JSON.stringify(v)))
+        .join("<br/>");
+    }
+
+    return null;
+  } catch {
+    return typeof answer === "string" ? answer : null;
+  }
+};
 
             return {
               question_id: qna.question?.id,
