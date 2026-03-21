@@ -213,6 +213,7 @@ module.exports = {
       );
 
 
+
       const attempt = {
         attempt_no: 1,
         attempt_id: Number(attempt_id),
@@ -228,29 +229,48 @@ module.exports = {
           paper_title: ans.test_series?.title,
           marks: ans.marks,
           time_taken: ans.time_taken,
-          question_answers: (ans.question_n_answer || []).map((qna) => ({
-            question_id: qna.question?.id,
-            question: qna.question?.question,
-            parts: qna.question?.parts || [],
-            question_type: qna.question?.question_type,
-            marks: qna.question?.marks,
-            student_answer: (() => {
-              if (!qna.answer) return null;
+          question_answers: (ans.question_n_answer || []).map((qna) => {
+            const parseRichtext = (val) => {
+              if (!val) return "";
               try {
-                const parsed = typeof qna.answer === "string" ? JSON.parse(qna.answer) : qna.answer;
-                return parsed?.content || qna.answer;
+                const parsed = typeof val === "string" ? JSON.parse(val) : val;
+                return parsed?.content || val;
               } catch {
-                return qna.answer;
+                return val;
               }
-            })(),
-            part_evaluations: (qna.part_evaluations || []).map((pe) => ({
-              part_index: pe.part_index,
-              awarded_marks: pe.awarded_marks,
-              feedback: pe.feedback,
-            })),
-            awarded_marks: qna.question_awarded_marks ?? 0,
-            feedback: qna.question_feedback,
-          })),
+            };
+
+            const parseStudentAnswer = (answer) => {
+              if (!answer) return null;
+              try {
+                const parsed = typeof answer === "string" ? JSON.parse(answer) : answer;
+                if (typeof parsed === "object" && parsed !== null) {
+                  return Object.values(parsed)
+                    .map((v) => (typeof v === "string" ? v : JSON.stringify(v)))
+                    .join("<br/>");
+                }
+                return String(parsed);
+              } catch {
+                return typeof answer === "string" ? answer : null;
+              }
+            };
+
+            return {
+              question_id: qna.question?.id,
+              question: parseRichtext(qna.question?.question),  
+              parts: qna.question?.parts || [],
+              question_type: qna.question?.question_type,
+              marks: qna.question?.marks,
+              student_answer: parseStudentAnswer(qna.answer),  
+              part_evaluations: (qna.part_evaluations || []).map((pe) => ({
+                part_index: pe.part_index,
+                awarded_marks: pe.awarded_marks,
+                feedback: pe.feedback,
+              })),
+              awarded_marks: qna.question_awarded_marks ?? 0,
+              feedback: qna.question_feedback,
+            };
+          }),
         })),
       };
 
