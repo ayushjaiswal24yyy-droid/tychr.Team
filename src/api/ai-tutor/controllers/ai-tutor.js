@@ -1,23 +1,12 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // src/api/ai-tutor/controllers/ai-tutor.js
 // ─────────────────────────────────────────────────────────────────────────────
-// No npm install needed — uses native fetch (Node 18+, which Strapi v4/v5 requires)
-//
-// Add to your .env:
-//   CLOUDFLARE_ACCOUNT_ID=your_account_id
-//   CLOUDFLARE_API_KEY=your_workers_ai_api_token
-//
-// Model: @cf/meta/llama-3.3-70b-instruct-fp8-fast
-// Best quality/speed tradeoff on CF Workers AI for tutoring use cases.
-// 70B Llama 3.3, fp8 quantized — strong instruction following + fast.
 
 "use strict";
 
 const CF_ACCOUNT_ID = process.env.CLOUDFLARE_ACCOUNT_ID;
 const CF_API_KEY = process.env.CLOUDFLARE_API_KEY;
 const CF_MODEL = "@cf/meta/llama-3.3-70b-instruct-fp8-fast";
-
-// OpenAI-compatible endpoint exposed by Workers AI
 const CF_URL = `https://api.cloudflare.com/client/v4/accounts/${CF_ACCOUNT_ID}/ai/v1/chat/completions`;
 
 // ─── Shared fetch helper ──────────────────────────────────────────────────────
@@ -48,9 +37,25 @@ async function callCloudflareAI({ messages, maxTokens = 1500, jsonMode = false }
   return data.choices?.[0]?.message?.content || "";
 }
 
-// ─── System prompts per mode ──────────────────────────────────────────────────
+// ─── GDC subject detection ────────────────────────────────────────────────────
+// Subjects where GDC tips are relevant (Paper 2 calculator papers)
+
+const GDC_SUBJECTS = [
+  "math", "mathematics", "math aa", "math ai",
+  "mathematics: analysis and approaches",
+  "mathematics: applications and interpretation",
+  "physics", "chemistry", "biology",
+];
+
+function isGDCSubject(subject = "") {
+  return GDC_SUBJECTS.some((s) => subject.toLowerCase().includes(s));
+}
+
+// ─── System prompts ───────────────────────────────────────────────────────────
 
 function buildSystemPrompt(mode, subject, level, topic) {
+  const isMathSci = isGDCSubject(subject);
+
   const context = [
     `You are an expert IB tutor specialising in ${subject}${level && level !== "None" ? ` (${level})` : ""}.`,
     topic ? `The student is currently studying: ${topic}.` : "",
@@ -58,6 +63,10 @@ function buildSystemPrompt(mode, subject, level, topic) {
     `Be encouraging, clear, and appropriately challenging.`,
     `Use markdown for formatting — headings, bullet points, bold key terms.`,
     `Keep responses concise but complete. Avoid unnecessary filler.`,
+    // Inject GDC awareness for math/science subjects regardless of mode
+    isMathSci
+      ? `GDC AWARENESS: This subject has calculator-allowed papers (Paper 2/3). Whenever a step can be done faster on a GDC, note it inline with a 🔢 prefix — e.g. "🔢 GDC: Use the equation solver here instead of solving manually." Do this even in non-Methods mode.`
+      : "",
   ]
     .filter(Boolean)
     .join("\n");
@@ -98,6 +107,38 @@ ANALYTICAL MODE — Deep analysis of texts, sources, data, and stimuli.
 - Always connect your analysis back to the IB assessment criteria.
 - Suggest what a top-band response would include that a mid-band response misses.
 `.trim(),
+
+    methods: `
+${context}
+
+METHODS MODE — Show multiple solution approaches and GDC strategies.
+
+Structure every response like this:
+
+## Method 1: [Name] (e.g. Algebraic / By-hand)
+Walk through the full solution step by step.
+${isMathSci ? "Note any step where a GDC would save time with 🔢." : ""}
+
+## Method 2: [Name] (e.g. Graphical / Using technology)
+Walk through an alternative approach.
+${
+  isMathSci
+    ? `## 🔢 GDC Strategy
+- State which calculator function to use (e.g. Solver, Graphing + Intersection, Numerical Derivative, Table of Values, Matrix operations).
+- Give the exact keystrokes or menu path if relevant (TI-84 or Casio fx-CG50 style).
+- State what the GDC output looks like and how to read the answer.
+- Flag whether this approach is acceptable on IB Paper 2/3 or if working must be shown.`
+    : ""
+}
+
+## Which method to use?
+Give a 1-2 sentence recommendation based on exam context (time pressure, paper type, marks available).
+
+Rules:
+- Always show at least 2 methods. For rich problems, show 3.
+- Never skip the "Which method to use?" summary.
+- If the question is purely conceptual (no calculation), show different analytical frameworks instead of calculation methods.
+`.trim(),
   };
 
   return modeInstructions[mode] || modeInstructions.solver;
@@ -112,10 +153,9 @@ async function chat(ctx) {
     return ctx.badRequest("message is required");
   }
 
-  const validModes = ["socratic", "solver", "analytical"];
+  const validModes = ["socratic", "solver", "analytical", "methods"];
   const safeMode = validModes.includes(mode) ? mode : "solver";
 
-  // Cap history at last 20 messages to stay well within context window
   const recentHistory = history.slice(-20);
 
   const messages = [
@@ -125,7 +165,7 @@ async function chat(ctx) {
   ];
 
   try {
-    const reply = await callCloudflareAI({ messages, maxTokens: 1500 });
+    const reply = await callCloudflareAI({ messages, maxTokens: 1800 });
     ctx.body = { reply, mode: safeMode };
   } catch (err) {
     strapi.log.error("AI Tutor chat error:", err.message);
@@ -133,20 +173,12 @@ async function chat(ctx) {
   }
 }
 
-// ─── Question generator handler ───────────────────────────────────────────────
+// ─── Question generator ───────────────────────────────────────────────────────
 
 async function generateQuestions(ctx) {
-  const {
-    subject,
-    level,
-    topic,
-    paperType = "Paper 2",
-    count = 5,
-  } = ctx.request.body;
+  const { subject, level, topic, paperType = "Paper 2", count = 5 } = ctx.request.body;
 
-  if (!subject) {
-    return ctx.badRequest("subject is required");
-  }
+  if (!subject) return ctx.badRequest("subject is required");
 
   const safeCount = Math.min(Math.max(parseInt(count) || 5, 1), 15);
 
@@ -161,7 +193,7 @@ Requirements:
 - Include a mix of question types appropriate for this paper
 - For each question include a short examiner hint (what a top-band answer must include)
 
-Return a JSON object with this exact structure:
+Return a JSON object:
 {
   "questions": [
     {
@@ -178,16 +210,14 @@ questionType must be one of: mcq, short_answer, long_answer, data_interpretation
   const messages = [
     {
       role: "system",
-      content:
-        "You are an IB exam question writer. Always respond with valid JSON only. No explanation, no markdown fences, no extra text.",
+      content: "You are an IB exam question writer. Always respond with valid JSON only. No explanation, no markdown fences.",
     },
     { role: "user", content: userPrompt },
   ];
 
   try {
     const raw = await callCloudflareAI({ messages, maxTokens: 2500, jsonMode: true });
-    const clean = raw.replace(/```json|```/g, "").trim();
-    const parsed = JSON.parse(clean);
+    const parsed = JSON.parse(raw.replace(/```json|```/g, "").trim());
     ctx.body = { questions: parsed.questions || [] };
   } catch (err) {
     strapi.log.error("AI question generation error:", err.message);

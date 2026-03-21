@@ -31,9 +31,22 @@ module.exports = createCoreService("api::answer.answer", () => ({
         submission.test_series?.test_mode === 'offline' ||
         submission.submission_type === 'offline'
       ) {
-        console.log(`Skipping submission ${answerId} because it is offline.`);
+        console.log(`Skipping submission ${answerId}: offline.`);
         continue;
       }
+
+      if (submission.test_series?.ai_evaluation_enabled === false) {
+        // Teacher explicitly disabled AI grading for this paper (e.g. TOK essay, History IA)
+        console.log(`Skipping submission ${answerId}: AI evaluation disabled for this test series.`);
+        await strapi.entityService.update('api::answer.answer', answerId, {
+          data: {
+            evaluation_status: 'pending',
+            tutor_feedback: 'This paper requires manual evaluation by a teacher.',
+          },
+        });
+        continue;
+      }
+
 
       let totalSubmissionMarks = 0;
       let isFullyEvaluated = true; // Track if every single question had a rubric/correct answer
@@ -70,7 +83,7 @@ module.exports = createCoreService("api::answer.answer", () => ({
           let partAwardedMarks = 0;
           let partFeedback = '';
 
-        const isSubjective = ['short_answer', 'long_answer'].includes(questionData.question_type);
+          const isSubjective = ['short_answer', 'long_answer'].includes(questionData.question_type);
 
           // --- NEW: Unpack the correct answer carefully ---
           let extractedCorrectAnswer = "";
@@ -88,7 +101,7 @@ module.exports = createCoreService("api::answer.answer", () => ({
                 } else {
                   // It's a valid JSON object map like {"1":"are"}
                   hasValidObjectRubric = Object.keys(parsed).length > 0;
-                  extractedCorrectAnswer = rawCorrect; 
+                  extractedCorrectAnswer = rawCorrect;
                 }
               }
             } catch (e) {
@@ -100,15 +113,15 @@ module.exports = createCoreService("api::answer.answer", () => ({
           // GUARDRAIL: Now check if the extracted answer is actually empty
           let canEvaluate = false;
           if (typeof studentPartResponse === 'object' && !isSubjective) {
-             canEvaluate = hasValidObjectRubric || !!partDef.correctMatchingPairs; 
+            canEvaluate = hasValidObjectRubric || !!partDef.correctMatchingPairs;
           } else {
-             canEvaluate = extractedCorrectAnswer !== '';
+            canEvaluate = extractedCorrectAnswer !== '';
           }
 
           if (!canEvaluate) {
             // Skip evaluation because the teacher left the rubric/answer completely blank
             isFullyEvaluated = false;
-            partAwardedMarks = existingEval ? existingEval.marks : 0; 
+            partAwardedMarks = existingEval ? existingEval.marks : 0;
             partFeedback = 'Pending manual evaluation: No rubric or correct answer provided in the question bank.';
           }
           else if (isSubjective) {
@@ -131,17 +144,17 @@ module.exports = createCoreService("api::answer.answer", () => ({
             } catch (error) {
               console.error(`AI Eval failed for QNA ${qna.id}, Part ${i}:`, error);
               partFeedback = 'AI Evaluation failed. Needs manual review.';
-              isFullyEvaluated = false; 
+              isFullyEvaluated = false;
             }
           } else {
             // Objective Grading (evaluateObjectivePart already parses it properly)
-            const isCorrect = this.evaluateObjectivePart(studentPartResponse, partDef);
-            if (isCorrect) {
-              partAwardedMarks = partDef.marks;
-              partFeedback = 'Correct';
-            } else {
-              partFeedback = 'Incorrect';
-            }
+            const { isCorrect, feedback } = this.evaluateObjectivePart(
+              studentPartResponse,
+              partDef,
+              questionData.question_type  // ← pass this so fill_in_the_blanks routes correctly
+            );
+            if (isCorrect) partAwardedMarks = partDef.marks;
+            partFeedback = feedback;
           }
 
           qnaTotalMarks += Number(partAwardedMarks);
@@ -197,99 +210,235 @@ module.exports = createCoreService("api::answer.answer", () => ({
     return { evaluatedCount, results: evaluationResults };
   },
 
-  evaluateObjectivePart(studentPartResponse, partDef) {
-    if (!studentPartResponse || !partDef.correct_answer) return false;
+  evaluateObjectivePart(studentPartResponse, partDef, questionType) {
+    if (!studentPartResponse || !partDef.correct_answer) {
+      return { isCorrect: false, feedback: "No answer provided." };
+    }
 
-    // 1. Strip the HTML tags that Strapi's editor might wrap around the JSON
-    let rawCorrect = partDef.correct_answer.replace(/<[^>]*>?/gm, '').trim();
+    // Strip HTML and try to parse as JSON
+    let rawCorrect = partDef.correct_answer.replace(/<[^>]*>?/gm, "").trim();
     let parsedCorrect;
-
-    // 2. Try to parse the cleaned string as JSON
     try {
       parsedCorrect = JSON.parse(rawCorrect);
     } catch (e) {
-      parsedCorrect = rawCorrect; // Fallback: normal string
+      parsedCorrect = rawCorrect;
     }
 
-    // --- MATCH COLUMNS / FILL IN THE BLANKS (Object grading) ---
-    // (This handles your complex {"options": ["are", "Are"]} structure)
-    if (typeof studentPartResponse === 'object') {
-      const correctObj = (typeof parsedCorrect === 'object' && !parsedCorrect.format)
-        ? parsedCorrect
-        : (partDef.correctMatchingPairs || {});
-
-      const keys = Object.keys(correctObj);
-      if (keys.length === 0) return false;
-
-      for (const key of keys) {
-        let studentVal = studentPartResponse[key] !== undefined ? String(studentPartResponse[key]).trim() : "";
-        let isMatch = false;
-
-        if (typeof correctObj[key] === 'object' && correctObj[key] !== null) {
-          if (Array.isArray(correctObj[key].options)) {
-            isMatch = correctObj[key].options.some(opt => String(opt).trim() === studentVal);
-          } else {
-            isMatch = String(studentPartResponse[key]) === String(correctObj[key]);
-          }
-        } else {
-          isMatch = studentVal === String(correctObj[key]).trim();
-        }
-
-        if (!isMatch) return false;
-      }
-      return true;
-    }
-
-    // --- MCQ / STRING GRADING ---
     const cleanString = (str) => {
-      if (typeof str !== 'string') return '';
+      if (typeof str !== "string") return "";
       return str
-        .replace(/<[^>]*>?/gm, '')     // Remove HTML
-        .replace(/&[a-zA-Z0-9#]+;/g, ' ') // Remove entities like &nbsp;
-        .replace(/[\u200B-\u200D\uFEFF]/g, '') // Remove zero-width chars
-        .replace(/\s+/g, ' ')          // Collapse multi-spaces and newlines
+        .replace(/<[^>]*>?/gm, "")
+        .replace(/&[a-zA-Z0-9#]+;/g, " ")
+        .replace(/[\u200B-\u200D\uFEFF]/g, "")
+        .replace(/\s+/g, " ")
         .trim();
     };
 
-    const studentChoice = cleanString(studentPartResponse);
+    // ─── MATCH COLUMNS ──────────────────────────────────────────────────────────
+    if (questionType === "match_columns" || typeof studentPartResponse === "object") {
+      const correctObj =
+        typeof parsedCorrect === "object" && !parsedCorrect.format
+          ? parsedCorrect
+          : partDef.correctMatchingPairs || {};
 
-    // Extract the actual answer from the JSON wrapper if it exists (handles both "html" and "richtext" formats)
-    let correctChoice = '';
-    if (typeof parsedCorrect === 'object' && parsedCorrect !== null && parsedCorrect.content) {
+      const keys = Object.keys(correctObj);
+      if (keys.length === 0) return { isCorrect: false, feedback: "No answer key provided." };
+
+      const wrongPairs = [];
+      const correctPairs = [];
+
+      for (const key of keys) {
+        const studentVal =
+          studentPartResponse[key] !== undefined
+            ? cleanString(String(studentPartResponse[key]))
+            : "(no answer)";
+
+        let expectedVal = "";
+        let isMatch = false;
+
+        if (typeof correctObj[key] === "object" && correctObj[key] !== null) {
+          if (Array.isArray(correctObj[key].options)) {
+            isMatch = correctObj[key].options.some(
+              (opt) => cleanString(String(opt)) === studentVal
+            );
+            expectedVal = correctObj[key].options.join(" / ");
+          } else {
+            expectedVal = cleanString(String(correctObj[key]));
+            isMatch = studentVal === expectedVal;
+          }
+        } else {
+          expectedVal = cleanString(String(correctObj[key]));
+          isMatch = studentVal === expectedVal;
+        }
+
+        if (isMatch) {
+          correctPairs.push(`✓ ${key} → ${studentVal}`);
+        } else {
+          wrongPairs.push(`✗ ${key}: you answered "${studentVal}", correct answer is "${expectedVal}"`);
+        }
+      }
+
+      const isCorrect = wrongPairs.length === 0;
+      const feedbackParts = [];
+
+      if (correctPairs.length > 0) feedbackParts.push(`Correct: ${correctPairs.join(", ")}.`);
+      if (wrongPairs.length > 0) feedbackParts.push(wrongPairs.join(". ") + ".");
+
+      return {
+        isCorrect,
+        feedback: feedbackParts.join(" "),
+      };
+    }
+
+    // ─── FILL IN THE BLANKS ─────────────────────────────────────────────────────
+    if (questionType === "fill_in_the_blanks") {
+      // Same object structure as match columns but surfaced differently in feedback
+      const correctObj =
+        typeof parsedCorrect === "object" && !parsedCorrect.format ? parsedCorrect : {};
+
+      const keys = Object.keys(correctObj);
+      if (keys.length === 0) {
+        // Single blank — fall through to MCQ/string grading below
+      } else {
+        const wrongBlanks = [];
+        const correctBlanks = [];
+
+        for (const key of keys) {
+          const studentVal =
+            studentPartResponse[key] !== undefined
+              ? cleanString(String(studentPartResponse[key]))
+              : "(left blank)";
+
+          let expectedVal = "";
+          let isMatch = false;
+
+          if (Array.isArray(correctObj[key]?.options)) {
+            isMatch = correctObj[key].options.some(
+              (opt) => cleanString(String(opt)).toLowerCase() === studentVal.toLowerCase()
+            );
+            expectedVal = correctObj[key].options[0]; // show the primary accepted answer
+          } else {
+            expectedVal = cleanString(String(correctObj[key]));
+            isMatch = studentVal.toLowerCase() === expectedVal.toLowerCase();
+          }
+
+          if (isMatch) {
+            correctBlanks.push(`Blank ${key}`);
+          } else {
+            wrongBlanks.push(`Blank ${key}: you wrote "${studentVal}", correct answer is "${expectedVal}"`);
+          }
+        }
+
+        const isCorrect = wrongBlanks.length === 0;
+        const parts = [];
+        if (correctBlanks.length > 0) parts.push(`${correctBlanks.join(", ")} correct.`);
+        if (wrongBlanks.length > 0) parts.push(wrongBlanks.join(". ") + ".");
+
+        return { isCorrect, feedback: parts.join(" ") };
+      }
+    }
+
+    // ─── MCQ / single string ────────────────────────────────────────────────────
+    const studentChoice = cleanString(
+      typeof studentPartResponse === "string"
+        ? studentPartResponse
+        : JSON.stringify(studentPartResponse)
+    );
+
+    let correctChoice = "";
+    if (typeof parsedCorrect === "object" && parsedCorrect !== null && parsedCorrect.content) {
       correctChoice = cleanString(parsedCorrect.content);
     } else {
       correctChoice = cleanString(rawCorrect);
     }
 
-    if (correctChoice === '') return false;
+    if (correctChoice === "") {
+      return { isCorrect: false, feedback: "No answer key provided for this question." };
+    }
 
-    return studentChoice === correctChoice;
+    const isCorrect = studentChoice === correctChoice;
+
+    const feedback = isCorrect
+      ? `Correct. The answer is "${correctChoice}".`
+      : `Incorrect. You selected "${studentChoice}" but the correct answer is "${correctChoice}".${partDef.explanation
+        ? ` Explanation: ${cleanString(partDef.explanation)}`
+        : ""
+      }`;
+
+    return { isCorrect, feedback };
   },
   async evaluateWithAI(questionText, studentResponse, maxMarks, idealAnswer) {
     if (!studentResponse || studentResponse.trim() === '') {
       return { awardedMarks: 0, feedback: "No answer provided." };
     }
 
-    const prompt = `
-      You are an expert tutor grading a test.
-      
-      Question: ${questionText}
-      Ideal Answer / Rubric: ${idealAnswer || 'N/A'}
-      Student's Answer: ${studentResponse}
-      Max Marks Available: ${maxMarks}
-      
-      Evaluate the student's answer. Return ONLY a valid JSON object with exactly two keys:
-      1. "awardedMarks": A number between 0 and ${maxMarks}.
-      2. "feedback": A brief, constructive explanation of why these marks were awarded.
-    `;
+    const CF_URL = `https://api.cloudflare.com/client/v4/accounts/${process.env.CLOUDFLARE_ACCOUNT_ID}/ai/v1/chat/completions`;
 
-    // Example AI Call:
-    // const result = await model.generateContent(prompt);
-    // return JSON.parse(result.response.text());
+    const systemPrompt = `You are a strict but fair IB examiner. You grade student responses against mark scheme criteria.
+Always return valid JSON only — no explanation, no markdown.`;
+
+    const userPrompt = `Grade this IB student response.
+ 
+Question: ${questionText}
+Mark Scheme / Ideal Answer: ${idealAnswer || 'Use your knowledge of IB marking criteria.'}
+Student Response: ${studentResponse}
+Maximum Marks: ${maxMarks}
+ 
+IB marking rules to follow:
+- Award marks based on understanding demonstrated, not perfect wording.
+- For "state" questions: 1 mark per correct point, no elaboration needed.
+- For "explain/describe": credit the reasoning chain, not just the conclusion.
+- For "analyse/evaluate": look for evidence, counter-argument, and judgement.
+- Do NOT penalise for minor spelling or grammar errors.
+- Never award more than ${maxMarks} marks.
+ 
+Return ONLY this JSON object:
+{
+  "awardedMarks": <number 0 to ${maxMarks}>,
+  "feedback": "<2-3 sentences: what was correct, what was missing, how to improve>"
+}`;
+
+    const res = await fetch(CF_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${process.env.CLOUDFLARE_API_KEY}`,
+      },
+      body: JSON.stringify({
+        model: '@cf/meta/llama-3.3-70b-instruct-fp8-fast',
+        max_tokens: 300, // grading response is short — keep latency low
+        response_format: { type: 'json_object' },
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: userPrompt },
+        ],
+      }),
+    });
+
+    if (!res.ok) {
+      const errText = await res.text();
+      throw new Error(`Cloudflare AI error ${res.status}: ${errText}`);
+    }
+
+    const data = await res.json();
+    const raw = data.choices?.[0]?.message?.content || '';
+
+    let parsed;
+    try {
+      parsed = JSON.parse(raw.replace(/```json|```/g, '').trim());
+    } catch (e) {
+      throw new Error(`AI returned invalid JSON: ${raw}`);
+    }
+
+    // Clamp marks defensively — model should respect the max but don't trust it blindly
+    const awardedMarks = Math.min(
+      Math.max(0, Number(parsed.awardedMarks) || 0),
+      maxMarks
+    );
 
     return {
-      awardedMarks: Math.min(maxMarks, Math.floor(Math.random() * maxMarks) + 1),
-      feedback: "The student demonstrated a good understanding, but missed minor details.",
+      awardedMarks,
+      feedback: parsed.feedback || 'No feedback provided.',
     };
-  }
+  },
 }));
