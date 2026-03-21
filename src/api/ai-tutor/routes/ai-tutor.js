@@ -13,8 +13,6 @@ module.exports = {
       path: "/ai-tutor/chat",
       handler: "ai-tutor.chat",
       config: {
-        auth: { scope: ["api::ai-tutor.ai-tutor"] },
-        // Requires a valid JWT — uses Strapi's default users-permissions auth
         middlewares: [],
       },
     },
@@ -23,7 +21,6 @@ module.exports = {
       path: "/ai-tutor/generate-questions",
       handler: "ai-tutor.generateQuestions",
       config: {
-        auth: { scope: ["api::ai-tutor.ai-tutor"] },
         middlewares: [],
       },
     },
