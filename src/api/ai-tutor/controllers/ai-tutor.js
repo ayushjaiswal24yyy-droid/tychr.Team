@@ -365,7 +365,7 @@ async function generateLearningPath(ctx) {
   const now = new Date();
   const examMonth = examSession === "May" ? 4 : 10; // 0-indexed
   const examDate = new Date(examYear, examMonth, 1);
-  const weeksUntilExam = Math.max(
+const weeksUntilExam = Math.max(
   1,
   Math.round((examDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24 * 7))
 );
@@ -426,7 +426,7 @@ Rules:
 - examTips must be specific to ${subject} IB exam, not generic advice`;
 
   try {
-    const cfRes = await fetch(CF_URL(), {
+    const cfRes = await fetch(CF_URL, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
