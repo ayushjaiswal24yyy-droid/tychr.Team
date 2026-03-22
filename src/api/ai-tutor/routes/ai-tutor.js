@@ -30,5 +30,13 @@ module.exports = {
         middlewares: [],
       },
     },
+    {
+      method: "POST",
+      path: "/ai-tutor/learning-path",
+      handler: "ai-tutor.generateLearningPath",
+      config: {
+        middlewares: [],
+      },
+    },
   ],
 };

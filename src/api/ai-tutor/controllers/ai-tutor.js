@@ -344,4 +344,113 @@ Match the Column: { "questionType": "match_columns", "marks": 4, "question": "Ma
   }
 }
 
-module.exports = { chat, generateQuestions, generatePaperQuestions };
+// ─── Learning path generator ──────────────────────────────────────────────────
+// Takes unitAnalysis from the results endpoint + exam config
+// Returns a structured week-by-week study plan
+
+async function generateLearningPath(ctx) {
+  const {
+    unitAnalysis = [],
+    subject,
+    level,
+    examSession,   // "May" | "November"
+    examYear,      // e.g. 2026
+    weeklyHours,   // number
+  } = ctx.request.body;
+
+  if (!subject) return ctx.badRequest("subject is required");
+  if (!unitAnalysis.length) return ctx.badRequest("unitAnalysis is required");
+
+  // Calculate weeks until exam
+  const now = new Date();
+  const examMonth = examSession === "May" ? 4 : 10; // 0-indexed
+  const examDate = new Date(examYear, examMonth, 1);
+ const weeksUntilExam = Math.max(
+  1,
+  Math.round((examDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24 * 7))
+);
+
+  // Split units into weak (< 60%), medium (60-80%), strong (> 80%)
+  const weak = unitAnalysis.filter((u) => u.myPct !== null && u.myPct < 60);
+  const medium = unitAnalysis.filter((u) => u.myPct !== null && u.myPct >= 60 && u.myPct < 80);
+  const strong = unitAnalysis.filter((u) => u.myPct !== null && u.myPct >= 80);
+  const unattempted = unitAnalysis.filter((u) => u.myPct === null);
+
+  const unitSummary = [
+    ...weak.map((u) => `${u.unitName}: ${u.myPct}% (WEAK - priority)`),
+    ...unattempted.map((u) => `${u.unitName}: not attempted yet`),
+    ...medium.map((u) => `${u.unitName}: ${u.myPct}% (needs work)`),
+    ...strong.map((u) => `${u.unitName}: ${u.myPct}% (strong)`),
+  ].join("");
+
+  const userPrompt = `You are an expert IB study planner. Create a personalised weekly study plan for a student.
+
+Student profile:
+- Subject: ${subject}${level && level !== "None" ? ` (${level})` : ""}
+- Exam: ${examSession} ${examYear} (${weeksUntilExam} weeks away)
+- Available study time: ${weeklyHours} hours per week
+- Total topics and performance:
+${unitSummary}
+
+Create a ${Math.min(weeksUntilExam, 12)}-week study plan. Prioritise weak and unattempted topics heavily in early weeks, schedule medium topics in mid weeks, and use final weeks for revision and past papers.
+
+Return ONLY this JSON:
+{
+  "summary": "<2-3 sentence overview of the plan and main focus areas>",
+  "weeklyPlan": [
+    {
+      "week": 1,
+      "theme": "<short theme title e.g. 'Core foundations'>",
+      "focusAreas": ["Unit name 1", "Unit name 2"],
+      "tasks": [
+        "<specific actionable task e.g. 'Complete 10 MCQs on Unit name 1'>",
+        "<specific actionable task>",
+        "<specific actionable task>"
+      ],
+      "hoursAllocated": <number matching weeklyHours>,
+      "priority": "high" | "medium" | "low"
+    }
+  ],
+  "examTips": [
+    "<specific IB exam tip for this subject>",
+    "<specific IB exam tip>",
+    "<specific IB exam tip>"
+  ]
+}
+
+Rules:
+- weeklyPlan must have exactly ${Math.min(weeksUntilExam, 12)} weeks
+- hoursAllocated must equal ${weeklyHours} for every week
+- tasks must be specific and actionable, not vague (e.g. "Do 15 practice questions on photosynthesis" not "study biology")
+- Last 2 weeks should always be full revision + past papers regardless of remaining weak areas
+- examTips must be specific to ${subject} IB exam, not generic advice`;
+
+  try {
+    const parsed = await callCloudflareAI({
+      messages: [
+        {
+          role: "system",
+          content: "You are an expert IB study planner. Return valid JSON only. No markdown, no explanation.",
+        },
+        { role: "user", content: userPrompt },
+      ],
+      maxTokens: 3000,
+      jsonMode: true,
+    });
+
+    ctx.body = {
+      plan: parsed,
+      meta: {
+        weeksUntilExam,
+        examDate: examDate.toISOString(),
+        weakUnits: weak.map((u) => u.unitName),
+        unattemptedUnits: unattempted.map((u) => u.unitName),
+      },
+    };
+  } catch (err) {
+    strapi.log.error("Learning path generation error:", err.message);
+    ctx.internalServerError("Learning path generation failed");
+  }
+}
+
+module.exports = { chat, generateQuestions, generatePaperQuestions, generateLearningPath };

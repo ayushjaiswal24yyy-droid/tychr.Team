@@ -435,42 +435,42 @@ module.exports = createCoreController('api::test-serie.test-serie', ({ strapi })
     // A "paper" can be:
     //   (a) entity_type === 'paper' directly under grade_subject
     //   (b) children (papers) of a series under grade_subject
-    
-const testMap = new Map();
 
-for (const item of allSeriesAndPapers) {
-  if (item.entity_type === 'paper') {
-    testMap.set(item.id, {
-      id: item.id,
-      title: item.title,
-      parentSeriesId: null,
-      parentSeriesTitle: null,
-      programType: item.program_type,
-      year: item.year,
-      pass_mark: item.pass_mark,
-      start_date: item.start_date,
-      question_banks: item.question_banks ?? [],
-    });
-  }
+    const testMap = new Map();
 
-  if (item.entity_type === 'series') {
-    for (const paper of item.papers ?? []) {
-      testMap.set(paper.id, {
-        id: paper.id,
-        title: paper.title,
-        parentSeriesId: item.id,
-        parentSeriesTitle: item.title,
-        programType: item.program_type,
-        year: item.year,
-        pass_mark: paper.pass_mark,
-        start_date: paper.start_date,
-        question_banks: paper.question_banks ?? [],
-      });
+    for (const item of allSeriesAndPapers) {
+      if (item.entity_type === 'paper') {
+        testMap.set(item.id, {
+          id: item.id,
+          title: item.title,
+          parentSeriesId: null,
+          parentSeriesTitle: null,
+          programType: item.program_type,
+          year: item.year,
+          pass_mark: item.pass_mark,
+          start_date: item.start_date,
+          question_banks: item.question_banks ?? [],
+        });
+      }
+
+      if (item.entity_type === 'series') {
+        for (const paper of item.papers ?? []) {
+          testMap.set(paper.id, {
+            id: paper.id,
+            title: paper.title,
+            parentSeriesId: item.id,
+            parentSeriesTitle: item.title,
+            programType: item.program_type,
+            year: item.year,
+            pass_mark: paper.pass_mark,
+            start_date: paper.start_date,
+            question_banks: paper.question_banks ?? [],
+          });
+        }
+      }
     }
-  }
-}
 
-const testableItems = Array.from(testMap.values());
+    const testableItems = Array.from(testMap.values());
 
     if (testableItems.length === 0) {
       return ctx.send({
@@ -543,13 +543,13 @@ const testableItems = Array.from(testMap.values());
     const deduplicatedAnswers = Object.values(bestAttempt).flatMap((students) =>
       Object.values(students)
     );
-const attemptedTestIds = new Set(
-  Object.keys(myAllAttempts).map(Number)
-);
+    const attemptedTestIds = new Set(
+      Object.keys(myAllAttempts).map(Number)
+    );
 
-const attemptedTestObjects = testableItems.filter(t =>
-  attemptedTestIds.has(t.id)
-);
+    const attemptedTestObjects = testableItems.filter(t =>
+      attemptedTestIds.has(t.id)
+    );
     // ── 5. Per-test stats ────────────────────────────────────────────────────
     const testResults = testableItems.map((test) => {
       const studentAnswers = Object.values(bestAttempt[test.id] ?? {});
@@ -632,8 +632,8 @@ const attemptedTestObjects = testableItems.filter(t =>
 
     // Pass 2: accumulate awarded marks per unit from best attempts
     for (const answer of deduplicatedAnswers) {
-        const tid = answer.test_series?.id;
-  if (!attemptedTestIds.has(tid)) continue;
+      const tid = answer.test_series?.id;
+      if (!attemptedTestIds.has(tid)) continue;
       const sid = answer.student?.id;
       if (!sid) continue;
       for (const qna of answer.question_n_answer ?? []) {
