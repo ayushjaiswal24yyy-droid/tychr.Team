@@ -283,11 +283,15 @@ Total questions expected: ${totalQuestions}
 
 Use these exact shapes per question type:
 
-MCQ: { "questionType": "mcq", "marks": 2, "question": "...", "options": ["A text", "B text", "C text", "D text"], "correctAnswer": "A text" }
+MCQ: { "questionType": "mcq", "marks": 2, "question": "...", "options": ["Independence", "Interconnectedness", "Linearity", "Randomness"], "correctAnswer": "Interconnectedness" }
+
+CRITICAL for MCQ: options must contain ONLY the answer text. Do NOT include "A)", "B)", "A.", "B.", or any letter prefix. The frontend adds option labels automatically. correctAnswer must exactly match one of the options strings (no label prefix).
 
 Short Answer: { "questionType": "short_answer", "marks": 4, "question": "...", "modelAnswer": "..." }
 
-Long Answer: { "questionType": "long_answer", "marks": 8, "question": "Parent stem...", "parts": [ { "questionText": "Part (a)...", "marks": 3, "modelAnswer": "..." } ] }
+Long Answer: { "questionType": "long_answer", "marks": 8, "question": "Parent stem here (shared context for all parts)", "parts": [ { "questionText": "Define globalization and its key characteristics.", "marks": 3, "modelAnswer": "..." } ] }
+
+CRITICAL for Long Answer parts: questionText must contain ONLY the raw question. Do NOT include any part label prefix — no "Part (a)", no "(a)", no "a)", no "Part a". The frontend labels parts automatically. Write the question text only.
 
 Fill in the Blanks: { "questionType": "fill_in_the_blanks", "marks": 2, "question": "The ___ is responsible for ___.", "blanks": { "1": "answer1", "2": "answer2" } }
 
@@ -307,13 +311,19 @@ Match the Column: { "questionType": "match_columns", "marks": 4, "question": "Ma
       const base = { question: q.question, question_type: q.questionType, marks: q.marks, content_format: "richtext" };
 
       if (q.questionType === "mcq" || q.questionType === "mcq_multiple") {
-        return { ...base, parts: [{ answer_type: "Single Correct", marks: q.marks, options: (q.options || []).join("\n---OPTION---\n"), options_format: "richtext", correct_answer: q.correctAnswer || "", correct_answer_format: "richtext", content_format: "richtext" }] };
+        // Strip any accidental letter prefixes the model adds (e.g. "A) ", "A. ", "A - ")
+        const stripOptionLabel = (text = "") => text.replace(/^[A-Da-d][).\-]\s*/,'').trim();
+        const cleanOptions = (q.options || []).map(stripOptionLabel);
+        const cleanCorrect = stripOptionLabel(q.correctAnswer || "");
+        return { ...base, parts: [{ answer_type: "Single Correct", marks: q.marks, options: cleanOptions.join("\n---OPTION---\n"), options_format: "richtext", correct_answer: cleanCorrect, correct_answer_format: "richtext", content_format: "richtext" }] };
       }
       if (q.questionType === "short_answer") {
         return { ...base, parts: [{ answer_type: "Short Text", marks: q.marks, question_text: q.question, question_text_format: "richtext", correct_answer: q.modelAnswer || "", correct_answer_format: "richtext", content_format: "richtext" }] };
       }
       if (q.questionType === "long_answer") {
-        return { ...base, parts: (q.parts || []).map((p) => ({ answer_type: "Long Text", marks: p.marks, question_text: p.questionText, question_text_format: "richtext", correct_answer: p.modelAnswer || "", correct_answer_format: "richtext", content_format: "richtext" })) };
+        // Strip any accidental part label prefixes the model might add (e.g. "Part (a) ", "(a) ", "a) ")
+        const stripPartLabel = (text = "") => text.replace(/^(part\s*)?\(?[a-z]\)?[.)\s]+/i, "").trim();
+        return { ...base, parts: (q.parts || []).map((p) => ({ answer_type: "Long Text", marks: p.marks, question_text: stripPartLabel(p.questionText), question_text_format: "richtext", correct_answer: p.modelAnswer || "", correct_answer_format: "richtext", content_format: "richtext" })) };
       }
       if (q.questionType === "fill_in_the_blanks") {
         const questionWithBlanks = q.question.replace(/___/g, "{ }");
