@@ -365,7 +365,7 @@ async function generateLearningPath(ctx) {
   const now = new Date();
   const examMonth = examSession === "May" ? 4 : 10; // 0-indexed
   const examDate = new Date(examYear, examMonth, 1);
- const weeksUntilExam = Math.max(
+  const weeksUntilExam = Math.max(
   1,
   Math.round((examDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24 * 7))
 );
@@ -426,17 +426,51 @@ Rules:
 - examTips must be specific to ${subject} IB exam, not generic advice`;
 
   try {
-    const parsed = await callCloudflareAI({
-      messages: [
-        {
-          role: "system",
-          content: "You are an expert IB study planner. Return valid JSON only. No markdown, no explanation.",
-        },
-        { role: "user", content: userPrompt },
-      ],
-      maxTokens: 3000,
-      jsonMode: true,
+    const cfRes = await fetch(CF_URL(), {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${process.env.CLOUDFLARE_API_KEY}`,
+      },
+      body: JSON.stringify({
+        model: "@cf/meta/llama-3.3-70b-instruct-fp8-fast",
+        max_tokens: 3000,
+        response_format: { type: "json_object" },
+        messages: [
+          {
+            role: "system",
+            content: "You are an expert IB study planner. Return valid JSON only. No markdown fences, no backticks, no explanation. Start your response with { and end with }.",
+          },
+          { role: "user", content: userPrompt },
+        ],
+      }),
     });
+
+    if (!cfRes.ok) {
+      const errText = await cfRes.text();
+      throw new Error(`Cloudflare AI error ${cfRes.status}: ${errText}`);
+    }
+
+    const cfData = await cfRes.json();
+    const raw = cfData.choices?.[0]?.message?.content || "";
+
+    // Strip any markdown fences the model adds on long outputs
+    const clean = raw
+      .replace(/^```(?:json)?\s*/i, "")
+      .replace(/\s*```\s*$/i, "")
+      .trim();
+
+    let parsed;
+    try {
+      parsed = JSON.parse(clean);
+    } catch (e) {
+      strapi.log.error("Learning path JSON parse failed. Raw:", raw.slice(0, 300));
+      throw new Error("AI returned invalid JSON for learning path");
+    }
+
+    if (!parsed.weeklyPlan || !Array.isArray(parsed.weeklyPlan)) {
+      throw new Error("AI response missing weeklyPlan array");
+    }
 
     ctx.body = {
       plan: parsed,
