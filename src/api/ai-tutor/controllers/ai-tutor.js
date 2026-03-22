@@ -225,4 +225,113 @@ questionType must be one of: mcq, short_answer, long_answer, data_interpretation
   }
 }
 
-module.exports = { chat, generateQuestions };
+
+// ─── Paper question generator ─────────────────────────────────────────────────
+// Generates questions in the exact Strapi question-bank parts format.
+// Accepts a sections array so teacher can mix types in one generation:
+//   sections: [
+//     { questionType: "mcq", count: 3, marks: 2 },
+//     { questionType: "short_answer", count: 2, marks: 4 },
+//     { questionType: "long_answer", count: 1, marks: 8, parts: 3 },
+//   ]
+
+async function generatePaperQuestions(ctx) {
+  const { subject, level, topic, sections = [] } = ctx.request.body;
+
+  if (!subject) return ctx.badRequest("subject is required");
+  if (!sections.length) return ctx.badRequest("sections is required");
+
+  const safeSections = sections.map((s) => ({
+    questionType: ["mcq", "mcq_multiple", "short_answer", "long_answer", "fill_in_the_blanks", "match_columns"].includes(s.questionType)
+      ? s.questionType : "short_answer",
+    count: Math.min(Math.max(parseInt(s.count) || 1, 1), 10),
+    marks: Math.min(Math.max(parseInt(s.marks) || 2, 1), 20),
+    parts: Math.min(Math.max(parseInt(s.parts) || 1, 1), 6),
+  }));
+
+  const totalQuestions = safeSections.reduce((sum, s) => sum + s.count, 0);
+  if (totalQuestions > 30) return ctx.badRequest("Maximum 30 questions per generation");
+
+  const sectionDescriptions = safeSections.map((s, i) => {
+    if (s.questionType === "mcq" || s.questionType === "mcq_multiple") {
+      return `Section ${i + 1}: ${s.count} x MCQ (${s.marks} marks each). Each must have exactly 4 options (A, B, C, D) and one correct answer.`;
+    }
+    if (s.questionType === "short_answer") {
+      return `Section ${i + 1}: ${s.count} x Short Answer (${s.marks} marks each). Single-part, 2-4 sentence answer. Include a model answer.`;
+    }
+    if (s.questionType === "long_answer") {
+      return `Section ${i + 1}: ${s.count} x Long Answer (${s.marks} marks total, split across ${s.parts} parts a, b, c...). Include model answer per part.`;
+    }
+    if (s.questionType === "fill_in_the_blanks") {
+      return `Section ${i + 1}: ${s.count} x Fill in the Blanks (${s.marks} marks each). Each sentence has 1-3 blanks marked as ___. Include correct words.`;
+    }
+    if (s.questionType === "match_columns") {
+      return `Section ${i + 1}: ${s.count} x Match the Column (${s.marks} marks each). 4 items in column A matched to 4 in column B. Include correct pairs.`;
+    }
+    return "";
+  }).join("\n");
+
+  const userPrompt = `You are an IB exam question writer. Generate exam questions for:
+Subject: ${subject}${level && level !== "None" ? ` (${level})` : ""}
+${topic ? `Topic: ${topic}` : ""}
+
+Generate the following:
+${sectionDescriptions}
+
+Return ONLY a JSON object with a single "questions" array. Combine all sections into one array.
+Total questions expected: ${totalQuestions}
+
+Use these exact shapes per question type:
+
+MCQ: { "questionType": "mcq", "marks": 2, "question": "...", "options": ["A text", "B text", "C text", "D text"], "correctAnswer": "A text" }
+
+Short Answer: { "questionType": "short_answer", "marks": 4, "question": "...", "modelAnswer": "..." }
+
+Long Answer: { "questionType": "long_answer", "marks": 8, "question": "Parent stem...", "parts": [ { "questionText": "Part (a)...", "marks": 3, "modelAnswer": "..." } ] }
+
+Fill in the Blanks: { "questionType": "fill_in_the_blanks", "marks": 2, "question": "The ___ is responsible for ___.", "blanks": { "1": "answer1", "2": "answer2" } }
+
+Match the Column: { "questionType": "match_columns", "marks": 4, "question": "Match the following.", "leftColumn": ["Term1","Term2","Term3","Term4"], "rightColumn": ["Def1","Def2","Def3","Def4"], "correctPairs": { "1": "3", "2": "1", "3": "4", "4": "2" } }`;
+
+  try {
+    const raw = await callCloudflareAI({ messages: [
+      { role: "system", content: "You are an IB exam question writer. Always respond with valid JSON only. No markdown fences, no extra text." },
+      { role: "user", content: userPrompt },
+    ], maxTokens: 4000, jsonMode: true });
+
+    const parsed = JSON.parse(raw.replace(/```json|```/g, "").trim());
+    const rawQuestions = parsed.questions || [];
+
+    // Transform AI output into Strapi question-bank parts format
+    const strapiQuestions = rawQuestions.map((q) => {
+      const base = { question: q.question, question_type: q.questionType, marks: q.marks, content_format: "richtext" };
+
+      if (q.questionType === "mcq" || q.questionType === "mcq_multiple") {
+        return { ...base, parts: [{ answer_type: "Single Correct", marks: q.marks, options: (q.options || []).join("\n---OPTION---\n"), options_format: "richtext", correct_answer: q.correctAnswer || "", correct_answer_format: "richtext", content_format: "richtext" }] };
+      }
+      if (q.questionType === "short_answer") {
+        return { ...base, parts: [{ answer_type: "Short Text", marks: q.marks, question_text: q.question, question_text_format: "richtext", correct_answer: q.modelAnswer || "", correct_answer_format: "richtext", content_format: "richtext" }] };
+      }
+      if (q.questionType === "long_answer") {
+        return { ...base, parts: (q.parts || []).map((p) => ({ answer_type: "Long Text", marks: p.marks, question_text: p.questionText, question_text_format: "richtext", correct_answer: p.modelAnswer || "", correct_answer_format: "richtext", content_format: "richtext" })) };
+      }
+      if (q.questionType === "fill_in_the_blanks") {
+        const questionWithBlanks = q.question.replace(/___/g, "{ }");
+        return { ...base, question: questionWithBlanks, parts: [{ answer_type: "Fill In The Blanks", marks: q.marks, options: JSON.stringify({ format: "richtext", content: questionWithBlanks, _v: "1.0", blanks: {} }), correct_answer: JSON.stringify(q.blanks || {}), correct_answer_format: "json", content_format: "richtext" }] };
+      }
+      if (q.questionType === "match_columns") {
+        const leftContent = (q.leftColumn || []).map((item, i) => `[${i + 1}] ${item}`).join("\n---OPTION---\n");
+        const rightContent = (q.rightColumn || []).map((item, i) => `[${i + 1}] ${item}`).join("\n---OPTION---\n");
+        return { ...base, parts: [{ answer_type: "Match Columns", marks: q.marks, options: JSON.stringify({ left: { format: "richtext", content: leftContent, _v: "1.0" }, right: { format: "richtext", content: rightContent, _v: "1.0" } }), correct_answer: JSON.stringify(q.correctPairs || {}), correct_answer_format: "json", content_format: "richtext" }] };
+      }
+      return { ...base, parts: [{ answer_type: "Short Text", marks: q.marks, question_text: q.question, correct_answer: "", content_format: "richtext" }] };
+    });
+
+    ctx.body = { questions: strapiQuestions, raw: rawQuestions };
+  } catch (err) {
+    strapi.log.error("Paper question generation error:", err.message);
+    ctx.internalServerError("Paper question generation failed");
+  }
+}
+
+module.exports = { chat, generateQuestions, generatePaperQuestions };

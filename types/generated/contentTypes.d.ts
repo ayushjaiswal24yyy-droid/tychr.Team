@@ -1271,7 +1271,7 @@ export interface ApiAnswerAnswer extends Schema.CollectionType {
     submission_date: Attribute.DateTime;
     time_taken: Attribute.Integer;
     evaluation_status: Attribute.Enumeration<
-      ['evaluated', 'pending', 'in_progress']
+      ['evaluated', 'needs_review', 'pending', 'in_progress']
     > &
       Attribute.DefaultTo<'pending'>;
     student_feedback: Attribute.Text;
@@ -4933,6 +4933,7 @@ export interface ApiTestSerieTestSerie extends Schema.CollectionType {
       Attribute.Required &
       Attribute.DefaultTo<'online'>;
     test_type: Attribute.Enumeration<['Practice Test', 'Test Series']>;
+    ai_evaluation_enabled: Attribute.Boolean & Attribute.DefaultTo<true>;
     year: Attribute.Integer;
     test_duration: Attribute.Decimal;
     instructions: Attribute.RichText;
