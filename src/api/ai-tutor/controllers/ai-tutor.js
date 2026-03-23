@@ -139,27 +139,74 @@ Rules:
 - Never skip the "Which method to use?" summary.
 - If the question is purely conceptual (no calculation), show different analytical frameworks instead of calculation methods.
 `.trim(),
+
+    mentor: buildMentorPrompt(subject, level, null),
   };
 
   return modeInstructions[mode] || modeInstructions.solver;
 }
 
+// ─── Mentor system prompt builder ─────────────────────────────────────────────
+// performanceData is optional — passed when invoked from the Progress page widget
+// When null, mentor acts as a general study coach and asks the student about their situation
+
+function buildMentorPrompt(subject, level, performanceData) {
+  const subjectLine = `${subject || "IB"}${level && level !== "None" ? ` (${level})` : ""}`;
+
+  const performanceSection = performanceData
+    ? `
+You have access to the student's real performance data:
+- Overall: ${performanceData.myTotal}/${performanceData.possibleTotal} marks (${performanceData.overallPct}%)
+- Rank: #${performanceData.overallRank} of ${performanceData.totalStudents} students
+- Tests attempted: ${performanceData.attemptedTests}/${performanceData.totalTests}
+- Weak units (below 50%): ${performanceData.weakUnits?.join(", ") || "none identified yet"}
+- Strong units (above 75%): ${performanceData.strongUnits?.join(", ") || "none identified yet"}
+- Not yet attempted: ${performanceData.unattemptedUnits?.join(", ") || "none"}
+- Trend: ${performanceData.trend || "insufficient data"}
+
+Reference this data naturally in conversation. Don't dump all the numbers at once — bring them up when relevant.`
+    : `
+You do not have the student's performance data in this session.
+Start by understanding their situation: ask about their upcoming exam date, which topics feel hardest, how many hours they can study per week, and what their target grade is.
+Gather this naturally over 2-3 messages before giving specific advice.`;
+
+  return `You are an expert IB academic mentor and performance coach for ${subjectLine}.
+Your role is different from a subject tutor — you focus on strategy, motivation, and personalised guidance rather than teaching content directly.
+${performanceSection}
+
+MENTOR GUIDELINES:
+- Be warm, encouraging, and direct. Like a great coach, not a cheerleader.
+- Give specific, actionable advice — never vague platitudes like "study harder".
+- Reference the student's actual data when you have it, but don't overwhelm them.
+- If they seem stressed or overwhelmed, acknowledge it first before giving advice.
+- Suggest concrete next steps: specific topics to tackle, how many questions to do, which resources to use.
+- Ask one follow-up question per response to deepen understanding of their situation.
+- If they ask a subject-matter question, briefly answer it but redirect: "For deeper help with that specific topic, switch to Solver mode — I'm best as your study strategist."
+- Keep responses concise: 3-5 sentences of coaching + one question. Never write walls of text.
+- Use markdown sparingly — bullet points for action items, otherwise plain sentences.`.trim();
+}
+
 // ─── Chat handler ─────────────────────────────────────────────────────────────
 
 async function chat(ctx) {
-  const { message, mode, subject, level, topic, history = [] } = ctx.request.body;
+  const { message, mode, subject, level, topic, history = [], performanceData = null } = ctx.request.body;
 
   if (!message) {
     return ctx.badRequest("message is required");
   }
 
-  const validModes = ["socratic", "solver", "analytical", "methods"];
+  const validModes = ["socratic", "solver", "analytical", "methods", "mentor"];
   const safeMode = validModes.includes(mode) ? mode : "solver";
 
   const recentHistory = history.slice(-20);
 
+  // Mentor mode uses its own prompt builder (with optional performance data)
+  const systemPrompt = safeMode === "mentor"
+    ? buildMentorPrompt(subject || "General", level, performanceData || null)
+    : buildSystemPrompt(safeMode, subject || "General", level, topic);
+
   const messages = [
-    { role: "system", content: buildSystemPrompt(safeMode, subject || "General", level, topic) },
+    { role: "system", content: systemPrompt },
     ...recentHistory.map((m) => ({ role: m.role, content: m.content })),
     { role: "user", content: message },
   ];
@@ -365,9 +412,11 @@ async function generateLearningPath(ctx) {
   const now = new Date();
   const examMonth = examSession === "May" ? 4 : 10; // 0-indexed
   const examDate = new Date(examYear, examMonth, 1);
-const weeksUntilExam = Math.max(
+  const weeksUntilExam = Math.max(
   1,
-  Math.round((examDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24 * 7))
+  Math.round(
+    (examDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24 * 7)
+  )
 );
 
   // Split units into weak (< 60%), medium (60-80%), strong (> 80%)
