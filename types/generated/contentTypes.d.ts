@@ -924,6 +924,16 @@ export interface PluginUsersPermissionsUser extends Schema.CollectionType {
     third_party_role: Attribute.Enumeration<
       ['professor', 'startup_mentor', 'student_org', 'ngo', 'corporate_firm']
     >;
+    first_name: Attribute.String;
+    last_name: Attribute.String;
+    specialization: Attribute.String;
+    tp_industry: Attribute.String;
+    tp_position: Attribute.String;
+    third_party_org: Attribute.Relation<
+      'plugin::users-permissions.user',
+      'oneToMany',
+      'api::third-party-org.third-party-org'
+    >;
     user_plans: Attribute.Relation<
       'plugin::users-permissions.user',
       'oneToMany',
@@ -5060,6 +5070,11 @@ export interface ApiThirdPartyOfferingThirdPartyOffering
     description: Attribute.Text;
     eligibility: Attribute.Text;
     startDate: Attribute.Date;
+    org: Attribute.Relation<
+      'api::third-party-offering.third-party-offering',
+      'manyToOne',
+      'api::third-party-org.third-party-org'
+    >;
     endDate: Attribute.Date;
     weekly_time_commitment: Attribute.Decimal;
     total_duration: Attribute.Decimal;
@@ -5088,6 +5103,60 @@ export interface ApiThirdPartyOfferingThirdPartyOffering
       Attribute.Private;
     updatedBy: Attribute.Relation<
       'api::third-party-offering.third-party-offering',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+  };
+}
+
+export interface ApiThirdPartyOrgThirdPartyOrg extends Schema.CollectionType {
+  collectionName: 'third_party_orgs';
+  info: {
+    singularName: 'third-party-org';
+    pluralName: 'third-party-orgs';
+    displayName: 'Third Party Org';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    name: Attribute.String & Attribute.Required;
+    years_running: Attribute.Integer;
+    location: Attribute.String;
+    offerings: Attribute.Relation<
+      'api::third-party-org.third-party-org',
+      'oneToMany',
+      'api::third-party-offering.third-party-offering'
+    >;
+    website: Attribute.String;
+    description: Attribute.Text;
+    cause: Attribute.String;
+    company_type: Attribute.String;
+    industry: Attribute.String;
+    verification_upload: Attribute.Media<'files' | 'images'>;
+    linkedin_url: Attribute.String;
+    twitter: Attribute.String;
+    facebook: Attribute.String;
+    instagram: Attribute.String;
+    tiktok: Attribute.String;
+    org_type: Attribute.Enumeration<['student_org', 'ngo', 'corporate_firm']>;
+    owner: Attribute.Relation<
+      'api::third-party-org.third-party-org',
+      'manyToOne',
+      'plugin::users-permissions.user'
+    >;
+    createdAt: Attribute.DateTime;
+    updatedAt: Attribute.DateTime;
+    publishedAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<
+      'api::third-party-org.third-party-org',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+    updatedBy: Attribute.Relation<
+      'api::third-party-org.third-party-org',
       'oneToOne',
       'admin::user'
     > &
@@ -5918,6 +5987,7 @@ declare module '@strapi/types' {
       'api::test-serie.test-serie': ApiTestSerieTestSerie;
       'api::third-party-meeting.third-party-meeting': ApiThirdPartyMeetingThirdPartyMeeting;
       'api::third-party-offering.third-party-offering': ApiThirdPartyOfferingThirdPartyOffering;
+      'api::third-party-org.third-party-org': ApiThirdPartyOrgThirdPartyOrg;
       'api::topic.topic': ApiTopicTopic;
       'api::tp-applicant.tp-applicant': ApiTpApplicantTpApplicant;
       'api::transaction-out.transaction-out': ApiTransactionOutTransactionOut;

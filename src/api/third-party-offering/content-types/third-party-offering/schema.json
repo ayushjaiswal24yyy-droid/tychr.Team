@@ -24,6 +24,12 @@
     "startDate": {
       "type": "date"
     },
+    "org": {
+  "type": "relation",
+  "relation": "manyToOne",
+  "target": "api::third-party-org.third-party-org",
+  "inversedBy": "offerings"
+},
     "endDate": {
       "type": "date"
     },
