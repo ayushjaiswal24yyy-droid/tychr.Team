@@ -197,8 +197,8 @@ module.exports = createCoreService("api::answer.answer", () => ({
           } else {
             canEvaluate = isSubjective
               ? !!(typeof studentPartResponse === "string"
-                  ? studentPartResponse.trim()
-                  : studentPartResponse)
+                ? studentPartResponse.trim()
+                : studentPartResponse)
               : extractedCorrectAnswer !== "";
           }
 
@@ -218,22 +218,23 @@ module.exports = createCoreService("api::answer.answer", () => ({
               // Multi-part long_answer questions → each part is a short answer.
               const aiResult = isEssay
                 ? await this.evaluateEssayWithAI(
-                    partDef.question_text || questionData.question,
-                    cleanResponse,
-                    partDef.marks,
-                    extractedCorrectAnswer,
-                    subjectName,
-                    questionData.command_term || null,
-                    questionData.difficulty || null
-                  )
+                  partDef.question_text || questionData.question,
+                  cleanResponse,
+                  partDef.marks,
+                  extractedCorrectAnswer,
+                  subjectName,
+                  questionData.command_term || null,
+                  questionData.difficulty || null,
+                  partDef.rubric || null
+                )
                 : await this.evaluateWithAI(
-                    partDef.question_text || questionData.question,
-                    cleanResponse,
-                    partDef.marks,
-                    extractedCorrectAnswer,
-                    questionData.command_term || null,
-                    questionData.difficulty || null
-                  );
+                  partDef.question_text || questionData.question,
+                  cleanResponse,
+                  partDef.marks,
+                  extractedCorrectAnswer,
+                  questionData.command_term || null,
+                  questionData.difficulty || null
+                );
 
               partAwardedMarks = aiResult.awardedMarks;
               partFeedback = aiResult.feedback;
@@ -415,32 +416,38 @@ Confidence: 1.0=clear-cut, 0.7=judgement call, 0.5=borderline, 0.3=very unclear.
 
   // ─── Single-part essay grader ─────────────────────────────────────────────
 
-  async evaluateEssayWithAI(questionText, studentResponse, maxMarks, idealAnswer, subjectName, commandTerm = null, difficulty = null) {
+  async evaluateEssayWithAI(questionText, studentResponse, maxMarks, idealAnswer, subjectName, commandTerm = null, difficulty = null, rubric = null) {
     if (!studentResponse || studentResponse.trim() === "") {
       return { awardedMarks: 0, feedback: "No answer provided.", confidence: 1, annotations: null, improvedAnswer: null };
     }
-
-    const essayCriteria = getEssayCriteria(subjectName);
+    const essayCriteria = rubric || getEssayCriteria(subjectName);
 
     const commandTermContext = commandTerm
-      ? `\nCommand term: "${commandTerm}" — ${
-          ["Evaluate","Discuss","To what extent"].includes(commandTerm)
-            ? "requires evidence, counter-argument, and explicit judgement."
-            : ["Analyse","Compare","Contrast"].includes(commandTerm)
-            ? "requires systematic breakdown and relationship identification."
-            : "requires clear, structured response matching the IB definition of this term."
-        }`
+      ? `\nCommand term: "${commandTerm}" — ${["Evaluate", "Discuss", "To what extent"].includes(commandTerm)
+        ? "requires evidence, counter-argument, and explicit judgement."
+        : ["Analyse", "Compare", "Contrast"].includes(commandTerm)
+          ? "requires systematic breakdown and relationship identification."
+          : "requires clear, structured response matching the IB definition of this term."
+      }`
       : "";
     const difficultyContext = difficulty
       ? `\nDifficulty: ${difficulty} — calibrate band expectations accordingly.`
       : "";
+    const hasValidRubric = rubric && Array.isArray(rubric.criteria);
+    const criteriaBlock = hasValidRubric
+      ? `Evaluate using this rubric:
+${rubric.criteria.map(c => `- ${c.name} (${c.maxMarks} marks)`).join("\n")}
 
-    const criteriaBlock = essayCriteria
-      ? `Evaluate against these IB ${subjectName} criteria (${essayCriteria.maxPerCriterion} marks each):
+Rules:
+- Award marks separately for EACH criterion
+- Total marks MUST equal sum of criterion marks
+- Do NOT exceed maximum per criterion`
+      : essayCriteria
+        ? `Evaluate against these IB ${subjectName} criteria (${essayCriteria.maxPerCriterion} marks each):
 ${essayCriteria.criteria.map((c) => `- ${c}`).join("\n")}
 For each criterion, award marks out of ${essayCriteria.maxPerCriterion} and give 1 sentence of feedback.
 Total marks must not exceed ${maxMarks}.`
-      : `Evaluate holistically for:
+        : `Evaluate holistically for:
 - Thesis clarity and direct answer to the question
 - Quality and relevance of evidence/examples
 - Depth of analysis and counter-argument
@@ -470,11 +477,19 @@ Return ONLY this JSON:
 {
   "awardedMarks": <number 0–${maxMarks}>,
   "feedback": "<3-4 sentences: strongest part, weakest part, one specific improvement, overall impression>",
-  ${essayCriteria
-    ? `"criterionBreakdown": {
-    ${essayCriteria.criteria.map((c) => `"${c}": { "marks": <0–${essayCriteria.maxPerCriterion}>, "comment": "<1 sentence>" }`).join(",\n    ")}
-  },`
-    : ""}
+ ${rubric
+              ? `"criterionBreakdown": {
+      ${rubric.criteria.map(c =>
+                `"${c.name}": { "marks": <0–${c.maxMarks}>, "comment": "<1 sentence>" }`
+              ).join(",\n")}
+    },`
+              : essayCriteria
+                ? `"criterionBreakdown": {
+        ${essayCriteria.criteria.map(c =>
+                  `"${c}": { "marks": <0–${essayCriteria.maxPerCriterion}>, "comment": "<1 sentence>" }`
+                ).join(",\n")}
+      },`
+                : ""}
   "structureScore": <0=no structure, 1=basic, 2=clear, 3=sophisticated>,
   "confidence": <number 0–1>,
   "annotations": [
@@ -502,7 +517,7 @@ Confidence: 1.0=clearly strong/weak, 0.7=solid judgement, 0.5=borderline band, 0
 
     if (parsed.criterionBreakdown) {
       const breakdownLines = Object.entries(parsed.criterionBreakdown)
-        .map(([criterion, val]) => `**${criterion}** (${val.marks}/${essayCriteria.maxPerCriterion}): ${val.comment}`)
+        .map(([criterion, val]) => `**${criterion}** (${val.marks}/${rubric?.criteria?.find(c => c.name === criterion)?.maxMarks || essayCriteria?.maxPerCriterion || "?"})`)
         .join("\n");
       feedbackStr = `${feedbackStr}\n\n**Criterion Breakdown:**\n${breakdownLines}`;
     }
@@ -666,9 +681,8 @@ Confidence: 1.0=clearly strong/weak, 0.7=solid judgement, 0.5=borderline band, 0
     const isCorrect = studentChoice === correctChoice;
     const feedback = isCorrect
       ? `Correct. The answer is "${correctChoice}".`
-      : `Incorrect. You selected "${studentChoice}" but the correct answer is "${correctChoice}".${
-          partDef.explanation ? ` Explanation: ${cleanString(partDef.explanation)}` : ""
-        }`;
+      : `Incorrect. You selected "${studentChoice}" but the correct answer is "${correctChoice}".${partDef.explanation ? ` Explanation: ${cleanString(partDef.explanation)}` : ""
+      }`;
 
     return { isCorrect, feedback };
   },
