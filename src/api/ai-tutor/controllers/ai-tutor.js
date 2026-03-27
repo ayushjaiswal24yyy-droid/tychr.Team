@@ -121,15 +121,14 @@ ${isMathSci ? "Note any step where a GDC would save time with 🔢." : ""}
 
 ## Method 2: [Name] (e.g. Graphical / Using technology)
 Walk through an alternative approach.
-${
-  isMathSci
-    ? `## 🔢 GDC Strategy
+${isMathSci
+        ? `## 🔢 GDC Strategy
 - State which calculator function to use (e.g. Solver, Graphing + Intersection, Numerical Derivative, Table of Values, Matrix operations).
 - Give the exact keystrokes or menu path if relevant (TI-84 or Casio fx-CG50 style).
 - State what the GDC output looks like and how to read the answer.
 - Flag whether this approach is acceptable on IB Paper 2/3 or if working must be shown.`
-    : ""
-}
+        : ""
+      }
 
 ## Which method to use?
 Give a 1-2 sentence recommendation based on exam context (time pressure, paper type, marks available).
@@ -288,12 +287,19 @@ async function generatePaperQuestions(ctx) {
   if (!subject) return ctx.badRequest("subject is required");
   if (!sections.length) return ctx.badRequest("sections is required");
 
+  const VALID_DIFFICULTIES = ["easy", "medium", "hard"];
+  const VALID_COMMAND_TERMS = ["Define", "State", "Outline", "Describe", "Explain", "Analyse", "Discuss", "Evaluate", "Compare", "Contrast", "Justify", "To what extent"];
+
   const safeSections = sections.map((s) => ({
     questionType: ["mcq", "mcq_multiple", "short_answer", "long_answer", "fill_in_the_blanks", "match_columns"].includes(s.questionType)
       ? s.questionType : "short_answer",
     count: Math.min(Math.max(parseInt(s.count) || 1, 1), 10),
     marks: Math.min(Math.max(parseInt(s.marks) || 2, 1), 20),
     parts: Math.min(Math.max(parseInt(s.parts) || 1, 1), 6),
+    difficulty: VALID_DIFFICULTIES.includes(s.difficulty) ? s.difficulty : null,
+    commandTerms: Array.isArray(s.commandTerms)
+      ? s.commandTerms.filter((t) => VALID_COMMAND_TERMS.includes(t))
+      : null,
   }));
 
   const totalQuestions = safeSections.reduce((sum, s) => sum + s.count, 0);
@@ -301,13 +307,19 @@ async function generatePaperQuestions(ctx) {
 
   const sectionDescriptions = safeSections.map((s, i) => {
     if (s.questionType === "mcq" || s.questionType === "mcq_multiple") {
-      return `Section ${i + 1}: ${s.count} x MCQ (${s.marks} marks each). Each must have exactly 4 options (A, B, C, D) and one correct answer.`;
+      const diffTag = s.difficulty ? ` · Difficulty: ${s.difficulty}` : "";
+      const ctTag = s.commandTerms?.length ? ` · Command term: ${s.commandTerms.join(" or ")}` : "";
+      return `Section ${i + 1}: ${s.count} x MCQ (${s.marks} marks each${diffTag}${ctTag}). Each must have exactly 4 options (A, B, C, D) and one correct answer.`;
     }
     if (s.questionType === "short_answer") {
-      return `Section ${i + 1}: ${s.count} x Short Answer (${s.marks} marks each). Single-part, 2-4 sentence answer. Include a model answer.`;
+      const diffTag2 = s.difficulty ? ` · Difficulty: ${s.difficulty}` : "";
+      const ctTag2 = s.commandTerms?.length ? ` · Must use command term(s): ${s.commandTerms.join(" or ")}` : "";
+      return `Section ${i + 1}: ${s.count} x Short Answer (${s.marks} marks each${diffTag2}${ctTag2}). Single-part, 2-4 sentence answer. Include a model answer.`;
     }
     if (s.questionType === "long_answer") {
-      return `Section ${i + 1}: ${s.count} x Long Answer (${s.marks} marks total, split across ${s.parts} parts a, b, c...). Include model answer per part.`;
+      const diffTag3 = s.difficulty ? ` · Difficulty: ${s.difficulty}` : "";
+      const ctTag3 = s.commandTerms?.length ? ` · Must use command term(s): ${s.commandTerms.join(" or ")}` : "";
+      return `Section ${i + 1}: ${s.count} x Long Answer (${s.marks} marks total${diffTag3}${ctTag3}, split across ${s.parts} parts a, b, c...). Include model answer per part.`;
     }
     if (s.questionType === "fill_in_the_blanks") {
       return `Section ${i + 1}: ${s.count} x Fill in the Blanks (${s.marks} marks each). Each sentence has 1-3 blanks marked as ___. Include correct words.`;
@@ -330,13 +342,15 @@ Total questions expected: ${totalQuestions}
 
 Use these exact shapes per question type:
 
-MCQ: { "questionType": "mcq", "marks": 2, "question": "...", "options": ["Independence", "Interconnectedness", "Linearity", "Randomness"], "correctAnswer": "Interconnectedness" }
+MCQ: { "questionType": "mcq", "marks": 2, "difficulty": "medium", "commandTerm": "State", "question": "...", "options": ["Independence", "Interconnectedness", "Linearity", "Randomness"], "correctAnswer": "Interconnectedness" }
+
+CRITICAL: Every question must include "difficulty" (one of: easy, medium, hard) and "commandTerm" (one of: Define, State, Outline, Describe, Explain, Analyse, Discuss, Evaluate, Compare, Contrast, Justify, To what extent). Match the difficulty and command term to the marks and question type — e.g. Define/State are easy/low marks, Evaluate/Analyse are hard/high marks.
 
 CRITICAL for MCQ: options must contain ONLY the answer text. Do NOT include "A)", "B)", "A.", "B.", or any letter prefix. The frontend adds option labels automatically. correctAnswer must exactly match one of the options strings (no label prefix).
 
-Short Answer: { "questionType": "short_answer", "marks": 4, "question": "...", "modelAnswer": "..." }
+Short Answer: { "questionType": "short_answer", "marks": 4, "difficulty": "medium", "commandTerm": "Explain", "question": "...", "modelAnswer": "..." }
 
-Long Answer: { "questionType": "long_answer", "marks": 8, "question": "Parent stem here (shared context for all parts)", "parts": [ { "questionText": "Define globalization and its key characteristics.", "marks": 3, "modelAnswer": "..." } ] }
+Long Answer: { "questionType": "long_answer", "marks": 8, "difficulty": "hard", "commandTerm": "Evaluate", "question": "Parent stem here (shared context for all parts)", "parts": [ { "questionText": "Define globalization and its key characteristics.", "marks": 3, "modelAnswer": "..." } ] }
 
 CRITICAL for Long Answer parts: questionText must contain ONLY the raw question. Do NOT include any part label prefix — no "Part (a)", no "(a)", no "a)", no "Part a". The frontend labels parts automatically. Write the question text only.
 
@@ -345,21 +359,33 @@ Fill in the Blanks: { "questionType": "fill_in_the_blanks", "marks": 2, "questio
 Match the Column: { "questionType": "match_columns", "marks": 4, "question": "Match the following.", "leftColumn": ["Term1","Term2","Term3","Term4"], "rightColumn": ["Def1","Def2","Def3","Def4"], "correctPairs": { "1": "3", "2": "1", "3": "4", "4": "2" } }`;
 
   try {
-    const raw = await callCloudflareAI({ messages: [
-      { role: "system", content: "You are an IB exam question writer. Always respond with valid JSON only. No markdown fences, no extra text." },
-      { role: "user", content: userPrompt },
-    ], maxTokens: 4000, jsonMode: true });
+    const raw = await callCloudflareAI({
+      messages: [
+        { role: "system", content: "You are an IB exam question writer. Always respond with valid JSON only. No markdown fences, no extra text." },
+        { role: "user", content: userPrompt },
+      ], maxTokens: 4000, jsonMode: true
+    });
 
     const parsed = JSON.parse(raw.replace(/```json|```/g, "").trim());
     const rawQuestions = parsed.questions || [];
 
     // Transform AI output into Strapi question-bank parts format
     const strapiQuestions = rawQuestions.map((q) => {
-      const base = { question: q.question, question_type: q.questionType, marks: q.marks, content_format: "richtext" };
+      // Map AI-returned difficulty/commandTerm back to schema fields
+      const difficulty = VALID_DIFFICULTIES.includes(q.difficulty) ? q.difficulty : null;
+      const command_term = VALID_COMMAND_TERMS.includes(q.commandTerm) ? q.commandTerm : null;
+      const base = {
+        question: q.question,
+        question_type: q.questionType,
+        marks: q.marks,
+        content_format: "richtext",
+        ...(difficulty && { difficulty }),
+        ...(command_term && { command_term }),
+      };
 
       if (q.questionType === "mcq" || q.questionType === "mcq_multiple") {
         // Strip any accidental letter prefixes the model adds (e.g. "A) ", "A. ", "A - ")
-        const stripOptionLabel = (text = "") => text.replace(/^[A-Da-d][).\-]\s*/,'').trim();
+        const stripOptionLabel = (text = "") => text.replace(/^[A-Da-d][).\-]\s*/, '').trim();
         const cleanOptions = (q.options || []).map(stripOptionLabel);
         const cleanCorrect = stripOptionLabel(q.correctAnswer || "");
         return { ...base, parts: [{ answer_type: "Single Correct", marks: q.marks, options: cleanOptions.join("\n---OPTION---\n"), options_format: "richtext", correct_answer: cleanCorrect, correct_answer_format: "richtext", content_format: "richtext" }] };
@@ -413,11 +439,11 @@ async function generateLearningPath(ctx) {
   const examMonth = examSession === "May" ? 4 : 10; // 0-indexed
   const examDate = new Date(examYear, examMonth, 1);
   const weeksUntilExam = Math.max(
-  1,
-  Math.round(
-    (examDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24 * 7)
-  )
-);
+    1,
+    Math.round(
+      (examDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24 * 7)
+    )
+  );
 
   // Split units into weak (< 60%), medium (60-80%), strong (> 80%)
   const weak = unitAnalysis.filter((u) => u.myPct !== null && u.myPct < 60);

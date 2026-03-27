@@ -222,13 +222,17 @@ module.exports = createCoreService("api::answer.answer", () => ({
                     cleanResponse,
                     partDef.marks,
                     extractedCorrectAnswer,
-                    subjectName
+                    subjectName,
+                    questionData.command_term || null,
+                    questionData.difficulty || null
                   )
                 : await this.evaluateWithAI(
                     partDef.question_text || questionData.question,
                     cleanResponse,
                     partDef.marks,
-                    extractedCorrectAnswer
+                    extractedCorrectAnswer,
+                    questionData.command_term || null,
+                    questionData.difficulty || null
                   );
 
               partAwardedMarks = aiResult.awardedMarks;
@@ -333,7 +337,7 @@ module.exports = createCoreService("api::answer.answer", () => ({
 
   // ─── Short answer / multi-part grader ────────────────────────────────────────
 
-  async evaluateWithAI(questionText, studentResponse, maxMarks, idealAnswer) {
+  async evaluateWithAI(questionText, studentResponse, maxMarks, idealAnswer, commandTerm = null, difficulty = null) {
     if (!studentResponse || studentResponse.trim() === "") {
       return { awardedMarks: 0, feedback: "No answer provided.", confidence: 1, annotations: null, improvedAnswer: null };
     }
@@ -356,11 +360,17 @@ Maximum Marks: ${maxMarks}
 
 IB marking rules:
 - Award marks based on understanding demonstrated, not perfect wording.
-- For "state": 1 mark per correct point, no elaboration needed.
-- For "explain/describe": credit the reasoning chain, not just the conclusion.
-- For "analyse/evaluate": look for evidence, counter-argument, and judgement.
 - Do NOT penalise minor spelling or grammar errors.
 - Never award more than ${maxMarks} marks.
+${commandTerm ? `- This question uses the command term "${commandTerm}". Apply the exact IB standard for this term:
+  · Define/State: credit precise factual points, no elaboration required.
+  · Outline/Describe: credit coverage of main features or steps.
+  · Explain: credit the reasoning chain and cause-effect links, not just conclusions.
+  · Analyse: credit breakdown of components and relationships between them.
+  · Discuss/Evaluate/To what extent: credit evidence, counter-arguments, and a clear judgement.
+  · Compare/Contrast: credit identification of both similarities and differences.
+  · Justify: credit valid reasoning that directly supports a conclusion.` : ''}
+${difficulty ? `- Expected difficulty level: ${difficulty}. Calibrate expectations accordingly — a "hard" question expects deeper analysis than an "easy" one.` : ''}
 
 Return ONLY this JSON:
 {
@@ -405,12 +415,25 @@ Confidence: 1.0=clear-cut, 0.7=judgement call, 0.5=borderline, 0.3=very unclear.
 
   // ─── Single-part essay grader ─────────────────────────────────────────────
 
-  async evaluateEssayWithAI(questionText, studentResponse, maxMarks, idealAnswer, subjectName) {
+  async evaluateEssayWithAI(questionText, studentResponse, maxMarks, idealAnswer, subjectName, commandTerm = null, difficulty = null) {
     if (!studentResponse || studentResponse.trim() === "") {
       return { awardedMarks: 0, feedback: "No answer provided.", confidence: 1, annotations: null, improvedAnswer: null };
     }
 
     const essayCriteria = getEssayCriteria(subjectName);
+
+    const commandTermContext = commandTerm
+      ? `\nCommand term: "${commandTerm}" — ${
+          ["Evaluate","Discuss","To what extent"].includes(commandTerm)
+            ? "requires evidence, counter-argument, and explicit judgement."
+            : ["Analyse","Compare","Contrast"].includes(commandTerm)
+            ? "requires systematic breakdown and relationship identification."
+            : "requires clear, structured response matching the IB definition of this term."
+        }`
+      : "";
+    const difficultyContext = difficulty
+      ? `\nDifficulty: ${difficulty} — calibrate band expectations accordingly.`
+      : "";
 
     const criteriaBlock = essayCriteria
       ? `Evaluate against these IB ${subjectName} criteria (${essayCriteria.maxPerCriterion} marks each):
@@ -441,7 +464,7 @@ ${idealAnswer ? `Mark Scheme Notes: ${idealAnswer}` : ""}
 Student Essay: ${studentResponse}
 Maximum Marks: ${maxMarks}
 
-${criteriaBlock}
+${criteriaBlock}${commandTermContext}${difficultyContext}
 
 Return ONLY this JSON:
 {
