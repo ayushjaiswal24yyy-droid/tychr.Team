@@ -1,0 +1,47 @@
+{
+  "collectionName": "components_test_template_sections",
+  "info": {
+    "displayName": "Section"
+  },
+  "attributes": {
+    "title": {
+      "type": "string"
+    },
+    "question_type": {
+      "type": "enumeration",
+      "enum": [
+        "mcq",
+        "mcq_multiple",
+        "short_answer",
+        "long_answer",
+        "match_columns",
+        "fill_in_the_blanks"
+      ],
+      "required": true
+    },
+    "count": {
+      "type": "integer",
+      "required": true
+    },
+    "marks_per_question": {
+      "type": "integer"
+    },
+    "total_marks": {
+      "type": "integer"
+    },
+
+    "difficulty_distribution": {
+      "type": "json"
+    },
+
+    "command_terms": {
+      "type": "json"
+    },
+
+    "units": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::topic.topic"
+    }
+  }
+}

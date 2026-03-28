@@ -4060,6 +4060,23 @@ export interface ApiQuestionBankQuestionBank extends Schema.CollectionType {
       Attribute.Required;
     marks: Attribute.Integer & Attribute.Required;
     is_offline: Attribute.Boolean & Attribute.DefaultTo<false>;
+    difficulty: Attribute.Enumeration<['easy', 'medium', 'hard']>;
+    command_term: Attribute.Enumeration<
+      [
+        'Define',
+        'State',
+        'Outline',
+        'Describe',
+        'Explain',
+        'Analyse',
+        'Discuss',
+        'Evaluate',
+        'Compare',
+        'Contrast',
+        'Justify',
+        'To what extent'
+      ]
+    >;
     parts: Attribute.Component<'question-bank.parts', true>;
     test_series: Attribute.Relation<
       'api::question-bank.question-bank',
@@ -5001,6 +5018,49 @@ export interface ApiTestSerieTestSerie extends Schema.CollectionType {
       Attribute.Private;
     updatedBy: Attribute.Relation<
       'api::test-serie.test-serie',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+  };
+}
+
+export interface ApiTestTemplateTestTemplate extends Schema.CollectionType {
+  collectionName: 'test_templates';
+  info: {
+    singularName: 'test-template';
+    pluralName: 'test-templates';
+    displayName: 'Test Template';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    title: Attribute.String & Attribute.Required;
+    ib_program: Attribute.Relation<
+      'api::test-template.test-template',
+      'manyToOne',
+      'api::ib-program.ib-program'
+    >;
+    grade_subject: Attribute.Relation<
+      'api::test-template.test-template',
+      'manyToOne',
+      'api::grade-subject.grade-subject'
+    >;
+    description: Attribute.Text;
+    sections: Attribute.Component<'test-template.section', true>;
+    is_active: Attribute.Boolean & Attribute.DefaultTo<true>;
+    createdAt: Attribute.DateTime;
+    updatedAt: Attribute.DateTime;
+    publishedAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<
+      'api::test-template.test-template',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+    updatedBy: Attribute.Relation<
+      'api::test-template.test-template',
       'oneToOne',
       'admin::user'
     > &
@@ -5985,6 +6045,7 @@ declare module '@strapi/types' {
       'api::task.task': ApiTaskTask;
       'api::test.test': ApiTestTest;
       'api::test-serie.test-serie': ApiTestSerieTestSerie;
+      'api::test-template.test-template': ApiTestTemplateTestTemplate;
       'api::third-party-meeting.third-party-meeting': ApiThirdPartyMeetingThirdPartyMeeting;
       'api::third-party-offering.third-party-offering': ApiThirdPartyOfferingThirdPartyOffering;
       'api::third-party-org.third-party-org': ApiThirdPartyOrgThirdPartyOrg;
