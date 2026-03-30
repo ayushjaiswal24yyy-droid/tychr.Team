@@ -346,12 +346,6 @@
     "tp_position": {
       "type": "string"
     },
-    "third_party_org": {
-      "type": "relation",
-      "relation": "oneToMany",
-      "target": "api::third-party-org.third-party-org",
-      "mappedBy": "owner"
-    },
     "user_plans": {
       "type": "relation",
       "relation": "oneToMany",
