@@ -400,12 +400,15 @@
       "mappedBy": "student"
     },
     "exam_month": {
-  "type": "enumeration",
-  "enum": ["may", "nov"]
-},
-"exam_year": {
-  "type": "integer"
-},
+      "type": "enumeration",
+      "enum": [
+        "may",
+        "nov"
+      ]
+    },
+    "exam_year": {
+      "type": "integer"
+    },
     "payments": {
       "type": "relation",
       "relation": "oneToMany",
@@ -600,6 +603,12 @@
       "relation": "oneToMany",
       "target": "api::tutor-dispute.tutor-dispute",
       "mappedBy": "tutor"
+    },
+    "help_subjects": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::grade-subject.grade-subject",
+      "inversedBy": "help_users"
     }
   }
 }

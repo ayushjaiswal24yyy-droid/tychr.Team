@@ -34,11 +34,11 @@
     "hours_included": {
       "type": "integer"
     },
-   "active": {
-  "type": "boolean",
-  "required": true,
-  "default": true
-},
+    "active": {
+      "type": "boolean",
+      "required": true,
+      "default": true
+    },
     "user_plans": {
       "type": "relation",
       "relation": "oneToMany",

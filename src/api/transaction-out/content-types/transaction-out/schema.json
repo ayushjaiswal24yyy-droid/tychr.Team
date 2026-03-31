@@ -6,7 +6,9 @@
     "pluralName": "transaction-outs",
     "displayName": "Admin: Transaction Out"
   },
-  "options": { "draftAndPublish": false },
+  "options": {
+    "draftAndPublish": false
+  },
   "attributes": {
     "student_meeting": {
       "type": "relation",
@@ -40,12 +42,20 @@
     },
     "currency": {
       "type": "enumeration",
-      "enum": ["INR", "USD"],
+      "enum": [
+        "INR",
+        "USD"
+      ],
       "required": true
     },
     "payment_status": {
       "type": "enumeration",
-      "enum": ["pending", "processing", "paid", "failed"],
+      "enum": [
+        "pending",
+        "processing",
+        "paid",
+        "failed"
+      ],
       "default": "pending"
     },
     "payment_reference": {

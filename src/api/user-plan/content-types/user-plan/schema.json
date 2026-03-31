@@ -6,7 +6,9 @@
     "pluralName": "user-plans",
     "displayName": "⭐Student: UserPlan"
   },
-  "options": { "draftAndPublish": false },
+  "options": {
+    "draftAndPublish": false
+  },
   "attributes": {
     "student": {
       "type": "relation",
@@ -26,7 +28,10 @@
     },
     "status": {
       "type": "enumeration",
-      "enum": ["active", "used_up"],
+      "enum": [
+        "active",
+        "used_up"
+      ],
       "default": "active"
     },
     "purchased_at": {
@@ -43,7 +48,10 @@
     },
     "currency": {
       "type": "enumeration",
-      "enum": ["INR", "USD"],
+      "enum": [
+        "INR",
+        "USD"
+      ],
       "required": true
     },
     "razorpay_payment_id": {

@@ -970,6 +970,8 @@ export interface PluginUsersPermissionsUser extends Schema.CollectionType {
       'oneToMany',
       'api::user-grade-plan.user-grade-plan'
     >;
+    exam_month: Attribute.Enumeration<['may', 'nov']>;
+    exam_year: Attribute.Integer;
     payments: Attribute.Relation<
       'plugin::users-permissions.user',
       'oneToMany',
@@ -1091,6 +1093,11 @@ export interface PluginUsersPermissionsUser extends Schema.CollectionType {
       'plugin::users-permissions.user',
       'oneToMany',
       'api::tutor-dispute.tutor-dispute'
+    >;
+    help_subjects: Attribute.Relation<
+      'plugin::users-permissions.user',
+      'manyToMany',
+      'api::grade-subject.grade-subject'
     >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
@@ -2706,6 +2713,11 @@ export interface ApiGradeSubjectGradeSubject extends Schema.CollectionType {
       'oneToMany',
       'api::user-unlocked-subject.user-unlocked-subject'
     >;
+    help_users: Attribute.Relation<
+      'api::grade-subject.grade-subject',
+      'manyToMany',
+      'plugin::users-permissions.user'
+    >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
@@ -3529,6 +3541,11 @@ export interface ApiMessageMessage extends Schema.CollectionType {
     read_by: Attribute.Relation<
       'api::message.message',
       'manyToMany',
+      'plugin::users-permissions.user'
+    >;
+    receiver: Attribute.Relation<
+      'api::message.message',
+      'manyToOne',
       'plugin::users-permissions.user'
     >;
     createdAt: Attribute.DateTime;

@@ -126,6 +126,12 @@
       "relation": "oneToMany",
       "target": "api::user-unlocked-subject.user-unlocked-subject",
       "mappedBy": "grade_subject"
+    },
+    "help_users": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "plugin::users-permissions.user",
+      "mappedBy": "help_subjects"
     }
   }
 }
