@@ -134,6 +134,21 @@
     "grade_score": {
       "type": "integer"
     },
+    "programs": {
+  "type": "relation",
+  "relation": "manyToMany",
+  "target": "api::program.program",
+  "inversedBy": "onboarding_users"
+},
+"grades": {
+  "type": "relation", 
+  "relation": "manyToMany",
+  "target": "api::class.class",
+  "inversedBy": "onboarding_users"
+},
+"curriculum": {
+  "type": "integer"
+},
     "dream_profession": {
       "type": "string"
     },
