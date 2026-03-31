@@ -442,6 +442,11 @@
     "publications": {
       "type": "json"
     },
+    
+    "career_goals": {
+      "type": "json"
+    },
+
     "schoolname": {
       "type": "string"
     },
