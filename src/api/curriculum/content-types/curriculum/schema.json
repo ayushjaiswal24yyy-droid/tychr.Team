@@ -27,6 +27,12 @@
       "relation": "oneToMany",
       "target": "api::ib-program.ib-program",
       "mappedBy": "curriculum"
+    },
+    "users": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "plugin::users-permissions.user",
+      "mappedBy": "curriculum"
     }
   }
 }
