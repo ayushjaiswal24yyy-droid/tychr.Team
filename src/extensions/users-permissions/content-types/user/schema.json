@@ -106,7 +106,9 @@
       "relation": "manyToOne",
       "target": "api::class.class",
       "inversedBy": "users"
-    },
+    },"city": {
+  "type": "string"
+},
     "studying": {
       "type": "relation",
       "relation": "manyToMany",
