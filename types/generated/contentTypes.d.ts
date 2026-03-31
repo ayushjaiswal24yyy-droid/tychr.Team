@@ -2139,6 +2139,44 @@ export interface ApiCredentialCredential extends Schema.CollectionType {
   };
 }
 
+export interface ApiCurriculumCurriculum extends Schema.CollectionType {
+  collectionName: 'curricula';
+  info: {
+    singularName: 'curriculum';
+    pluralName: 'curricula';
+    displayName: 'Curriculum';
+    description: '';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    name: Attribute.String;
+    description: Attribute.String;
+    slug: Attribute.UID<'api::curriculum.curriculum', 'name'>;
+    ib_programs: Attribute.Relation<
+      'api::curriculum.curriculum',
+      'oneToMany',
+      'api::ib-program.ib-program'
+    >;
+    createdAt: Attribute.DateTime;
+    updatedAt: Attribute.DateTime;
+    publishedAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<
+      'api::curriculum.curriculum',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+    updatedBy: Attribute.Relation<
+      'api::curriculum.curriculum',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+  };
+}
+
 export interface ApiDemoBookingDemoBooking extends Schema.CollectionType {
   collectionName: 'demo_bookings';
   info: {
@@ -2796,6 +2834,11 @@ export interface ApiIbProgramIbProgram extends Schema.CollectionType {
       'api::ib-program.ib-program',
       'oneToMany',
       'api::notification.notification'
+    >;
+    curriculum: Attribute.Relation<
+      'api::ib-program.ib-program',
+      'manyToOne',
+      'api::curriculum.curriculum'
     >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
@@ -5886,6 +5929,7 @@ declare module '@strapi/types' {
       'api::counselling-video.counselling-video': ApiCounsellingVideoCounsellingVideo;
       'api::course-plan.course-plan': ApiCoursePlanCoursePlan;
       'api::credential.credential': ApiCredentialCredential;
+      'api::curriculum.curriculum': ApiCurriculumCurriculum;
       'api::demo-booking.demo-booking': ApiDemoBookingDemoBooking;
       'api::demo-video.demo-video': ApiDemoVideoDemoVideo;
       'api::department.department': ApiDepartmentDepartment;

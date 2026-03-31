@@ -60,6 +60,12 @@
       "relation": "oneToMany",
       "target": "api::notification.notification",
       "mappedBy": "ib_program"
+    },
+    "curriculum": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::curriculum.curriculum",
+      "inversedBy": "ib_programs"
     }
   }
 }
