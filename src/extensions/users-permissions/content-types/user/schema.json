@@ -399,6 +399,13 @@
       "target": "api::user-grade-plan.user-grade-plan",
       "mappedBy": "student"
     },
+    "exam_month": {
+  "type": "enumeration",
+  "enum": ["may", "nov"]
+},
+"exam_year": {
+  "type": "integer"
+},
     "payments": {
       "type": "relation",
       "relation": "oneToMany",
