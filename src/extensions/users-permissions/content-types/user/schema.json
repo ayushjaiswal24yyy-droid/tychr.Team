@@ -126,6 +126,9 @@
       "target": "api::ib-program.ib-program",
       "inversedBy": "user"
     },
+    "career_goals": {
+  "type": "json"
+},
     "grade_score": {
       "type": "integer"
     },
