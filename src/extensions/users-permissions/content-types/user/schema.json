@@ -442,11 +442,9 @@
     "publications": {
       "type": "json"
     },
-    
     "career_goals": {
       "type": "json"
     },
-
     "schoolname": {
       "type": "string"
     },
@@ -615,23 +613,14 @@
       "target": "api::grade-subject.grade-subject",
       "inversedBy": "help_users"
     },
-    "programs": {
-      "type": "relation",
-      "relation": "manyToMany",
-      "target": "api::ib-program.ib-program",
-      "inversedBy": "users"
+    "selections": {
+      "displayName": "selections",
+      "type": "component",
+      "repeatable": true,
+      "component": "selections.selections"
     },
-    "grades": {
-      "type": "relation",
-      "relation": "manyToMany",
-      "target": "api::class.class",
-      "inversedBy": "fav_users"
-    },
-    "curriculum": {
-      "type": "relation",
-      "relation": "manyToOne",
-      "target": "api::curriculum.curriculum",
-      "inversedBy": "users"
+    "college_board_exams": {
+      "type": "json"
     }
   }
 }

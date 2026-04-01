@@ -998,6 +998,7 @@ export interface PluginUsersPermissionsUser extends Schema.CollectionType {
       'api::add-on-order.add-on-order'
     >;
     publications: Attribute.JSON;
+    career_goals: Attribute.JSON;
     schoolname: Attribute.String;
     yearOfApplication: Attribute.Integer;
     prospectiveCareer: Attribute.String;
@@ -1099,21 +1100,8 @@ export interface PluginUsersPermissionsUser extends Schema.CollectionType {
       'manyToMany',
       'api::grade-subject.grade-subject'
     >;
-    programs: Attribute.Relation<
-      'plugin::users-permissions.user',
-      'manyToMany',
-      'api::ib-program.ib-program'
-    >;
-    grades: Attribute.Relation<
-      'plugin::users-permissions.user',
-      'manyToMany',
-      'api::class.class'
-    >;
-    curriculum: Attribute.Relation<
-      'plugin::users-permissions.user',
-      'manyToOne',
-      'api::curriculum.curriculum'
-    >;
+    selections: Attribute.Component<'selections.selections', true>;
+    college_board_exams: Attribute.JSON;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     createdBy: Attribute.Relation<
@@ -1623,11 +1611,6 @@ export interface ApiClassClass extends Schema.CollectionType {
       'api::notification.notification'
     >;
     slug: Attribute.String;
-    fav_users: Attribute.Relation<
-      'api::class.class',
-      'manyToMany',
-      'plugin::users-permissions.user'
-    >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
@@ -2185,11 +2168,6 @@ export interface ApiCurriculumCurriculum extends Schema.CollectionType {
       'api::curriculum.curriculum',
       'oneToMany',
       'api::ib-program.ib-program'
-    >;
-    users: Attribute.Relation<
-      'api::curriculum.curriculum',
-      'oneToMany',
-      'plugin::users-permissions.user'
     >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
@@ -2876,11 +2854,6 @@ export interface ApiIbProgramIbProgram extends Schema.CollectionType {
       'api::ib-program.ib-program',
       'manyToOne',
       'api::curriculum.curriculum'
-    >;
-    users: Attribute.Relation<
-      'api::ib-program.ib-program',
-      'manyToMany',
-      'plugin::users-permissions.user'
     >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;

@@ -1,0 +1,25 @@
+{
+  "collectionName": "components_selections_selections",
+  "info": {
+    "displayName": "selections",
+    "description": ""
+  },
+  "options": {},
+  "attributes": {
+    "curriculum": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::curriculum.curriculum"
+    },
+    "ib_program": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::ib-program.ib-program"
+    },
+    "grade": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::class.class"
+    }
+  }
+}

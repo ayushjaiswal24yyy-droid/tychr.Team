@@ -66,12 +66,6 @@
       "relation": "manyToOne",
       "target": "api::curriculum.curriculum",
       "inversedBy": "ib_programs"
-    },
-    "users": {
-      "type": "relation",
-      "relation": "manyToMany",
-      "target": "plugin::users-permissions.user",
-      "mappedBy": "programs"
     }
   }
 }
