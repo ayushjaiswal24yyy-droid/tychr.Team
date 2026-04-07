@@ -131,12 +131,28 @@ module.exports = {
       if (!lambdaUrl || !secret || !strapiToken) {
         return ctx.internalServerError("PDF service is not configured");
       }
+      const cleanedPaper = {
+        ...paper,
+        question_banks: (paper.question_banks || []).map((q) => ({
+          ...q,
+          question: parseRichtext(q.question), // ✅ FIX
+          parts: (q.parts || []).map((p) => ({
+            ...p,
+            question_text: parseRichtext(p.question_text), // ✅ FIX
+          })),
+        })),
+      };
 
       const response = await fetch(lambdaUrl, {
         method: "POST",
         headers: { "Content-Type": "application/json", "x-pdf-secret": secret },
-        body: JSON.stringify({ type: "paper", paper, paperId: id, strapiUrl, strapiToken }),
-        signal: AbortSignal.timeout(55000),
+        body: JSON.stringify({
+          type: "paper",
+          paper: cleanedPaper, // ✅ USE CLEANED DATA
+          paperId: id,
+          strapiUrl,
+          strapiToken,
+        }),
       });
 
       const text = await response.text();
@@ -199,11 +215,11 @@ module.exports = {
         grade_subject: series.grade_subject,
         questions: allQuestions.map((q) => ({
           id: q.id,
-          question: q.question,
+          question: parseRichtext(q.question), // ✅ FIXED
           question_type: q.question_type,
           marks: q.marks,
           parts: (q.parts || []).map((p) => ({
-            question_text: p.question_text,
+            question_text: parseRichtext(p.question_text), // ✅ FIXED
             marks: p.marks,
             answer_type: p.answer_type,
             options: p.options,
