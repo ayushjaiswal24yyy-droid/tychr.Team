@@ -244,9 +244,17 @@ module.exports = {
       const series = await strapi.entityService.findOne(
         "api::test-serie.test-serie",
         id,
-        { fields: ["id", "title", "program_type", "test_mode", "test_duration"] }
+        {
+          fields: ["id", "title", "program_type", "test_mode", "test_duration", "entity_type"],
+          populate: { papers: { fields: ["id"] } },
+        }
       );
 
+      const paperIds = series.entity_type === "paper"
+        ? [Number(id)]
+        : (series.papers || []).map((p) => p.id);
+
+      if (!paperIds.length) return ctx.badRequest("No papers found for this series")
       if (!series) return ctx.notFound("Test series not found");
 
       const answers = await strapi.entityService.findMany("api::answer.answer", {
@@ -254,6 +262,7 @@ module.exports = {
           attempt_id: Number(attempt_id),
           completed: true,
           is_attempt_marker: { $ne: true },
+          test_series: { id: { $in: paperIds } },
         },
         populate: {
           test_series: { fields: ["id", "title", "test_mode"] },
