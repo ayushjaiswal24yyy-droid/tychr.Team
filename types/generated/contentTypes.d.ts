@@ -1738,9 +1738,9 @@ export interface ApiCollegeCollege extends Schema.CollectionType {
       'oneToMany',
       'api::department.department'
     >;
-    third_party_offering: Attribute.Relation<
+    third_party_offerings: Attribute.Relation<
       'api::college.college',
-      'manyToOne',
+      'oneToMany',
       'api::third-party-offering.third-party-offering'
     >;
     createdAt: Attribute.DateTime;
@@ -5168,9 +5168,9 @@ export interface ApiThirdPartyOfferingThirdPartyOffering
       'oneToMany',
       'api::tp-applicant.tp-applicant'
     >;
-    college_tags: Attribute.Relation<
+    college_tag: Attribute.Relation<
       'api::third-party-offering.third-party-offering',
-      'oneToMany',
+      'manyToOne',
       'api::college.college'
     >;
     createdAt: Attribute.DateTime;
