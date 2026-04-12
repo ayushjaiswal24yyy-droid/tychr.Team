@@ -2,9 +2,6 @@
 
 const { createCoreController } = require("@strapi/strapi").factories;
 
-
-
-
 module.exports = createCoreController(
   "api::test-serie.test-serie",
   ({ strapi }) => ({
@@ -91,19 +88,21 @@ module.exports = createCoreController(
         const now = new Date();
         // Transform data to include answer status
         const transformedData = testSeries.map((series) => {
-          const startDate = series.start_date ? new Date(series.start_date) : null;
+          const startDate = series.start_date
+            ? new Date(series.start_date)
+            : null;
           const isUnlocked = !startDate || startDate <= now;
 
           const userAnswers = series.answers || [];
           const hasSubmitted = userAnswers.length > 0;
           const latestAnswer = hasSubmitted
             ? userAnswers.reduce((latest, current) => {
-              if (!latest) return current;
-              return new Date(current.submission_date) >
-                new Date(latest.submission_date)
-                ? current
-                : latest;
-            }, null)
+                if (!latest) return current;
+                return new Date(current.submission_date) >
+                  new Date(latest.submission_date)
+                  ? current
+                  : latest;
+              }, null)
             : null;
 
           const completedAnswers = userAnswers.filter(
@@ -148,9 +147,9 @@ module.exports = createCoreController(
             papers: series.papers,
             grade_subject: series.grade_subject
               ? {
-                id: series.grade_subject.id,
-                name: series.grade_subject.name,
-              }
+                  id: series.grade_subject.id,
+                  name: series.grade_subject.name,
+                }
               : null,
             answer_status: {
               has_attempted: hasSubmitted,
@@ -159,13 +158,13 @@ module.exports = createCoreController(
               evaluated_attempts: evaluatedAnswers.length,
               latest_attempt: latestAnswer
                 ? {
-                  id: latestAnswer.id,
-                  submission_date: latestAnswer.submission_date,
-                  marks: latestAnswer.marks,
-                  evaluation_status: latestAnswer.evaluation_status,
-                  time_taken: latestAnswer.time_taken,
-                  completed: latestAnswer.completed,
-                }
+                    id: latestAnswer.id,
+                    submission_date: latestAnswer.submission_date,
+                    marks: latestAnswer.marks,
+                    evaluation_status: latestAnswer.evaluation_status,
+                    time_taken: latestAnswer.time_taken,
+                    completed: latestAnswer.completed,
+                  }
                 : null,
               all_attempts: userAnswers.map((answer) => ({
                 id: answer.id,
@@ -238,7 +237,9 @@ module.exports = createCoreController(
         const now = new Date();
 
         const transformedData = testSeries.map((series) => {
-          const startDate = series.start_date ? new Date(series.start_date) : null;
+          const startDate = series.start_date
+            ? new Date(series.start_date)
+            : null;
           const isUnlocked = !startDate || startDate <= now;
 
           const userAnswers = series.answers || [];
@@ -246,16 +247,16 @@ module.exports = createCoreController(
 
           const latestAnswer = hasSubmitted
             ? userAnswers.reduce((latest, current) =>
-              new Date(current.submission_date) >
+                new Date(current.submission_date) >
                 new Date(latest.submission_date)
-                ? current
-                : latest
-            )
+                  ? current
+                  : latest
+              )
             : null;
 
-          const completedAnswers = userAnswers.filter(a => a.completed);
+          const completedAnswers = userAnswers.filter((a) => a.completed);
           const evaluatedAnswers = completedAnswers.filter(
-            a => a.evaluation_status === "evaluated"
+            (a) => a.evaluation_status === "evaluated"
           );
 
           if (!isUnlocked) {
@@ -297,8 +298,7 @@ module.exports = createCoreController(
         console.error("Error in getStudentTestSeriesByGrade:", error);
         ctx.throw(500, error.message);
       }
-    }
-    ,
+    },
     async getStudentPracticeSeries(ctx) {
       try {
         const { classroomId } = ctx.params;
@@ -346,7 +346,6 @@ module.exports = createCoreController(
             filters: {
               grade_subject: { id: gradeSubjectId },
               test_type: { $eq: "Practice Test" },
-
             },
             populate: {
               question_banks: {
@@ -385,12 +384,12 @@ module.exports = createCoreController(
           const hasSubmitted = userAnswers.length > 0;
           const latestAnswer = hasSubmitted
             ? userAnswers.reduce((latest, current) => {
-              if (!latest) return current;
-              return new Date(current.submission_date) >
-                new Date(latest.submission_date)
-                ? current
-                : latest;
-            }, null)
+                if (!latest) return current;
+                return new Date(current.submission_date) >
+                  new Date(latest.submission_date)
+                  ? current
+                  : latest;
+              }, null)
             : null;
 
           const completedAnswers = userAnswers.filter(
@@ -420,9 +419,9 @@ module.exports = createCoreController(
             papers: series.papers,
             grade_subject: series.grade_subject
               ? {
-                id: series.grade_subject.id,
-                name: series.grade_subject.name,
-              }
+                  id: series.grade_subject.id,
+                  name: series.grade_subject.name,
+                }
               : null,
             answer_status: {
               has_attempted: hasSubmitted,
@@ -431,13 +430,13 @@ module.exports = createCoreController(
               evaluated_attempts: evaluatedAnswers.length,
               latest_attempt: latestAnswer
                 ? {
-                  id: latestAnswer.id,
-                  submission_date: latestAnswer.submission_date,
-                  marks: latestAnswer.marks,
-                  evaluation_status: latestAnswer.evaluation_status,
-                  time_taken: latestAnswer.time_taken,
-                  completed: latestAnswer.completed,
-                }
+                    id: latestAnswer.id,
+                    submission_date: latestAnswer.submission_date,
+                    marks: latestAnswer.marks,
+                    evaluation_status: latestAnswer.evaluation_status,
+                    time_taken: latestAnswer.time_taken,
+                    completed: latestAnswer.completed,
+                  }
                 : null,
               all_attempts: userAnswers.map((answer) => ({
                 id: answer.id,
@@ -506,7 +505,7 @@ module.exports = createCoreController(
          * 2. Fetch ALL ANSWERS for ALL PAPERS
          *    (attempt_id is the key 🔑)
          */
-        const paperIds = series.papers.map(p => p.id);
+        const paperIds = series.papers.map((p) => p.id);
 
         const answers = await strapi.entityService.findMany(
           "api::answer.answer",
@@ -516,7 +515,6 @@ module.exports = createCoreController(
               test_series: { id: { $in: paperIds } },
               completed: true,
               is_attempt_marker: { $ne: true },
-
             },
             populate: {
               test_series: {
@@ -526,11 +524,9 @@ module.exports = createCoreController(
                 populate: {
                   question: {
                     populate: ["parts", "attachments"],
-
                   },
                   part_evaluations: true,
-                  question_audio_feedback: true
-
+                  question_audio_feedback: true,
                 },
               },
               uploaded_answer_sheet: true,
@@ -559,10 +555,10 @@ module.exports = createCoreController(
           attemptsMap[ans.attempt_id].papers.push(ans);
         }
         /**
-          * 5. Aggregate QUESTIONS & MARKS (SERIES LEVEL)
-          */
+         * 5. Aggregate QUESTIONS & MARKS (SERIES LEVEL)
+         */
         const allQuestions = series.papers.flatMap(
-          p => p.question_banks || []
+          (p) => p.question_banks || []
         );
 
         const totalMarks = allQuestions.reduce(
@@ -570,88 +566,86 @@ module.exports = createCoreController(
           0
         );
         /**
-        * 4. Transform attempts → frontend format
-        */
-        const attempts = Object.values(attemptsMap).sort((a, b) => a.attempt_id - b.attempt_id).map((attempt, index) => {
-          const totalMarks = attempt.papers.reduce(
-            (sum, p) => sum + (p.marks || 0),
-            0
-          );
+         * 4. Transform attempts → frontend format
+         */
+        const attempts = Object.values(attemptsMap)
+          .sort((a, b) => a.attempt_id - b.attempt_id)
+          .map((attempt, index) => {
+            const totalMarks = attempt.papers.reduce(
+              (sum, p) => sum + (p.marks || 0),
+              0
+            );
 
-          const totalTime = attempt.papers.reduce(
-            (sum, p) => sum + (p.time_taken || 0),
-            0
-          );
+            const totalTime = attempt.papers.reduce(
+              (sum, p) => sum + (p.time_taken || 0),
+              0
+            );
 
-          const evaluationStatus = attempt.papers.every(
-            p => p.evaluation_status === "evaluated"
-          )
-            ? "evaluated"
-            : "pending";
+            const evaluationStatus = attempt.papers.every(
+              (p) => p.evaluation_status === "evaluated"
+            )
+              ? "evaluated"
+              : "pending";
 
-          const completed = attempt.papers.length === series.papers.length;
-          // ✅ correct submission date = latest paper submission
+            const completed = attempt.papers.length === series.papers.length;
+            // ✅ correct submission date = latest paper submission
 
-          const submissionDate = attempt.papers
-            .map(p => new Date(p.submission_date))
-            .sort((a, b) => b - a)[0];
+            const submissionDate = attempt.papers
+              .map((p) => new Date(p.submission_date))
+              .sort((a, b) => b - a)[0];
 
-          return {
-            attempt_no: index + 1,
-            attempt_id: attempt.attempt_id,
-            submission_date: submissionDate,
-            total_marks: totalMarks,
-            time_taken: totalTime,
-            evaluation_status: evaluationStatus,
-            completed,
-            questions: allQuestions.map(q => ({
-              id: q.id,
-              diagram: q.diagram,
-              parts: q.parts || [],
-              question: q.question,
-              marks: q.marks,
-              question_type: q.question_type,
-            })),
-            papers: attempt.papers.map(paperAnswer => ({
-              id: paperAnswer.id,
-              paper_id: paperAnswer.test_series.id,
-              paper_title: paperAnswer.test_series.title,
-              marks: paperAnswer.marks,
-              time_taken: paperAnswer.time_taken,
-              submission_type: paperAnswer.submission_type,
-              uploaded_answer_sheet: paperAnswer.uploaded_answer_sheet,
-              audio_feedback: paperAnswer.audio_feedback ?? null,  // ← add
-              question_answers: paperAnswer.question_n_answer?.map(qna => ({
-                question_id: qna.question?.id,
-                question: qna.question?.question,
-                parts: qna.question?.parts || [],
-                question_type: qna.question?.question_type,
-                annotations: qna.annotations ?? null,
-                improved_answer: qna.improved_answer ?? null,
-                marks: qna.question?.marks,
-                student_answer: qna.answer,
-                part_evaluations: qna.part_evaluations?.map(pe => ({
-                  part_index: pe.part_index,
-                  awarded_marks: pe.awarded_marks,
-                  feedback: pe.feedback,
-                  audio_feedback: pe.audio_feedback ?? null,   // ← pe-level audio (part feedback)
-                })) || [],
-                awarded_marks: qna.question_awarded_marks ?? 0,
-                feedback: qna.question_feedback,
-                audio_feedback: qna.question_audio_feedback ?? null,  // ← qna-level audio ✓
+            return {
+              attempt_no: index + 1,
+              attempt_id: attempt.attempt_id,
+              submission_date: submissionDate,
+              total_marks: totalMarks,
+              time_taken: totalTime,
+              evaluation_status: evaluationStatus,
+              completed,
+              questions: allQuestions.map((q) => ({
+                id: q.id,
+                diagram: q.diagram,
+                parts: q.parts || [],
+                question: q.question,
+                marks: q.marks,
+                question_type: q.question_type,
               })),
-            })),
-          };
-        });
-
-
-
+              papers: attempt.papers.map((paperAnswer) => ({
+                id: paperAnswer.id,
+                paper_id: paperAnswer.test_series.id,
+                paper_title: paperAnswer.test_series.title,
+                marks: paperAnswer.marks,
+                time_taken: paperAnswer.time_taken,
+                submission_type: paperAnswer.submission_type,
+                uploaded_answer_sheet: paperAnswer.uploaded_answer_sheet,
+                audio_feedback: paperAnswer.audio_feedback ?? null, // ← add
+                question_answers: paperAnswer.question_n_answer?.map((qna) => ({
+                  question_id: qna.question?.id,
+                  question: qna.question?.question,
+                  parts: qna.question?.parts || [],
+                  question_type: qna.question?.question_type,
+                  annotations: qna.annotations ?? null,
+                  improved_answer: qna.improved_answer ?? null,
+                  marks: qna.question?.marks,
+                  student_answer: qna.answer,
+                  part_evaluations:
+                    qna.part_evaluations?.map((pe) => ({
+                      part_index: pe.part_index,
+                      awarded_marks: pe.awarded_marks,
+                      feedback: pe.feedback,
+                      audio_feedback: pe.audio_feedback ?? null, // ← pe-level audio (part feedback)
+                    })) || [],
+                  awarded_marks: qna.question_awarded_marks ?? 0,
+                  feedback: qna.question_feedback,
+                  audio_feedback: qna.question_audio_feedback ?? null, // ← qna-level audio ✓
+                })),
+              })),
+            };
+          });
 
         /**
          * 6. FINAL RESPONSE
          */
-
-
 
         return {
           data: {
@@ -669,7 +663,6 @@ module.exports = createCoreController(
             attempts,
           },
         };
-
       } catch (error) {
         console.error("Error in getStudentTestResults:", error);
         ctx.throw(500, error.message);
@@ -682,8 +675,8 @@ module.exports = createCoreController(
         const user = ctx.state.user;
 
         /* ----------------------------------------
-           1. Basic validation
-        ---------------------------------------- */
+       1. Basic validation
+    ---------------------------------------- */
         if (!seriesId) {
           return ctx.badRequest("Series ID is required");
         }
@@ -691,7 +684,9 @@ module.exports = createCoreController(
         if (!user) {
           return ctx.unauthorized("User not authenticated");
         }
-        const attemptMarkers = await strapi.entityService.findMany(
+
+        // Get all attempt markers to count total attempts
+        const allAttemptMarkers = await strapi.entityService.findMany(
           "api::answer.answer",
           {
             filters: {
@@ -700,7 +695,6 @@ module.exports = createCoreController(
               is_attempt_marker: true,
             },
             sort: { attempt_id: "desc" },
-            limit: 1,
             fields: [
               "attempt_id",
               "completed",
@@ -711,17 +705,22 @@ module.exports = createCoreController(
               "auto_submitted",
               "resume_status",
             ],
-
           }
         );
 
-        const hasAttempt = attemptMarkers.length > 0;
-        const currentAttemptId = hasAttempt ? attemptMarkers[0].attempt_id : 0;
-        let attemptCompleted = hasAttempt ? attemptMarkers[0].completed : false;
+        const hasAttempt = allAttemptMarkers.length > 0;
+        const totalAttempts = allAttemptMarkers.length; // ✅ Total number of attempts
+        const currentAttemptId = hasAttempt
+          ? allAttemptMarkers[0].attempt_id
+          : 0;
+        let attemptCompleted = hasAttempt
+          ? allAttemptMarkers[0].completed
+          : false;
         const shouldIncludeQuestions = hasAttempt;
+
         /* ----------------------------------------
-           2. Fetch series with papers
-        ---------------------------------------- */
+       2. Fetch series with papers
+    ---------------------------------------- */
         const series = await strapi.entityService.findOne(
           "api::test-serie.test-serie",
           seriesId,
@@ -755,7 +754,6 @@ module.exports = createCoreController(
                 },
               },
             },
-
           }
         );
 
@@ -770,35 +768,28 @@ module.exports = createCoreController(
         const paperIds = series.papers.map((p) => p.id);
 
         /* ----------------------------------------
-      3. Fetch current attempt marker
-   ---------------------------------------- */
-
-
-
-        /* ----------------------------------------
-           4. Fetch answers for CURRENT attempt
-        ---------------------------------------- */
+       3. Fetch answers for CURRENT attempt
+    ---------------------------------------- */
         const answers = hasAttempt
           ? await strapi.entityService.findMany("api::answer.answer", {
-            publicationState: "preview",
-            filters: {
-              student: user.id,
-              test_series: { id: { $in: paperIds } },
-              attempt_id: currentAttemptId,
-              completed: true,
-              is_attempt_marker: { $ne: true },
-            },
-            fields: ["id", "time_taken", "marks"],
-            populate: {
-              test_series: { fields: ["id"] },
-            },
-          })
+              publicationState: "preview",
+              filters: {
+                student: user.id,
+                test_series: { id: { $in: paperIds } },
+                attempt_id: currentAttemptId,
+                completed: true,
+                is_attempt_marker: { $ne: true },
+              },
+              fields: ["id", "time_taken", "marks"],
+              populate: {
+                test_series: { fields: ["id"] },
+              },
+            })
           : [];
 
-
         /* ----------------------------------------
-           5. Index answers by paper & sum time
-        ---------------------------------------- */
+       4. Index answers by paper & sum time
+    ---------------------------------------- */
         const answerByPaperId = {};
         let totalTimeTaken = 0;
 
@@ -814,6 +805,7 @@ module.exports = createCoreController(
 
           totalTimeTaken += ans.time_taken || 0;
         }
+
         let marker = null;
         let phase = null;
         let phaseStartedAt = null;
@@ -821,8 +813,9 @@ module.exports = createCoreController(
         let maxViolations = 3;
         let autoSubmitted = false;
         let resumeStatus = "none";
+
         if (hasAttempt) {
-          marker = attemptMarkers[0];
+          marker = allAttemptMarkers[0];
 
           phase = marker.phase;
           phaseStartedAt = new Date(marker.phase_started_at);
@@ -838,16 +831,12 @@ module.exports = createCoreController(
               phase = "answering";
             }
           }
-
         }
 
         const now = new Date();
         const readingTimeSeconds = (Number(series.reading_time) || 0) * 60;
-
         const testDurationSeconds = Number(series.test_duration) * 60 || 0;
-
-        const totalAllowedSeconds =
-          readingTimeSeconds + testDurationSeconds;
+        const totalAllowedSeconds = readingTimeSeconds + testDurationSeconds;
 
         if (hasAttempt && phase === "reading") {
           const elapsed = (now.getTime() - phaseStartedAt.getTime()) / 1000;
@@ -855,18 +844,14 @@ module.exports = createCoreController(
           if (elapsed >= readingTimeSeconds) {
             phase = "answering";
 
-            await strapi.entityService.update(
-              "api::answer.answer",
-              marker.id,
-              {
-                data: {
-                  phase: "answering",
-                  phase_started_at: new Date(
-                    phaseStartedAt.getTime() + readingTimeSeconds * 1000
-                  ),
-                },
-              }
-            );
+            await strapi.entityService.update("api::answer.answer", marker.id, {
+              data: {
+                phase: "answering",
+                phase_started_at: new Date(
+                  phaseStartedAt.getTime() + readingTimeSeconds * 1000
+                ),
+              },
+            });
 
             phaseStartedAt = new Date(
               phaseStartedAt.getTime() + readingTimeSeconds * 1000
@@ -874,15 +859,13 @@ module.exports = createCoreController(
           }
         }
 
-
         /* ----------------------------------------
-           6. Compute remaining series time
-        ---------------------------------------- */
-
+       5. Compute remaining series time
+    ---------------------------------------- */
         const elapsedSinceStart = hasAttempt
           ? Math.floor(
-            (now.getTime() - new Date(marker.started_at).getTime()) / 1000
-          )
+              (now.getTime() - new Date(marker.started_at).getTime()) / 1000
+            )
           : 0;
 
         const remainingTime = Math.max(
@@ -891,31 +874,30 @@ module.exports = createCoreController(
         );
 
         // 🔥 AUTO-END IF TIME EXPIRED
-        if (hasAttempt && !attemptCompleted && elapsedSinceStart >= totalAllowedSeconds) {
-          await strapi.entityService.update(
-            "api::answer.answer",
-            marker.id,
-            {
-              data: {
-                completed: true,
-                phase: "completed",
-              },
-            }
-          );
+        if (
+          hasAttempt &&
+          !attemptCompleted &&
+          elapsedSinceStart >= totalAllowedSeconds
+        ) {
+          await strapi.entityService.update("api::answer.answer", marker.id, {
+            data: {
+              completed: true,
+              phase: "completed",
+            },
+          });
 
           attemptCompleted = true;
           phase = "completed";
         }
+
         if (autoSubmitted) {
           attemptCompleted = true;
           phase = "completed";
         }
 
-
-
         /* ----------------------------------------
-           7. Compute paper statuses (attempt-aware)
-        ---------------------------------------- */
+       6. Compute paper statuses (attempt-aware)
+    ---------------------------------------- */
         const papers = series.papers.map((paper) => {
           if (hasAttempt && phase === "reading") {
             return {
@@ -923,10 +905,9 @@ module.exports = createCoreController(
               title: paper.title,
               status: "locked",
               instructions: paper.instruction_booklet,
-              question_banks: paper.question_banks || [], // ✅ INCLUDE QUESTIONS
+              question_banks: paper.question_banks || [],
             };
           }
-
 
           if (!hasAttempt || attemptCompleted) {
             return {
@@ -957,13 +938,14 @@ module.exports = createCoreController(
           };
         });
 
-
         /* ----------------------------------------
-           9. Final response
-        ---------------------------------------- */
+       7. Final response
+    ---------------------------------------- */
         return {
           data: {
             attempt_id: currentAttemptId,
+            total_attempts: totalAttempts, 
+            current_attempt_number: totalAttempts,
 
             phase,
             phase_started_at: phaseStartedAt,
@@ -986,7 +968,6 @@ module.exports = createCoreController(
             completed: attemptCompleted,
           },
         };
-
       } catch (error) {
         console.error("Error in getStudentSeriesSession:", error);
         ctx.throw(500, error.message);
@@ -1008,7 +989,7 @@ module.exports = createCoreController(
           seriesId,
           {
             fields: ["reading_time"],
-            filters: { publishedAt: { $notNull: true } } // Only published series
+            filters: { publishedAt: { $notNull: true } }, // Only published series
           }
         );
 
@@ -1034,14 +1015,11 @@ module.exports = createCoreController(
         // Prevent starting a new attempt if there's an active one
         if (
           lastAttempt.length > 0 &&
-          (
-            !lastAttempt[0].completed ||
-            lastAttempt[0].resume_status === "requested"
-          )
+          (!lastAttempt[0].completed ||
+            lastAttempt[0].resume_status === "requested")
         ) {
           return ctx.badRequest("An active or pending attempt already exists.");
         }
-
 
         const nextAttemptId =
           lastAttempt.length > 0 ? lastAttempt[0].attempt_id + 1 : 1;
@@ -1051,27 +1029,29 @@ module.exports = createCoreController(
         const initialPhase = readingTimeMinutes > 0 ? "reading" : "answering";
 
         // Create attempt marker
-        const attemptMarker = await strapi.entityService.create("api::answer.answer", {
-          data: {
-            student: user.id,
-            test_series: seriesId,
-            attempt_id: nextAttemptId,
-            completed: false,
-            is_attempt_marker: true,
-            phase: initialPhase,
-            phase_started_at: new Date(),
-            started_at: new Date(),
-          },
-        });
+        const attemptMarker = await strapi.entityService.create(
+          "api::answer.answer",
+          {
+            data: {
+              student: user.id,
+              test_series: seriesId,
+              attempt_id: nextAttemptId,
+              completed: false,
+              is_attempt_marker: true,
+              phase: initialPhase,
+              phase_started_at: new Date(),
+              started_at: new Date(),
+            },
+          }
+        );
 
         return {
           data: {
             attempt_id: nextAttemptId,
             phase: initialPhase,
             reading_time: readingTimeMinutes,
-          }
+          },
         };
-
       } catch (error) {
         console.error("Error in startNewAttempt:", error);
         ctx.throw(500, error.message);
@@ -1129,10 +1109,10 @@ module.exports = createCoreController(
 
       // 3. Get total papers and paper IDs
       const totalPapers = series.papers?.length || 0;
-      const paperIds = series.papers?.map(p => p.id) || [];
+      const paperIds = series.papers?.map((p) => p.id) || [];
 
       if (totalPapers === 0) {
-        console.error('No papers found in series:', seriesId);
+        console.error("No papers found in series:", seriesId);
         return ctx.badRequest("No papers found in this series");
       }
 
@@ -1144,7 +1124,7 @@ module.exports = createCoreController(
           filters: {
             student: user.id,
             test_series: {
-              id: { $in: paperIds } // ✅ Answer test_series field has paper IDs
+              id: { $in: paperIds }, // ✅ Answer test_series field has paper IDs
             },
             attempt_id: marker.attempt_id,
             completed: true,
@@ -1157,7 +1137,7 @@ module.exports = createCoreController(
       const allPapersSubmitted = submittedAnswers.length === totalPapers;
       const timeExpired = elapsedSeconds >= totalAllowedSeconds;
 
-      console.log('End attempt check:', {
+      console.log("End attempt check:", {
         totalPapers,
         submittedCount: submittedAnswers.length,
         allPapersSubmitted,
@@ -1166,25 +1146,27 @@ module.exports = createCoreController(
 
       // 5. Allow ending if EITHER all papers submitted OR time expired
       if (!allPapersSubmitted && !timeExpired) {
-        return ctx.badRequest("Attempt still active - papers remaining and time left");
+        return ctx.badRequest(
+          "Attempt still active - papers remaining and time left"
+        );
       }
 
       // 6. End attempt
-      await strapi.entityService.update(
-        "api::answer.answer",
-        marker.id,
-        {
-          data: {
-            completed: true,
-            phase: "completed",
-            end_reason: allPapersSubmitted ? "all_papers_submitted" : "time_expired",
-          },
-        }
-      );
+      await strapi.entityService.update("api::answer.answer", marker.id, {
+        data: {
+          completed: true,
+          phase: "completed",
+          end_reason: allPapersSubmitted
+            ? "all_papers_submitted"
+            : "time_expired",
+        },
+      });
 
       return {
         success: true,
-        end_reason: allPapersSubmitted ? "all_papers_submitted" : "time_expired",
+        end_reason: allPapersSubmitted
+          ? "all_papers_submitted"
+          : "time_expired",
       };
     },
     async incrementViolation(ctx) {
@@ -1242,18 +1224,14 @@ module.exports = createCoreController(
 
         // 3️⃣ If limit reached → auto submit
         if (newCount >= maxViolations) {
-          await strapi.entityService.update(
-            "api::answer.answer",
-            marker.id,
-            {
-              data: {
-                violation_count: newCount,
-                completed: true,
-                auto_submitted: true,
-                phase: "completed",
-              },
-            }
-          );
+          await strapi.entityService.update("api::answer.answer", marker.id, {
+            data: {
+              violation_count: newCount,
+              completed: true,
+              auto_submitted: true,
+              phase: "completed",
+            },
+          });
 
           return {
             data: {
@@ -1267,15 +1245,11 @@ module.exports = createCoreController(
         }
 
         // 4️⃣ Otherwise just increment
-        await strapi.entityService.update(
-          "api::answer.answer",
-          marker.id,
-          {
-            data: {
-              violation_count: newCount,
-            },
-          }
-        );
+        await strapi.entityService.update("api::answer.answer", marker.id, {
+          data: {
+            violation_count: newCount,
+          },
+        });
 
         return {
           data: {
@@ -1311,12 +1285,7 @@ module.exports = createCoreController(
             },
             sort: { attempt_id: "desc" },
             limit: 1,
-            fields: [
-              "id",
-              "completed",
-              "auto_submitted",
-              "resume_status",
-            ],
+            fields: ["id", "completed", "auto_submitted", "resume_status"],
           }
         );
 
@@ -1329,7 +1298,9 @@ module.exports = createCoreController(
         // 2️⃣ Validation Rules
 
         if (!marker.auto_submitted) {
-          return ctx.badRequest("Resume can only be requested for auto-submitted attempts");
+          return ctx.badRequest(
+            "Resume can only be requested for auto-submitted attempts"
+          );
         }
 
         if (!marker.completed) {
@@ -1341,17 +1312,13 @@ module.exports = createCoreController(
         }
 
         // 3️⃣ Update marker
-        await strapi.entityService.update(
-          "api::answer.answer",
-          marker.id,
-          {
-            data: {
-              resume_status: "requested",
-              resume_requested_at: new Date(),
-              resume_reason: reason || null,
-            },
-          }
-        );
+        await strapi.entityService.update("api::answer.answer", marker.id, {
+          data: {
+            resume_status: "requested",
+            resume_requested_at: new Date(),
+            resume_reason: reason || null,
+          },
+        });
 
         return {
           data: {
@@ -1406,7 +1373,7 @@ module.exports = createCoreController(
           return ctx.badRequest("No papers found for this test series");
         }
 
-        const paperIds = series.papers.map(p => p.id);
+        const paperIds = series.papers.map((p) => p.id);
 
         /**
          * 2️⃣ Fetch ALL answers for ALL papers (ALL students)
@@ -1452,7 +1419,7 @@ module.exports = createCoreController(
               (sum, q) => sum + (q.marks || 0),
               0
             ),
-            questions: paper.question_banks.map(q => ({
+            questions: paper.question_banks.map((q) => ({
               id: q.id,
               question: q.question,
               diagram: q.diagram,
@@ -1488,7 +1455,7 @@ module.exports = createCoreController(
               avatar: ans.student.avatar,
             },
             uploaded_answer_sheet: ans.uploaded_answer_sheet,
-            question_answers: ans.question_n_answer?.map(qna => ({
+            question_answers: ans.question_n_answer?.map((qna) => ({
               question_id: qna.question?.id,
               question: qna.question?.question,
               question_type: qna.question?.question_type,
@@ -1510,11 +1477,10 @@ module.exports = createCoreController(
             papers: Object.values(paperMap),
           },
         };
-
       } catch (error) {
         console.error("Error in getPaperSubmissions:", error);
         ctx.throw(500, error.message);
       }
-    }
+    },
   })
 );

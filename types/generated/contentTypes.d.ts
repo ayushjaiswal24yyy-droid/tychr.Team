@@ -5143,7 +5143,7 @@ export interface ApiThirdPartyOfferingThirdPartyOffering
     description: '';
   };
   options: {
-    draftAndPublish: false;
+    draftAndPublish: true;
   };
   attributes: {
     title: Attribute.String;
@@ -5175,6 +5175,7 @@ export interface ApiThirdPartyOfferingThirdPartyOffering
     >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
+    publishedAt: Attribute.DateTime;
     createdBy: Attribute.Relation<
       'api::third-party-offering.third-party-offering',
       'oneToOne',
