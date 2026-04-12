@@ -67,6 +67,12 @@
       "relation": "oneToMany",
       "target": "api::department.department",
       "mappedBy": "college"
+    },
+    "third_party_offerings": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::third-party-offering.third-party-offering",
+      "mappedBy": "college_tag"
     }
   }
 }

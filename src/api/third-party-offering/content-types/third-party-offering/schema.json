@@ -59,6 +59,12 @@
       "relation": "oneToMany",
       "target": "api::tp-applicant.tp-applicant",
       "mappedBy": "third_party_offering"
+    },
+    "college_tag": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::college.college",
+      "inversedBy": "third_party_offerings"
     }
   }
 }
