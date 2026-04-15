@@ -1,0 +1,56 @@
+{
+  "kind": "collectionType",
+  "collectionName": "admission_probabilities",
+  "info": {
+    "singularName": "admission-probability",
+    "pluralName": "admission-probabilities",
+    "displayName": "admission-probability",
+    "description": ""
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "student": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "plugin::users-permissions.user",
+      "inversedBy": "admission_probabilities"
+    },
+    "university": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::university.university",
+      "inversedBy": "admission_probabilities"
+    },
+    "program": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::program.program",
+      "inversedBy": "admission_probabilities"
+    },
+    "probability_score": {
+      "type": "integer"
+    },
+    "probability_category": {
+      "type": "enumeration",
+      "enum": ["Low"]
+    },
+    "assessment_data": {
+      "type": "json",
+      "required": true
+    },
+    "recommendations": {
+      "type": "json"
+    },
+    "generated_at": {
+      "type": "datetime",
+      "required": true
+    },
+    "is_visible_to_student": {
+      "type": "boolean",
+      "default": true
+    }
+  }
+}
