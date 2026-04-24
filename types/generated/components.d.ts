@@ -1387,6 +1387,43 @@ export interface CollegesColleges extends Schema.Component {
   };
 }
 
+export interface CollegeRequirement extends Schema.Component {
+  collectionName: 'components_college_requirements';
+  info: {
+    displayName: 'requirement';
+  };
+  attributes: {
+    requirement: Attribute.String;
+  };
+}
+
+export interface CollegePrograms extends Schema.Component {
+  collectionName: 'components_college_programs';
+  info: {
+    displayName: 'programs';
+    description: '';
+  };
+  attributes: {
+    program_name: Attribute.String;
+    program_type: Attribute.String;
+    department: Attribute.String;
+    duration: Attribute.String;
+    annual_fee: Attribute.String;
+    intake: Attribute.String;
+    program_overview: Attribute.Text;
+    career_prospects: Attribute.Text;
+    application_deadlines: Attribute.Component<
+      'university.application-cycle-deadline',
+      true
+    >;
+    requirement: Attribute.Component<'college.requirement', true>;
+    student_applications: Attribute.Component<
+      'university.student-application',
+      true
+    >;
+  };
+}
+
 export interface ClassroomResources extends Schema.Component {
   collectionName: 'components_classroom_resources';
   info: {
@@ -1442,43 +1479,6 @@ export interface ClaimsClaims extends Schema.Component {
     description: Attribute.Text;
     highlight: Attribute.Text;
     image: Attribute.Media<'images' | 'files' | 'videos' | 'audios', true>;
-  };
-}
-
-export interface CollegeRequirement extends Schema.Component {
-  collectionName: 'components_college_requirements';
-  info: {
-    displayName: 'requirement';
-  };
-  attributes: {
-    requirement: Attribute.String;
-  };
-}
-
-export interface CollegePrograms extends Schema.Component {
-  collectionName: 'components_college_programs';
-  info: {
-    displayName: 'programs';
-    description: '';
-  };
-  attributes: {
-    program_name: Attribute.String;
-    program_type: Attribute.String;
-    department: Attribute.String;
-    duration: Attribute.String;
-    annual_fee: Attribute.String;
-    intake: Attribute.String;
-    program_overview: Attribute.Text;
-    career_prospects: Attribute.Text;
-    application_deadlines: Attribute.Component<
-      'university.application-cycle-deadline',
-      true
-    >;
-    requirement: Attribute.Component<'college.requirement', true>;
-    student_applications: Attribute.Component<
-      'university.student-application',
-      true
-    >;
   };
 }
 
@@ -1615,23 +1615,14 @@ export interface ApCollegesApColleges extends Schema.Component {
   };
 }
 
-export interface AcademicRecordsAcademicRecords extends Schema.Component {
-  collectionName: 'components_academic_records_academic_records';
+export interface AchieversAchiever extends Schema.Component {
+  collectionName: 'components_achievers_achievers';
   info: {
-    displayName: 'academic_records';
-    description: '';
+    displayName: 'Achiever';
   };
   attributes: {
-    qualificationLevel: Attribute.String;
-    board: Attribute.String;
-    institution: Attribute.String;
-    yearOfCompletion: Attribute.Integer;
-    gradingType: Attribute.Enumeration<
-      ['percentage', 'gpa', 'grade', 'letter']
-    >;
-    maxScore: Attribute.Decimal;
-    score: Attribute.Decimal;
-    gradeLetter: Attribute.String;
+    src: Attribute.Media<'images' | 'files' | 'videos' | 'audios'>;
+    alt: Attribute.String;
   };
 }
 
@@ -1649,14 +1640,23 @@ export interface AcademicsAcadPerformance extends Schema.Component {
   };
 }
 
-export interface AchieversAchiever extends Schema.Component {
-  collectionName: 'components_achievers_achievers';
+export interface AcademicRecordsAcademicRecords extends Schema.Component {
+  collectionName: 'components_academic_records_academic_records';
   info: {
-    displayName: 'Achiever';
+    displayName: 'academic_records';
+    description: '';
   };
   attributes: {
-    src: Attribute.Media<'images' | 'files' | 'videos' | 'audios'>;
-    alt: Attribute.String;
+    qualificationLevel: Attribute.String;
+    board: Attribute.String;
+    institution: Attribute.String;
+    yearOfCompletion: Attribute.Integer;
+    gradingType: Attribute.Enumeration<
+      ['percentage', 'gpa', 'grade', 'letter']
+    >;
+    maxScore: Attribute.Decimal;
+    score: Attribute.Decimal;
+    gradeLetter: Attribute.String;
   };
 }
 
@@ -1758,12 +1758,12 @@ declare module '@strapi/types' {
       'curriculum.curriculum': CurriculumCurriculum;
       'cta-button.cta-buttons': CtaButtonCtaButtons;
       'colleges.colleges': CollegesColleges;
+      'college.requirement': CollegeRequirement;
+      'college.programs': CollegePrograms;
       'classroom.resources': ClassroomResources;
       'classroom.notices': ClassroomNotices;
       'classroom.days': ClassroomDays;
       'claims.claims': ClaimsClaims;
-      'college.requirement': CollegeRequirement;
-      'college.programs': CollegePrograms;
       'certified-tutors.certified-tutors': CertifiedTutorsCertifiedTutors;
       'blog-section.blog': BlogSectionBlog;
       'best-tutors-data.best-tutors-data': BestTutorsDataBestTutorsData;
@@ -1773,9 +1773,9 @@ declare module '@strapi/types' {
       'ap-future.ap-future': ApFutureApFuture;
       'ap-entail.ap-entail': ApEntailApEntail;
       'ap-colleges.ap-colleges': ApCollegesApColleges;
-      'academic-records.academic-records': AcademicRecordsAcademicRecords;
-      'academics.acad-performance': AcademicsAcadPerformance;
       'achievers.achiever': AchieversAchiever;
+      'academics.acad-performance': AcademicsAcadPerformance;
+      'academic-records.academic-records': AcademicRecordsAcademicRecords;
     }
   }
 }

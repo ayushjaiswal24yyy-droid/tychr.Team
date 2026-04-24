@@ -1,43 +1,70 @@
 'use strict';
 
 const { createCoreController } = require('@strapi/strapi').factories;
-const { getRecommendations } = require('../services/recommendation');
 
 module.exports = createCoreController(
   'api::third-party-offering.third-party-offering',
   ({ strapi }) => ({
-    async recommend(ctx) {
+    async find(ctx) {
       try {
-        const userId = ctx.state?.user?.id || 1; // Fallback to user ID 1 for testing
-
-        const results = await getRecommendations(userId);
-
-        if (Array.isArray(results) && results.length > 0) {
-          return ctx.send({ data: results });
-        }
-
-        // Fallback if recommendation yields nothing
-        const fallbackOfferings = await strapi.entityService.findMany(
+        const offerings = await strapi.entityService.findMany(
           'api::third-party-offering.third-party-offering',
           {
             publicationState: 'live',
-            limit: 10
+            sort: { createdAt: 'desc' },
+            populate: '*',
           }
         );
-        return ctx.send({ data: Array.isArray(fallbackOfferings) ? fallbackOfferings : [] });
 
+        const safeOfferings = Array.isArray(offerings) ? offerings : [];
+        const validatedOfferings = safeOfferings.map((offering) => ({
+          ...offering,
+          title: offering?.title ?? null,
+          description: offering?.description ?? null,
+          category: offering?.category ?? null,
+          skill_tags: offering?.skill_tags ?? null,
+          activity_type: offering?.activity_type ?? null,
+        }));
+        console.log('THIRD PARTY OFFERINGS FIND COUNT:', safeOfferings.length);
+
+        return ctx.send({ data: validatedOfferings });
       } catch (err) {
-        console.error('RECOMMEND CONTROLLER ERROR:', err);
-        try {
-          const fallbackOfferings = await strapi.entityService.findMany(
-            'api::third-party-offering.third-party-offering',
-            { limit: 10 }
-          );
-          return ctx.send({ data: Array.isArray(fallbackOfferings) ? fallbackOfferings : [] });
-        } catch (fallbackErr) {
-          return ctx.send({ data: [] });
-        }
+        console.error('THIRD PARTY OFFERINGS FIND ERROR:', err);
+        return ctx.send({ data: [] });
+      }
+    },
+
+
+    async findOne(ctx) {
+      try {
+        const { id } = ctx.params;
+        const offering = await strapi.db
+          .query('api::third-party-offering.third-party-offering')
+          .findOne({
+            where: {
+              id,
+              publishedAt: {
+                $notNull: true,
+              },
+            },
+            populate: true,
+          });
+
+        return ctx.send({ data: offering || null });
+      } catch (err) {
+        strapi.log.error('THIRD PARTY OFFERINGS FIND ONE ERROR:', err);
+        return ctx.send({ data: null });
+      }
+    },
+
+    async recommend(ctx) {
+      try {
+        return ctx.send({ data: [] });
+      } catch (err) {
+        console.error('THIRD PARTY OFFERINGS RECOMMEND ERROR:', err);
+        return ctx.send({ data: [] });
       }
     }
   })
 );
+
