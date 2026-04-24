@@ -65,6 +65,70 @@
       "relation": "manyToOne",
       "target": "api::college.college",
       "inversedBy": "third_party_offerings"
+    },
+    "activity_type": {
+      "type": "enumeration",
+      "enum": [
+        "internship",
+        "research",
+        "bootcamp",
+        "competition",
+        "volunteer",
+        "workshop",
+        "fellowship",
+        "other"
+      ],
+      "required": true,
+      "default": "other"
+    },
+    "category": {
+      "type": "enumeration",
+      "enum": [
+        "stem",
+        "arts",
+        "business",
+        "social-science",
+        "medicine",
+        "law",
+        "engineering",
+        "education",
+        "environment",
+        "other"
+      ],
+      "required": true,
+      "default": "other"
+    },
+    "region": {
+      "type": "enumeration",
+      "enum": [
+        "north-america",
+        "south-america",
+        "europe",
+        "south-asia",
+        "east-asia",
+        "southeast-asia",
+        "middle-east",
+        "africa",
+        "oceania",
+        "global-remote"
+      ],
+      "required": true,
+      "default": "global-remote"
+    },
+    "is_remote": {
+      "type": "boolean",
+      "default": false
+    },
+    "tasks": {
+      "type": "component",
+      "repeatable": true,
+      "component": "offering.task"
+    },
+    "target_professions": {
+      "type": "json"
+    },
+    "skill_tags": {
+      "type": "json"
     }
   }
 }

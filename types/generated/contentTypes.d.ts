@@ -1258,6 +1258,58 @@ export interface ApiAddOnOrderAddOnOrder extends Schema.CollectionType {
   };
 }
 
+export interface ApiAdmissionProbabilityAdmissionProbability
+  extends Schema.CollectionType {
+  collectionName: 'admission_probabilities';
+  info: {
+    singularName: 'admission-probability';
+    pluralName: 'admission-probabilities';
+    displayName: 'admission-probability';
+    description: '';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    student: Attribute.Relation<
+      'api::admission-probability.admission-probability',
+      'manyToOne',
+      'plugin::users-permissions.user'
+    >;
+    university: Attribute.Relation<
+      'api::admission-probability.admission-probability',
+      'manyToOne',
+      'api::university.university'
+    >;
+    program: Attribute.Relation<
+      'api::admission-probability.admission-probability',
+      'manyToOne',
+      'api::program.program'
+    >;
+    probability_score: Attribute.Integer;
+    probability_category: Attribute.Enumeration<['Low']>;
+    assessment_data: Attribute.JSON & Attribute.Required;
+    recommendations: Attribute.JSON;
+    generated_at: Attribute.DateTime & Attribute.Required;
+    is_visible_to_student: Attribute.Boolean & Attribute.DefaultTo<true>;
+    createdAt: Attribute.DateTime;
+    updatedAt: Attribute.DateTime;
+    publishedAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<
+      'api::admission-probability.admission-probability',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+    updatedBy: Attribute.Relation<
+      'api::admission-probability.admission-probability',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+  };
+}
+
 export interface ApiAnswerAnswer extends Schema.CollectionType {
   collectionName: 'answers';
   info: {
@@ -4537,6 +4589,49 @@ export interface ApiStudentNotificationStudentNotification
   };
 }
 
+export interface ApiStudentProfileStudentProfile extends Schema.CollectionType {
+  collectionName: 'student_profiles';
+  info: {
+    singularName: 'student-profile';
+    pluralName: 'student-profiles';
+    displayName: 'Student Profile';
+    description: "Stores a student's career goals and preferences used by the recommendation engine";
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    user: Attribute.Relation<
+      'api::student-profile.student-profile',
+      'oneToOne',
+      'plugin::users-permissions.user'
+    >;
+    dream_profession: Attribute.String & Attribute.Required;
+    career_keywords: Attribute.JSON;
+    interested_categories: Attribute.JSON;
+    preferred_regions: Attribute.JSON;
+    weekly_reports: Attribute.Relation<
+      'api::student-profile.student-profile',
+      'oneToMany',
+      'api::weekly-report.weekly-report'
+    >;
+    createdAt: Attribute.DateTime;
+    updatedAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<
+      'api::student-profile.student-profile',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+    updatedBy: Attribute.Relation<
+      'api::student-profile.student-profile',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+  };
+}
+
 export interface ApiStudentUniApplicationStudentUniApplication
   extends Schema.CollectionType {
   collectionName: 'student_uni_applications';
@@ -5173,6 +5268,56 @@ export interface ApiThirdPartyOfferingThirdPartyOffering
       'manyToOne',
       'api::college.college'
     >;
+    activity_type: Attribute.Enumeration<
+      [
+        'internship',
+        'research',
+        'bootcamp',
+        'competition',
+        'volunteer',
+        'workshop',
+        'fellowship',
+        'other'
+      ]
+    > &
+      Attribute.Required &
+      Attribute.DefaultTo<'other'>;
+    category: Attribute.Enumeration<
+      [
+        'stem',
+        'arts',
+        'business',
+        'social-science',
+        'medicine',
+        'law',
+        'engineering',
+        'education',
+        'environment',
+        'other'
+      ]
+    > &
+      Attribute.Required &
+      Attribute.DefaultTo<'other'>;
+    region: Attribute.Enumeration<
+      [
+        'north-america',
+        'south-america',
+        'europe',
+        'south-asia',
+        'east-asia',
+        'southeast-asia',
+        'middle-east',
+        'africa',
+        'oceania',
+        'global-remote'
+      ]
+    > &
+      Attribute.Required &
+      Attribute.DefaultTo<'global-remote'>;
+    is_remote: Attribute.Boolean & Attribute.DefaultTo<false>;
+    tasks: Attribute.Component<'offering.task', true>;
+    target_professions: Attribute.JSON;
+    skill_tags: Attribute.JSON;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
@@ -5889,6 +6034,60 @@ export interface ApiWebinarWebinar extends Schema.CollectionType {
   };
 }
 
+export interface ApiWeeklyReportWeeklyReport extends Schema.CollectionType {
+  collectionName: 'weekly_reports';
+  info: {
+    singularName: 'weekly-report';
+    pluralName: 'weekly-reports';
+    displayName: 'Weekly Report';
+    description: 'Student weekly progress reports used to refine offering recommendations';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    student_profile: Attribute.Relation<
+      'api::weekly-report.weekly-report',
+      'manyToOne',
+      'api::student-profile.student-profile'
+    >;
+    week_number: Attribute.Integer &
+      Attribute.Required &
+      Attribute.SetMinMax<
+        {
+          min: 1;
+        },
+        number
+      >;
+    summary: Attribute.Text & Attribute.Required;
+    skills_practiced: Attribute.JSON;
+    challenges: Attribute.Text;
+    interests_discovered: Attribute.JSON;
+    rating: Attribute.Integer &
+      Attribute.SetMinMax<
+        {
+          min: 1;
+          max: 5;
+        },
+        number
+      >;
+    createdAt: Attribute.DateTime;
+    updatedAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<
+      'api::weekly-report.weekly-report',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+    updatedBy: Attribute.Relation<
+      'api::weekly-report.weekly-report',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+  };
+}
+
 export interface ApiWhatsNewWhatsNew extends Schema.CollectionType {
   collectionName: 'whats_news';
   info: {
@@ -5943,6 +6142,7 @@ declare module '@strapi/types' {
       'api::add-on.add-on': ApiAddOnAddOn;
       'api::add-on-content.add-on-content': ApiAddOnContentAddOnContent;
       'api::add-on-order.add-on-order': ApiAddOnOrderAddOnOrder;
+      'api::admission-probability.admission-probability': ApiAdmissionProbabilityAdmissionProbability;
       'api::answer.answer': ApiAnswerAnswer;
       'api::ap-city.ap-city': ApiApCityApCity;
       'api::ap-subject.ap-subject': ApiApSubjectApSubject;
@@ -6003,6 +6203,7 @@ declare module '@strapi/types' {
       'api::sat-subject.sat-subject': ApiSatSubjectSatSubject;
       'api::student-meeting.student-meeting': ApiStudentMeetingStudentMeeting;
       'api::student-notification.student-notification': ApiStudentNotificationStudentNotification;
+      'api::student-profile.student-profile': ApiStudentProfileStudentProfile;
       'api::student-uni-application.student-uni-application': ApiStudentUniApplicationStudentUniApplication;
       'api::subject.subject': ApiSubjectSubject;
       'api::subject-group.subject-group': ApiSubjectGroupSubjectGroup;
@@ -6028,6 +6229,7 @@ declare module '@strapi/types' {
       'api::user-plan.user-plan': ApiUserPlanUserPlan;
       'api::user-unlocked-subject.user-unlocked-subject': ApiUserUnlockedSubjectUserUnlockedSubject;
       'api::webinar.webinar': ApiWebinarWebinar;
+      'api::weekly-report.weekly-report': ApiWeeklyReportWeeklyReport;
       'api::whats-new.whats-new': ApiWhatsNewWhatsNew;
     }
   }

@@ -1,0 +1,45 @@
+{
+  "kind": "collectionType",
+  "collectionName": "weekly_reports",
+  "info": {
+    "singularName": "weekly-report",
+    "pluralName": "weekly-reports",
+    "displayName": "Weekly Report",
+    "description": "Student weekly progress reports used to refine offering recommendations"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "student_profile": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::student-profile.student-profile",
+      "inversedBy": "weekly_reports"
+    },
+    "week_number": {
+      "type": "integer",
+      "required": true,
+      "min": 1
+    },
+    "summary": {
+      "type": "text",
+      "required": true
+    },
+    "skills_practiced": {
+      "type": "json"
+    },
+    "challenges": {
+      "type": "text"
+    },
+    "interests_discovered": {
+      "type": "json"
+    },
+    "rating": {
+      "type": "integer",
+      "min": 1,
+      "max": 5
+    }
+  }
+}
