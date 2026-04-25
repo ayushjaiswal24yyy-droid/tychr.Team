@@ -1323,20 +1323,6 @@ export interface EntranceExamsEntranceExams extends Schema.Component {
   };
 }
 
-export interface DocumentFeedbackDocumentFeedback extends Schema.Component {
-  collectionName: 'components_review_document_feedbacks';
-  info: {
-    displayName: 'document-feedback';
-  };
-  attributes: {
-    document_type: Attribute.Enumeration<
-      ['resume', 'statement_of_purpose', 'essay', 'lor']
-    >;
-    document_label: Attribute.String;
-    feedback: Attribute.Text;
-  };
-}
-
 export interface CyclesCycle extends Schema.Component {
   collectionName: 'components_cycles_cycles';
   info: {
@@ -1360,6 +1346,20 @@ export interface CurriculumCurriculum extends Schema.Component {
     part: Attribute.String;
     title: Attribute.String;
     notes: Attribute.String;
+  };
+}
+
+export interface DocumentFeedbackDocumentFeedback extends Schema.Component {
+  collectionName: 'components_review_document_feedbacks';
+  info: {
+    displayName: 'document-feedback';
+  };
+  attributes: {
+    document_type: Attribute.Enumeration<
+      ['resume', 'statement_of_purpose', 'essay', 'lor']
+    >;
+    document_label: Attribute.String;
+    feedback: Attribute.Text;
   };
 }
 
@@ -1753,9 +1753,9 @@ declare module '@strapi/types' {
       'essays.essay-title-options': EssaysEssayTitleOptions;
       'essays.essay-submission': EssaysEssaySubmission;
       'entrance-exams.entrance-exams': EntranceExamsEntranceExams;
-      'document-feedback.document-feedback': DocumentFeedbackDocumentFeedback;
       'cycles.cycle': CyclesCycle;
       'curriculum.curriculum': CurriculumCurriculum;
+      'document-feedback.document-feedback': DocumentFeedbackDocumentFeedback;
       'cta-button.cta-buttons': CtaButtonCtaButtons;
       'colleges.colleges': CollegesColleges;
       'college.requirement': CollegeRequirement;
