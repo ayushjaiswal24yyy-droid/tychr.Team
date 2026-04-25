@@ -5,7 +5,7 @@ module.exports = {
     {
       method: 'GET',
       path: '/recommended-offerings',
-      handler: 'recommended-offering.findRecommendations',
+      handler: 'recommended-offering.find',
       config: {
         auth: false,
       },

@@ -23,7 +23,7 @@ function toNormalizedStringArray(value) {
 }
 
 module.exports = {
-  async findRecommendations(ctx) {
+  async find(ctx) {
     try {
       // STEP 1: Get logged-in user
       const user = ctx.state?.user;
