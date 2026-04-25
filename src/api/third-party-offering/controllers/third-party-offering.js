@@ -120,7 +120,7 @@ module.exports = createCoreController(
     // STEP 1: user
     const user = ctx.state?.user;
     if (!user?.id) {
-      return { data: [] };
+      return ctx.send({ data: [] });
     }
 
     // STEP 2: get full user with role
@@ -131,7 +131,7 @@ module.exports = createCoreController(
     );
 
     if (!fullUser?.role?.name?.toLowerCase().includes('student')) {
-      return { data: [] };
+      return ctx.send({ data: [] });
     }
 
     // STEP 3: fetch student profile properly
@@ -145,7 +145,7 @@ module.exports = createCoreController(
 
     const studentProfile = profiles?.[0];
     if (!studentProfile) {
-      return { data: [] };
+      return ctx.send({ data: [] });
     }
 
     // STEP 4: extract data
@@ -190,11 +190,11 @@ module.exports = createCoreController(
       .slice(0, 6)
       .map(x => x.o);
 
-    return { data: result };
+    return ctx.send({ data: result });
 
   } catch (err) {
     console.error("RECOMMEND ERROR:", err);
-    return { data: [] };
+    return ctx.send({ data: [] });
   }
 }
   })
