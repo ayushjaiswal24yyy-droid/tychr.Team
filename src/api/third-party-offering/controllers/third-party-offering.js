@@ -116,90 +116,87 @@ module.exports = createCoreController(
     },
 
     async recommend(ctx) {
-      try {
-        const user = ctx.state?.user;
-        if (!user?.id) {
-          return ctx.send({ data: [] });
-        }
-
-        const profiles = await strapi.entityService.findMany(
-          'api::student-profile.student-profile',
-          {
-            filters: { user: user.id },
-            populate: { weekly_reports: true },
-            limit: 1,
-          }
-        );
-
-        const profile = Array.isArray(profiles) && profiles.length > 0 ? profiles[0] : null;
-        if (!profile) {
-          return ctx.send({ data: [] });
-        }
-
-        const dreamProfessions = uniqueNormalized([
-          profile?.dream_profession,
-          user?.dream_profession,
-          user?.dream_profession_secondary,
-        ]);
-
-        const weeklyReports = Array.isArray(profile?.weekly_reports) ? profile.weekly_reports : [];
-        const weeklySkills = weeklyReports.flatMap((report) =>
-          uniqueNormalized(report?.skills_practiced)
-        );
-        const weeklyInterests = weeklyReports.flatMap((report) =>
-          uniqueNormalized(report?.interests_discovered)
-        );
-        const weeklyActivities = weeklyReports.flatMap((report) =>
-          uniqueNormalized([report?.activity_type, report?.activity, report?.activities])
-        );
-
-        const weeklySignals = [...new Set([...weeklySkills, ...weeklyInterests, ...weeklyActivities])];
-
-        const offerings = await strapi.entityService.findMany(
-          'api::third-party-offering.third-party-offering',
-          {
-            publicationState: 'live',
-            populate: '*',
-          }
-        );
-
-        const safeOfferings = Array.isArray(offerings) ? offerings : [];
-
-        const scoredOfferings = safeOfferings
-          .map((offering) => {
-            const targetProfessions = uniqueNormalized(offering?.target_professions);
-            const skillTags = uniqueNormalized(offering?.skill_tags);
-
-            const professionMatch = hasProfessionMatch(targetProfessions, dreamProfessions);
-            const skillMatchCount = countSkillMatches(skillTags, weeklySignals);
-            const score = (professionMatch ? 2 : 0) + skillMatchCount;
-
-            return { offering, score };
-          })
-          .filter((item) => item.score > 0)
-          .sort((a, b) => b.score - a.score)
-          .map((item) => item.offering);
-
-        if (scoredOfferings.length > 0) {
-          return ctx.send({ data: scoredOfferings });
-        }
-
-        const fallbackOfferings = await strapi.entityService.findMany(
-          'api::third-party-offering.third-party-offering',
-          {
-            publicationState: 'live',
-            sort: { createdAt: 'desc' },
-            populate: '*',
-            limit: 10,
-          }
-        );
-
-        return ctx.send({ data: Array.isArray(fallbackOfferings) ? fallbackOfferings : [] });
-      } catch (err) {
-        console.error('THIRD PARTY OFFERINGS RECOMMEND ERROR:', err);
-        return ctx.send({ data: [] });
-      }
+  try {
+    // STEP 1: user
+    const user = ctx.state?.user;
+    if (!user?.id) {
+      return { data: [] };
     }
+
+    // STEP 2: get full user with role
+    const fullUser = await strapi.entityService.findOne(
+      'plugin::users-permissions.user',
+      user.id,
+      { populate: ['role'] }
+    );
+
+    if (!fullUser?.role?.name?.toLowerCase().includes('student')) {
+      return { data: [] };
+    }
+
+    // STEP 3: fetch student profile properly
+    const profiles = await strapi.entityService.findMany(
+      'api::student-profile.student-profile',
+      {
+        filters: { user: user.id },
+        populate: ['weekly_reports']
+      }
+    );
+
+    const studentProfile = profiles?.[0];
+    if (!studentProfile) {
+      return { data: [] };
+    }
+
+    // STEP 4: extract data
+    const dream = (studentProfile?.dream_profession || '').toLowerCase();
+
+    const weeklySkills = (studentProfile?.weekly_reports || [])
+      .flatMap(r => r?.skills_practiced || [])
+      .map(s => String(s).toLowerCase());
+
+    // STEP 5: fetch offerings
+    const offerings = await strapi.entityService.findMany(
+      'api::third-party-offering.third-party-offering',
+      {
+        filters: { publishedAt: { $notNull: true } }
+      }
+    );
+
+    // STEP 6: scoring
+    const scored = offerings.map(o => {
+      let score = 0;
+
+      const professions = (o.target_professions || []).map(p => p.toLowerCase());
+      const skills = (o.skill_tags || []).map(s => s.toLowerCase());
+
+      if (dream && professions.includes(dream)) {
+        score += 3;
+      }
+
+      weeklySkills.forEach(skill => {
+        if (skills.includes(skill)) {
+          score += 1;
+        }
+      });
+
+      return { o, score };
+    });
+
+    // STEP 7: filter + sort
+    const result = scored
+      .filter(x => x.score > 0)
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 6)
+      .map(x => x.o);
+
+    return { data: result };
+
+  } catch (err) {
+    console.error("RECOMMEND ERROR:", err);
+    return { data: [] };
+  }
+}
   })
 );
 
