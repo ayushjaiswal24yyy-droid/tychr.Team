@@ -4235,36 +4235,6 @@ export interface ApiQuestionBankQuestionBank extends Schema.CollectionType {
   };
 }
 
-export interface ApiRecommendedOfferingRecommendedOffering
-  extends Schema.CollectionType {
-  collectionName: 'recommended_offerings';
-  info: {
-    singularName: 'recommended-offering';
-    pluralName: 'recommended-offerings';
-    displayName: 'Recommended Offering';
-    description: 'Recommended third-party offerings for students based on their profile and progress';
-  };
-  options: {
-    draftAndPublish: false;
-  };
-  attributes: {
-    createdAt: Attribute.DateTime;
-    updatedAt: Attribute.DateTime;
-    createdBy: Attribute.Relation<
-      'api::recommended-offering.recommended-offering',
-      'oneToOne',
-      'admin::user'
-    > &
-      Attribute.Private;
-    updatedBy: Attribute.Relation<
-      'api::recommended-offering.recommended-offering',
-      'oneToOne',
-      'admin::user'
-    > &
-      Attribute.Private;
-  };
-}
-
 export interface ApiRecordedLectureRecordedLecture
   extends Schema.CollectionType {
   collectionName: 'recorded_lectures';
@@ -6237,7 +6207,6 @@ declare module '@strapi/types' {
       'api::program-type.program-type': ApiProgramTypeProgramType;
       'api::progress.progress': ApiProgressProgress;
       'api::question-bank.question-bank': ApiQuestionBankQuestionBank;
-      'api::recommended-offering.recommended-offering': ApiRecommendedOfferingRecommendedOffering;
       'api::recorded-lecture.recorded-lecture': ApiRecordedLectureRecordedLecture;
       'api::resource.resource': ApiResourceResource;
       'api::sat-city.sat-city': ApiSatCitySatCity;
