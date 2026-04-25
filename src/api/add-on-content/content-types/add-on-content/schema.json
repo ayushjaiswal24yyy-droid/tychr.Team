@@ -55,6 +55,12 @@
       "relation": "oneToOne",
       "target": "api::add-on-order.add-on-order",
       "mappedBy": "add_on_content"
+    },
+    "target_professions": {
+      "type": "json"
+    },
+    "skill_tags": {
+      "type": "json"
     }
   }
 }

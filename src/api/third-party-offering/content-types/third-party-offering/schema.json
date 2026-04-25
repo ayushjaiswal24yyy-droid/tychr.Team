@@ -21,6 +21,18 @@
     "eligibility": {
       "type": "text"
     },
+    "degree": {
+      "type": "text"
+    },
+    "field_of_study": {
+      "type": "text"
+    },
+    "year": {
+      "type": "text"
+    },
+    "skills_required": {
+      "type": "json"
+    },
     "startDate": {
       "type": "date"
     },
@@ -34,6 +46,16 @@
       "type": "decimal"
     },
     "compensation": {
+      "type": "text"
+    },
+    "is_paid": {
+      "type": "boolean",
+      "default": false
+    },
+    "stipend": {
+      "type": "text"
+    },
+    "currency": {
       "type": "text"
     },
     "Location": {

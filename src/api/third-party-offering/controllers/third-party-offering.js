@@ -15,17 +15,12 @@ function toStringArray(value) {
   if (typeof value === 'string') {
     const trimmed = value.trim();
     if (!trimmed) return [];
-
-    try {
-      const parsed = JSON.parse(trimmed);
-      if (Array.isArray(parsed)) {
-        return parsed.map((item) => String(item).trim()).filter(Boolean);
-      }
-    } catch (err) {
-      return [trimmed];
-    }
-
-    return [trimmed];
+    return trimmed.includes(',')
+      ? trimmed
+          .split(',')
+          .map((item) => String(item).trim())
+          .filter(Boolean)
+      : [trimmed];
   }
 
   return [];
@@ -82,7 +77,10 @@ module.exports = createCoreController(
           title: offering?.title ?? null,
           description: offering?.description ?? null,
           category: offering?.category ?? null,
-          skill_tags: offering?.skill_tags ?? null,
+          region: offering?.region ?? null,
+          tasks: offering?.tasks ?? [],
+          target_professions: offering?.target_professions ?? [],
+          skill_tags: offering?.skill_tags ?? [],
           activity_type: offering?.activity_type ?? null,
         }));
         console.log('THIRD PARTY OFFERINGS FIND COUNT:', safeOfferings.length);

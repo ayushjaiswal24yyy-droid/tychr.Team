@@ -1102,6 +1102,7 @@ export interface PluginUsersPermissionsUser extends Schema.CollectionType {
     >;
     selections: Attribute.Component<'selections.selections', true>;
     college_board_exams: Attribute.JSON;
+    type: Attribute.String;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     createdBy: Attribute.Relation<
@@ -1189,6 +1190,8 @@ export interface ApiAddOnContentAddOnContent extends Schema.CollectionType {
       'oneToOne',
       'api::add-on-order.add-on-order'
     >;
+    target_professions: Attribute.JSON;
+    skill_tags: Attribute.JSON;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     createdBy: Attribute.Relation<
@@ -4232,6 +4235,36 @@ export interface ApiQuestionBankQuestionBank extends Schema.CollectionType {
   };
 }
 
+export interface ApiRecommendedOfferingRecommendedOffering
+  extends Schema.CollectionType {
+  collectionName: 'recommended_offerings';
+  info: {
+    singularName: 'recommended-offering';
+    pluralName: 'recommended-offerings';
+    displayName: 'Recommended Offering';
+    description: 'Recommended third-party offerings for students based on their profile and progress';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    createdAt: Attribute.DateTime;
+    updatedAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<
+      'api::recommended-offering.recommended-offering',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+    updatedBy: Attribute.Relation<
+      'api::recommended-offering.recommended-offering',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+  };
+}
+
 export interface ApiRecordedLectureRecordedLecture
   extends Schema.CollectionType {
   collectionName: 'recorded_lectures';
@@ -5244,11 +5277,18 @@ export interface ApiThirdPartyOfferingThirdPartyOffering
     title: Attribute.String;
     description: Attribute.Text;
     eligibility: Attribute.Text;
+    degree: Attribute.Text;
+    field_of_study: Attribute.Text;
+    year: Attribute.Text;
+    skills_required: Attribute.JSON;
     startDate: Attribute.Date;
     endDate: Attribute.Date;
     weekly_time_commitment: Attribute.Decimal;
     total_duration: Attribute.Decimal;
     compensation: Attribute.Text;
+    is_paid: Attribute.Boolean & Attribute.DefaultTo<false>;
+    stipend: Attribute.Text;
+    currency: Attribute.Text;
     Location: Attribute.String;
     selection_process: Attribute.Text;
     benefits: Attribute.JSON;
@@ -6197,6 +6237,7 @@ declare module '@strapi/types' {
       'api::program-type.program-type': ApiProgramTypeProgramType;
       'api::progress.progress': ApiProgressProgress;
       'api::question-bank.question-bank': ApiQuestionBankQuestionBank;
+      'api::recommended-offering.recommended-offering': ApiRecommendedOfferingRecommendedOffering;
       'api::recorded-lecture.recorded-lecture': ApiRecordedLectureRecordedLecture;
       'api::resource.resource': ApiResourceResource;
       'api::sat-city.sat-city': ApiSatCitySatCity;
