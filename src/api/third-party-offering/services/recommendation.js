@@ -80,12 +80,11 @@ function toStringArray(val) {
   if (!val) return [];
   if (Array.isArray(val)) return val.map(String);
   if (typeof val === 'string') {
-    try {
-      const parsed = JSON.parse(val);
-      return Array.isArray(parsed) ? parsed.map(String) : [];
-    } catch {
-      return [];
-    }
+    return val
+      .split(',')
+      .map((entry) => entry.trim())
+      .filter(Boolean)
+      .map(String);
   }
   return [];
 }

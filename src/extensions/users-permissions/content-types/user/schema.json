@@ -621,6 +621,9 @@
     },
     "college_board_exams": {
       "type": "json"
+    },
+    "type": {
+      "type": "string"
     }
   }
 }
