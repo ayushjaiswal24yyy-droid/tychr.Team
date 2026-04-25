@@ -1,0 +1,24 @@
+{
+  "collectionName": "components_offering_tasks",
+  "info": {
+    "displayName": "Task",
+    "description": "A single milestone or deliverable within an offering"
+  },
+  "attributes": {
+    "title": {
+      "type": "string",
+      "required": true
+    },
+    "description": {
+      "type": "text"
+    },
+    "due_week": {
+      "type": "integer",
+      "min": 1
+    },
+    "is_milestone": {
+      "type": "boolean",
+      "default": false
+    }
+  }
+}

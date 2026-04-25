@@ -15,20 +15,17 @@
     "student": {
       "type": "relation",
       "relation": "manyToOne",
-      "target": "plugin::users-permissions.user",
-      "inversedBy": "admission_probabilities"
+      "target": "plugin::users-permissions.user"
     },
     "university": {
       "type": "relation",
       "relation": "manyToOne",
-      "target": "api::university.university",
-      "inversedBy": "admission_probabilities"
+      "target": "api::university.university"
     },
     "program": {
       "type": "relation",
       "relation": "manyToOne",
-      "target": "api::program.program",
-      "inversedBy": "admission_probabilities"
+      "target": "api::program.program"
     },
     "probability_score": {
       "type": "integer"

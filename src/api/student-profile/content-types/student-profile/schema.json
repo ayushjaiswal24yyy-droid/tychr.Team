@@ -1,0 +1,40 @@
+{
+  "kind": "collectionType",
+  "collectionName": "student_profiles",
+  "info": {
+    "singularName": "student-profile",
+    "pluralName": "student-profiles",
+    "displayName": "Student Profile",
+    "description": "Stores a student's career goals and preferences used by the recommendation engine"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "user": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "plugin::users-permissions.user"
+    },
+    "dream_profession": {
+      "type": "string",
+      "required": true
+    },
+    "career_keywords": {
+      "type": "json"
+    },
+    "interested_categories": {
+      "type": "json"
+    },
+    "preferred_regions": {
+      "type": "json"
+    },
+    "weekly_reports": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::weekly-report.weekly-report",
+      "mappedBy": "student_profile"
+    }
+  }
+}
