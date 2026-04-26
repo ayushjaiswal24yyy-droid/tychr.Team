@@ -32,5 +32,13 @@ module.exports = {
         auth: {},
       },
     },
+    {
+      method: 'GET',
+      path: '/educators/third-party',
+      handler: 'third-party-offering.getAllOfferings',
+      config: {
+        auth: false,
+      },
+    },
   ],
 };
