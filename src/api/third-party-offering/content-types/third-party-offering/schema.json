@@ -123,19 +123,9 @@
     "region": {
       "type": "enumeration",
       "enum": [
-        "north-america",
-        "south-america",
-        "europe",
-        "south-asia",
-        "east-asia",
-        "southeast-asia",
-        "middle-east",
-        "africa",
-        "oceania",
-        "global-remote"
+        "Delhi", "Mumbai", "Bangalore", "Hyderabad", "Chennai", "Kolkata", "Pune", "Ahmedabad", "Jaipur", "Surat", "Lucknow", "Kanpur", "Nagpur", "Indore", "Bhopal", "Patna", "Ranchi", "Chandigarh", "Kochi", "Thiruvananthapuram", "Coimbatore", "Visakhapatnam", "Vijayawada", "Mysore", "Nashik", "Vadodara", "Rajkot", "Agra", "Varanasi", "Amritsar", "Ludhiana", "Jodhpur", "Udaipur", "Dehradun", "Noida", "Gurgaon", "Faridabad", "Ghaziabad", "Meerut", "Raipur", "Bhubaneswar", "Guwahati", "Shillong", "Imphal", "Aizawl", "Itanagar", "Gangtok", "Panaji", "Shimla", "Jammu"
       ],
-      "required": true,
-      "default": "global-remote"
+      "required": true
     },
     "is_remote": {
       "type": "boolean",

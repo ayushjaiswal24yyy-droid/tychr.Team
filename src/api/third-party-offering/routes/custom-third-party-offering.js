@@ -5,7 +5,23 @@ module.exports = {
       path: '/third-party-offerings/recommend',
       handler: 'third-party-offering.recommend',
       config: {
-        auth: {},
+        auth: false,
+      },
+    },
+    {
+      method: 'GET',
+      path: '/third-party-offerings/filters/categories',
+      handler: 'third-party-offering.getCategories',
+      config: {
+        auth: false,
+      },
+    },
+    {
+      method: 'GET',
+      path: '/third-party-offerings/filters/regions',
+      handler: 'third-party-offering.getRegions',
+      config: {
+        auth: false,
       },
     },
     {
