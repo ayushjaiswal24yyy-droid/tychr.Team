@@ -69,9 +69,7 @@ const VALID_CATEGORIES = [
 ];
 
 const VALID_REGIONS = [
-  'north-america', 'south-america', 'europe', 'south-asia',
-  'east-asia', 'southeast-asia', 'middle-east', 'africa',
-  'oceania', 'global-remote'
+  "Delhi", "Mumbai", "Bangalore", "Hyderabad", "Chennai", "Kolkata", "Pune", "Ahmedabad", "Jaipur", "Surat", "Lucknow", "Kanpur", "Nagpur", "Indore", "Bhopal", "Patna", "Ranchi", "Chandigarh", "Kochi", "Thiruvananthapuram", "Coimbatore", "Visakhapatnam", "Vijayawada", "Mysore", "Nashik", "Vadodara", "Rajkot", "Agra", "Varanasi", "Amritsar", "Ludhiana", "Jodhpur", "Udaipur", "Dehradun", "Noida", "Gurgaon", "Faridabad", "Ghaziabad", "Meerut", "Raipur", "Bhubaneswar", "Guwahati", "Shillong", "Imphal", "Aizawl", "Itanagar", "Gangtok", "Panaji", "Shimla", "Jammu"
 ];
 
 // Helper functions
@@ -90,7 +88,13 @@ function validateCategory(category) {
 function validateRegion(region) {
   return region && VALID_REGIONS.includes(region) 
     ? region 
-    : 'global-remote';
+    : null; // Return null instead of invalid fallback
+}
+
+function validateCity(city) {
+  if (!city) return 'City is required';
+  if (!VALID_REGIONS.includes(city)) return `Invalid city. Must be one of the supported cities.`;
+  return null;
 }
 
 function validateTaskData(data) {
@@ -125,6 +129,103 @@ function standardizeOfferingData(data) {
   };
 }
 
+function parseFilters(query) {
+  const filters = {};
+  const errors = [];
+  
+  // Handle simple query parameters (backward compatibility)
+  if (query.activity_type) {
+    if (VALID_ACTIVITY_TYPES.includes(query.activity_type)) {
+      filters.activity_type = query.activity_type;
+    } else {
+      errors.push(`Invalid activity_type: "${query.activity_type}". Valid values: ${VALID_ACTIVITY_TYPES.join(', ')}`);
+    }
+  }
+  if (query.category) {
+    if (VALID_CATEGORIES.includes(query.category)) {
+      filters.category = query.category;
+    } else {
+      errors.push(`Invalid category: "${query.category}". Valid values: ${VALID_CATEGORIES.join(', ')}`);
+    }
+  }
+  if (query.region) {
+    if (VALID_REGIONS.includes(query.region)) {
+      filters.region = query.region;
+    } else {
+      errors.push(`Invalid region: "${query.region}". Valid values: ${VALID_REGIONS.slice(0, 10).join(', ')}... (${VALID_REGIONS.length} total cities)`);
+    }
+  }
+  if (query.is_remote !== undefined) {
+    filters.is_remote = query.is_remote === 'true';
+  }
+  
+  // Handle Strapi filter structure: filters[field][$eq]=value
+  if (query.filters) {
+    const filterObj = typeof query.filters === 'string' 
+      ? JSON.parse(query.filters || '{}') 
+      : query.filters;
+    
+    // Handle region filtering
+    if (filterObj.region && filterObj.region.$eq) {
+      const region = filterObj.region.$eq;
+      if (VALID_REGIONS.includes(region)) {
+        filters.region = region;
+      } else {
+        errors.push(`Invalid region: "${region}". Valid values: ${VALID_REGIONS.slice(0, 10).join(', ')}... (${VALID_REGIONS.length} total cities)`);
+      }
+    }
+    
+    // Handle category filtering (both string and ID-based)
+    if (filterObj.category) {
+      if (filterObj.category.$eq) {
+        const category = filterObj.category.$eq;
+        if (typeof category === 'string' && VALID_CATEGORIES.includes(category)) {
+          filters.category = category;
+        } else if (typeof category === 'number') {
+          // If category is an ID, validate it's within range
+          if (category >= 1 && category <= VALID_CATEGORIES.length) {
+            filters.category = filterObj.category;
+          } else {
+            errors.push(`Invalid category ID: ${category}. Valid IDs: 1-${VALID_CATEGORIES.length}`);
+          }
+        } else {
+          errors.push(`Invalid category format: ${category}`);
+        }
+      } else if (filterObj.category.id && filterObj.category.id.$eq) {
+        // Handle relation-based category filtering
+        const categoryId = filterObj.category.id.$eq;
+        if (typeof categoryId === 'number' && categoryId >= 1 && categoryId <= VALID_CATEGORIES.length) {
+          filters.category = filterObj.category;
+        } else {
+          errors.push(`Invalid category ID: ${categoryId}. Valid IDs: 1-${VALID_CATEGORIES.length}`);
+        }
+      }
+    }
+    
+    // Handle activity_type filtering
+    if (filterObj.activity_type && filterObj.activity_type.$eq) {
+      const activityType = filterObj.activity_type.$eq;
+      if (VALID_ACTIVITY_TYPES.includes(activityType)) {
+        filters.activity_type = activityType;
+      } else {
+        errors.push(`Invalid activity_type: "${activityType}". Valid values: ${VALID_ACTIVITY_TYPES.join(', ')}`);
+      }
+    }
+    
+    // Handle is_remote filtering
+    if (filterObj.is_remote && filterObj.is_remote.$eq !== undefined) {
+      const isRemoteValue = filterObj.is_remote.$eq;
+      if (isRemoteValue === 'true' || isRemoteValue === true || isRemoteValue === 'false' || isRemoteValue === false) {
+        filters.is_remote = isRemoteValue === 'true' || isRemoteValue === true;
+      } else {
+        errors.push(`Invalid is_remote value: "${isRemoteValue}". Valid values: true, false, "true", "false"`);
+      }
+    }
+  }
+  
+  return { filters, errors };
+}
+
 function formatOfferingResponse(offering) {
   return {
     id: offering.id,
@@ -132,7 +233,7 @@ function formatOfferingResponse(offering) {
     description: offering.description || '',
     activity_type: offering.activity_type || 'other',
     category: offering.category || 'other',
-    region: offering.region || 'global-remote',
+    region: offering.region || null,
     is_remote: offering.is_remote || false,
     startDate: offering.startDate,
     endDate: offering.endDate,
@@ -150,21 +251,21 @@ module.exports = createCoreController(
     async find(ctx) {
       try {
         const { query } = ctx;
-        const { activity_type, category, region, is_remote } = query;
-
-        // Build filters based on query parameters with validation
-        const filters = {};
-        if (activity_type && VALID_ACTIVITY_TYPES.includes(activity_type)) {
-          filters.activity_type = activity_type;
+        
+        // Parse filters using the new function
+        const { filters, errors } = parseFilters(query);
+        
+        // Return validation errors if any
+        if (errors.length > 0) {
+          return ctx.badRequest({
+            error: 'Invalid filter parameters',
+            details: errors
+          });
         }
-        if (category && VALID_CATEGORIES.includes(category)) {
-          filters.category = category;
-        }
-        if (region && VALID_REGIONS.includes(region)) {
-          filters.region = region;
-        }
-        if (is_remote !== undefined) {
-          filters.is_remote = is_remote === 'true';
+        
+        // Add publication state filter for live content
+        if (!filters.publishedAt) {
+          filters.publishedAt = { $notNull: true };
         }
 
         const offerings = await strapi.entityService.findMany(
@@ -279,15 +380,67 @@ module.exports = createCoreController(
       }
     },
 
+    async createWithCity(ctx) {
+      try {
+        const user = ctx.state?.user;
+        if (!user?.id) {
+          return ctx.unauthorized('You must be logged in to create offerings');
+        }
+
+        const inputData = ctx.request.body.data;
+        // Reject old payloads
+        if ('region' in inputData || 'Location' in inputData) {
+          return ctx.badRequest('region and Location fields are not supported. Use city.');
+        }
+        // City validation
+        const cityError = validateCity(inputData.city);
+        if (cityError) {
+          return ctx.badRequest(cityError);
+        }
+        const standardizedData = standardizeOfferingData(inputData);
+        // Validate tasks if provided
+        if (standardizedData.tasks && standardizedData.tasks.length > 0) {
+          const taskErrors = standardizedData.tasks.reduce((errors, task, index) => {
+            const validationErrors = validateTaskData(task);
+            if (validationErrors.length > 0) {
+              errors.push(`Task ${index + 1}: ${validationErrors.join(', ')}`);
+            }
+            return errors;
+          }, []);
+          if (taskErrors.length > 0) {
+            return ctx.badRequest(`Task validation errors: ${taskErrors.join('; ')}`);
+          }
+        }
+        const data = {
+          ...standardizedData,
+          created_by_user: user.id
+        };
+        const offering = await strapi.entityService.create(
+          'api::third-party-offering.third-party-offering',
+          {
+            data,
+            populate: {
+              tasks: true,
+              created_by_user: {
+                fields: ['id', 'fullName', 'email']
+              }
+            }
+          }
+        );
+        return ctx.send({ data: formatOfferingResponse(offering) });
+      } catch (err) {
+        console.error('THIRD PARTY OFFERINGS CREATE ERROR:', err);
+        return ctx.badRequest('Failed to create offering');
+      }
+    },
+
     async update(ctx) {
       try {
         const { id } = ctx.params;
         const user = ctx.state?.user;
-        
         if (!user?.id) {
           return ctx.unauthorized('You must be logged in to update offerings');
         }
-
         // Check if user owns the offering
         const existingOffering = await strapi.entityService.findOne(
           'api::third-party-offering.third-party-offering',
@@ -301,20 +454,23 @@ module.exports = createCoreController(
             }
           }
         );
-
         if (!existingOffering) {
           return ctx.notFound('Offering not found');
         }
-
         if (existingOffering.created_by_user?.id !== user.id) {
           return ctx.forbidden('You can only update your own offerings');
         }
-
         const inputData = ctx.request.body.data;
-        
-        // Validate and standardize input data
+        // Reject old payloads
+        if ('region' in inputData || 'Location' in inputData) {
+          return ctx.badRequest('region and Location fields are not supported. Use city.');
+        }
+        // City validation
+        const cityError = validateCity(inputData.city);
+        if (cityError) {
+          return ctx.badRequest(cityError);
+        }
         const standardizedData = standardizeOfferingData(inputData);
-        
         // Validate tasks if provided
         if (standardizedData.tasks && standardizedData.tasks.length > 0) {
           const taskErrors = standardizedData.tasks.reduce((errors, task, index) => {
@@ -324,7 +480,6 @@ module.exports = createCoreController(
             }
             return errors;
           }, []);
-          
           if (taskErrors.length > 0) {
             return ctx.badRequest(`Task validation errors: ${taskErrors.join('; ')}`);
           }
@@ -415,7 +570,6 @@ module.exports = createCoreController(
           'api::third-party-offering.third-party-offering',
           id,
           {
-            fields: ['id', 'tasks'],
             populate: {
               created_by_user: {
                 fields: ['id']
@@ -433,20 +587,13 @@ module.exports = createCoreController(
         }
 
         const currentTasks = Array.isArray(existingOffering.tasks) ? existingOffering.tasks : [];
-        const newTask = {
-          title: title.trim(),
-          description: description || '',
-          due_week: parseInt(due_week) || 1,
-          is_milestone: Boolean(is_milestone)
-        };
+        const updatedTasks = [...currentTasks, taskData];
 
         const updatedOffering = await strapi.entityService.update(
           'api::third-party-offering.third-party-offering',
           id,
           {
-            data: {
-              tasks: [...currentTasks, newTask]
-            },
+            data: { tasks: updatedTasks },
             populate: {
               tasks: true,
               created_by_user: {
@@ -465,25 +612,20 @@ module.exports = createCoreController(
 
     async removeTask(ctx) {
       try {
-        const { id, taskIndex } = ctx.params;
+        const { id } = ctx.params;
         const user = ctx.state?.user;
-        
         if (!user?.id) {
           return ctx.unauthorized('You must be logged in to remove tasks');
         }
 
-        // Validate task index
+        const { taskIndex } = ctx.request.body;
         const taskIndexNum = parseInt(taskIndex);
-        if (isNaN(taskIndexNum) || taskIndexNum < 0) {
-          return ctx.badRequest('Invalid task index - must be a non-negative integer');
-        }
 
         // Check if user owns the offering
         const existingOffering = await strapi.entityService.findOne(
           'api::third-party-offering.third-party-offering',
           id,
           {
-            fields: ['id', 'tasks'],
             populate: {
               created_by_user: {
                 fields: ['id']
@@ -566,24 +708,21 @@ module.exports = createCoreController(
     async getAllOfferings(ctx) {
       try {
         const { query } = ctx;
-        const { activity_type, category, region, is_remote } = query;
-
-        // Build filters based on query parameters with validation
-        const filters = {
-          publishedAt: { $notNull: true }
-        };
         
-        if (activity_type && VALID_ACTIVITY_TYPES.includes(activity_type)) {
-          filters.activity_type = activity_type;
+        // Parse filters using the new function
+        const { filters, errors } = parseFilters(query);
+        
+        // Return validation errors if any
+        if (errors.length > 0) {
+          return ctx.badRequest({
+            error: 'Invalid filter parameters',
+            details: errors
+          });
         }
-        if (category && VALID_CATEGORIES.includes(category)) {
-          filters.category = category;
-        }
-        if (region && VALID_REGIONS.includes(region)) {
-          filters.region = region;
-        }
-        if (is_remote !== undefined) {
-          filters.is_remote = is_remote === 'true';
+        
+        // Add publication state filter for live content
+        if (!filters.publishedAt) {
+          filters.publishedAt = { $notNull: true };
         }
 
         const offerings = await strapi.entityService.findMany(
@@ -612,7 +751,7 @@ module.exports = createCoreController(
       }
     },
 
-    async recommend(ctx) {
+    async recommendAll(ctx) {
       try {
         const offerings = await strapi.entityService.findMany(
           'api::third-party-offering.third-party-offering',
@@ -644,88 +783,129 @@ module.exports = createCoreController(
       }
     },
 
+    async getCategories(ctx) {
+      try {
+        // Return all valid categories as a structured response
+        const categories = VALID_CATEGORIES.map((category, index) => ({
+          id: index + 1,
+          name: category,
+          displayName: category.charAt(0).toUpperCase() + category.slice(1).replace('-', ' ')
+        }));
+
+        return ctx.send({ 
+          data: categories,
+          meta: {
+            total: categories.length
+          }
+        });
+      } catch (err) {
+        console.error('GET CATEGORIES ERROR:', err);
+        return ctx.send({ data: [] });
+      }
+    },
+
+    async getRegions(ctx) {
+      try {
+        // Return all valid regions (cities) as a structured response
+        const regions = VALID_REGIONS.map((region, index) => ({
+          id: index + 1,
+          name: region,
+          displayName: region
+        }));
+
+        return ctx.send({ 
+          data: regions,
+          meta: {
+            total: regions.length
+          }
+        });
+      } catch (err) {
+        console.error('GET REGIONS ERROR:', err);
+        return ctx.send({ data: [] });
+      }
+    },
+
     async recommend(ctx) {
-  try {
-    // STEP 1: user
-    const user = ctx.state?.user;
-    if (!user?.id) {
-      return ctx.send({ data: [] });
-    }
-
-    // STEP 2: get full user with role
-    const fullUser = await strapi.entityService.findOne(
-      'plugin::users-permissions.user',
-      user.id,
-      { populate: ['role'] }
-    );
-
-    if (!fullUser?.role?.name?.toLowerCase().includes('student')) {
-      return ctx.send({ data: [] });
-    }
-
-    // STEP 3: fetch student profile properly
-    const profiles = await strapi.entityService.findMany(
-      'api::student-profile.student-profile',
-      {
-        filters: { user: user.id },
-        populate: ['weekly_reports']
-      }
-    );
-
-    const studentProfile = profiles?.[0];
-    if (!studentProfile) {
-      return ctx.send({ data: [] });
-    }
-
-    // STEP 4: extract data
-    const dream = (studentProfile?.dream_profession || '').toLowerCase();
-
-    const weeklySkills = (studentProfile?.weekly_reports || [])
-      .flatMap(r => r?.skills_practiced || [])
-      .map(s => String(s).toLowerCase());
-
-    // STEP 5: fetch offerings
-    const offerings = await strapi.entityService.findMany(
-      'api::third-party-offering.third-party-offering',
-      {
-        filters: { publishedAt: { $notNull: true } }
-      }
-    );
-
-    // STEP 6: scoring
-    const scored = offerings.map(o => {
-      let score = 0;
-
-      const professions = (o.target_professions || []).map(p => p.toLowerCase());
-      const skills = (o.skill_tags || []).map(s => s.toLowerCase());
-
-      if (dream && professions.includes(dream)) {
-        score += 3;
-      }
-
-      weeklySkills.forEach(skill => {
-        if (skills.includes(skill)) {
-          score += 1;
+      try {
+        // STEP 1: user
+        const user = ctx.state?.user;
+        if (!user?.id) {
+          return ctx.send({ data: [] });
         }
-      });
 
-      return { o, score };
-    });
+        // STEP 2: get full user with role
+        const fullUser = await strapi.entityService.findOne(
+          'plugin::users-permissions.user',
+          user.id,
+          { populate: ['role'] }
+        );
 
-    // STEP 7: filter + sort
-    const result = scored
-      .filter(x => x.score > 0)
-      .sort((a, b) => b.score - a.score)
-      .slice(0, 6)
-      .map(x => x.o);
+        if (!fullUser?.role?.name?.toLowerCase().includes('student')) {
+          return ctx.send({ data: [] });
+        }
 
-    return ctx.send({ data: result });
+        // STEP 3: fetch student profile properly
+        const profiles = await strapi.entityService.findMany(
+          'api::student-profile.student-profile',
+          {
+            filters: { user: user.id },
+            populate: ['weekly_reports']
+          }
+        );
 
-  } catch (err) {
-    console.error("RECOMMEND ERROR:", err);
-    return ctx.send({ data: [] });
-  }
-}
+        const studentProfile = profiles?.[0];
+        if (!studentProfile) {
+          return ctx.send({ data: [] });
+        }
+
+        // STEP 4: extract data
+        const dream = (studentProfile?.dream_profession || '').toLowerCase();
+
+        const weeklySkills = (studentProfile?.weekly_reports || [])
+          .flatMap(r => r?.skills_practiced || [])
+          .map(s => String(s).toLowerCase());
+
+        // STEP 5: fetch offerings
+        const offerings = await strapi.entityService.findMany(
+          'api::third-party-offering.third-party-offering',
+          {
+            filters: { publishedAt: { $notNull: true } }
+          }
+        );
+
+        // STEP 6: scoring
+        const scored = offerings.map(o => {
+          let score = 0;
+
+          const professions = (o.target_professions || []).map(p => p.toLowerCase());
+          const skills = (o.skill_tags || []).map(s => s.toLowerCase());
+
+          if (dream && professions.includes(dream)) {
+            score += 3;
+          }
+
+          weeklySkills.forEach(skill => {
+            if (skills.includes(skill)) {
+              score += 1;
+            }
+          });
+
+          return { o, score };
+        });
+
+        // STEP 7: filter + sort
+        const result = scored
+          .filter(x => x.score > 0)
+          .sort((a, b) => b.score - a.score)
+          .slice(0, 6)
+          .map(x => x.o);
+
+        return ctx.send({ data: result });
+
+      } catch (err) {
+        console.error("RECOMMEND ERROR:", err);
+        return ctx.send({ data: [] });
+      }
+    },
   })
 );
-
