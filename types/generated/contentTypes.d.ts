@@ -5310,20 +5310,59 @@ export interface ApiThirdPartyOfferingThirdPartyOffering
       Attribute.DefaultTo<'other'>;
     region: Attribute.Enumeration<
       [
-        'north-america',
-        'south-america',
-        'europe',
-        'south-asia',
-        'east-asia',
-        'southeast-asia',
-        'middle-east',
-        'africa',
-        'oceania',
-        'global-remote'
+        'Delhi',
+        'Mumbai',
+        'Bangalore',
+        'Hyderabad',
+        'Chennai',
+        'Kolkata',
+        'Pune',
+        'Ahmedabad',
+        'Jaipur',
+        'Surat',
+        'Lucknow',
+        'Kanpur',
+        'Nagpur',
+        'Indore',
+        'Bhopal',
+        'Patna',
+        'Ranchi',
+        'Chandigarh',
+        'Kochi',
+        'Thiruvananthapuram',
+        'Coimbatore',
+        'Visakhapatnam',
+        'Vijayawada',
+        'Mysore',
+        'Nashik',
+        'Vadodara',
+        'Rajkot',
+        'Agra',
+        'Varanasi',
+        'Amritsar',
+        'Ludhiana',
+        'Jodhpur',
+        'Udaipur',
+        'Dehradun',
+        'Noida',
+        'Gurgaon',
+        'Faridabad',
+        'Ghaziabad',
+        'Meerut',
+        'Raipur',
+        'Bhubaneswar',
+        'Guwahati',
+        'Shillong',
+        'Imphal',
+        'Aizawl',
+        'Itanagar',
+        'Gangtok',
+        'Panaji',
+        'Shimla',
+        'Jammu'
       ]
     > &
-      Attribute.Required &
-      Attribute.DefaultTo<'global-remote'>;
+      Attribute.Required;
     is_remote: Attribute.Boolean & Attribute.DefaultTo<false>;
     tasks: Attribute.Component<'offering.task', true>;
     target_professions: Attribute.JSON;
