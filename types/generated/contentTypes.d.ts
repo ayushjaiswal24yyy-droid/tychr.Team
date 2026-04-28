@@ -2654,6 +2654,48 @@ export interface ApiEnrollmentEnrollment extends Schema.CollectionType {
   };
 }
 
+export interface ApiExemplarExemplar extends Schema.CollectionType {
+  collectionName: 'exemplars';
+  info: {
+    singularName: 'exemplar';
+    pluralName: 'exemplars';
+    displayName: 'Exemplar';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    title: Attribute.String;
+    subject: Attribute.String;
+    level: Attribute.Enumeration<['SL', 'HL']>;
+    type: Attribute.Enumeration<['IA', 'EE', 'TOK']>;
+    score: Attribute.Integer;
+    band: Attribute.String;
+    shortDescription: Attribute.Text;
+    examinerInsight: Attribute.Text;
+    tags: Attribute.String;
+    pdf: Attribute.Media<'images' | 'files' | 'videos' | 'audios'>;
+    thumbnail: Attribute.Media<'images' | 'files' | 'videos' | 'audios'>;
+    featured: Attribute.Boolean;
+    publishStatus: Attribute.Enumeration<['Draft', 'Published', 'Archived']>;
+    createdAt: Attribute.DateTime;
+    updatedAt: Attribute.DateTime;
+    publishedAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<
+      'api::exemplar.exemplar',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+    updatedBy: Attribute.Relation<
+      'api::exemplar.exemplar',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+  };
+}
+
 export interface ApiExternalUserExternalUser extends Schema.CollectionType {
   collectionName: 'external_users';
   info: {
@@ -6216,6 +6258,7 @@ declare module '@strapi/types' {
       'api::doubt-section.doubt-section': ApiDoubtSectionDoubtSection;
       'api::email-campaign.email-campaign': ApiEmailCampaignEmailCampaign;
       'api::enrollment.enrollment': ApiEnrollmentEnrollment;
+      'api::exemplar.exemplar': ApiExemplarExemplar;
       'api::external-user.external-user': ApiExternalUserExternalUser;
       'api::grade-subject.grade-subject': ApiGradeSubjectGradeSubject;
       'api::gst.gst': ApiGstGst;

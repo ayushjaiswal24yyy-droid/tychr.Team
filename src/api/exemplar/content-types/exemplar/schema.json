@@ -1,0 +1,82 @@
+{
+  "kind": "collectionType",
+  "collectionName": "exemplars",
+  "info": {
+    "singularName": "exemplar",
+    "pluralName": "exemplars",
+    "displayName": "Exemplar"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "title": {
+      "type": "string"
+    },
+    "subject": {
+      "type": "string"
+    },
+    "level": {
+      "type": "enumeration",
+      "enum": [
+        "SL",
+        "HL"
+      ]
+    },
+    "type": {
+      "type": "enumeration",
+      "enum": [
+        "IA",
+        "EE",
+        "TOK"
+      ]
+    },
+    "score": {
+      "type": "integer"
+    },
+    "band": {
+      "type": "string"
+    },
+    "shortDescription": {
+      "type": "text"
+    },
+    "examinerInsight": {
+      "type": "text"
+    },
+    "tags": {
+      "type": "string"
+    },
+    "pdf": {
+      "allowedTypes": [
+        "images",
+        "files",
+        "videos",
+        "audios"
+      ],
+      "type": "media",
+      "multiple": false
+    },
+    "thumbnail": {
+      "allowedTypes": [
+        "images",
+        "files",
+        "videos",
+        "audios"
+      ],
+      "type": "media",
+      "multiple": false
+    },
+    "featured": {
+      "type": "boolean"
+    },
+    "publishStatus": {
+      "type": "enumeration",
+      "enum": [
+        "Draft",
+        "Published",
+        "Archived"
+      ]
+    }
+  }
+}
