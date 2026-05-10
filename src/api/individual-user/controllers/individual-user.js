@@ -133,7 +133,8 @@ module.exports = createCoreController('api::individual-user.individual-user', ({
       applicants.push({
         id: applicant.id,
         is_accepted: applicant.is_accepted,
-        created_at: applicant.created_at,
+        createdAt: applicant.createdAt,
+        created_at: applicant.createdAt,
         applied_by: applicant.applied_by,
         offering: {
           id: offering.id,
@@ -153,7 +154,7 @@ module.exports = createCoreController('api::individual-user.individual-user', ({
   });
 
   // Sort by creation date (newest first)
-  applicants.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+  applicants.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
   return ctx.send({ data: applicants });
 },
