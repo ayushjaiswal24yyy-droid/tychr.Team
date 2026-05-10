@@ -1,6 +1,7 @@
 'use strict';
 
 const { createCoreController } = require('@strapi/strapi').factories;
+const { formatOfferingResponse } = require('../utils/format');
 
 function toStringArray(value) {
   if (!value) return [];
@@ -73,28 +74,64 @@ const VALID_REGIONS = [
 ];
 
 // Helper functions
+function normalizeEnumInput(value, validValues, aliases = {}) {
+  if (value === null || value === undefined) return null;
+
+  const raw = String(value).trim().toLowerCase();
+  if (!raw) return null;
+
+  if (aliases[raw]) return aliases[raw];
+
+  const normalized = raw.replace(/[\s_]+/g, '-');
+  if (validValues.includes(normalized)) return normalized;
+
+  const collapsed = normalized.replace(/-/g, '');
+  const match = validValues.find((entry) => entry.replace(/-/g, '') === collapsed);
+  return match || null;
+}
+
 function validateActivityType(activityType) {
-  return activityType && VALID_ACTIVITY_TYPES.includes(activityType) 
-    ? activityType 
-    : 'other';
+  const normalized = normalizeEnumInput(activityType, VALID_ACTIVITY_TYPES, {
+    internships: 'internship',
+    'internship program': 'internship',
+    'internship-program': 'internship',
+    'boot camp': 'bootcamp',
+    'boot-camp': 'bootcamp',
+    volunteering: 'volunteer',
+    'work shop': 'workshop'
+  });
+
+  return normalized;
 }
 
 function validateCategory(category) {
-  return category && VALID_CATEGORIES.includes(category) 
-    ? category 
-    : 'other';
+  const normalized = normalizeEnumInput(category, VALID_CATEGORIES, {
+    'social science': 'social-science',
+    'social_science': 'social-science'
+  });
+
+  return normalized;
 }
 
 function validateRegion(region) {
-  return region && VALID_REGIONS.includes(region) 
-    ? region 
-    : null; // Return null instead of invalid fallback
+  return region && VALID_REGIONS.includes(region);
 }
 
-function validateCity(city) {
-  if (!city) return 'City is required';
-  if (!VALID_REGIONS.includes(city)) return `Invalid city. Must be one of the supported cities.`;
-  return null;
+function toFiniteNumberOrNull(value) {
+  if (value === null || value === undefined || value === '') return null;
+  if (typeof value === 'number') return Number.isFinite(value) ? value : null;
+
+  const trimmed = String(value).trim();
+  if (!trimmed) return null;
+
+  const direct = Number(trimmed);
+  if (Number.isFinite(direct)) return direct;
+
+  const extracted = trimmed.match(/-?\d+(?:\.\d+)?/);
+  if (!extracted) return null;
+
+  const parsed = Number(extracted[0]);
+  return Number.isFinite(parsed) ? parsed : null;
 }
 
 function validateTaskData(data) {
@@ -118,131 +155,130 @@ function validateTaskData(data) {
   return errors;
 }
 
-function standardizeOfferingData(data) {
-  return {
-    ...data,
-    activity_type: validateActivityType(data.activity_type),
-    category: validateCategory(data.category),
-    region: validateRegion(data.region),
-    is_remote: Boolean(data.is_remote),
-    tasks: Array.isArray(data.tasks) ? data.tasks : []
-  };
-}
+function normalizeOfferingData(data, { partial = false } = {}) {
+  if (!data || typeof data !== 'object' || Array.isArray(data)) {
+    return { errors: ['Request body must include a data object'] };
+  }
 
-function parseFilters(query) {
-  const filters = {};
+  const normalized = { ...data };
   const errors = [];
-  
-  // Handle simple query parameters (backward compatibility)
-  if (query.activity_type) {
-    if (VALID_ACTIVITY_TYPES.includes(query.activity_type)) {
-      filters.activity_type = query.activity_type;
-    } else {
-      errors.push(`Invalid activity_type: "${query.activity_type}". Valid values: ${VALID_ACTIVITY_TYPES.join(', ')}`);
-    }
+
+  if (normalized.city && !normalized.region) {
+    normalized.region = normalized.city;
   }
-  if (query.category) {
-    if (VALID_CATEGORIES.includes(query.category)) {
-      filters.category = query.category;
-    } else {
-      errors.push(`Invalid category: "${query.category}". Valid values: ${VALID_CATEGORIES.join(', ')}`);
-    }
+  if (normalized.location && !normalized.Location) {
+    normalized.Location = normalized.location;
   }
-  if (query.region) {
-    if (VALID_REGIONS.includes(query.region)) {
-      filters.region = query.region;
-    } else {
-      errors.push(`Invalid region: "${query.region}". Valid values: ${VALID_REGIONS.slice(0, 10).join(', ')}... (${VALID_REGIONS.length} total cities)`);
-    }
+  if (!normalized.Location && normalized.region) {
+    normalized.Location = normalized.region;
   }
-  if (query.is_remote !== undefined) {
-    filters.is_remote = query.is_remote === 'true';
+  if (!normalized.region && normalized.Location && validateRegion(normalized.Location)) {
+    normalized.region = normalized.Location;
   }
-  
-  // Handle Strapi filter structure: filters[field][$eq]=value
-  if (query.filters) {
-    const filterObj = typeof query.filters === 'string' 
-      ? JSON.parse(query.filters || '{}') 
-      : query.filters;
-    
-    // Handle region filtering
-    if (filterObj.region && filterObj.region.$eq) {
-      const region = filterObj.region.$eq;
-      if (VALID_REGIONS.includes(region)) {
-        filters.region = region;
-      } else {
-        errors.push(`Invalid region: "${region}". Valid values: ${VALID_REGIONS.slice(0, 10).join(', ')}... (${VALID_REGIONS.length} total cities)`);
+  delete normalized.city;
+  delete normalized.location;
+
+  if (!partial || normalized.activity_type !== undefined) {
+    const normalizedActivity = validateActivityType(normalized.activity_type);
+    if (normalizedActivity) {
+      normalized.activity_type = normalizedActivity;
+    } else if (normalized.activity_type !== undefined) {
+      const rawActivity = String(normalized.activity_type).trim();
+      if (rawActivity) {
+        errors.push('activity_type must be one of the supported values');
+      } else if (!partial) {
+        normalized.activity_type = 'other';
       }
+    } else if (!partial) {
+      normalized.activity_type = 'other';
     }
-    
-    // Handle category filtering (both string and ID-based)
-    if (filterObj.category) {
-      if (filterObj.category.$eq) {
-        const category = filterObj.category.$eq;
-        if (typeof category === 'string' && VALID_CATEGORIES.includes(category)) {
-          filters.category = category;
-        } else if (typeof category === 'number') {
-          // If category is an ID, validate it's within range
-          if (category >= 1 && category <= VALID_CATEGORIES.length) {
-            filters.category = filterObj.category;
-          } else {
-            errors.push(`Invalid category ID: ${category}. Valid IDs: 1-${VALID_CATEGORIES.length}`);
-          }
-        } else {
-          errors.push(`Invalid category format: ${category}`);
+  }
+
+  if (!partial || normalized.category !== undefined) {
+    const normalizedCategory = validateCategory(normalized.category);
+    if (normalizedCategory) {
+      normalized.category = normalizedCategory;
+    } else if (normalized.category !== undefined) {
+      const rawCategory = String(normalized.category).trim();
+      if (rawCategory) {
+        errors.push('category must be one of the supported values');
+      } else if (!partial) {
+        normalized.category = 'other';
+      }
+    } else if (!partial) {
+      normalized.category = 'other';
+    }
+  }
+
+  if (!partial || normalized.region !== undefined) {
+    if (!validateRegion(normalized.region)) {
+      errors.push('region must be one of the supported cities');
+    }
+  }
+
+  if (normalized.is_remote !== undefined) {
+    normalized.is_remote = Boolean(normalized.is_remote);
+  }
+
+  if (normalized.weekly_time_commitment !== undefined) {
+    normalized.weekly_time_commitment = toFiniteNumberOrNull(
+      normalized.weekly_time_commitment
+    );
+  }
+
+  if (normalized.total_duration !== undefined) {
+    normalized.total_duration = toFiniteNumberOrNull(normalized.total_duration);
+  }
+
+  if (normalized.tasks !== undefined) {
+    if (!Array.isArray(normalized.tasks)) {
+      errors.push('tasks must be an array');
+    } else {
+      const normalizedTasks = normalized.tasks.map((task) => {
+        const dueWeekValue = task?.due_week !== undefined ? Number(task.due_week) : undefined;
+        return {
+          title: task?.title,
+          description: task?.description,
+          due_week: Number.isFinite(dueWeekValue) ? Math.trunc(dueWeekValue) : task?.due_week,
+          is_milestone:
+            task?.is_milestone !== undefined ? Boolean(task.is_milestone) : task?.is_milestone
+        };
+      });
+
+      const taskErrors = normalizedTasks.reduce((acc, task, index) => {
+        const validationErrors = validateTaskData(task);
+        if (validationErrors.length > 0) {
+          acc.push(`Task ${index + 1}: ${validationErrors.join(', ')}`);
         }
-      } else if (filterObj.category.id && filterObj.category.id.$eq) {
-        // Handle relation-based category filtering
-        const categoryId = filterObj.category.id.$eq;
-        if (typeof categoryId === 'number' && categoryId >= 1 && categoryId <= VALID_CATEGORIES.length) {
-          filters.category = filterObj.category;
-        } else {
-          errors.push(`Invalid category ID: ${categoryId}. Valid IDs: 1-${VALID_CATEGORIES.length}`);
-        }
-      }
-    }
-    
-    // Handle activity_type filtering
-    if (filterObj.activity_type && filterObj.activity_type.$eq) {
-      const activityType = filterObj.activity_type.$eq;
-      if (VALID_ACTIVITY_TYPES.includes(activityType)) {
-        filters.activity_type = activityType;
-      } else {
-        errors.push(`Invalid activity_type: "${activityType}". Valid values: ${VALID_ACTIVITY_TYPES.join(', ')}`);
-      }
-    }
-    
-    // Handle is_remote filtering
-    if (filterObj.is_remote && filterObj.is_remote.$eq !== undefined) {
-      const isRemoteValue = filterObj.is_remote.$eq;
-      if (isRemoteValue === 'true' || isRemoteValue === true || isRemoteValue === 'false' || isRemoteValue === false) {
-        filters.is_remote = isRemoteValue === 'true' || isRemoteValue === true;
-      } else {
-        errors.push(`Invalid is_remote value: "${isRemoteValue}". Valid values: true, false, "true", "false"`);
-      }
+        return acc;
+      }, []);
+
+      errors.push(...taskErrors);
+      normalized.tasks = normalizedTasks;
     }
   }
-  
-  return { filters, errors };
+
+  return { data: normalized, errors };
 }
 
-function formatOfferingResponse(offering) {
-  return {
-    id: offering.id,
-    title: offering.title || '',
-    description: offering.description || '',
-    activity_type: offering.activity_type || 'other',
-    category: offering.category || 'other',
-    region: offering.region || null,
-    is_remote: offering.is_remote || false,
-    startDate: offering.startDate,
-    endDate: offering.endDate,
-    eligibility: offering.eligibility || '',
-    compensation: offering.compensation || '',
-    tasks: Array.isArray(offering.tasks) ? offering.tasks : [],
-    created_by_user: offering.created_by_user || null,
-    publishedAt: offering.publishedAt
-  };
+function resolveRequestData(ctx) {
+  const rawBody = ctx.request.body || {};
+  const data = rawBody.data && typeof rawBody.data === 'object' ? rawBody.data : rawBody;
+  return data;
+}
+
+function applyPublishDefaults(data, { allowDefault = true } = {}) {
+  if (!data || typeof data !== 'object') return data;
+  if (data.draft === true || data.publishedAt === null) {
+    const { draft, ...rest } = data;
+    return { ...rest, publishedAt: null };
+  }
+  if (allowDefault && data.publishedAt === undefined) {
+    const { draft, ...rest } = data;
+    return { ...rest, publishedAt: new Date().toISOString() };
+  }
+  const { draft, ...rest } = data;
+  return rest;
 }
 
 module.exports = createCoreController(
@@ -250,50 +286,33 @@ module.exports = createCoreController(
   ({ strapi }) => ({
     async find(ctx) {
       try {
-        const { query } = ctx;
-        
-        // Parse filters using the new function
-        const { filters, errors } = parseFilters(query);
-        
-        // Return validation errors if any
-        if (errors.length > 0) {
-          return ctx.badRequest({
-            error: 'Invalid filter parameters',
-            details: errors
-          });
-        }
-        
-        // Add publication state filter for live content
-        if (!filters.publishedAt) {
-          filters.publishedAt = { $notNull: true };
-        }
-
+        const queryFilters = ctx.query?.filters && typeof ctx.query.filters === 'object'
+          ? ctx.query.filters
+          : {};
         const offerings = await strapi.entityService.findMany(
           'api::third-party-offering.third-party-offering',
           {
-            filters,
+            ...ctx.query,
+            filters: {
+              $and: [queryFilters, { publishedAt: { $notNull: true } }]
+            },
             publicationState: 'live',
-            sort: { createdAt: 'desc' },
             populate: {
-              tasks: true,
               created_by_user: {
                 fields: ['id', 'fullName', 'email']
               },
-              college_tag: {
-                fields: ['id', 'name']
-              }
-            }
+              tasks: true,
+              college_tag: true
+            },
+            sort: { createdAt: 'desc' }
           }
         );
 
-        const safeOfferings = Array.isArray(offerings) ? offerings : [];
-        
-        // Use consistent formatting for all responses
-        const formattedOfferings = safeOfferings.map(formatOfferingResponse);
-
-        return ctx.send({ data: formattedOfferings });
+        return ctx.send({
+          data: offerings.map(formatOfferingResponse)
+        });
       } catch (err) {
-        console.error('THIRD PARTY OFFERINGS FIND ERROR:', err);
+        console.error('FIND ERROR:', err);
         return ctx.send({ data: [] });
       }
     },
@@ -320,6 +339,9 @@ module.exports = createCoreController(
         if (!offering) {
           return ctx.notFound('Offering not found');
         }
+        if (!offering.publishedAt) {
+          return ctx.notFound('Offering not found');
+        }
 
         return ctx.send({ data: formatOfferingResponse(offering) });
       } catch (err) {
@@ -330,35 +352,42 @@ module.exports = createCoreController(
 
     async create(ctx) {
       try {
+        console.log('[offerings][create][rawBody]', ctx.request.body);
         const user = ctx.state?.user;
         if (!user?.id) {
           return ctx.unauthorized('You must be logged in to create offerings');
         }
 
-        const inputData = ctx.request.body.data;
-        
-        // Validate and standardize input data
-        const standardizedData = standardizeOfferingData(inputData);
-        
-        // Validate tasks if provided
-        if (standardizedData.tasks && standardizedData.tasks.length > 0) {
-          const taskErrors = standardizedData.tasks.reduce((errors, task, index) => {
-            const validationErrors = validateTaskData(task);
-            if (validationErrors.length > 0) {
-              errors.push(`Task ${index + 1}: ${validationErrors.join(', ')}`);
-            }
-            return errors;
-          }, []);
-          
-          if (taskErrors.length > 0) {
-            return ctx.badRequest(`Task validation errors: ${taskErrors.join('; ')}`);
-          }
+        const inputData = resolveRequestData(ctx);
+        console.log('[offerings][create][resolvedData]', inputData);
+        const { data: standardizedData, errors } = normalizeOfferingData(inputData);
+
+        console.log('[offerings][create][normalizedData]', standardizedData);
+        console.log('[offerings][create][normalizedTypes]', {
+          Location: typeof standardizedData?.Location,
+          weekly_time_commitment: typeof standardizedData?.weekly_time_commitment,
+          total_duration: typeof standardizedData?.total_duration,
+          region: typeof standardizedData?.region,
+          activity_type: typeof standardizedData?.activity_type
+        });
+
+        if (errors.length > 0) {
+          return ctx.badRequest(errors.join('; '));
         }
 
-        const data = {
+        const data = applyPublishDefaults({
           ...standardizedData,
-          created_by_user: user.id
-        };
+          created_by_user: { connect: [user.id] }
+        });
+
+        console.log('[offerings][create][finalEntityData]', data);
+        console.log('[offerings][create][finalEntityDataTypes]', {
+          Location: typeof data?.Location,
+          weekly_time_commitment: typeof data?.weekly_time_commitment,
+          total_duration: typeof data?.total_duration,
+          region: typeof data?.region,
+          activity_type: typeof data?.activity_type
+        });
 
         const offering = await strapi.entityService.create(
           'api::third-party-offering.third-party-offering',
@@ -373,10 +402,15 @@ module.exports = createCoreController(
           }
         );
 
+        console.log('[offerings][create][savedOffering]', offering);
         return ctx.send({ data: formatOfferingResponse(offering) });
       } catch (err) {
         console.error('THIRD PARTY OFFERINGS CREATE ERROR:', err);
-        return ctx.badRequest('Failed to create offering');
+        if (err?.details) {
+          console.error('THIRD PARTY OFFERINGS CREATE ERROR DETAILS:', err.details);
+        }
+        const message = err?.message || 'Failed to create offering';
+        return ctx.badRequest(message);
       }
     },
 
@@ -387,34 +421,15 @@ module.exports = createCoreController(
           return ctx.unauthorized('You must be logged in to create offerings');
         }
 
-        const inputData = ctx.request.body.data;
-        // Reject old payloads
-        if ('region' in inputData || 'Location' in inputData) {
-          return ctx.badRequest('region and Location fields are not supported. Use city.');
+        const inputData = resolveRequestData(ctx);
+        const { data: standardizedData, errors } = normalizeOfferingData(inputData);
+        if (errors.length > 0) {
+          return ctx.badRequest(errors.join('; '));
         }
-        // City validation
-        const cityError = validateCity(inputData.city);
-        if (cityError) {
-          return ctx.badRequest(cityError);
-        }
-        const standardizedData = standardizeOfferingData(inputData);
-        // Validate tasks if provided
-        if (standardizedData.tasks && standardizedData.tasks.length > 0) {
-          const taskErrors = standardizedData.tasks.reduce((errors, task, index) => {
-            const validationErrors = validateTaskData(task);
-            if (validationErrors.length > 0) {
-              errors.push(`Task ${index + 1}: ${validationErrors.join(', ')}`);
-            }
-            return errors;
-          }, []);
-          if (taskErrors.length > 0) {
-            return ctx.badRequest(`Task validation errors: ${taskErrors.join('; ')}`);
-          }
-        }
-        const data = {
+        const data = applyPublishDefaults({
           ...standardizedData,
-          created_by_user: user.id
-        };
+          created_by_user: { connect: [user.id] }
+        });
         const offering = await strapi.entityService.create(
           'api::third-party-offering.third-party-offering',
           {
@@ -436,6 +451,7 @@ module.exports = createCoreController(
 
     async update(ctx) {
       try {
+        console.log('[offerings][update][rawBody]', ctx.request.body);
         const { id } = ctx.params;
         const user = ctx.state?.user;
         if (!user?.id) {
@@ -460,36 +476,37 @@ module.exports = createCoreController(
         if (existingOffering.created_by_user?.id !== user.id) {
           return ctx.forbidden('You can only update your own offerings');
         }
-        const inputData = ctx.request.body.data;
-        // Reject old payloads
-        if ('region' in inputData || 'Location' in inputData) {
-          return ctx.badRequest('region and Location fields are not supported. Use city.');
+        const inputData = resolveRequestData(ctx);
+        console.log('[offerings][update][resolvedData]', inputData);
+        const { data: standardizedData, errors } = normalizeOfferingData(inputData, { partial: true });
+
+        console.log('[offerings][update][normalizedData]', standardizedData);
+        console.log('[offerings][update][normalizedTypes]', {
+          Location: typeof standardizedData?.Location,
+          weekly_time_commitment: typeof standardizedData?.weekly_time_commitment,
+          total_duration: typeof standardizedData?.total_duration,
+          region: typeof standardizedData?.region,
+          activity_type: typeof standardizedData?.activity_type
+        });
+        if (errors.length > 0) {
+          return ctx.badRequest(errors.join('; '));
         }
-        // City validation
-        const cityError = validateCity(inputData.city);
-        if (cityError) {
-          return ctx.badRequest(cityError);
-        }
-        const standardizedData = standardizeOfferingData(inputData);
-        // Validate tasks if provided
-        if (standardizedData.tasks && standardizedData.tasks.length > 0) {
-          const taskErrors = standardizedData.tasks.reduce((errors, task, index) => {
-            const validationErrors = validateTaskData(task);
-            if (validationErrors.length > 0) {
-              errors.push(`Task ${index + 1}: ${validationErrors.join(', ')}`);
-            }
-            return errors;
-          }, []);
-          if (taskErrors.length > 0) {
-            return ctx.badRequest(`Task validation errors: ${taskErrors.join('; ')}`);
-          }
-        }
+
+        const finalEntityData = applyPublishDefaults(standardizedData, { allowDefault: false });
+        console.log('[offerings][update][finalEntityData]', finalEntityData);
+        console.log('[offerings][update][finalEntityDataTypes]', {
+          Location: typeof finalEntityData?.Location,
+          weekly_time_commitment: typeof finalEntityData?.weekly_time_commitment,
+          total_duration: typeof finalEntityData?.total_duration,
+          region: typeof finalEntityData?.region,
+          activity_type: typeof finalEntityData?.activity_type
+        });
 
         const offering = await strapi.entityService.update(
           'api::third-party-offering.third-party-offering',
           id,
           {
-            data: standardizedData,
+            data: finalEntityData,
             populate: {
               tasks: true,
               created_by_user: {
@@ -499,6 +516,7 @@ module.exports = createCoreController(
           }
         );
 
+        console.log('[offerings][update][savedOffering]', offering);
         return ctx.send({ data: formatOfferingResponse(offering) });
       } catch (err) {
         console.error('THIRD PARTY OFFERINGS UPDATE ERROR:', err);
@@ -555,7 +573,8 @@ module.exports = createCoreController(
           return ctx.unauthorized('You must be logged in to add tasks');
         }
 
-        const { title, description, due_week, is_milestone } = ctx.request.body;
+        const taskPayload = resolveRequestData(ctx);
+        const { title, description, due_week, is_milestone } = taskPayload;
 
         // Validate task data
         const taskData = { title, description, due_week, is_milestone };
@@ -618,7 +637,7 @@ module.exports = createCoreController(
           return ctx.unauthorized('You must be logged in to remove tasks');
         }
 
-        const { taskIndex } = ctx.request.body;
+        const taskIndex = ctx.params.taskIndex ?? resolveRequestData(ctx)?.taskIndex;
         const taskIndexNum = parseInt(taskIndex);
 
         // Check if user owns the offering
@@ -644,7 +663,7 @@ module.exports = createCoreController(
 
         const currentTasks = Array.isArray(existingOffering.tasks) ? existingOffering.tasks : [];
 
-        if (taskIndexNum >= currentTasks.length) {
+        if (Number.isNaN(taskIndexNum) || taskIndexNum < 0 || taskIndexNum >= currentTasks.length) {
           return ctx.badRequest(`Invalid task index - only ${currentTasks.length} tasks available`);
         }
 
@@ -676,60 +695,20 @@ module.exports = createCoreController(
     async getEducatorOfferings(ctx) {
       try {
         const user = ctx.state?.user;
-        
         if (!user?.id) {
-          return ctx.unauthorized('You must be logged in');
+          return ctx.unauthorized('You must be logged in to view your offerings');
         }
 
         const offerings = await strapi.entityService.findMany(
           'api::third-party-offering.third-party-offering',
           {
             filters: {
-              created_by_user: user.id,
-              publishedAt: { $notNull: true }
-            },
-            sort: { createdAt: 'desc' },
-            populate: {
-              tasks: true,
-              tp_applicants: {
-                fields: ['id', 'status', 'created_at']
+              created_by_user: {
+                id: user.id
               }
-            }
-          }
-        );
-
-        return ctx.send({ data: Array.isArray(offerings) ? offerings : [] });
-      } catch (err) {
-        console.error('GET EDUCATOR OFFERINGS ERROR:', err);
-        return ctx.send({ data: [] });
-      }
-    },
-
-    async getAllOfferings(ctx) {
-      try {
-        const { query } = ctx;
-        
-        // Parse filters using the new function
-        const { filters, errors } = parseFilters(query);
-        
-        // Return validation errors if any
-        if (errors.length > 0) {
-          return ctx.badRequest({
-            error: 'Invalid filter parameters',
-            details: errors
-          });
-        }
-        
-        // Add publication state filter for live content
-        if (!filters.publishedAt) {
-          filters.publishedAt = { $notNull: true };
-        }
-
-        const offerings = await strapi.entityService.findMany(
-          'api::third-party-offering.third-party-offering',
-          {
-            filters,
+            },
             populate: {
+              college_tag: true,
               tasks: true,
               created_by_user: {
                 fields: ['id', 'fullName', 'email']
@@ -739,15 +718,37 @@ module.exports = createCoreController(
           }
         );
 
-        const safeOfferings = Array.isArray(offerings) ? offerings : [];
-        
-        // Use consistent formatting for all responses
-        const formattedOfferings = safeOfferings.map(formatOfferingResponse);
+        return ctx.send({
+          data: offerings.map(formatOfferingResponse)
+        });
+      } catch (err) {
+        console.error('GET EDUCATOR OFFERINGS ERROR:', err);
+        return ctx.send({ data: [] });
+      }
+    },
 
-        return ctx.send({ results: formattedOfferings });
+    async getAllOfferings(ctx) {
+      try {
+        const offerings = await strapi.entityService.findMany(
+          'api::third-party-offering.third-party-offering',
+          {
+            filters: { publishedAt: { $notNull: true } },
+            publicationState: 'live',
+            populate: {
+              created_by_user: {
+                fields: ['id', 'fullName', 'email']
+              },
+              tasks: true,
+              college_tag: true
+            },
+            sort: { createdAt: 'desc' }
+          }
+        );
+
+        return ctx.send({ data: offerings.map(formatOfferingResponse) });
       } catch (err) {
         console.error('GET ALL OFFERINGS ERROR:', err);
-        return ctx.send({ results: [] });
+        return ctx.send({ data: [] });
       }
     },
 
@@ -776,7 +777,7 @@ module.exports = createCoreController(
         }));
         console.log('THIRD PARTY OFFERINGS FIND COUNT:', safeOfferings.length);
 
-        return ctx.send({ data: validatedOfferings });
+        return ctx.send({ data: validatedOfferings.map(formatOfferingResponse) });
       } catch (err) {
         console.error('THIRD PARTY OFFERINGS FIND ERROR:', err);
         return ctx.send({ data: [] });
@@ -869,7 +870,14 @@ module.exports = createCoreController(
         const offerings = await strapi.entityService.findMany(
           'api::third-party-offering.third-party-offering',
           {
-            filters: { publishedAt: { $notNull: true } }
+            filters: { publishedAt: { $notNull: true } },
+            populate: {
+              tasks: true,
+              college_tag: true,
+              created_by_user: {
+                fields: ['id', 'fullName', 'email']
+              }
+            }
           }
         );
 
@@ -877,8 +885,8 @@ module.exports = createCoreController(
         const scored = offerings.map(o => {
           let score = 0;
 
-          const professions = (o.target_professions || []).map(p => p.toLowerCase());
-          const skills = (o.skill_tags || []).map(s => s.toLowerCase());
+          const professions = uniqueNormalized(o.target_professions);
+          const skills = uniqueNormalized(o.skill_tags);
 
           if (dream && professions.includes(dream)) {
             score += 3;
@@ -898,7 +906,7 @@ module.exports = createCoreController(
           .filter(x => x.score > 0)
           .sort((a, b) => b.score - a.score)
           .slice(0, 6)
-          .map(x => x.o);
+          .map(x => formatOfferingResponse(x.o));
 
         return ctx.send({ data: result });
 

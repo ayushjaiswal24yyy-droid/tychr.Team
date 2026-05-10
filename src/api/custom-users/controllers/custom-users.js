@@ -1,3 +1,5 @@
+const { formatOfferingResponse } = require('../../third-party-offering/utils/format');
+
 module.exports = {
   async find(ctx) {
     try {
@@ -79,25 +81,26 @@ module.exports = {
             );
 
             // Format offerings data
-            const formattedOfferings = Array.isArray(offerings) ? offerings.map(offering => ({
-              id: offering.id,
-              title: offering.title,
-              description: offering.description,
-              activity_type: offering.activity_type || 'other',
-              category: offering.category || 'other',
-              region: offering.region || 'global-remote',
-              is_remote: offering.is_remote || false,
-              startDate: offering.startDate,
-              endDate: offering.endDate,
-              tasks: Array.isArray(offering.tasks) ? offering.tasks : [],
-              eligibility: offering.eligibility,
-              compensation: offering.compensation,
-              applicant_count: Array.isArray(offering.tp_applicants) ? offering.tp_applicants.length : 0,
-              accepted_count: Array.isArray(offering.tp_applicants) 
-                ? offering.tp_applicants.filter(app => app.is_accepted).length 
-                : 0,
-              publishedAt: offering.publishedAt
-            })) : [];
+            const formattedOfferings = Array.isArray(offerings)
+              ? offerings.map((offering) => {
+                  const formatted = formatOfferingResponse(offering);
+                  const applicantCount = Array.isArray(offering.tp_applicants)
+                    ? offering.tp_applicants.length
+                    : 0;
+                  const acceptedCount = Array.isArray(offering.tp_applicants)
+                    ? offering.tp_applicants.filter((app) => app.is_accepted).length
+                    : 0;
+
+                  return {
+                    ...formatted,
+                    attributes: {
+                      ...formatted.attributes,
+                      applicant_count: applicantCount,
+                      accepted_count: acceptedCount
+                    }
+                  };
+                })
+              : [];
 
             return {
               ...educator,
