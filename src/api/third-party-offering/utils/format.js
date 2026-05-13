@@ -53,4 +53,49 @@ function formatOfferingResponse(offering) {
   };
 }
 
-module.exports = { formatOfferingResponse };
+function formatOfferingSummary(offering) {
+  const formatted = formatOfferingResponse(offering);
+
+  return {
+    id: formatted.id,
+    ...formatted.attributes
+  };
+}
+
+const offeringResponseFields = [
+  'id',
+  'title',
+  'description',
+  'degree',
+  'field_of_study',
+  'year',
+  'skills_required',
+  'activity_type',
+  'category',
+  'region',
+  'Location',
+  'is_remote',
+  'startDate',
+  'endDate',
+  'eligibility',
+  'compensation',
+  'is_paid',
+  'stipend',
+  'currency',
+  'weekly_time_commitment',
+  'total_duration',
+  'selection_process',
+  'benefits',
+  'application_process',
+  'target_professions',
+  'skill_tags',
+  'createdAt',
+  'updatedAt',
+  'publishedAt'
+];
+
+module.exports = {
+  formatOfferingResponse,
+  formatOfferingSummary,
+  offeringResponseFields
+};

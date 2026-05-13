@@ -1,5 +1,6 @@
 'use strict';
 const { createCoreController } = require('@strapi/strapi').factories;
+const { formatOfferingSummary } = require('../../third-party-offering/utils/format');
 
 module.exports = createCoreController('api::individual-user.individual-user', ({ strapi }) => ({
   async myStudents(ctx) {
@@ -40,21 +41,13 @@ module.exports = createCoreController('api::individual-user.individual-user', ({
         if (!student || seen.has(student.id)) return;
         
         seen.add(student.id);
+        const offeringSummary = formatOfferingSummary(offering);
+
         students.push({
           id: student.id,
           fullName: student.fullName || student.username,
           email: student.email,
-          associatedOfferings: [{
-            id: offering.id,
-            title: offering.title,
-            activity_type: offering.activity_type,
-            category: offering.category,
-            region: offering.region,
-            is_remote: offering.is_remote,
-            tasks: Array.isArray(offering.tasks) ? offering.tasks : [],
-            startDate: offering.startDate,
-            endDate: offering.endDate,
-          }]
+          associatedOfferings: [offeringSummary]
         });
       });
     });
@@ -136,19 +129,7 @@ module.exports = createCoreController('api::individual-user.individual-user', ({
         createdAt: applicant.createdAt,
         created_at: applicant.createdAt,
         applied_by: applicant.applied_by,
-        offering: {
-          id: offering.id,
-          title: offering.title,
-          activity_type: offering.activity_type,
-          category: offering.category,
-          region: offering.region,
-          is_remote: offering.is_remote,
-          tasks: Array.isArray(offering.tasks) ? offering.tasks : [],
-          startDate: offering.startDate,
-          endDate: offering.endDate,
-          description: offering.description,
-          eligibility: offering.eligibility,
-        }
+        offering: formatOfferingSummary(offering)
       });
     });
   });

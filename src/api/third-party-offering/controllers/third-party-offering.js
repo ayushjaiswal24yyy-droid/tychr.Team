@@ -16,12 +16,8 @@ function toStringArray(value) {
   if (typeof value === 'string') {
     const trimmed = value.trim();
     if (!trimmed) return [];
-    return trimmed.includes(',')
-      ? trimmed
-          .split(',')
-          .map((item) => String(item).trim())
-          .filter(Boolean)
-      : [trimmed];
+    const parts = trimmed.split(/[,/|]+/);
+    return parts.map((item) => String(item).trim()).filter(Boolean);
   }
 
   return [];
@@ -35,27 +31,36 @@ function uniqueNormalized(values) {
   return [...new Set(toStringArray(values).map(normalizeTerm).filter(Boolean))];
 }
 
-function hasProfessionMatch(targetProfessions, dreamProfessions) {
-  if (!Array.isArray(targetProfessions) || !Array.isArray(dreamProfessions)) return false;
+const STOP_WORDS = new Set([
+  'a', 'an', 'and', 'or', 'the', 'to', 'of', 'for', 'in', 'on', 'with', 'by',
+  'from', 'at', 'as', 'into', 'via', 'per', 'is', 'are', 'be', 'this', 'that'
+]);
 
-  return targetProfessions.some((target) =>
-    dreamProfessions.some(
-      (dream) => target === dream || target.includes(dream) || dream.includes(target)
-    )
-  );
+function tokenizeValue(value) {
+  const normalized = normalizeTerm(value);
+  if (!normalized) return [];
+  const matches = normalized.match(/[a-z0-9]+/g) || [];
+  return matches.filter((token) => token.length > 1 && !STOP_WORDS.has(token));
 }
 
-function countSkillMatches(skillTags, weeklySignals) {
-  if (!Array.isArray(skillTags) || !Array.isArray(weeklySignals) || weeklySignals.length === 0) {
-    return 0;
-  }
+function buildTokenSet(values) {
+  const tokens = new Set();
+  toStringArray(values).forEach((value) => {
+    tokenizeValue(value).forEach((token) => tokens.add(token));
+  });
+  return tokens;
+}
 
-  return skillTags.reduce((count, tag) => {
-    const matched = weeklySignals.some(
-      (signal) => tag === signal || tag.includes(signal) || signal.includes(tag)
+function countPartialTokenOverlap(left, right) {
+  if (!left || !right || left.size === 0 || right.size === 0) return 0;
+  let count = 0;
+  left.forEach((token) => {
+    const matched = Array.from(right).some(
+      (candidate) => candidate.includes(token) || token.includes(candidate)
     );
-    return matched ? count + 1 : count;
-  }, 0);
+    if (matched) count += 1;
+  });
+  return count;
 }
 
 // Validation constants
@@ -860,11 +865,8 @@ module.exports = createCoreController(
         }
 
         // STEP 4: extract data
-        const dream = (studentProfile?.dream_profession || '').toLowerCase();
-
-        const weeklySkills = (studentProfile?.weekly_reports || [])
-          .flatMap(r => r?.skills_practiced || [])
-          .map(s => String(s).toLowerCase());
+        const dreamProfession = studentProfile?.dream_profession || '';
+        const dreamTokens = buildTokenSet(dreamProfession);
 
         // STEP 5: fetch offerings
         const offerings = await strapi.entityService.findMany(
@@ -882,23 +884,10 @@ module.exports = createCoreController(
         );
 
         // STEP 6: scoring
-        const scored = offerings.map(o => {
-          let score = 0;
-
-          const professions = uniqueNormalized(o.target_professions);
-          const skills = uniqueNormalized(o.skill_tags);
-
-          if (dream && professions.includes(dream)) {
-            score += 3;
-          }
-
-          weeklySkills.forEach(skill => {
-            if (skills.includes(skill)) {
-              score += 1;
-            }
-          });
-
-          return { o, score };
+        const scored = offerings.map((offering) => {
+          const titleTokens = buildTokenSet(offering?.title || '');
+          const score = countPartialTokenOverlap(dreamTokens, titleTokens);
+          return { o: offering, score };
         });
 
         // STEP 7: filter + sort
