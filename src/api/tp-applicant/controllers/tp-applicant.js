@@ -5,6 +5,19 @@
  */
 
 const { createCoreController } = require('@strapi/strapi').factories;
+const {
+  formatOfferingSummary,
+  offeringResponseFields,
+} = require('../../third-party-offering/utils/format');
+
+function formatApplicationResponse(application) {
+  if (!application?.third_party_offering) return application;
+
+  return {
+    ...application,
+    third_party_offering: formatOfferingSummary(application.third_party_offering),
+  };
+}
 
 module.exports = createCoreController('api::tp-applicant.tp-applicant', ({ strapi }) => ({
   async create(ctx) {
@@ -62,13 +75,17 @@ module.exports = createCoreController('api::tp-applicant.tp-applicant', ({ strap
               fields: ['id', 'fullName', 'username', 'email'],
             },
             third_party_offering: {
-              fields: ['id', 'title', 'activity_type', 'category', 'region'],
+              fields: offeringResponseFields,
+              populate: {
+                tasks: true,
+                college_tag: true,
+              },
             },
           },
         }
       );
 
-      return ctx.send({ data: application });
+      return ctx.send({ data: formatApplicationResponse(application) });
     } catch (err) {
       console.error('TP APPLICANT CREATE ERROR:', err);
       return ctx.badRequest('Failed to apply to offering');
@@ -134,13 +151,17 @@ module.exports = createCoreController('api::tp-applicant.tp-applicant', ({ strap
               fields: ['id', 'fullName', 'username', 'email'],
             },
             third_party_offering: {
-              fields: ['id', 'title', 'activity_type', 'category', 'region'],
+              fields: offeringResponseFields,
+              populate: {
+                tasks: true,
+                college_tag: true,
+              },
             },
           },
         }
       );
 
-      return ctx.send({ data: application });
+      return ctx.send({ data: formatApplicationResponse(application) });
     } catch (err) {
       console.error('TP APPLICANT UPDATE ERROR:', err);
       return ctx.badRequest('Failed to update application');
