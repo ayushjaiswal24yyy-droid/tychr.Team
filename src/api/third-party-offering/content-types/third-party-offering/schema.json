@@ -131,6 +131,18 @@
       "type": "boolean",
       "default": false
     },
+    "recommendation_required": {
+      "type": "boolean",
+      "default": false
+    },
+    "essay_required": {
+      "type": "boolean",
+      "default": false
+    },
+    "financial_aid_required": {
+      "type": "boolean",
+      "default": false
+    },
     "tasks": {
       "type": "component",
       "repeatable": true,
