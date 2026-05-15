@@ -5,10 +5,16 @@
  */
 
 const { createCoreController } = require('@strapi/strapi').factories;
-const {
-  formatOfferingSummary,
-  offeringResponseFields,
-} = require('../../third-party-offering/utils/format');
+
+// Inline helpers to avoid external dependency on ../../third-party-offering/utils/format
+function formatOfferingSummary(offering) {
+  if (!offering) return { id: null, attributes: {} };
+  if (offering.attributes) return offering;
+  const { id, ...rest } = offering;
+  return { id, attributes: rest };
+}
+
+const offeringResponseFields = ['id', 'title', 'publishedAt'];
 
 function formatApplicationResponse(application) {
   if (!application?.third_party_offering) return application;

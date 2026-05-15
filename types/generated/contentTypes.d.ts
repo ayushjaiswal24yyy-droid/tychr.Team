@@ -5406,6 +5406,9 @@ export interface ApiThirdPartyOfferingThirdPartyOffering
     > &
       Attribute.Required;
     is_remote: Attribute.Boolean & Attribute.DefaultTo<false>;
+    recommendation_required: Attribute.Boolean & Attribute.DefaultTo<false>;
+    essay_required: Attribute.Boolean & Attribute.DefaultTo<false>;
+    financial_aid_required: Attribute.Boolean & Attribute.DefaultTo<false>;
     tasks: Attribute.Component<'offering.task', true>;
     target_professions: Attribute.JSON;
     skill_tags: Attribute.JSON;

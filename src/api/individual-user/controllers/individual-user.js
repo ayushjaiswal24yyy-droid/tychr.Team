@@ -1,6 +1,13 @@
 'use strict';
 const { createCoreController } = require('@strapi/strapi').factories;
-const { formatOfferingSummary } = require('../../third-party-offering/utils/format');
+
+// Inline helper to avoid depending on ../../third-party-offering/utils/format
+function formatOfferingSummary(offering) {
+  if (!offering) return { id: null, attributes: {} };
+  if (offering.attributes) return offering;
+  const { id, ...rest } = offering;
+  return { id, attributes: rest };
+}
 
 module.exports = createCoreController('api::individual-user.individual-user', ({ strapi }) => ({
   async myStudents(ctx) {
