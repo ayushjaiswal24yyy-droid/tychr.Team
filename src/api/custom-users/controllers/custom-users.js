@@ -1,4 +1,4 @@
-const { formatOfferingResponse } = require('../../third-party-offering/utils/format');
+// dependency to '../../third-party-offering/utils/format' removed per request
 
 module.exports = {
   async find(ctx) {
@@ -83,7 +83,16 @@ module.exports = {
             // Format offerings data
             const formattedOfferings = Array.isArray(offerings)
               ? offerings.map((offering) => {
-                  const formatted = formatOfferingResponse(offering);
+                  // Inline offering formatting to avoid external util dependency
+                  let formatted;
+                  if (offering && offering.attributes) {
+                    formatted = offering;
+                  } else if (offering) {
+                    const { id, ...rest } = offering;
+                    formatted = { id, attributes: rest };
+                  } else {
+                    formatted = { id: null, attributes: {} };
+                  }
                   const applicantCount = Array.isArray(offering.tp_applicants)
                     ? offering.tp_applicants.length
                     : 0;
