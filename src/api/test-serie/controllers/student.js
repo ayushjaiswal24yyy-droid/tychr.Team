@@ -2,6 +2,12 @@
 
 const { createCoreController } = require("@strapi/strapi").factories;
 
+const getNumberParam = (value) => {
+  if (value === undefined || value === null || value === "") return null;
+  const parsed = Number(value);
+  return Number.isNaN(parsed) ? null : parsed;
+};
+
 module.exports = createCoreController(
   "api::test-serie.test-serie",
   ({ strapi }) => ({
@@ -461,7 +467,14 @@ module.exports = createCoreController(
     async getStudentTestResults(ctx) {
       try {
         const { testSeriesId } = ctx.params;
+        const { studentId, attemptId, classroomId } = ctx.query;
         const user = ctx.state.user;
+        const attemptIdNum = getNumberParam(attemptId);
+        const requestedStudentId = getNumberParam(studentId);
+
+        if (attemptId && attemptIdNum === null) {
+          return ctx.badRequest("Invalid attemptId");
+        }
 
         if (!testSeriesId) {
           return ctx.badRequest("Test Series ID is required");
@@ -469,6 +482,76 @@ module.exports = createCoreController(
 
         if (!user) {
           return ctx.unauthorized("User not authenticated");
+        }
+
+        let targetStudentId = user.id;
+        let classroom = null;
+        let tutorEnrollmentIds = null;
+
+        if (requestedStudentId && requestedStudentId !== user.id) {
+          targetStudentId = requestedStudentId;
+
+          if (classroomId) {
+            classroom = await strapi.entityService.findOne(
+              "api::enrollment.enrollment",
+              classroomId,
+              {
+                populate: ["tutor", "assistant", "students", "grade_subject"],
+              }
+            );
+
+            if (!classroom) return ctx.notFound("Classroom not found");
+
+            const isTutor = classroom.tutor?.id === user.id;
+            const isAssistant = classroom.assistant?.id === user.id;
+            if (!isTutor && !isAssistant) {
+              strapi.log.info("tutor_results_auth_denied", {
+                reason: "not_tutor_or_assistant",
+                userId: user.id,
+                classroomId,
+                studentId: requestedStudentId,
+              });
+              return ctx.forbidden("You are not authorized to view this student.");
+            }
+
+            const studentInClassroom = classroom.students?.some(
+              (student) => student.id === requestedStudentId
+            );
+            if (!studentInClassroom) {
+              strapi.log.info("tutor_results_auth_denied", {
+                reason: "student_not_in_classroom",
+                userId: user.id,
+                classroomId,
+                studentId: requestedStudentId,
+              });
+              return ctx.forbidden("Student is not in your classroom.");
+            }
+          } else {
+            const tutorEnrollments = await strapi.entityService.findMany(
+              "api::enrollment.enrollment",
+              {
+                filters: {
+                  $or: [
+                    { tutor: { id: { $eq: user.id } } },
+                    { assistant: { id: { $eq: user.id } } },
+                  ],
+                  students: { id: { $eq: requestedStudentId } },
+                },
+                fields: ["id"],
+                pagination: { limit: -1 },
+              }
+            );
+
+            tutorEnrollmentIds = tutorEnrollments.map((e) => e.id);
+            if (tutorEnrollmentIds.length === 0) {
+              strapi.log.info("tutor_results_auth_denied", {
+                reason: "no_shared_classroom",
+                userId: user.id,
+                studentId: requestedStudentId,
+              });
+              return ctx.forbidden("You are not authorized to view this student.");
+            }
+          }
         }
 
         /**
@@ -497,6 +580,20 @@ module.exports = createCoreController(
           return ctx.notFound("Test series not found");
         }
 
+        if (classroom) {
+          const classroomGradeSubjectId = classroom.grade_subject?.id ?? null;
+          const seriesGradeSubjectId = series.grade_subject?.id ?? null;
+          if (classroomGradeSubjectId && seriesGradeSubjectId && classroomGradeSubjectId !== seriesGradeSubjectId) {
+            strapi.log.info("tutor_results_auth_denied", {
+              reason: "series_not_in_classroom",
+              userId: user.id,
+              classroomId,
+              seriesId: testSeriesId,
+            });
+            return ctx.forbidden("Test series does not belong to this classroom.");
+          }
+        }
+
         if (!series.papers || series.papers.length === 0) {
           return ctx.badRequest("No papers found for this test series");
         }
@@ -507,15 +604,60 @@ module.exports = createCoreController(
          */
         const paperIds = series.papers.map((p) => p.id);
 
+        if (requestedStudentId && requestedStudentId !== user.id && !classroomId && tutorEnrollmentIds?.length) {
+          const accessCheckFilters = {
+            student: targetStudentId,
+            test_series: { id: { $in: paperIds } },
+            is_attempt_marker: { $ne: true },
+            tutor_classroom: { id: { $in: tutorEnrollmentIds } },
+          };
+
+          if (attemptIdNum) {
+            accessCheckFilters.attempt_id = attemptIdNum;
+          }
+
+          const accessCheck = await strapi.entityService.findMany(
+            "api::answer.answer",
+            {
+              filters: accessCheckFilters,
+              fields: ["id"],
+              limit: 1,
+            }
+          );
+
+          if (!accessCheck.length) {
+            strapi.log.info("tutor_results_auth_denied", {
+              reason: "no_submission_in_tutor_classroom",
+              userId: user.id,
+              studentId: requestedStudentId,
+              seriesId: testSeriesId,
+              attemptId: attemptIdNum ?? null,
+            });
+            return ctx.forbidden("You are not authorized to view this student.");
+          }
+        }
+
+        const answerFilters = {
+          student: targetStudentId,
+          test_series: { id: { $in: paperIds } },
+          completed: true,
+          is_attempt_marker: { $ne: true },
+        };
+
+        if (attemptIdNum) {
+          answerFilters.attempt_id = attemptIdNum;
+        }
+
+        if (classroomId) {
+          answerFilters.tutor_classroom = { id: { $eq: classroomId } };
+        } else if (requestedStudentId && requestedStudentId !== user.id && tutorEnrollmentIds?.length) {
+          answerFilters.tutor_classroom = { id: { $in: tutorEnrollmentIds } };
+        }
+
         const answers = await strapi.entityService.findMany(
           "api::answer.answer",
           {
-            filters: {
-              student: user.id,
-              test_series: { id: { $in: paperIds } },
-              completed: true,
-              is_attempt_marker: { $ne: true },
-            },
+            filters: answerFilters,
             populate: {
               test_series: {
                 fields: ["id", "title"],
