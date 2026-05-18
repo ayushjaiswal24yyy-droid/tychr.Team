@@ -12,14 +12,95 @@
 
 const { createCoreController } = require('@strapi/strapi').factories;
 
+const getNumberParam = (value) => {
+  if (value === undefined || value === null || value === '') return null;
+  const parsed = Number(value);
+  return Number.isNaN(parsed) ? null : parsed;
+};
+
 module.exports = createCoreController('api::test-serie.test-serie', ({ strapi }) => ({
 
   async results(ctx) {
     const { id } = ctx.params;
-    const { classroomId } = ctx.query;
-    const studentId = ctx.state.user?.id;
+    const { classroomId, studentId, attemptId } = ctx.query;
+    const currentUser = ctx.state.user;
+    const attemptIdNum = getNumberParam(attemptId);
+    const requestedStudentId = getNumberParam(studentId);
 
-    if (!studentId) return ctx.unauthorized('You must be logged in to view results.');
+    if (attemptId && attemptIdNum === null) {
+      return ctx.badRequest('Invalid attemptId');
+    }
+    if (!currentUser) return ctx.unauthorized('You must be logged in to view results.');
+
+    let targetStudentId = currentUser.id;
+    let classroom = null;
+    let tutorEnrollmentIds = null;
+
+    if (requestedStudentId && requestedStudentId !== currentUser.id) {
+      targetStudentId = requestedStudentId;
+
+      if (classroomId) {
+        classroom = await strapi.entityService.findOne(
+          'api::enrollment.enrollment',
+          classroomId,
+          {
+            populate: ['tutor', 'assistant', 'students', 'grade_subject'],
+          }
+        );
+
+        if (!classroom) return ctx.notFound('Classroom not found.');
+
+        const isTutor = classroom.tutor?.id === currentUser.id;
+        const isAssistant = classroom.assistant?.id === currentUser.id;
+        if (!isTutor && !isAssistant) {
+          strapi.log.info('tutor_results_auth_denied', {
+            reason: 'not_tutor_or_assistant',
+            userId: currentUser.id,
+            classroomId,
+            studentId: requestedStudentId,
+          });
+          return ctx.forbidden('You are not authorized to view this student.');
+        }
+
+        const studentInClassroom = classroom.students?.some(
+          (student) => student.id === requestedStudentId
+        );
+        if (!studentInClassroom) {
+          strapi.log.info('tutor_results_auth_denied', {
+            reason: 'student_not_in_classroom',
+            userId: currentUser.id,
+            classroomId,
+            studentId: requestedStudentId,
+          });
+          return ctx.forbidden('Student is not in your classroom.');
+        }
+      } else {
+        const tutorEnrollments = await strapi.entityService.findMany(
+          'api::enrollment.enrollment',
+          {
+            filters: {
+              $or: [
+                { tutor: { id: { $eq: currentUser.id } } },
+                { assistant: { id: { $eq: currentUser.id } } },
+              ],
+              students: { id: { $eq: requestedStudentId } },
+            },
+            fields: ['id'],
+            pagination: { limit: -1 },
+          }
+        );
+
+        tutorEnrollmentIds = tutorEnrollments.map((e) => e.id);
+        if (tutorEnrollmentIds.length === 0) {
+          strapi.log.info('tutor_results_auth_denied', {
+            reason: 'no_shared_classroom',
+            userId: currentUser.id,
+            studentId: requestedStudentId,
+          });
+          return ctx.forbidden('You are not authorized to view this student.');
+        }
+      }
+    }
 
     // ── 1. Fetch series ──────────────────────────────────────────────────────
     const series = await strapi.entityService.findOne(
@@ -46,9 +127,53 @@ module.exports = createCoreController('api::test-serie.test-serie', ({ strapi })
     if (!series) return ctx.notFound('Test series not found.');
     if (series.entity_type !== 'series') return ctx.badRequest('Provided ID is not a parent test series.');
 
+    if (classroom) {
+      const classroomGradeSubjectId = classroom.grade_subject?.id ?? null;
+      const seriesGradeSubjectId = series.grade_subject?.id ?? null;
+      if (classroomGradeSubjectId && seriesGradeSubjectId && classroomGradeSubjectId !== seriesGradeSubjectId) {
+        strapi.log.info('tutor_results_auth_denied', {
+          reason: 'series_not_in_classroom',
+          userId: currentUser.id,
+          classroomId,
+          seriesId: id,
+        });
+        return ctx.forbidden('Test series does not belong to this classroom.');
+      }
+    }
+
     const paperIds = (series.papers || []).map((p) => p.id);
     if (paperIds.length === 0) {
       return ctx.send({ series: { id: series.id, title: series.title }, stats: null, papers: [], chart: [], table: [], unitAnalysis: [] });
+    }
+
+    if (requestedStudentId && requestedStudentId !== currentUser.id && !classroomId && tutorEnrollmentIds?.length) {
+      const accessCheckFilters = {
+        student: targetStudentId,
+        test_series: { id: { $in: paperIds } },
+        is_attempt_marker: { $eq: false },
+        tutor_classroom: { id: { $in: tutorEnrollmentIds } },
+      };
+
+      if (attemptIdNum) {
+        accessCheckFilters.attempt_id = attemptIdNum;
+      }
+
+      const accessCheck = await strapi.entityService.findMany('api::answer.answer', {
+        filters: accessCheckFilters,
+        fields: ['id'],
+        limit: 1,
+      });
+
+      if (!accessCheck.length) {
+        strapi.log.info('tutor_results_auth_denied', {
+          reason: 'no_submission_in_tutor_classroom',
+          userId: currentUser.id,
+          studentId: requestedStudentId,
+          seriesId: id,
+          attemptId: attemptIdNum ?? null,
+        });
+        return ctx.forbidden('You are not authorized to view this student.');
+      }
     }
 
     // ── 2. Base filter ───────────────────────────────────────────────────────
@@ -58,13 +183,17 @@ module.exports = createCoreController('api::test-serie.test-serie', ({ strapi })
       is_attempt_marker: { $eq: false },
       evaluation_status: { $eq: 'evaluated' },
     };
-    if (classroomId) baseAnswerFilter.tutor_classroom = { id: { $eq: classroomId } };
+    if (classroomId) {
+      baseAnswerFilter.tutor_classroom = { id: { $eq: classroomId } };
+    } else if (requestedStudentId && requestedStudentId !== currentUser.id && tutorEnrollmentIds?.length) {
+      baseAnswerFilter.tutor_classroom = { id: { $in: tutorEnrollmentIds } };
+    }
 
     // ── 3. Fetch all evaluated answers ──────────────────────────────────────
     // ── 3. Fetch all evaluated answers (updated populate) ───────────────────
     const allAnswers = await strapi.entityService.findMany('api::answer.answer', {
       filters: baseAnswerFilter,
-      fields: ['id', 'marks', 'submission_date', 'time_taken'],
+      fields: ['id', 'marks', 'submission_date', 'time_taken', 'attempt_id'],
       populate: {
         student: { fields: ['id'] },
         test_series: { fields: ['id', 'title', 'pass_mark'] },
@@ -86,6 +215,21 @@ module.exports = createCoreController('api::test-serie.test-serie', ({ strapi })
     // bestAttempt[paperId][studentId] = the answer with highest marks (or latest if tied)
     const bestAttempt = {};   // paperId → { [studentId]: answer }
     const allAttemptsByStudent = {};  // studentId → paperId → answer[] (for progression)
+    const targetAttemptAnswers = attemptIdNum
+      ? allAnswers.filter(
+          (answer) =>
+            answer.student?.id === targetStudentId &&
+            answer.attempt_id === attemptIdNum
+        )
+      : [];
+    const targetAttemptByPaper = {};
+    if (attemptIdNum) {
+      for (const answer of targetAttemptAnswers) {
+        const pid = answer.test_series?.id;
+        if (!pid) continue;
+        targetAttemptByPaper[pid] = answer;
+      }
+    }
 
     for (const answer of allAnswers) {
       const pid = answer.test_series?.id;
@@ -124,8 +268,10 @@ module.exports = createCoreController('api::test-serie.test-serie', ({ strapi })
       const pid = answer.test_series?.id;
       if (pid && byPaper[pid]) {
         byPaper[pid].all.push(answer.marks ?? 0);
-        if (answer.student?.id === studentId) {
-          if (!byPaper[pid].mine || new Date(answer.submission_date) > new Date(byPaper[pid].mine.submission_date)) {
+        if (answer.student?.id === targetStudentId) {
+          if (attemptIdNum && targetAttemptByPaper[pid]) {
+            byPaper[pid].mine = targetAttemptByPaper[pid];
+          } else if (!byPaper[pid].mine || new Date(answer.submission_date) > new Date(byPaper[pid].mine.submission_date)) {
             byPaper[pid].mine = answer;
           }
         }
@@ -237,6 +383,7 @@ module.exports = createCoreController('api::test-serie.test-serie', ({ strapi })
     for (const answer of deduplicatedAnswers) {
       const sid = answer.student?.id;
       if (!sid) continue;
+      if (attemptIdNum && sid === targetStudentId) continue;
 
       const qnas = answer.question_n_answer ?? [];
       for (const qna of qnas) {
@@ -254,11 +401,29 @@ module.exports = createCoreController('api::test-serie.test-serie', ({ strapi })
       }
     }
 
+    if (attemptIdNum) {
+      for (const answer of targetAttemptAnswers) {
+        const sid = answer.student?.id;
+        if (!sid) continue;
+        const qnas = answer.question_n_answer ?? [];
+        for (const qna of qnas) {
+          const q = qna.question;
+          if (!q) continue;
+          const unitId = q.unit?.id ?? null;
+          const unitName = q.unit?.name ?? 'Unassigned';
+          const key = ensureUnitEntry(unitId, unitName);
+          const awarded = qna.question_awarded_marks ?? 0;
+          unitAgg[key].studentScores[sid] =
+            (unitAgg[key].studentScores[sid] ?? 0) + awarded;
+        }
+      }
+    }
+
     // Build final unitAnalysis array
     const unitAnalysis = Object.values(unitAgg)
       .map((u) => {
         const scores = Object.values(u.studentScores);
-        const myMarks = u.studentScores[studentId] ?? 0;
+        const myMarks = u.studentScores[targetStudentId] ?? 0;
         const highestScore = scores.length ? Math.max(...scores) : null;
         const meanScore = scores.length
           ? parseFloat((scores.reduce((a, b) => a + b, 0) / scores.length).toFixed(2))
@@ -308,7 +473,7 @@ module.exports = createCoreController('api::test-serie.test-serie', ({ strapi })
       allStudentTotals[sid] = (allStudentTotals[sid] ?? 0) + (answer.marks ?? 0);
     }
     const totalScores = Object.values(allStudentTotals);
-    const myTotal = allStudentTotals[studentId] ?? 0;
+    const myTotal = attemptIdNum ? seriesMyTotal : (allStudentTotals[targetStudentId] ?? 0);
     const globalRank = totalScores.filter((s) => s > myTotal).length + 1;
     const globalPercentile = totalScores.length > 0
       ? parseFloat((((totalScores.length - globalRank) / totalScores.length) * 100).toFixed(1))
@@ -331,25 +496,27 @@ module.exports = createCoreController('api::test-serie.test-serie', ({ strapi })
 
     // ── 9. Attempt progression (my attempts only, per paper) ────────────────
     const myProgression = paperIds.map((paperId) => {
-      const myAttempts = (allAttemptsByStudent[studentId]?.[paperId] ?? [])
-        .sort((a, b) => new Date(a.submission_date) - new Date(b.submission_date))
-        .map((attempt, idx) => ({
-          attemptNumber: idx + 1,
-          marks: attempt.marks ?? null,
-          submissionDate: attempt.submission_date,
-          timeTaken: attempt.time_taken ?? null,
-          // Unit breakdown per attempt (walk question_n_answer)
-          unitBreakdown: (() => {
-            const breakdown = {};
-            for (const qna of attempt.question_n_answer ?? []) {
-              const unitId = qna.question?.unit?.id ?? 'unassigned';
-              const unitName = qna.question?.unit?.name ?? 'Unassigned';
-              if (!breakdown[unitId]) breakdown[unitId] = { unitId, unitName, awarded: 0 };
-              breakdown[unitId].awarded += qna.question_awarded_marks ?? 0;
-            }
-            return Object.values(breakdown);
-          })(),
-        }));
+      const attemptList = (allAttemptsByStudent[targetStudentId]?.[paperId] ?? [])
+        .filter((attempt) => !attemptIdNum || attempt.attempt_id === attemptIdNum)
+        .sort((a, b) => new Date(a.submission_date) - new Date(b.submission_date));
+
+      const myAttempts = attemptList.map((attempt, idx) => ({
+        attemptNumber: idx + 1,
+        marks: attempt.marks ?? null,
+        submissionDate: attempt.submission_date,
+        timeTaken: attempt.time_taken ?? null,
+        // Unit breakdown per attempt (walk question_n_answer)
+        unitBreakdown: (() => {
+          const breakdown = {};
+          for (const qna of attempt.question_n_answer ?? []) {
+            const unitId = qna.question?.unit?.id ?? 'unassigned';
+            const unitName = qna.question?.unit?.name ?? 'Unassigned';
+            if (!breakdown[unitId]) breakdown[unitId] = { unitId, unitName, awarded: 0 };
+            breakdown[unitId].awarded += qna.question_awarded_marks ?? 0;
+          }
+          return Object.values(breakdown);
+        })(),
+      }));
 
       const paper = series.papers.find((p) => p.id === paperId);
       return {
@@ -364,7 +531,7 @@ module.exports = createCoreController('api::test-serie.test-serie', ({ strapi })
     }).filter((p) => p.attempts.length > 0);
 
     return ctx.send({
-      series: {
+        series: {
         id: series.id, title: series.title, program_type: series.program_type,
         grade_subject: series.grade_subject, totalPapers: paperIds.length,
         attemptedPapers: attemptedPapers.length, fullMarks: seriesFullMarks,

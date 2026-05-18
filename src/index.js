@@ -121,8 +121,56 @@ module.exports = {
     });
   },
 
-  bootstrap() {},
+  async bootstrap({ strapi }) {
+    await ensureAiTutorPermissions(strapi);
+  },
 };
+
+const AI_TUTOR_ACTIONS = [
+  'api::ai-tutor.ai-tutor.chat',
+  'api::ai-tutor.ai-tutor.generateQuestions',
+  'api::ai-tutor.ai-tutor.generatePaperQuestions',
+  'api::ai-tutor.ai-tutor.generateLearningPath',
+];
+
+async function ensureAiTutorPermissions(strapi) {
+  const authenticatedRole = await strapi
+    .query('plugin::users-permissions.role')
+    .findOne({ where: { type: 'authenticated' } });
+
+  if (!authenticatedRole) {
+    throw new Error('Authenticated role not found');
+  }
+
+  for (const action of AI_TUTOR_ACTIONS) {
+    const existingPermission = await strapi
+      .query('plugin::users-permissions.permission')
+      .findOne({ where: { action }, populate: ['role'] });
+
+    if (!existingPermission) {
+      await strapi.query('plugin::users-permissions.permission').create({
+        data: {
+          action,
+          role: authenticatedRole.id,
+        },
+      });
+      continue;
+    }
+
+    const existingRoleId = existingPermission.role?.id ?? existingPermission.role;
+
+    if (existingRoleId !== authenticatedRole.id) {
+      await strapi.query('plugin::users-permissions.permission').update({
+        where: { id: existingPermission.id },
+        data: {
+          role: authenticatedRole.id,
+        },
+      });
+    }
+  }
+
+  strapi.log.info('Ensured ai-tutor permissions are linked to the authenticated role');
+}
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
