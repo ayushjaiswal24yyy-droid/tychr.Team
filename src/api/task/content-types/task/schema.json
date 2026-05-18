@@ -28,6 +28,9 @@
     "date": {
       "type": "datetime"
     },
+    "planDate": {
+      "type": "date"
+    },
     "time": {
       "type": "time"
     },
