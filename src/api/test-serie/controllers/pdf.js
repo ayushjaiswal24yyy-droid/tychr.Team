@@ -256,6 +256,8 @@ module.exports = {
       const { attempt_id } = ctx.query;
 
       if (!attempt_id) return ctx.badRequest("attempt_id query param is required");
+      const user = ctx.state.user;
+      if (!user) return ctx.unauthorized("You must be logged in to download results PDF");
 
       const series = await strapi.entityService.findOne(
         "api::test-serie.test-serie",
@@ -281,6 +283,7 @@ module.exports = {
           test_series: { id: { $in: paperIds } },
         },
         populate: {
+          student: { fields: ["id", "fullName", "username", "email", "schoolname"] },
           test_series: { fields: ["id", "title", "test_mode"] },
           question_n_answer: {
             populate: {
@@ -292,6 +295,45 @@ module.exports = {
       });
 
       if (!answers?.length) return ctx.notFound("No answers found for this attempt");
+
+      const answerStudent = answers[0]?.student || null;
+      const answerStudentId = answerStudent?.id || null;
+      if (!answerStudentId) {
+        return ctx.internalServerError("Answer student not found");
+      }
+
+      const mixedStudents = answers.some((ans) => ans.student?.id !== answerStudentId);
+      if (mixedStudents) {
+        return ctx.badRequest("Attempt contains multiple students");
+      }
+
+      if (user.id !== answerStudentId) {
+        const tutorEnrollments = await strapi.entityService.findMany(
+          "api::enrollment.enrollment",
+          {
+            filters: {
+              $or: [
+                { tutor: { id: { $eq: user.id } } },
+                { assistant: { id: { $eq: user.id } } },
+              ],
+              students: { id: { $eq: answerStudentId } },
+            },
+            fields: ["id"],
+            pagination: { limit: -1 },
+          }
+        );
+
+        if (tutorEnrollments.length === 0) {
+          strapi.log.info("tutor_results_auth_denied", {
+            reason: "no_shared_classroom",
+            userId: user.id,
+            studentId: answerStudentId,
+            seriesId: id,
+            attemptId: Number(attempt_id),
+          });
+          return ctx.forbidden("You are not authorized to view this student.");
+        }
+      }
 
       // Only include online papers in the result PDF
       const onlineAnswers = answers.filter(
@@ -354,11 +396,14 @@ module.exports = {
         })),
       };
 
-      const user = ctx.state.user;
       const student = {
-        fullName: user?.fullName || user?.username,
-        email: user?.email,
-        schoolname: user?.schoolname,
+        fullName:
+          answerStudent?.fullName ||
+          answerStudent?.username ||
+          user?.fullName ||
+          user?.username,
+        email: answerStudent?.email || user?.email,
+        schoolname: answerStudent?.schoolname || user?.schoolname,
       };
 
       const lambdaUrl = process.env.PDF_LAMBDA_URL;
