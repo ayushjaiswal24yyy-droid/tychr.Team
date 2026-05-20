@@ -133,9 +133,16 @@ module.exports = createCoreController('api::individual-user.individual-user', ({
       applicants.push({
         id: applicant.id,
         is_accepted: applicant.is_accepted,
+        conversation_id: applicant.conversation_id ?? null,
         createdAt: applicant.createdAt,
         created_at: applicant.createdAt,
         applied_by: applicant.applied_by,
+        third_party_offering: {
+          id: offering.id,
+          title: offering.title,
+          Location: offering.Location,
+          startDate: offering.startDate,
+        },
         offering: formatOfferingSummary(offering)
       });
     });

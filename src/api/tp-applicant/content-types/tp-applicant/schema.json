@@ -25,6 +25,9 @@
     },
     "is_accepted": {
       "type": "boolean"
+    },
+    "conversation_id": {
+      "type": "integer"
     }
   }
 }
