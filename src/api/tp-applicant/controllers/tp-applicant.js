@@ -143,6 +143,10 @@ module.exports = createCoreController('api::tp-applicant.tp-applicant', ({ strap
         data.is_accepted = inputData.is_accepted;
       }
 
+      if (inputData.conversation_id !== undefined) {
+        data.conversation_id = inputData.conversation_id;
+      }
+
       if (Object.keys(data).length === 0) {
         return ctx.badRequest('No supported fields provided');
       }

@@ -6,7 +6,9 @@ module.exports = {
   register({ strapi }) {
     const allowedOrigins =
       process.env.NODE_ENV === 'production'
-        ? ['https://tychr.pages.dev/']
+        ? (process.env.ALLOWED_ORIGINS
+            ? process.env.ALLOWED_ORIGINS.split(',').map(o => o.trim())
+            : ['https://tychr.pages.dev', 'https://platform.tychr.com'])
         : '*';
 
     const io = new Server(strapi.server.httpServer, {
@@ -211,7 +213,16 @@ async function canAccessConversation(userId, conversationId, strapi) {
   // Subject groups are open to all authenticated users
   if (convo.type === 'subject_group') return true;
 
-  // Classroom + direct: must already be a participant
+  // tp-chat direct conversations: check if user is a named participant OR if
+  // the conversation was created for them (name contains their id)
+  if (convo.type === 'direct' && convo.name?.startsWith('tp-chat-')) {
+    const nameParts = convo.name.split('-'); // ['tp', 'chat', tpId, studentId]
+    const tpId = Number(nameParts[2]);
+    const studentId = Number(nameParts[3]);
+    if (userId === tpId || userId === studentId) return true;
+  }
+
+  // Classroom + other direct: must already be a participant
   return convo.participants.some((p) => p.id === userId);
 }
 
@@ -222,11 +233,14 @@ async function addParticipantIfNeeded(userId, conversationId, strapi) {
     { populate: ['participants'] }
   );
 
-  // Only auto-add for subject groups
-  if (convo.type !== 'subject_group') return;
-
   const alreadyIn = convo.participants.some((p) => p.id === userId);
   if (alreadyIn) return;
+
+  // Auto-add for subject_group (open communities) and tp-chat direct convos
+  const isSubjectGroup = convo.type === 'subject_group';
+  const isTpChat = convo.type === 'direct' && convo.name?.startsWith('tp-chat-');
+
+  if (!isSubjectGroup && !isTpChat) return;
 
   const updatedIds = [...convo.participants.map((p) => p.id), userId];
 
@@ -235,4 +249,6 @@ async function addParticipantIfNeeded(userId, conversationId, strapi) {
     conversationId,
     { data: { participants: updatedIds } }
   );
+
+  strapi.log.info(`User ${userId} auto-added as participant to conversation ${conversationId} (${convo.name})`);
 }
