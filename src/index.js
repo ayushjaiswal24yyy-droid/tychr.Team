@@ -7,7 +7,7 @@ module.exports = {
     const allowedOrigins =
       process.env.ALLOWED_ORIGINS
         ? process.env.ALLOWED_ORIGINS.split(',').map(o => o.trim())
-        : ['https://tychr.pages.dev', 'https://platform.tychr.com', 'http://localhost:3000', 'http://localhost:3001'];
+        : ['https://tychr.pages.dev', 'https://platform.tychr.com', 'http://localhost:3000', 'http://localhost:3001','*'];
 
     const io = new Server(strapi.server.httpServer, {
       cors: {
