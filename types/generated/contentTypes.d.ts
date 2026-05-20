@@ -5073,6 +5073,7 @@ export interface ApiTaskTask extends Schema.CollectionType {
     status: Attribute.Enumeration<['not_started', 'in_progress', 'completed']> &
       Attribute.DefaultTo<'not_started'>;
     date: Attribute.DateTime;
+    planDate: Attribute.Date;
     time: Attribute.Time;
     description: Attribute.Text;
     user: Attribute.Relation<
@@ -5515,6 +5516,7 @@ export interface ApiTpApplicantTpApplicant extends Schema.CollectionType {
       'api::third-party-offering.third-party-offering'
     >;
     is_accepted: Attribute.Boolean;
+    conversation_id: Attribute.Integer;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     createdBy: Attribute.Relation<
