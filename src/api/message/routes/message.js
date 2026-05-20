@@ -1,9 +1,11 @@
 'use strict';
 
-/**
- * message router
- */
-
-const { createCoreRouter } = require('@strapi/strapi').factories;
-
-module.exports = createCoreRouter('api::message.message');
+module.exports = {
+  routes: [
+    { method: 'GET',    path: '/messages',     handler: 'message.find',    config: { policies: [] } },
+    { method: 'GET',    path: '/messages/:id', handler: 'message.findOne', config: { policies: [] } },
+    { method: 'POST',   path: '/messages',     handler: 'message.create',  config: { policies: [] } },
+    { method: 'PUT',    path: '/messages/:id', handler: 'message.update',  config: { policies: [] } },
+    { method: 'DELETE', path: '/messages/:id', handler: 'message.delete',  config: { policies: [] } },
+  ],
+};

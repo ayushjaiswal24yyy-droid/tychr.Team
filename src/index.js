@@ -50,27 +50,44 @@ module.exports = {
       }
     });
 
+    // ── Online status store (userId → Set of socketIds) ────────────────────
+    const onlineUsers = new Map();
+
     // ── Connection ──────────────────────────────────────────────────────────
     io.on('connection', async (socket) => {
-      strapi.log.info(`Client connected: ${socket.id} (user: ${socket.user.id})`);
+      const userId = socket.user.id;
+      strapi.log.info(`Client connected: ${socket.id} (user: ${userId})`);
 
-      // Join personal room + all conversation rooms
+      // Track online status
+      if (!onlineUsers.has(userId)) onlineUsers.set(userId, new Set());
+      const wasOffline = onlineUsers.get(userId).size === 0;
+      onlineUsers.get(userId).add(socket.id);
+
+      // Join personal room + all conversation rooms (including tp-chat)
       await joinUserRooms(socket, strapi);
 
-      // ── Join a conversation room (subject groups — lazy join) ─────────────
+      // Broadcast online to all conversations this user is part of
+      if (wasOffline) {
+        socket.rooms.forEach((room) => {
+          if (room.startsWith('conversation:')) {
+            socket.to(room).emit('user:online', { userId });
+          }
+        });
+      }
+
+      // ── Join a conversation room (subject groups / tp-chat — lazy join) ────
       socket.on('conversation:join', async ({ conversationId }) => {
         try {
-          const allowed = await canAccessConversation(socket.user.id, conversationId, strapi);
+          const allowed = await canAccessConversation(userId, conversationId, strapi);
           if (!allowed) return socket.emit('error', { message: 'Access denied' });
 
-          // For subject_group: add as participant if not already
-          await addParticipantIfNeeded(socket.user.id, conversationId, strapi);
+          await addParticipantIfNeeded(userId, conversationId, strapi);
 
           socket.join(`conversation:${conversationId}`);
 
           socket.to(`conversation:${conversationId}`).emit('conversation:user_joined', {
             conversationId,
-            user: { id: socket.user.id, username: socket.user.username },
+            user: { id: userId, username: socket.user.username },
           });
         } catch (err) {
           strapi.log.error(`conversation:join error — ${err.message}`);
@@ -82,7 +99,7 @@ module.exports = {
         socket.leave(`conversation:${conversationId}`);
         socket.to(`conversation:${conversationId}`).emit('conversation:user_left', {
           conversationId,
-          user: { id: socket.user.id, username: socket.user.username },
+          user: { id: userId, username: socket.user.username },
         });
       });
 
@@ -90,20 +107,67 @@ module.exports = {
       socket.on('typing:start', ({ conversationId }) => {
         socket.to(`conversation:${conversationId}`).emit('typing:start', {
           conversationId,
-          user: { id: socket.user.id, username: socket.user.username },
+          user: { id: userId, username: socket.user.username },
         });
       });
 
       socket.on('typing:stop', ({ conversationId }) => {
         socket.to(`conversation:${conversationId}`).emit('typing:stop', {
           conversationId,
-          user: { id: socket.user.id, username: socket.user.username },
+          user: { id: userId, username: socket.user.username },
         });
+      });
+
+      // ── Read receipt ──────────────────────────────────────────────────────
+      // Client emits: { messageIds: [1, 2, 3], conversationId: 36 }
+      socket.on('message:read', async ({ messageIds, conversationId }) => {
+        try {
+          if (!Array.isArray(messageIds) || !messageIds.length) return;
+
+          // Fetch current read_by for these messages and add this user
+          const messages = await strapi.entityService.findMany('api::message.message', {
+            filters: { id: { $in: messageIds }, conversation: { id: conversationId } },
+            populate: ['read_by'],
+          });
+
+          for (const msg of messages) {
+            const alreadyRead = msg.read_by?.some((u) => u.id === userId);
+            if (alreadyRead) continue;
+
+            const updatedReadBy = [...(msg.read_by?.map((u) => u.id) || []), userId];
+            await strapi.entityService.update('api::message.message', msg.id, {
+              data: { read_by: updatedReadBy },
+            });
+          }
+
+          // Notify the conversation room so sender sees tick update
+          io.to(`conversation:${conversationId}`).emit('message:read', {
+            conversationId,
+            messageIds,
+            readBy: { id: userId, username: socket.user.username },
+          });
+        } catch (err) {
+          strapi.log.error(`message:read error — ${err.message}`);
+        }
       });
 
       // ── Disconnect ────────────────────────────────────────────────────────
       socket.on('disconnect', () => {
-        strapi.log.info(`Client disconnected: ${socket.id} (user: ${socket.user.id})`);
+        strapi.log.info(`Client disconnected: ${socket.id} (user: ${userId})`);
+
+        const sockets = onlineUsers.get(userId);
+        if (sockets) {
+          sockets.delete(socket.id);
+          if (sockets.size === 0) {
+            onlineUsers.delete(userId);
+            // Broadcast offline to all conversations this user was part of
+            socket.rooms.forEach((room) => {
+              if (room.startsWith('conversation:')) {
+                socket.to(room).emit('user:offline', { userId });
+              }
+            });
+          }
+        }
       });
 
       socket.on('error', (err) => {
@@ -122,18 +186,30 @@ module.exports = {
   },
 
   async bootstrap({ strapi }) {
-    await ensureAiTutorPermissions(strapi);
+    await ensurePermissions(strapi);
   },
 };
 
-const AI_TUTOR_ACTIONS = [
+const AUTHENTICATED_ACTIONS = [
+  // AI tutor
   'api::ai-tutor.ai-tutor.chat',
   'api::ai-tutor.ai-tutor.generateQuestions',
   'api::ai-tutor.ai-tutor.generatePaperQuestions',
   'api::ai-tutor.ai-tutor.generateLearningPath',
+  // Messaging
+  'api::message.message.find',
+  'api::message.message.findOne',
+  'api::message.message.create',
+  'api::message.message.update',
+  'api::message.message.delete',
+  // Conversations
+  'api::conversation.conversation.find',
+  'api::conversation.conversation.findOne',
+  'api::conversation.conversation.create',
+  'api::conversation.conversation.getOrCreateTpChat',
 ];
 
-async function ensureAiTutorPermissions(strapi) {
+async function ensurePermissions(strapi) {
   const authenticatedRole = await strapi
     .query('plugin::users-permissions.role')
     .findOne({ where: { type: 'authenticated' } });
@@ -142,61 +218,82 @@ async function ensureAiTutorPermissions(strapi) {
     throw new Error('Authenticated role not found');
   }
 
-  for (const action of AI_TUTOR_ACTIONS) {
+  for (const action of AUTHENTICATED_ACTIONS) {
     const existingPermission = await strapi
       .query('plugin::users-permissions.permission')
       .findOne({ where: { action }, populate: ['role'] });
 
     if (!existingPermission) {
       await strapi.query('plugin::users-permissions.permission').create({
-        data: {
-          action,
-          role: authenticatedRole.id,
-        },
+        data: { action, role: authenticatedRole.id },
       });
       continue;
     }
 
     const existingRoleId = existingPermission.role?.id ?? existingPermission.role;
-
     if (existingRoleId !== authenticatedRole.id) {
       await strapi.query('plugin::users-permissions.permission').update({
         where: { id: existingPermission.id },
-        data: {
-          role: authenticatedRole.id,
-        },
+        data: { role: authenticatedRole.id },
       });
     }
   }
 
-  strapi.log.info('Ensured ai-tutor permissions are linked to the authenticated role');
+  strapi.log.info('Ensured authenticated role permissions for messaging + ai-tutor');
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 async function joinUserRooms(socket, strapi) {
-  // Personal room — used for conversation:created notifications
-  socket.join(`user:${socket.user.id}`);
+  const userId = socket.user.id;
 
-  // All active conversations user is a participant of
-  const conversations = await strapi.entityService.findMany(
+  // Personal room — used for conversation:created notifications
+  socket.join(`user:${userId}`);
+
+  // All active conversations user is a participant of (includes tp-chat once added)
+  const participantConvos = await strapi.entityService.findMany(
     'api::conversation.conversation',
     {
-      filters: {
-        participants: { id: socket.user.id },
-        is_active: true,
-      },
-      fields: ['id', 'type'],
+      filters: { participants: { id: userId }, is_active: true },
+      fields: ['id', 'type', 'name'],
     }
   );
 
-  for (const convo of conversations) {
+  // tp-chat convos: fetch all tp-chat direct conversations that $contains userId
+  // Then verify exact match in JS to avoid false positives (userId=3 matching tp-chat-13-5)
+  const tpChatCandidates = await strapi.entityService.findMany('api::conversation.conversation', {
+    filters: {
+      is_active: true,
+      type: 'direct',
+      name: { $contains: `tp-chat-` },
+    },
+    populate: ['participants'],
+    fields: ['id', 'type', 'name'],
+  });
+
+  // Exact name validation in JS: tp-chat-{tpId}-{studentId} where one of the IDs === userId
+  const tpChatForUser = tpChatCandidates.filter((c) => {
+    const parts = c.name?.split('-');
+    if (!parts || parts.length !== 4) return false;
+    return Number(parts[2]) === userId || Number(parts[3]) === userId;
+  });
+
+  // Merge all convos, deduplicate
+  const seen = new Set();
+  const allConvos = [...participantConvos, ...tpChatForUser].filter((c) => {
+    if (seen.has(c.id)) return false;
+    seen.add(c.id);
+    return true;
+  });
+
+  for (const convo of allConvos) {
+    if (convo.type === 'direct' && convo.name?.startsWith('tp-chat-')) {
+      await addParticipantIfNeeded(userId, convo.id, strapi);
+    }
     socket.join(`conversation:${convo.id}`);
   }
 
-  strapi.log.info(
-    `User ${socket.user.id} auto-joined ${conversations.length} conversation rooms`
-  );
+  strapi.log.info(`User ${userId} auto-joined ${allConvos.length} conversation rooms`);
 }
 
 async function canAccessConversation(userId, conversationId, strapi) {

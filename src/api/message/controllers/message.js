@@ -7,12 +7,16 @@ module.exports = createCoreController('api::message.message', ({ strapi }) => ({
   // ── Send Message ────────────────────────────────────────────────────────────
   async create(ctx) {
     const userId = ctx.state.user.id;
-    const { conversationId, content, parentMessageId } = ctx.request.body;
+    // Support both JSON and multipart/form-data (file uploads)
+    const body = ctx.request.body ?? {};
+    const conversationId = Number(body.conversationId);
+    const content = body.content ?? '';
+    const parentMessageId = body.parentMessageId ? Number(body.parentMessageId) : null;
+    const files = ctx.request.files;
 
     if (!conversationId) return ctx.badRequest('conversationId is required');
-    if (!content && !ctx.request.files) return ctx.badRequest('content or attachment is required');
+    if (!content && !files?.['files.attachment']) return ctx.badRequest('content or attachment is required');
 
-    // Verify user is participant
     const convo = await strapi.entityService.findOne('api::conversation.conversation', conversationId, {
       populate: ['participants'],
     });
@@ -20,32 +24,55 @@ module.exports = createCoreController('api::message.message', ({ strapi }) => ({
     if (!convo || !convo.is_active) return ctx.notFound('Conversation not found');
 
     const isParticipant = convo.participants.some((p) => p.id === userId);
-    if (!isParticipant) return ctx.forbidden('You are not part of this conversation');
+    const isTpChatMember = isTpChatParticipant(convo, userId);
 
-    if (convo.write_access === 'admins_only') {
-      // TODO: check if user is admin/tutor
-      return ctx.forbidden('Only admins can send messages here');
+    if (!isParticipant && !isTpChatMember) return ctx.forbidden('You are not part of this conversation');
+
+    // Auto-add as DB participant for tp-chat
+    if (!isParticipant && isTpChatMember) {
+      await strapi.entityService.update('api::conversation.conversation', conversationId, {
+        data: { participants: [...convo.participants.map((p) => p.id), userId] },
+      });
     }
 
-    // Create message
+    // admins_only: only allow tutor/admin roles
+    if (convo.write_access === 'admins_only') {
+      const sender = await strapi.entityService.findOne('plugin::users-permissions.user', userId, {
+        populate: ['role'],
+      });
+      const roleType = sender?.role?.type ?? '';
+      if (!['tutor', 'admin', 'assistant'].includes(roleType)) {
+        return ctx.forbidden('Only admins can send messages here');
+      }
+    }
+
+    // Handle file attachment if present
+    let attachmentIds = [];
+    if (files?.['files.attachment']) {
+      const uploaded = await strapi.plugins.upload.services.upload.upload({
+        data: {},
+        files: files['files.attachment'],
+      });
+      attachmentIds = uploaded.map((f) => f.id);
+    }
+
     const message = await strapi.entityService.create('api::message.message', {
       data: {
-        content,
+        content: content || null,
         sender: userId,
         conversation: conversationId,
-        parent_message: parentMessageId || null,
-        message_type: 'text',
+        parent_message: parentMessageId,
+        message_type: attachmentIds.length ? 'attachment' : 'text',
         is_deleted: false,
+        ...(attachmentIds.length && { attachment: attachmentIds }),
       },
-      populate: ['sender', 'parent_message'],
+      populate: ['sender', 'parent_message', 'attachment'],
     });
 
-    // Update conversation last_message_at
     await strapi.entityService.update('api::conversation.conversation', conversationId, {
       data: { last_message_at: new Date() },
     });
 
-    // Emit to all participants in the room
     strapi.io.to(`conversation:${conversationId}`).emit('message:new', {
       conversationId,
       message: sanitizeMessage(message),
@@ -109,7 +136,9 @@ module.exports = createCoreController('api::message.message', ({ strapi }) => ({
   // ── Get Messages (paginated) ─────────────────────────────────────────────────
   async find(ctx) {
     const userId = ctx.state.user.id;
-    const { conversationId, page = 1, pageSize = 30 } = ctx.query;
+    const conversationId = Number(ctx.query.conversationId);
+    const page = Math.max(1, Number(ctx.query.page) || 1);
+    const pageSize = Math.min(100, Math.max(1, Number(ctx.query.pageSize) || 30));
 
     if (!conversationId) return ctx.badRequest('conversationId is required');
 
@@ -121,8 +150,16 @@ module.exports = createCoreController('api::message.message', ({ strapi }) => ({
     if (!convo) return ctx.notFound('Conversation not found');
 
     const isParticipant = convo.participants.some((p) => p.id === userId);
-    if (!isParticipant && convo.type !== 'subject_group') {
+    const isTpChatMember = isTpChatParticipant(convo, userId);
+
+    if (!isParticipant && convo.type !== 'subject_group' && !isTpChatMember) {
       return ctx.forbidden('Access denied');
+    }
+
+    if (!isParticipant && isTpChatMember) {
+      await strapi.entityService.update('api::conversation.conversation', conversationId, {
+        data: { participants: [...convo.participants.map((p) => p.id), userId] },
+      });
     }
 
     const messages = await strapi.entityService.findMany('api::message.message', {
@@ -136,6 +173,13 @@ module.exports = createCoreController('api::message.message', ({ strapi }) => ({
     return ctx.send({ data: messages.reverse() }); // reverse so oldest first
   },
 }));
+
+// ── Check if userId is named in a tp-chat-{tpId}-{studentId} conversation ────
+function isTpChatParticipant(convo, userId) {
+  if (convo.type !== 'direct' || !convo.name?.startsWith('tp-chat-')) return false;
+  const parts = convo.name.split('-');
+  return userId === Number(parts[2]) || userId === Number(parts[3]);
+}
 
 // ── Strip internal fields before sending over WS ─────────────────────────────
 function sanitizeMessage(message) {
