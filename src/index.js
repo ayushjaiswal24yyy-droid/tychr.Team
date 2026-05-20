@@ -5,11 +5,9 @@ const { Server } = require('socket.io');
 module.exports = {
   register({ strapi }) {
     const allowedOrigins =
-      process.env.NODE_ENV === 'production'
-        ? (process.env.ALLOWED_ORIGINS
-            ? process.env.ALLOWED_ORIGINS.split(',').map(o => o.trim())
-            : ['https://tychr.pages.dev', 'https://platform.tychr.com'])
-        : '*';
+      process.env.ALLOWED_ORIGINS
+        ? process.env.ALLOWED_ORIGINS.split(',').map(o => o.trim())
+        : ['https://tychr.pages.dev', 'https://platform.tychr.com', 'http://localhost:3000', 'http://localhost:3001'];
 
     const io = new Server(strapi.server.httpServer, {
       cors: {
