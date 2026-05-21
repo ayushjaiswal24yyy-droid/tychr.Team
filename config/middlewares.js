@@ -1,6 +1,21 @@
 const externalURI = "www.wiris.net";
 
 module.exports = ({ env }) => [
+  {
+    name: "strapi::cors",
+    config: {
+      origin: [
+        "https://platform.tychr.com",
+        "http://172.28.100.229:3000",
+        "http://localhost:3000",
+        "http://localhost:3001",
+      ],
+      credentials: true,
+      methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS", "HEAD"],
+      headers: ["Authorization", "Content-Type", "Origin", "Accept"],
+      keepHeadersOnError: true,
+    },
+  },
   "strapi::errors",
   {
     name: "strapi::security",
@@ -46,19 +61,6 @@ module.exports = ({ env }) => [
           ],
         },
       },
-    },
-  },
-  {
-    name: "strapi::cors",
-    config: {
-      origin: [
-        "https://platform.tychr.com",
-        "http://localhost:3000",
-        "http://localhost:3001",
-      ],
-      methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS", "HEAD"],
-      headers: ["Content-Type", "Authorization", "Origin", "Accept"],
-      keepHeaderOnError: true,
     },
   },
   "strapi::poweredBy",
