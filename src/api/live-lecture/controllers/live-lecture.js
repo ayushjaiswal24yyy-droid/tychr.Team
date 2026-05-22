@@ -129,12 +129,23 @@ ${tutor?.fullName || "Your Tutor"}
           const start = new Date(schedule);
           const end = new Date(start.getTime() + 60 * 60 * 1000);
 
-          const meeting = await createTeamsMeeting({
-            accessToken,
-            title,
-            startTime: start.toISOString(),
-            endTime: end.toISOString(),
-          });
+          let meeting;
+          try {
+            meeting = await createTeamsMeeting({
+              accessToken,
+              title,
+              startTime: start.toISOString(),
+              endTime: end.toISOString(),
+            });
+          } catch (err) {
+            if (err.code === "teams_reauth_required") {
+              return ctx.send(
+                { error: { status: 403, code: "teams_reauth_required", message: err.message } },
+                403
+              );
+            }
+            throw err;
+          }
 
           // ✅ Create lecture with all data at once
           response = await strapi.entityService.create(

@@ -79,17 +79,36 @@ async function createTeamsMeeting({
       meetingId: res.data.id,
     };
   } catch (err) {
-    if (err.response?.status === 401) {
-      throw new Error("Microsoft Teams authorization expired");
+    const status = err.response?.status;
+    const graphError = err.response?.data?.error;
+
+    strapi.log.error("[teams] createTeamsMeeting failed", {
+      status,
+      errorCode: graphError?.code,
+      errorMessage: graphError?.message,
+    });
+
+    if (status === 401) {
+      const e = Object.assign(
+        new Error("Microsoft Teams authorization expired. Please reconnect your Teams account."),
+        { code: "teams_reauth_required" }
+      );
+      throw e;
     }
-    if (err.response?.status === 429) {
-      throw new Error("Microsoft Teams rate limit exceeded");
+    if (status === 403) {
+      // Insufficient permissions — token missing OnlineMeetings.ReadWrite scope
+      const e = Object.assign(
+        new Error(graphError?.message || "Microsoft Teams permission denied. Please reconnect your Teams account to grant meeting permissions."),
+        { code: "teams_reauth_required" }
+      );
+      throw e;
+    }
+    if (status === 429) {
+      throw new Error("Microsoft Teams rate limit exceeded. Please try again in a moment.");
     }
 
-    throw new Error(
-      err.response?.data?.error?.message ||
-      "Failed to create Microsoft Teams meeting"
-    );
+    const msg = graphError?.message || "Failed to create Microsoft Teams meeting";
+    throw new Error(msg);
   }
 }
 
