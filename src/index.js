@@ -183,6 +183,10 @@ const AUTHENTICATED_ACTIONS = [
   'api::student-meeting.student-meeting.join',
   'api::student-meeting.student-meeting.complete',
   'api::student-meeting.student-meeting.interrupt',
+  'api::live-lecture.live-lecture.create',
+  'api::live-lecture.live-lecture.find',
+  'api::live-lecture.live-lecture.findOne',
+  'api::live-lecture.live-lecture.update',
 ];
 
 async function ensurePermissions(strapi) {
