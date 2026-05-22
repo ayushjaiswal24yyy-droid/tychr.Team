@@ -4,17 +4,37 @@ const MS_TOKEN_URL =
   "https://login.microsoftonline.com/common/oauth2/v2.0/token";
 
 async function getTeamsAccessToken(refreshToken, userId) {
-  const res = await axios.post(
-    MS_TOKEN_URL,
-    new URLSearchParams({
-      client_id: process.env.MICROSOFT_CLIENT_ID,
-      client_secret: process.env.MICROSOFT_CLIENT_SECRET,
-      grant_type: "refresh_token",
-      refresh_token: refreshToken,
-      scope: "https://graph.microsoft.com/.default",
-    }),
-    { headers: { "Content-Type": "application/x-www-form-urlencoded" } }
-  );
+  let res;
+  try {
+    res = await axios.post(
+      MS_TOKEN_URL,
+      new URLSearchParams({
+        client_id: process.env.MICROSOFT_CLIENT_ID,
+        client_secret: process.env.MICROSOFT_CLIENT_SECRET,
+        grant_type: "refresh_token",
+        refresh_token: refreshToken,
+        scope: "https://graph.microsoft.com/.default",
+      }),
+      { headers: { "Content-Type": "application/x-www-form-urlencoded" } }
+    );
+  } catch (err) {
+    const msError = err.response?.data;
+    strapi.log.error("[teams] refresh token exchange failed", {
+      error: msError?.error,
+      description: msError?.error_description,
+      client_id_set: !!process.env.MICROSOFT_CLIENT_ID,
+      client_secret_set: !!process.env.MICROSOFT_CLIENT_SECRET,
+      refresh_token_length: refreshToken?.length,
+    });
+    throw new Error(
+      msError?.error_description || msError?.error || "Error authenticating with Microsoft Teams"
+    );
+  }
+
+  if (!res.data.access_token) {
+    strapi.log.error("[teams] no access_token in response", res.data);
+    throw new Error("Microsoft did not return an access token");
+  }
 
   if (res.data.refresh_token && userId) {
     await strapi.entityService.update(
@@ -24,7 +44,6 @@ async function getTeamsAccessToken(refreshToken, userId) {
     );
   }
 
-  // ✅ FIX: Return the full object, not just access_token
   return {
     accessToken: res.data.access_token,
     refreshToken: res.data.refresh_token
