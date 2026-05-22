@@ -177,6 +177,12 @@ const AUTHENTICATED_ACTIONS = [
   'api::conversation.conversation.findOne',
   'api::conversation.conversation.create',
   'api::conversation.conversation.getOrCreateTpChat',
+  'api::student-meeting.student-meeting.schedule',
+  'api::student-meeting.student-meeting.myPlans',
+  'api::student-meeting.student-meeting.myMeetings',
+  'api::student-meeting.student-meeting.join',
+  'api::student-meeting.student-meeting.complete',
+  'api::student-meeting.student-meeting.interrupt',
 ];
 
 async function ensurePermissions(strapi) {
