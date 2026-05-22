@@ -3,6 +3,10 @@ const axios = require("axios");
 const MS_TOKEN_URL =
   "https://login.microsoftonline.com/common/oauth2/v2.0/token";
 
+// Explicit scopes — must match what was consented during OAuth
+const TEAMS_SCOPES =
+  "openid profile email offline_access User.Read OnlineMeetings.ReadWrite";
+
 async function getTeamsAccessToken(refreshToken, userId) {
   let res;
   try {
@@ -13,7 +17,7 @@ async function getTeamsAccessToken(refreshToken, userId) {
         client_secret: process.env.MICROSOFT_CLIENT_SECRET,
         grant_type: "refresh_token",
         refresh_token: refreshToken,
-        scope: "https://graph.microsoft.com/.default",
+        scope: TEAMS_SCOPES,
       }),
       { headers: { "Content-Type": "application/x-www-form-urlencoded" } }
     );
@@ -22,10 +26,21 @@ async function getTeamsAccessToken(refreshToken, userId) {
     strapi.log.error("[teams] refresh token exchange failed", {
       error: msError?.error,
       description: msError?.error_description,
+      error_codes: msError?.error_codes,
       client_id_set: !!process.env.MICROSOFT_CLIENT_ID,
       client_secret_set: !!process.env.MICROSOFT_CLIENT_SECRET,
       refresh_token_length: refreshToken?.length,
     });
+
+    // invalid_grant means the refresh token is expired or scope was never consented
+    if (msError?.error === "invalid_grant") {
+      const e = Object.assign(
+        new Error("Microsoft Teams session expired. Please reconnect your Teams account."),
+        { code: "teams_reauth_required" }
+      );
+      throw e;
+    }
+
     throw new Error(
       msError?.error_description || msError?.error || "Error authenticating with Microsoft Teams"
     );
@@ -34,6 +49,23 @@ async function getTeamsAccessToken(refreshToken, userId) {
   if (!res.data.access_token) {
     strapi.log.error("[teams] no access_token in response", res.data);
     throw new Error("Microsoft did not return an access token");
+  }
+
+  const returnedScopes = res.data.scope || "";
+  const hasOnlineMeetings = returnedScopes.includes("OnlineMeetings.ReadWrite");
+
+  strapi.log.info("[teams] token refreshed", {
+    hasOnlineMeetings,
+    scopesReturned: returnedScopes,
+  });
+
+  if (!hasOnlineMeetings) {
+    strapi.log.warn("[teams] token missing OnlineMeetings.ReadWrite — tutor must reconnect");
+    const e = Object.assign(
+      new Error("Microsoft Teams meeting permission not granted. Please reconnect your Teams account and accept all permissions."),
+      { code: "teams_reauth_required" }
+    );
+    throw e;
   }
 
   if (res.data.refresh_token && userId) {
