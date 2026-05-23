@@ -768,6 +768,8 @@ module.exports = createCoreController(
                   question_type: qna.question?.question_type,
                   annotations: qna.annotations ?? null,
                   improved_answer: qna.improved_answer ?? null,
+                  criterion_breakdown: qna.criterion_breakdown ?? null,
+                  structure_score: qna.structure_score ?? null,
                   marks: qna.question?.marks,
                   student_answer: qna.answer,
                   part_evaluations:
