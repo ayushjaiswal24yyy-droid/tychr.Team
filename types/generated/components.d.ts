@@ -725,7 +725,9 @@ export interface QuestionBankQuestionNAnswer extends Schema.Component {
     >;
     answer: Attribute.JSON;
     annotations: Attribute.JSON;
+    criterion_breakdown: Attribute.JSON;
     improved_answer: Attribute.JSON;
+    structure_score: Attribute.Integer;
     question_n_answer: Attribute.RichText;
     part_evaluations: Attribute.Component<'evaluation.evaluation', true>;
     question_awarded_marks: Attribute.Decimal;

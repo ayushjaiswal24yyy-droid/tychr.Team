@@ -1,6 +1,10 @@
 "use strict";
 
 const { createCoreService } = require("@strapi/strapi").factories;
+const {
+  getRubricEvaluationContext,
+  validateCriterionOutput,
+} = require("./rubric-guidance");
 
 // ─── IB essay subjects and their specific criteria ────────────────────────────
 
@@ -78,6 +82,61 @@ function isEssayQuestion(questionType, partsCount) {
   return questionType === "long_answer" && partsCount === 1;
 }
 
+function normalizeCriterionBreakdown(breakdown, rubric, maxMarks) {
+  if (!breakdown || typeof breakdown !== "object" || Array.isArray(breakdown)) {
+    return null;
+  }
+
+  const sourceEntries = Object.entries(breakdown);
+  if (sourceEntries.length === 0) return null;
+
+  const criterionLookup = Array.isArray(rubric?.criteria)
+    ? new Map(rubric.criteria.map((criterion) => [criterion.name, criterion]))
+    : null;
+
+  const normalized = new Map();
+  let totalMarks = 0;
+
+  for (const [criterionName, value] of sourceEntries) {
+    if (!criterionName || typeof criterionName !== "string") continue;
+    if (!value || typeof value !== "object" || Array.isArray(value)) continue;
+
+    const rawMarks = Number(value.marks);
+    if (!Number.isFinite(rawMarks)) continue;
+
+    const criterionMax = criterionLookup?.get(criterionName)?.maxMarks;
+    const boundedMarks = Math.max(
+      0,
+      Math.min(
+        Number.isFinite(criterionMax) ? criterionMax : Number.POSITIVE_INFINITY,
+        rawMarks
+      )
+    );
+
+    const comment = typeof value.comment === "string" ? value.comment.trim() : "";
+    normalized.set(criterionName, {
+      marks: boundedMarks,
+      ...(comment ? { comment } : {}),
+    });
+    totalMarks += boundedMarks;
+  }
+
+  if (normalized.size === 0) return null;
+
+  if (Number.isFinite(maxMarks) && totalMarks > maxMarks) {
+    return null;
+  }
+
+  return Object.fromEntries(normalized.entries());
+}
+
+function normalizeStructureScore(structureScore) {
+  const parsed = Number(structureScore);
+  if (!Number.isFinite(parsed)) return null;
+  const rounded = Math.round(parsed);
+  return rounded >= 0 && rounded <= 3 ? rounded : null;
+}
+
 module.exports = createCoreService("api::answer.answer", () => ({
 
   async processBulkEvaluation(answerIds) {
@@ -153,6 +212,14 @@ module.exports = createCoreService("api::answer.answer", () => ({
         const updatedPartEvaluations = [];
         const qnaAnnotationsByPart = [];
         const qnaImprovedAnswersByPart = [];
+        let qnaCriterionBreakdown = null;
+        let qnaStructureScore = null;
+        const rubricContext = getRubricEvaluationContext({
+          subjectName,
+          partRubric: partDef.rubric || null,
+          questionMaxMarks: partDef.marks,
+        });
+        const evaluationRubric = rubricContext.runtimeRubric || null;
 
         const parts = questionData.parts || [];
         const isSubjective = ["short_answer", "long_answer"].includes(questionData.question_type);
@@ -225,7 +292,7 @@ module.exports = createCoreService("api::answer.answer", () => ({
                   subjectName,
                   questionData.command_term || null,
                   questionData.difficulty || null,
-                  partDef.rubric || null
+                  evaluationRubric
                 )
                 : await this.evaluateWithAI(
                   partDef.question_text || questionData.question,
@@ -238,6 +305,24 @@ module.exports = createCoreService("api::answer.answer", () => ({
 
               partAwardedMarks = aiResult.awardedMarks;
               partFeedback = aiResult.feedback;
+              const criterionValidation = validateCriterionOutput(
+                aiResult.criterionBreakdown,
+                rubricContext.runtimeRubric || null,
+                partDef.marks
+              );
+
+              qnaCriterionBreakdown = rubricContext.runtimeRubric && !criterionValidation.valid
+                ? null
+                : normalizeCriterionBreakdown(
+                  aiResult.criterionBreakdown,
+                  evaluationRubric,
+                  partDef.marks
+                );
+              qnaStructureScore = normalizeStructureScore(aiResult.structureScore);
+
+              if (rubricContext.featureEnabled && rubricContext.subjectEnabled && !criterionValidation.valid && aiResult.criterionBreakdown) {
+                strapi.log.info(`Rubric-guided criterion validation failed for QNA ${qna.id}: ${criterionValidation.errors.join("; ")}`);
+              }
 
               // Store annotations and improved answer keyed by part index
               if (aiResult.annotations) {
@@ -288,6 +373,8 @@ module.exports = createCoreService("api::answer.answer", () => ({
           question_n_answer: qna.question_n_answer,
           question_awarded_marks: qnaTotalMarks,
           question_feedback: qnaFeedbackArray.join("\n\n"),
+          criterion_breakdown: qnaCriterionBreakdown,
+          structure_score: qnaStructureScore,
           part_evaluations: updatedPartEvaluations,
           annotations: qnaAnnotationsByPart.length > 0 ? qnaAnnotationsByPart : null,
           improved_answer: qnaImprovedAnswersByPart.length > 0 ? qnaImprovedAnswersByPart : null,
@@ -340,7 +427,7 @@ module.exports = createCoreService("api::answer.answer", () => ({
 
   async evaluateWithAI(questionText, studentResponse, maxMarks, idealAnswer, commandTerm = null, difficulty = null) {
     if (!studentResponse || studentResponse.trim() === "") {
-      return { awardedMarks: 0, feedback: "No answer provided.", confidence: 1, annotations: null, improvedAnswer: null };
+      return { awardedMarks: 0, feedback: "No answer provided.", confidence: 1, annotations: null, improvedAnswer: null, criterionBreakdown: null, structureScore: null };
     }
 
     const parsed = await callCF({
@@ -411,6 +498,8 @@ Confidence: 1.0=clear-cut, 0.7=judgement call, 0.5=borderline, 0.3=very unclear.
         ? parsed.annotations
         : null,
       improvedAnswer: parsed.improvedAnswer || null,
+      criterionBreakdown: null,
+      structureScore: null,
     };
   },
 
@@ -418,7 +507,7 @@ Confidence: 1.0=clear-cut, 0.7=judgement call, 0.5=borderline, 0.3=very unclear.
 
   async evaluateEssayWithAI(questionText, studentResponse, maxMarks, idealAnswer, subjectName, commandTerm = null, difficulty = null, rubric = null) {
     if (!studentResponse || studentResponse.trim() === "") {
-      return { awardedMarks: 0, feedback: "No answer provided.", confidence: 1, annotations: null, improvedAnswer: null };
+      return { awardedMarks: 0, feedback: "No answer provided.", confidence: 1, annotations: null, improvedAnswer: null, criterionBreakdown: null, structureScore: null };
     }
     const essayCriteria = rubric || getEssayCriteria(subjectName);
 

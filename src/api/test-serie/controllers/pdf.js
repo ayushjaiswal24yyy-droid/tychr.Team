@@ -376,6 +376,8 @@ module.exports = {
               })),
               question_type: qna.question?.question_type,
               marks: qna.question?.marks,
+              criterion_breakdown: qna.criterion_breakdown ?? null,
+              structure_score: qna.structure_score ?? null,
               // Single-part: parse the full answer now
               // Multi-part: parse per-part answers into an array
               student_answer: isSinglePart
