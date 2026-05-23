@@ -11,7 +11,11 @@ const CF_URL = `https://api.cloudflare.com/client/v4/accounts/${CF_ACCOUNT_ID}/a
 
 // ─── Shared fetch helper ──────────────────────────────────────────────────────
 
-async function callCloudflareAI({ messages, maxTokens = 1500, jsonMode = false }) {
+async function callCloudflareAI({
+  messages,
+  maxTokens = 1500,
+  jsonMode = false,
+}) {
   const body = {
     model: CF_MODEL,
     max_tokens: maxTokens,
@@ -41,10 +45,15 @@ async function callCloudflareAI({ messages, maxTokens = 1500, jsonMode = false }
 // Subjects where GDC tips are relevant (Paper 2 calculator papers)
 
 const GDC_SUBJECTS = [
-  "math", "mathematics", "math aa", "math ai",
+  "math",
+  "mathematics",
+  "math aa",
+  "math ai",
   "mathematics: analysis and approaches",
   "mathematics: applications and interpretation",
-  "physics", "chemistry", "biology",
+  "physics",
+  "chemistry",
+  "biology",
 ];
 
 function isGDCSubject(subject = "") {
@@ -57,7 +66,9 @@ function buildSystemPrompt(mode, subject, level, topic) {
   const isMathSci = isGDCSubject(subject);
 
   const context = [
-    `You are an expert IB tutor specialising in ${subject}${level && level !== "None" ? ` (${level})` : ""}.`,
+    `You are an expert IB tutor specialising in ${subject}${
+      level && level !== "None" ? ` (${level})` : ""
+    }.`,
     topic ? `The student is currently studying: ${topic}.` : "",
     `Always tailor your response to the IB curriculum and assessment style.`,
     `Be encouraging, clear, and appropriately challenging.`,
@@ -121,14 +132,15 @@ ${isMathSci ? "Note any step where a GDC would save time with 🔢." : ""}
 
 ## Method 2: [Name] (e.g. Graphical / Using technology)
 Walk through an alternative approach.
-${isMathSci
-        ? `## 🔢 GDC Strategy
+${
+  isMathSci
+    ? `## 🔢 GDC Strategy
 - State which calculator function to use (e.g. Solver, Graphing + Intersection, Numerical Derivative, Table of Values, Matrix operations).
 - Give the exact keystrokes or menu path if relevant (TI-84 or Casio fx-CG50 style).
 - State what the GDC output looks like and how to read the answer.
 - Flag whether this approach is acceptable on IB Paper 2/3 or if working must be shown.`
-        : ""
-      }
+    : ""
+}
 
 ## Which method to use?
 Give a 1-2 sentence recommendation based on exam context (time pressure, paper type, marks available).
@@ -150,16 +162,28 @@ Rules:
 // When null, mentor acts as a general study coach and asks the student about their situation
 
 function buildMentorPrompt(subject, level, performanceData) {
-  const subjectLine = `${subject || "IB"}${level && level !== "None" ? ` (${level})` : ""}`;
+  const subjectLine = `${subject || "IB"}${
+    level && level !== "None" ? ` (${level})` : ""
+  }`;
 
   const performanceSection = performanceData
     ? `
 You have access to the student's real performance data:
-- Overall: ${performanceData.myTotal}/${performanceData.possibleTotal} marks (${performanceData.overallPct}%)
-- Rank: #${performanceData.overallRank} of ${performanceData.totalStudents} students
-- Tests attempted: ${performanceData.attemptedTests}/${performanceData.totalTests}
-- Weak units (below 50%): ${performanceData.weakUnits?.join(", ") || "none identified yet"}
-- Strong units (above 75%): ${performanceData.strongUnits?.join(", ") || "none identified yet"}
+- Overall: ${performanceData.myTotal}/${performanceData.possibleTotal} marks (${
+        performanceData.overallPct
+      }%)
+- Rank: #${performanceData.overallRank} of ${
+        performanceData.totalStudents
+      } students
+- Tests attempted: ${performanceData.attemptedTests}/${
+        performanceData.totalTests
+      }
+- Weak units (below 50%): ${
+        performanceData.weakUnits?.join(", ") || "none identified yet"
+      }
+- Strong units (above 75%): ${
+        performanceData.strongUnits?.join(", ") || "none identified yet"
+      }
 - Not yet attempted: ${performanceData.unattemptedUnits?.join(", ") || "none"}
 - Trend: ${performanceData.trend || "insufficient data"}
 
@@ -188,7 +212,15 @@ MENTOR GUIDELINES:
 // ─── Chat handler ─────────────────────────────────────────────────────────────
 
 async function chat(ctx) {
-  const { message, mode, subject, level, topic, history = [], performanceData = null } = ctx.request.body;
+  const {
+    message,
+    mode,
+    subject,
+    level,
+    topic,
+    history = [],
+    performanceData = null,
+  } = ctx.request.body;
 
   if (!message) {
     return ctx.badRequest("message is required");
@@ -200,9 +232,10 @@ async function chat(ctx) {
   const recentHistory = history.slice(-20);
 
   // Mentor mode uses its own prompt builder (with optional performance data)
-  const systemPrompt = safeMode === "mentor"
-    ? buildMentorPrompt(subject || "General", level, performanceData || null)
-    : buildSystemPrompt(safeMode, subject || "General", level, topic);
+  const systemPrompt =
+    safeMode === "mentor"
+      ? buildMentorPrompt(subject || "General", level, performanceData || null)
+      : buildSystemPrompt(safeMode, subject || "General", level, topic);
 
   const messages = [
     { role: "system", content: systemPrompt },
@@ -222,7 +255,13 @@ async function chat(ctx) {
 // ─── Question generator ───────────────────────────────────────────────────────
 
 async function generateQuestions(ctx) {
-  const { subject, level, topic, paperType = "Paper 2", count = 5 } = ctx.request.body;
+  const {
+    subject,
+    level,
+    topic,
+    paperType = "Paper 2",
+    count = 5,
+  } = ctx.request.body;
 
   if (!subject) return ctx.badRequest("subject is required");
 
@@ -256,13 +295,18 @@ questionType must be one of: mcq, short_answer, long_answer, data_interpretation
   const messages = [
     {
       role: "system",
-      content: "You are an IB exam question writer. Always respond with valid JSON only. No explanation, no markdown fences.",
+      content:
+        "You are an IB exam question writer. Always respond with valid JSON only. No explanation, no markdown fences.",
     },
     { role: "user", content: userPrompt },
   ];
 
   try {
-    const raw = await callCloudflareAI({ messages, maxTokens: 2500, jsonMode: true });
+    const raw = await callCloudflareAI({
+      messages,
+      maxTokens: 2500,
+      jsonMode: true,
+    });
     const parsed = JSON.parse(raw.replace(/```json|```/g, "").trim());
     ctx.body = { questions: parsed.questions || [] };
   } catch (err) {
@@ -270,7 +314,6 @@ questionType must be one of: mcq, short_answer, long_answer, data_interpretation
     ctx.internalServerError("Question generation failed");
   }
 }
-
 
 // ─── Paper question generator ─────────────────────────────────────────────────
 // Generates questions in the exact Strapi question-bank parts format.
@@ -288,11 +331,34 @@ async function generatePaperQuestions(ctx) {
   if (!sections.length) return ctx.badRequest("sections is required");
 
   const VALID_DIFFICULTIES = ["easy", "medium", "hard"];
-  const VALID_COMMAND_TERMS = ["Define", "State", "Outline", "Describe", "Explain", "Analyse", "Discuss", "Evaluate", "Compare", "Contrast", "Justify", "To what extent"];
+  const VALID_COMMAND_TERMS = [
+    "Define",
+    "State",
+    "Outline",
+    "Describe",
+    "Explain",
+    "Analyse",
+    "Discuss",
+    "Evaluate",
+    "Compare",
+    "Contrast",
+    "Justify",
+    "To what extent",
+    "Calculate",
+  ];
 
   const safeSections = sections.map((s) => ({
-    questionType: ["mcq", "mcq_multiple", "short_answer", "long_answer", "fill_in_the_blanks", "match_columns"].includes(s.questionType)
-      ? s.questionType : "short_answer",
+    questionType: [
+      "mcq",
+      "mcq_multiple",
+      "short_answer",
+      "long_answer",
+      "fill_in_the_blanks",
+      "match_columns",
+      "numerical",
+    ].includes(s.questionType)
+      ? s.questionType
+      : "short_answer",
     count: Math.min(Math.max(parseInt(s.count) || 1, 1), 10),
     marks: Math.min(Math.max(parseInt(s.marks) || 2, 1), 20),
     parts: Math.min(Math.max(parseInt(s.parts) || 1, 1), 6),
@@ -303,32 +369,80 @@ async function generatePaperQuestions(ctx) {
   }));
 
   const totalQuestions = safeSections.reduce((sum, s) => sum + s.count, 0);
-  if (totalQuestions > 30) return ctx.badRequest("Maximum 30 questions per generation");
+  if (totalQuestions > 30)
+    return ctx.badRequest("Maximum 30 questions per generation");
 
-  const sectionDescriptions = safeSections.map((s, i) => {
-    if (s.questionType === "mcq" || s.questionType === "mcq_multiple") {
-      const diffTag = s.difficulty ? ` · Difficulty: ${s.difficulty}` : "";
-      const ctTag = s.commandTerms?.length ? ` · Command term: ${s.commandTerms.join(" or ")}` : "";
-      return `Section ${i + 1}: ${s.count} x MCQ (${s.marks} marks each${diffTag}${ctTag}). Each must have exactly 4 options (A, B, C, D) and one correct answer.`;
-    }
-    if (s.questionType === "short_answer") {
-      const diffTag2 = s.difficulty ? ` · Difficulty: ${s.difficulty}` : "";
-      const ctTag2 = s.commandTerms?.length ? ` · Must use command term(s): ${s.commandTerms.join(" or ")}` : "";
-      return `Section ${i + 1}: ${s.count} x Short Answer (${s.marks} marks each${diffTag2}${ctTag2}). Single-part, 2-4 sentence answer. Include a model answer.`;
-    }
-    if (s.questionType === "long_answer") {
-      const diffTag3 = s.difficulty ? ` · Difficulty: ${s.difficulty}` : "";
-      const ctTag3 = s.commandTerms?.length ? ` · Must use command term(s): ${s.commandTerms.join(" or ")}` : "";
-      return `Section ${i + 1}: ${s.count} x Long Answer (${s.marks} marks total${diffTag3}${ctTag3}, split across ${s.parts} parts a, b, c...). Include model answer per part.`;
-    }
-    if (s.questionType === "fill_in_the_blanks") {
-      return `Section ${i + 1}: ${s.count} x Fill in the Blanks (${s.marks} marks each). Each sentence has 1-3 blanks marked as ___. Include correct words.`;
-    }
-    if (s.questionType === "match_columns") {
-      return `Section ${i + 1}: ${s.count} x Match the Column (${s.marks} marks each). 4 items in column A matched to 4 in column B. Include correct pairs.`;
-    }
-    return "";
-  }).join("\n");
+  const sectionDescriptions = safeSections
+    .map((s, i) => {
+      if (s.questionType === "mcq" || s.questionType === "mcq_multiple") {
+        const diffTag = s.difficulty ? ` · Difficulty: ${s.difficulty}` : "";
+        const ctTag = s.commandTerms?.length
+          ? ` · Command term: ${s.commandTerms.join(" or ")}`
+          : "";
+        return `Section ${i + 1}: ${s.count} x MCQ (${
+          s.marks
+        } marks each${diffTag}${ctTag}). Each must have exactly 4 options (A, B, C, D) and one correct answer.`;
+      }
+      if (s.questionType === "short_answer") {
+        const diffTag2 = s.difficulty ? ` · Difficulty: ${s.difficulty}` : "";
+        const ctTag2 = s.commandTerms?.length
+          ? ` · Must use command term(s): ${s.commandTerms.join(" or ")}`
+          : "";
+        return `Section ${i + 1}: ${s.count} x Short Answer (${
+          s.marks
+        } marks each${diffTag2}${ctTag2}). Single-part, 2-4 sentence answer. Include a model answer.`;
+      }
+      if (s.questionType === "long_answer") {
+        const diffTag3 = s.difficulty ? ` · Difficulty: ${s.difficulty}` : "";
+        const ctTag3 = s.commandTerms?.length
+          ? ` · Must use command term(s): ${s.commandTerms.join(" or ")}`
+          : "";
+        return `Section ${i + 1}: ${s.count} x Long Answer (${
+          s.marks
+        } marks total${diffTag3}${ctTag3}, split across ${
+          s.parts
+        } parts a, b, c...). Include model answer per part.`;
+      }
+      if (s.questionType === "fill_in_the_blanks") {
+        return `Section ${i + 1}: ${s.count} x Fill in the Blanks (${
+          s.marks
+        } marks each). Each sentence has 1-3 blanks marked as ___. Include correct words.`;
+      }
+      if (s.questionType === "match_columns") {
+        return `Section ${i + 1}: ${s.count} x Match the Column (${
+          s.marks
+        } marks each). 4 items in column A matched to 4 in column B. Include correct pairs.`;
+      }
+      if (s.questionType === "numerical") {
+        return `Section ${i + 1}: ${s.count} x Numerical Problems (${
+          s.marks
+        } marks each).
+
+        Create calculation-based numerical questions requiring step-by-step solving.
+
+        Requirements:
+        - Include all necessary values and units
+        - Include formulas if needed
+        - Provide exact correct final answer
+        - Provide answer unit
+        - Include toleranceRange with min and max acceptable values
+
+      Example:
+         {
+           "questionType": "numerical",
+           "marks": 5,
+           "question": "Calculate the current flowing through a 10Ω resistor connected to a 20V supply.",
+           "correctAnswer": 2,
+           "unit": "A",
+           "toleranceRange": {
+             "min": 1.9,
+             "max": 2.1
+            }
+         }`;
+      }
+      return "";
+    })
+    .join("\n");
 
   const userPrompt = `You are an IB exam question writer. Generate exam questions for:
 Subject: ${subject}${level && level !== "None" ? ` (${level})` : ""}
@@ -356,14 +470,22 @@ CRITICAL for Long Answer parts: questionText must contain ONLY the raw question.
 
 Fill in the Blanks: { "questionType": "fill_in_the_blanks", "marks": 2, "question": "The ___ is responsible for ___.", "blanks": { "1": "answer1", "2": "answer2" } }
 
-Match the Column: { "questionType": "match_columns", "marks": 4, "question": "Match the following.", "leftColumn": ["Term1","Term2","Term3","Term4"], "rightColumn": ["Def1","Def2","Def3","Def4"], "correctPairs": { "1": "3", "2": "1", "3": "4", "4": "2" } }`;
+Match the Column: { "questionType": "match_columns", "marks": 4, "question": "Match the following.", "leftColumn": ["Term1","Term2","Term3","Term4"], "rightColumn": ["Def1","Def2","Def3","Def4"], "correctPairs": { "1": "3", "2": "1", "3": "4", "4": "2" } }
+
+Numerical: { "questionType": "numerical", "marks": 5, "difficulty": "medium", "commandTerm": "Calculate", "question": "Calculate the resistance when voltage is 20V and current is 2A.", "correctAnswer": 10, "unit": "Ω", "toleranceRange": { "min": 9.8, "max": 10.2 }, "modelAnswer": "Using Ohm's Law: R = V/I = 20/2 = 10Ω" }`;
 
   try {
     const raw = await callCloudflareAI({
       messages: [
-        { role: "system", content: "You are an IB exam question writer. Always respond with valid JSON only. No markdown fences, no extra text." },
+        {
+          role: "system",
+          content:
+            "You are an IB exam question writer. Always respond with valid JSON only. No markdown fences, no extra text.",
+        },
         { role: "user", content: userPrompt },
-      ], maxTokens: 4000, jsonMode: true
+      ],
+      maxTokens: 4000,
+      jsonMode: true,
     });
 
     const parsed = JSON.parse(raw.replace(/```json|```/g, "").trim());
@@ -372,8 +494,12 @@ Match the Column: { "questionType": "match_columns", "marks": 4, "question": "Ma
     // Transform AI output into Strapi question-bank parts format
     const strapiQuestions = rawQuestions.map((q) => {
       // Map AI-returned difficulty/commandTerm back to schema fields
-      const difficulty = VALID_DIFFICULTIES.includes(q.difficulty) ? q.difficulty : null;
-      const command_term = VALID_COMMAND_TERMS.includes(q.commandTerm) ? q.commandTerm : null;
+      const difficulty = VALID_DIFFICULTIES.includes(q.difficulty)
+        ? q.difficulty
+        : null;
+      const command_term = VALID_COMMAND_TERMS.includes(q.commandTerm)
+        ? q.commandTerm
+        : null;
       const base = {
         question: q.question,
         question_type: q.questionType,
@@ -385,29 +511,140 @@ Match the Column: { "questionType": "match_columns", "marks": 4, "question": "Ma
 
       if (q.questionType === "mcq" || q.questionType === "mcq_multiple") {
         // Strip any accidental letter prefixes the model adds (e.g. "A) ", "A. ", "A - ")
-        const stripOptionLabel = (text = "") => text.replace(/^[A-Da-d][).\-]\s*/, '').trim();
+        const stripOptionLabel = (text = "") =>
+          text.replace(/^[A-Da-d][).\-]\s*/, "").trim();
         const cleanOptions = (q.options || []).map(stripOptionLabel);
         const cleanCorrect = stripOptionLabel(q.correctAnswer || "");
-        return { ...base, parts: [{ answer_type: "Single Correct", marks: q.marks, options: cleanOptions.join("\n---OPTION---\n"), options_format: "richtext", correct_answer: cleanCorrect, correct_answer_format: "richtext", content_format: "richtext" }] };
+        return {
+          ...base,
+          parts: [
+            {
+              answer_type: "Single Correct",
+              marks: q.marks,
+              options: cleanOptions.join("\n---OPTION---\n"),
+              options_format: "richtext",
+              correct_answer: cleanCorrect,
+              correct_answer_format: "richtext",
+              content_format: "richtext",
+            },
+          ],
+        };
       }
       if (q.questionType === "short_answer") {
-        return { ...base, parts: [{ answer_type: "Short Text", marks: q.marks, question_text: q.question, question_text_format: "richtext", correct_answer: q.modelAnswer || "", correct_answer_format: "richtext", content_format: "richtext" }] };
+        return {
+          ...base,
+          parts: [
+            {
+              answer_type: "Short Text",
+              marks: q.marks,
+              question_text: q.question,
+              question_text_format: "richtext",
+              correct_answer: q.modelAnswer || "",
+              correct_answer_format: "richtext",
+              content_format: "richtext",
+            },
+          ],
+        };
       }
       if (q.questionType === "long_answer") {
         // Strip any accidental part label prefixes the model might add (e.g. "Part (a) ", "(a) ", "a) ")
-        const stripPartLabel = (text = "") => text.replace(/^(part\s*)?\(?[a-z]\)?[.)\s]+/i, "").trim();
-        return { ...base, parts: (q.parts || []).map((p) => ({ answer_type: "Long Text", marks: p.marks, question_text: stripPartLabel(p.questionText), question_text_format: "richtext", correct_answer: p.modelAnswer || "", correct_answer_format: "richtext", content_format: "richtext" })) };
+        const stripPartLabel = (text = "") =>
+          text.replace(/^(part\s*)?\(?[a-z]\)?[.)\s]+/i, "").trim();
+        return {
+          ...base,
+          parts: (q.parts || []).map((p) => ({
+            answer_type: "Long Text",
+            marks: p.marks,
+            question_text: stripPartLabel(p.questionText),
+            question_text_format: "richtext",
+            correct_answer: p.modelAnswer || "",
+            correct_answer_format: "richtext",
+            content_format: "richtext",
+          })),
+        };
       }
       if (q.questionType === "fill_in_the_blanks") {
         const questionWithBlanks = q.question.replace(/___/g, "{ }");
-        return { ...base, question: questionWithBlanks, parts: [{ answer_type: "Fill In The Blanks", marks: q.marks, options: JSON.stringify({ format: "richtext", content: questionWithBlanks, _v: "1.0", blanks: {} }), correct_answer: JSON.stringify(q.blanks || {}), correct_answer_format: "json", content_format: "richtext" }] };
+        return {
+          ...base,
+          question: questionWithBlanks,
+          parts: [
+            {
+              answer_type: "Fill In The Blanks",
+              marks: q.marks,
+              options: JSON.stringify({
+                format: "richtext",
+                content: questionWithBlanks,
+                _v: "1.0",
+                blanks: {},
+              }),
+              correct_answer: JSON.stringify(q.blanks || {}),
+              correct_answer_format: "json",
+              content_format: "richtext",
+            },
+          ],
+        };
       }
       if (q.questionType === "match_columns") {
-        const leftContent = (q.leftColumn || []).map((item, i) => `[${i + 1}] ${item}`).join("\n---OPTION---\n");
-        const rightContent = (q.rightColumn || []).map((item, i) => `[${i + 1}] ${item}`).join("\n---OPTION---\n");
-        return { ...base, parts: [{ answer_type: "Match Columns", marks: q.marks, options: JSON.stringify({ left: { format: "richtext", content: leftContent, _v: "1.0" }, right: { format: "richtext", content: rightContent, _v: "1.0" } }), correct_answer: JSON.stringify(q.correctPairs || {}), correct_answer_format: "json", content_format: "richtext" }] };
+        const leftContent = (q.leftColumn || [])
+          .map((item, i) => `[${i + 1}] ${item}`)
+          .join("\n---OPTION---\n");
+        const rightContent = (q.rightColumn || [])
+          .map((item, i) => `[${i + 1}] ${item}`)
+          .join("\n---OPTION---\n");
+        return {
+          ...base,
+          parts: [
+            {
+              answer_type: "Match Columns",
+              marks: q.marks,
+              options: JSON.stringify({
+                left: { format: "richtext", content: leftContent, _v: "1.0" },
+                right: { format: "richtext", content: rightContent, _v: "1.0" },
+              }),
+              correct_answer: JSON.stringify(q.correctPairs || {}),
+              correct_answer_format: "json",
+              content_format: "richtext",
+            },
+          ],
+        };
       }
-      return { ...base, parts: [{ answer_type: "Short Text", marks: q.marks, question_text: q.question, correct_answer: "", content_format: "richtext" }] };
+      if (q.questionType === "numerical") {
+        return {
+          ...base,
+          parts: [
+            {
+              answer_type: "Numerical",
+              marks: q.marks,
+              question_text: q.question,
+              question_text_format: "richtext",
+              correct_answer: JSON.stringify({
+                value: q.correctAnswer,
+                unit: q.unit || "",
+                toleranceRange: q.toleranceRange || {
+                  min: q.correctAnswer,
+                  max: q.correctAnswer,
+                },
+              }),
+              correct_answer_format: "json",
+              explanation: q.modelAnswer || "",
+              content_format: "richtext",
+            },
+          ],
+        };
+      }
+      return {
+        ...base,
+        parts: [
+          {
+            answer_type: "Short Text",
+            marks: q.marks,
+            question_text: q.question,
+            correct_answer: "",
+            content_format: "richtext",
+          },
+        ],
+      };
     });
 
     ctx.body = { questions: strapiQuestions, raw: rawQuestions };
@@ -426,9 +663,9 @@ async function generateLearningPath(ctx) {
     unitAnalysis = [],
     subject,
     level,
-    examSession,   // "May" | "November"
-    examYear,      // e.g. 2026
-    weeklyHours,   // number
+    examSession, // "May" | "November"
+    examYear, // e.g. 2026
+    weeklyHours, // number
   } = ctx.request.body;
 
   if (!subject) return ctx.badRequest("subject is required");
@@ -440,14 +677,14 @@ async function generateLearningPath(ctx) {
   const examDate = new Date(examYear, examMonth, 1);
   const weeksUntilExam = Math.max(
     1,
-    Math.round(
-      (examDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24 * 7)
-    )
+    Math.round((examDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24 * 7))
   );
 
   // Split units into weak (< 60%), medium (60-80%), strong (> 80%)
   const weak = unitAnalysis.filter((u) => u.myPct !== null && u.myPct < 60);
-  const medium = unitAnalysis.filter((u) => u.myPct !== null && u.myPct >= 60 && u.myPct < 80);
+  const medium = unitAnalysis.filter(
+    (u) => u.myPct !== null && u.myPct >= 60 && u.myPct < 80
+  );
   const strong = unitAnalysis.filter((u) => u.myPct !== null && u.myPct >= 80);
   const unattempted = unitAnalysis.filter((u) => u.myPct === null);
 
@@ -467,7 +704,10 @@ Student profile:
 - Total topics and performance:
 ${unitSummary}
 
-Create a ${Math.min(weeksUntilExam, 12)}-week study plan. Prioritise weak and unattempted topics heavily in early weeks, schedule medium topics in mid weeks, and use final weeks for revision and past papers.
+Create a ${Math.min(
+    weeksUntilExam,
+    12
+  )}-week study plan. Prioritise weak and unattempted topics heavily in early weeks, schedule medium topics in mid weeks, and use final weeks for revision and past papers.
 
 Return ONLY this JSON:
 {
@@ -514,7 +754,8 @@ Rules:
         messages: [
           {
             role: "system",
-            content: "You are an expert IB study planner. Return valid JSON only. No markdown fences, no backticks, no explanation. Start your response with { and end with }.",
+            content:
+              "You are an expert IB study planner. Return valid JSON only. No markdown fences, no backticks, no explanation. Start your response with { and end with }.",
           },
           { role: "user", content: userPrompt },
         ],
@@ -539,7 +780,10 @@ Rules:
     try {
       parsed = JSON.parse(clean);
     } catch (e) {
-      strapi.log.error("Learning path JSON parse failed. Raw:", raw.slice(0, 300));
+      strapi.log.error(
+        "Learning path JSON parse failed. Raw:",
+        raw.slice(0, 300)
+      );
       throw new Error("AI returned invalid JSON for learning path");
     }
 
@@ -562,4 +806,9 @@ Rules:
   }
 }
 
-module.exports = { chat, generateQuestions, generatePaperQuestions, generateLearningPath };
+module.exports = {
+  chat,
+  generateQuestions,
+  generatePaperQuestions,
+  generateLearningPath,
+};
