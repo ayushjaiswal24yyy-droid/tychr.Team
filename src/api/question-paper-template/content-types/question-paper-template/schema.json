@@ -1,0 +1,96 @@
+{
+  "kind": "collectionType",
+  "collectionName": "question_paper_templates",
+  "info": {
+    "singularName": "question-paper-template",
+    "pluralName": "question-paper-templates",
+    "displayName": "Question Paper Template",
+    "description": "Reusable exam paper templates with relational question references and immutable JSON snapshots."
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "title": {
+      "type": "string",
+      "required": true
+    },
+    "description": {
+      "type": "text"
+    },
+    "instructions": {
+      "type": "richtext"
+    },
+    "duration": {
+      "type": "decimal"
+    },
+    "total_marks": {
+      "type": "integer"
+    },
+    "paper_type": {
+      "type": "enumeration",
+      "enum": [
+        "midterm",
+        "final",
+        "quiz",
+        "mock",
+        "assignment",
+        "practice"
+      ],
+      "default": "practice"
+    },
+    "sections": {
+      "type": "component",
+      "repeatable": true,
+      "component": "question-paper.section"
+    },
+    "questions": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::question-bank.question-bank"
+    },
+    "created_by_admin": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "plugin::users-permissions.user"
+    },
+    "tags": {
+      "type": "json"
+    },
+    "thumbnail": {
+      "type": "media",
+      "multiple": false,
+      "required": false,
+      "allowedTypes": [
+        "images"
+      ]
+    },
+    "source_paper_id": {
+      "type": "string"
+    },
+    "is_template": {
+      "type": "boolean",
+      "default": true
+    },
+    "template_questions_snapshot": {
+      "type": "json"
+    },
+    "template_metadata": {
+      "type": "json"
+    },
+    "visibility": {
+      "type": "enumeration",
+      "enum": [
+        "private",
+        "institution",
+        "public"
+      ],
+      "default": "private"
+    },
+    "version": {
+      "type": "integer",
+      "default": 1
+    }
+  }
+}
