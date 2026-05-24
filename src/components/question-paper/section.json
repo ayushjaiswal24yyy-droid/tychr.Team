@@ -1,0 +1,29 @@
+{
+  "collectionName": "components_question_paper_sections",
+  "info": {
+    "displayName": "Section",
+    "description": "Reusable section component for question papers with questions and instructions"
+  },
+  "options": {},
+  "attributes": {
+    "title": {
+      "type": "string",
+      "required": true
+    },
+    "instructions": {
+      "type": "richtext"
+    },
+    "section_marks": {
+      "type": "integer"
+    },
+    "order": {
+      "type": "integer",
+      "description": "Section order in the paper"
+    },
+    "questions": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::question-bank.question-bank"
+    }
+  }
+}
