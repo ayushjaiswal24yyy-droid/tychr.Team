@@ -17,14 +17,8 @@
     "annotations": {
       "type": "json"
     },
-    "criterion_breakdown": {
-      "type": "json"
-    },
     "improved_answer": {
       "type": "json"
-    },
-    "structure_score": {
-      "type": "integer"
     },
     "question_n_answer": {
       "type": "richtext"
