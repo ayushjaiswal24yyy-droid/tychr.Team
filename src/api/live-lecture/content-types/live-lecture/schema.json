@@ -20,12 +20,10 @@
       "type": "text"
     },
     "teams_join_url": {
-      "type": "string",
-      "required": true
+      "type": "string"
     },
     "teams_meeting_id": {
       "type": "string",
-      "required": true,
       "description": "Microsoft Graph onlineMeeting.id"
     },
     "recording_url": {

@@ -30,6 +30,11 @@ module.exports = createCoreRouter(
         method: "POST",
         path: "/student-meetings/:id/interrupt",
         handler: "student-meeting.interrupt",
+      },
+      {
+        method: "POST",
+        path: "/student-meetings/:id/join",
+        handler: "student-meeting.join",
       }
     ],
   }

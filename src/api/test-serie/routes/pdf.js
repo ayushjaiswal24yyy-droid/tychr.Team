@@ -20,5 +20,11 @@ module.exports = {
       handler: "pdf.result",
       config: { policies: [] },
     },
+    {
+      method: "POST",
+      path: "/test-series/:id/results/export-pdfs",
+      handler: "pdf.exportResultsBatch",
+      config: { policies: [] },
+    },
   ],
 };

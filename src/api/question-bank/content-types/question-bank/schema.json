@@ -18,12 +18,7 @@
     },
     "content_format": {
       "type": "enumeration",
-      "enum": [
-        "html",
-        "markdown",
-        "richtext",
-        "canvas"
-      ],
+      "enum": ["html", "markdown", "richtext", "canvas"],
       "default": "richtext"
     },
     "question_type": {
@@ -52,11 +47,7 @@
     },
     "difficulty": {
       "type": "enumeration",
-      "enum": [
-        "easy",
-        "medium",
-        "hard"
-      ]
+      "enum": ["easy", "medium", "hard"]
     },
     "command_term": {
       "type": "enumeration",
@@ -72,7 +63,8 @@
         "Compare",
         "Contrast",
         "Justify",
-        "To what extent"
+        "To what extent",
+        "Calculate"
       ]
     },
     "parts": {
@@ -95,12 +87,7 @@
       "type": "media",
       "multiple": true,
       "required": false,
-      "allowedTypes": [
-        "images",
-        "files",
-        "videos",
-        "audios"
-      ]
+      "allowedTypes": ["images", "files", "videos", "audios"]
     },
     "note": {
       "type": "relation",

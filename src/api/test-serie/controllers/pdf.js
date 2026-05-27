@@ -96,6 +96,144 @@ const parsePartAnswer = (answer, partIndex) => {
   }
 };
 
+const isAdminUser = (user) => {
+  const roleType = user?.role?.type;
+  const roleName = user?.role?.name;
+  return roleType === "admin" || roleName === "Admin" || roleName === "admin";
+};
+
+const getPaperIdsForSeries = (series, id) => {
+  if (series.entity_type === "paper") return [Number(id)];
+  return (series.papers || []).map((paper) => paper.id);
+};
+
+const getPaperRowsForSeries = (series) => {
+  if (series.entity_type === "paper") return [series];
+  return series.papers || [];
+};
+
+const isPaperEnded = (paper, now = new Date()) => {
+  if (!paper.start_date) return true;
+
+  const start = new Date(paper.start_date);
+  const durationMinutes = Number(paper.test_duration || 0);
+  const end = new Date(start.getTime() + durationMinutes * 60 * 1000);
+
+  return end <= now;
+};
+
+const getResultPdfConfig = () => {
+  const lambdaUrl = process.env.PDF_LAMBDA_URL;
+  const secret = process.env.PDF_SECRET;
+  const strapiUrl = process.env.STRAPI_URL || "http://localhost:1337";
+  const strapiToken = process.env.STRAPI_API_TOKEN;
+
+  return { lambdaUrl, secret, strapiUrl, strapiToken };
+};
+
+const buildResultPdfPayload = ({ series, answers, attemptId, fallbackUser }) => {
+  const onlineAnswers = answers.filter(
+    (ans) => ans.test_series?.test_mode !== "offline"
+  );
+
+  if (!onlineAnswers.length) return null;
+
+  const answerStudent = onlineAnswers[0]?.student || null;
+  if (!answerStudent?.id) return null;
+
+  const totalMarks = onlineAnswers.reduce((sum, a) => sum + (a.marks || 0), 0);
+  const submissionDate = onlineAnswers
+    .map((a) => new Date(a.submission_date))
+    .sort((a, b) => b - a)[0];
+
+  const attempt = {
+    attempt_no: 1,
+    attempt_id: Number(attemptId),
+    submission_date: submissionDate,
+    total_marks: totalMarks,
+    evaluation_status: onlineAnswers.every((a) => a.evaluation_status === "evaluated")
+      ? "evaluated"
+      : "pending",
+    papers: onlineAnswers.map((ans) => ({
+      id: ans.id,
+      paper_id: ans.test_series?.id,
+      paper_title: ans.test_series?.title,
+      marks: ans.marks,
+      time_taken: ans.time_taken,
+      question_answers: (ans.question_n_answer || []).map((qna) => {
+        const parts = qna.question?.parts || [];
+        const isSinglePart = parts.length <= 1;
+
+        return {
+          question_id: qna.question?.id,
+          question: parseRichtext(qna.question?.question),
+          parts: parts.map((p) => ({
+            question_text: parseRichtext(p.question_text),
+            marks: p.marks,
+            answer_type: p.answer_type,
+          })),
+          question_type: qna.question?.question_type,
+          marks: qna.question?.marks,
+          student_answer: isSinglePart ? parseStudentAnswer(qna.answer) : null,
+          part_student_answers: isSinglePart
+            ? null
+            : parts.map((_, pi) => parsePartAnswer(qna.answer, pi)),
+          part_evaluations: (qna.part_evaluations || []).map((pe) => ({
+            part_index: pe.part_index,
+            awarded_marks: pe.awarded_marks,
+            feedback: pe.feedback,
+          })),
+          awarded_marks: qna.question_awarded_marks ?? 0,
+          feedback: qna.question_feedback,
+        };
+      }),
+    })),
+  };
+
+  const student = {
+    id: answerStudent.id,
+    fullName:
+      answerStudent?.fullName ||
+      answerStudent?.username ||
+      fallbackUser?.fullName ||
+      fallbackUser?.username,
+    email: answerStudent?.email || fallbackUser?.email,
+    schoolname: answerStudent?.schoolname || fallbackUser?.schoolname,
+  };
+
+  return {
+    type: "result",
+    student,
+    series: { title: series.title, program_type: series.program_type },
+    attempt,
+  };
+};
+
+const postResultPdfToLambda = async ({ payload, config }) => {
+  const response = await fetch(config.lambdaUrl, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "x-pdf-secret": config.secret },
+    body: JSON.stringify({
+      ...payload,
+      strapiUrl: config.strapiUrl,
+      strapiToken: config.strapiToken,
+    }),
+    signal: AbortSignal.timeout(55000),
+  });
+
+  const text = await response.text();
+  let result;
+  try { result = JSON.parse(text); } catch {
+    throw new Error("Lambda error: " + text.substring(0, 200));
+  }
+
+  if (!response.ok) {
+    throw new Error(result?.error || "Result PDF failed");
+  }
+
+  return result;
+};
+
 // ---------------------------------------------------------------------------
 // Controller
 // ---------------------------------------------------------------------------
@@ -440,6 +578,196 @@ module.exports = {
     } catch (err) {
       strapi.log.error("Result PDF error:", err);
       return ctx.internalServerError("Result PDF failed: " + err.message);
+    }
+  },
+
+  async exportResultsBatch(ctx) {
+    try {
+      const { id } = ctx.params;
+      const { classroomId } = ctx.query;
+      const user = ctx.state.user;
+
+      if (!user) return ctx.unauthorized("You must be logged in to export result PDFs");
+      if (!isAdminUser(user)) {
+        return ctx.forbidden("Only admin users can export batch result PDFs");
+      }
+
+      const config = getResultPdfConfig();
+      if (!config.lambdaUrl || !config.secret || !config.strapiToken) {
+        return ctx.internalServerError("PDF service is not configured");
+      }
+
+      const series = await strapi.entityService.findOne(
+        "api::test-serie.test-serie",
+        id,
+        {
+          fields: [
+            "id",
+            "title",
+            "program_type",
+            "test_mode",
+            "test_duration",
+            "entity_type",
+            "start_date",
+          ],
+          populate: {
+            papers: {
+              fields: ["id", "title", "test_mode", "test_duration", "start_date"],
+            },
+          },
+        }
+      );
+
+      if (!series) return ctx.notFound("Test series not found");
+
+      const paperIds = getPaperIdsForSeries(series, id);
+      if (!paperIds.length) return ctx.badRequest("No papers found for this series");
+
+      const paperRows = getPaperRowsForSeries(series);
+      const notEnded = paperRows.filter((paper) => !isPaperEnded(paper));
+      if (notEnded.length) {
+        return ctx.badRequest("Result PDFs can be exported only after the test has ended");
+      }
+
+      const answerFilters = {
+        completed: true,
+        is_attempt_marker: { $ne: true },
+        evaluation_status: "evaluated",
+        attempt_id: { $notNull: true },
+        test_series: { id: { $in: paperIds } },
+      };
+
+      if (classroomId) {
+        answerFilters.tutor_classroom = { id: { $eq: classroomId } };
+      }
+
+      const answers = await strapi.entityService.findMany("api::answer.answer", {
+        filters: answerFilters,
+        fields: [
+          "id",
+          "marks",
+          "submission_date",
+          "time_taken",
+          "attempt_id",
+          "evaluation_status",
+        ],
+        populate: {
+          student: { fields: ["id", "fullName", "username", "email", "schoolname"] },
+          test_series: { fields: ["id", "title", "test_mode"] },
+          question_n_answer: {
+            populate: {
+              question: { populate: ["parts"] },
+              part_evaluations: true,
+            },
+          },
+        },
+        pagination: { limit: -1 },
+      });
+
+      if (!answers.length) {
+        return ctx.notFound("No evaluated student results found for this test");
+      }
+
+      const grouped = new Map();
+      for (const answer of answers) {
+        const studentId = answer.student?.id;
+        const attemptId = answer.attempt_id;
+        if (!studentId || !attemptId) continue;
+
+        const key = `${studentId}:${attemptId}`;
+        if (!grouped.has(key)) {
+          grouped.set(key, {
+            studentId,
+            attemptId,
+            student: answer.student,
+            answers: [],
+          });
+        }
+
+        grouped.get(key).answers.push(answer);
+      }
+
+      const exports = [];
+      const failures = [];
+      const bestGroupByStudent = new Map();
+
+      for (const group of grouped.values()) {
+        const totalMarks = group.answers.reduce(
+          (sum, answer) => sum + Number(answer.marks || 0),
+          0
+        );
+        const latestSubmission = group.answers
+          .map((answer) => new Date(answer.submission_date || 0))
+          .sort((a, b) => b - a)[0];
+        const current = bestGroupByStudent.get(group.studentId);
+
+        if (
+          !current ||
+          totalMarks > current.totalMarks ||
+          (totalMarks === current.totalMarks && latestSubmission > current.latestSubmission)
+        ) {
+          bestGroupByStudent.set(group.studentId, {
+            ...group,
+            totalMarks,
+            latestSubmission,
+          });
+        }
+      }
+
+      for (const group of bestGroupByStudent.values()) {
+        try {
+          const payload = buildResultPdfPayload({
+            series,
+            answers: group.answers,
+            attemptId: group.attemptId,
+            fallbackUser: user,
+          });
+
+          if (!payload) {
+            failures.push({
+              studentId: group.studentId,
+              attemptId: group.attemptId,
+              error: "No online evaluated answers found",
+            });
+            continue;
+          }
+
+          const result = await postResultPdfToLambda({ payload, config });
+          exports.push({
+            studentId: group.studentId,
+            studentName: payload.student.fullName,
+            studentEmail: payload.student.email,
+            attemptId: group.attemptId,
+            file: result.file || result,
+          });
+        } catch (error) {
+          failures.push({
+            studentId: group.studentId,
+            attemptId: group.attemptId,
+            error: error.message,
+          });
+        }
+      }
+
+      return ctx.send({
+        success: true,
+        series: {
+          id: series.id,
+          title: series.title,
+          totalPapers: paperIds.length,
+        },
+        summary: {
+          totalAttempts: grouped.size,
+          totalStudents: bestGroupByStudent.size,
+          exported: exports.length,
+          failed: failures.length,
+        },
+        exports,
+        failures,
+      });
+    } catch (err) {
+      strapi.log.error("Batch result PDF export error:", err);
+      return ctx.internalServerError("Batch result PDF export failed: " + err.message);
     }
   },
 };

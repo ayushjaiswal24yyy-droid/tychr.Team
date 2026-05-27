@@ -132,22 +132,44 @@ ${tutor?.fullName || "Your Tutor"}
             ctx.throw(400, "Tutor has not connected Microsoft Teams");
           }
 
-          // Get Teams access token
-          const { accessToken } = await getTeamsAccessToken(
-            tutor.teams_refresh_token,
-            tutor.id
-          );
+          // Get Teams access token — throws teams_reauth_required if scope missing
+          let accessToken;
+          try {
+            ({ accessToken } = await getTeamsAccessToken(
+              tutor.teams_refresh_token,
+              tutor.id
+            ));
+          } catch (err) {
+            if (err.code === "teams_reauth_required") {
+              return ctx.send(
+                { error: { status: 403, code: "teams_reauth_required", message: err.message } },
+                403
+              );
+            }
+            throw err;
+          }
 
           // Create Teams meeting
           const start = new Date(schedule);
           const end = new Date(start.getTime() + 60 * 60 * 1000);
 
-          const meeting = await createTeamsMeeting({
-            accessToken,
-            title,
-            startTime: start.toISOString(),
-            endTime: end.toISOString(),
-          });
+          let meeting;
+          try {
+            meeting = await createTeamsMeeting({
+              accessToken,
+              title,
+              startTime: start.toISOString(),
+              endTime: end.toISOString(),
+            });
+          } catch (err) {
+            if (err.code === "teams_reauth_required") {
+              return ctx.send(
+                { error: { status: 403, code: "teams_reauth_required", message: err.message } },
+                403
+              );
+            }
+            throw err;
+          }
 
           // ✅ Create lecture with all data at once
           response = await strapi.entityService.create(
@@ -330,7 +352,7 @@ ${tutor?.fullName || "Your Tutor"}
             },
             populate: {
               classroom: {
-                populate: { tutor: true },
+                populate: { tutor: true, students: true },
               },
             },
           }
@@ -401,6 +423,19 @@ ${tutor?.fullName || "Your Tutor"}
                       const end = new Date(segment.endDateTime);
                       tutorDurationSeconds += (end.getTime() - start.getTime()) / 1000;
                     }
+            // Build per-participant duration map (email → seconds in meeting)
+            const participantSeconds = {};
+            for (const session of record.sessions || []) {
+              for (const segment of session.segments || []) {
+                const segStart = new Date(segment.startDateTime);
+                const segEnd = new Date(segment.endDateTime);
+                const segDuration = (segEnd.getTime() - segStart.getTime()) / 1000;
+                for (const participant of segment.participants || []) {
+                  const email =
+                    participant.identity?.user?.userPrincipalName?.toLowerCase() ||
+                    participant.identity?.user?.displayName?.toLowerCase();
+                  if (email) {
+                    participantSeconds[email] = (participantSeconds[email] || 0) + segDuration;
                   }
                 }
               }
@@ -453,6 +488,91 @@ ${tutor?.fullName || "Your Tutor"}
                 summariesProcessed++;
               }
             }
+            // 👨‍🏫 Tutor attendance
+            const tutorEmail = tutor?.email?.toLowerCase();
+            const tutorDurationSeconds = participantSeconds[tutorEmail] || 0;
+            const MEETING_DURATION_SECONDS = 60 * 60;
+            const tutorDurationMinutes = Math.round(tutorDurationSeconds / 60);
+            const isCounted = tutorDurationSeconds >= MEETING_DURATION_SECONDS * 0.8;
+
+            await strapi.entityService.update(
+              "api::live-lecture.live-lecture",
+              lecture.id,
+              {
+                data: {
+                  recording_url: recordingUrl,
+                  has_recording: !!recordingUrl,
+                  recording_status: recordingUrl ? "available" : "pending",
+                  recorded_at: recordingUrl ? new Date(record.startDateTime) : null,
+                  recording_duration_seconds: record.durationSeconds || null,
+                  tutor_duration_minutes: tutorDurationMinutes,
+                  is_counted: isCounted,
+                  tutor_attendance_status: isCounted ? "passed" : "failed",
+                  tutor_attendance_flagged_at: !isCounted ? new Date() : null,
+                  lecture_status: "completed",
+                },
+              }
+            );
+
+            // 👨‍🎓 Student attendance — update or create attendance records
+            const classroomStudents = lecture.classroom?.students || [];
+            for (const student of classroomStudents) {
+              const studentEmail = student.email?.toLowerCase();
+              const studentSeconds = participantSeconds[studentEmail] || 0;
+              const studentMinutes = Math.round(studentSeconds / 60);
+              const meetingDurationMinutes = Math.round(MEETING_DURATION_SECONDS / 60);
+              const attendancePercent =
+                meetingDurationMinutes > 0
+                  ? Math.round((studentMinutes / meetingDurationMinutes) * 100)
+                  : 0;
+
+              let status = "absent";
+              if (studentSeconds > 0) {
+                status = studentSeconds >= MEETING_DURATION_SECONDS * 0.5 ? "present" : "late";
+              }
+
+              // Find existing attendance record for this student + lecture
+              const existing = await strapi.entityService.findMany(
+                "api::attendance.attendance",
+                {
+                  filters: {
+                    live_lecture: lecture.id,
+                    student: student.id,
+                  },
+                  limit: 1,
+                }
+              );
+
+              const attendanceData = {
+                status,
+                duration_minutes: studentMinutes,
+                marked_at: new Date(),
+                marked_by: "system",
+                notes: `Auto-marked from Graph call record. Time in meeting: ${studentMinutes}min (${attendancePercent}%)`,
+              };
+
+              if (existing.length > 0) {
+                await strapi.entityService.update(
+                  "api::attendance.attendance",
+                  existing[0].id,
+                  { data: attendanceData }
+                );
+              } else {
+                await strapi.entityService.create("api::attendance.attendance", {
+                  data: {
+                    ...attendanceData,
+                    live_lecture: lecture.id,
+                    student: student.id,
+                  },
+                });
+              }
+            }
+
+            strapi.log.info(
+              `[sync] lecture ${lecture.id}: tutor=${tutorDurationMinutes}min, students=${classroomStudents.length} processed`
+            );
+
+            updated++;
           } catch (err) {
             failed++;
             const errorMsg = err?.response?.data

@@ -1,6 +1,7 @@
 "use strict";
 
 const { createCoreController } = require("@strapi/strapi").factories;
+const { getTeamsAccessToken, createTeamsMeeting } = require("../../../utils/teams");
 
 /**
  * Helper: parse "HH:MM:SS" or "HH:MM" time string into { hours, minutes }
@@ -226,7 +227,6 @@ async myPlans(ctx) {
           duration_in_minutes,
           title,
           description,
-          link,
         } = ctx.request.body;
 
         // ── Basic validation ──────────────────────────────────────────────
@@ -236,8 +236,7 @@ async myPlans(ctx) {
           !date ||
           !start_time ||
           !duration_in_minutes ||
-          !title ||
-          !link
+          !title
         ) {
           return ctx.badRequest("Missing required fields");
         }
@@ -323,14 +322,55 @@ async myPlans(ctx) {
           );
         }
 
-        // ── 6. Create the meeting ─────────────────────────────────────────
+        // ── 6. Generate Teams meeting link ───────────────────────────────
+        const mentorFull = await strapi.db
+          .query("plugin::users-permissions.user")
+          .findOne({
+            where: { id: mentor_id },
+            select: ["id", "teams_refresh_token"],
+          });
+
+        let teamsJoinUrl = null;
+        let teamsMeetingId = null;
+
+        if (mentorFull?.teams_refresh_token) {
+          try {
+            const [startHours, startMins] = start_time.split(":").map(Number);
+            const meetingStart = new Date(`${date}T${String(startHours).padStart(2, "0")}:${String(startMins).padStart(2, "0")}:00`);
+            const meetingEnd = new Date(meetingStart.getTime() + duration_in_minutes * 60 * 1000);
+
+            const { accessToken } = await getTeamsAccessToken(mentorFull.teams_refresh_token, mentor_id);
+            const teamsMeeting = await createTeamsMeeting({
+              accessToken,
+              title,
+              startTime: meetingStart.toISOString(),
+              endTime: meetingEnd.toISOString(),
+            });
+
+            teamsJoinUrl = teamsMeeting.joinUrl;
+            teamsMeetingId = teamsMeeting.meetingId;
+            strapi.log.info(`[student-meeting] Teams link generated for mentor ${mentor_id}`);
+          } catch (teamsErr) {
+            if (teamsErr.code === "teams_reauth_required") {
+              return ctx.badRequest("Mentor needs to reconnect their Microsoft Teams account", {
+                code: "teams_reauth_required",
+              });
+            }
+            strapi.log.error("[student-meeting] Teams link generation failed, proceeding without link", teamsErr);
+          }
+        } else {
+          strapi.log.warn(`[student-meeting] Mentor ${mentor_id} has no Teams token — meeting created without link`);
+        }
+
+        // ── 7. Create the meeting ─────────────────────────────────────────
         const meeting = await strapi.entityService.create(
           "api::student-meeting.student-meeting",
           {
             data: {
               title,
               description: description || null,
-              link,
+              teams_join_url: teamsJoinUrl,
+              teams_meeting_id: teamsMeetingId,
               date,
               start_time,
               duration_in_minutes,
@@ -344,7 +384,9 @@ async myPlans(ctx) {
 
         return {
           success: true,
-          message: "Meeting scheduled successfully",
+          message: teamsJoinUrl
+            ? "Meeting scheduled successfully. Teams link generated."
+            : "Meeting scheduled successfully. Teams link will be available once mentor connects their account.",
           data: {
             id: meeting.id,
             title: meeting.title,
@@ -352,7 +394,7 @@ async myPlans(ctx) {
             start_time: meeting.start_time,
             duration_in_minutes: meeting.duration_in_minutes,
             status: meeting.status,
-            link: meeting.link,
+            teams_join_url: meeting.teams_join_url,
           },
         };
       } catch (err) {
@@ -467,6 +509,71 @@ async myPlans(ctx) {
       } catch (err) {
         strapi.log.error("interrupt meeting error:", err);
         return ctx.internalServerError("Failed to interrupt meeting");
+      }
+    },
+    /**
+     * POST /student-meetings/:id/join
+     * Student joins a meeting → logs attendance + updates status to in_progress
+     */
+    async join(ctx) {
+      try {
+        const user = ctx.state.user;
+        if (!user) return ctx.unauthorized("Unauthorized");
+
+        const { id } = ctx.params;
+
+        const meeting = await strapi.entityService.findOne(
+          "api::student-meeting.student-meeting",
+          id,
+          { populate: ["student", "meeting_with"] }
+        );
+
+        if (!meeting) return ctx.notFound("Meeting not found");
+
+        // Only the student assigned to the meeting can join
+        if (meeting.student?.id !== user.id) {
+          return ctx.forbidden("Only the assigned student can join this meeting");
+        }
+
+        if (!meeting.teams_join_url) {
+          return ctx.badRequest("Meeting link not available yet. Contact your mentor.");
+        }
+
+        if (["completed", "canceled", "no_show"].includes(meeting.status)) {
+          return ctx.badRequest(`Cannot join a meeting with status: ${meeting.status}`);
+        }
+
+        // Update status to in_progress if still scheduled
+        if (meeting.status === "scheduled") {
+          await strapi.entityService.update(
+            "api::student-meeting.student-meeting",
+            id,
+            { data: { status: "in_progress" } }
+          );
+        }
+
+        // Create attendance record
+        await strapi.entityService.create("api::attendance.attendance", {
+          data: {
+            student: user.id,
+            student_meeting: id,
+            status: "present",
+            joined_at: new Date(),
+            marked_at: new Date(),
+            marked_by: "system",
+          },
+        });
+
+        strapi.log.info(`[student-meeting] Student ${user.id} joined meeting ${id}`);
+
+        return {
+          success: true,
+          message: "Joining meeting",
+          data: { teams_join_url: meeting.teams_join_url },
+        };
+      } catch (err) {
+        strapi.log.error("join meeting error:", err);
+        return ctx.internalServerError("Failed to process join request");
       }
     },
   })

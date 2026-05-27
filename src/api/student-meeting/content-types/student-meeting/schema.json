@@ -20,8 +20,13 @@
       "type": "text"
     },
     "link": {
-      "type": "string",
-      "required": true
+      "type": "string"
+    },
+    "teams_join_url": {
+      "type": "string"
+    },
+    "teams_meeting_id": {
+      "type": "string"
     },
     "date": {
       "type": "date",

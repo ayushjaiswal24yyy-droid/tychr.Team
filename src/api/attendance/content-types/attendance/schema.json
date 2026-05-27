@@ -23,6 +23,11 @@
       "target": "api::live-lecture.live-lecture",
       "inversedBy": "attendance"
     },
+    "student_meeting": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::student-meeting.student-meeting"
+    },
     "status": {
       "type": "enumeration",
       "enum": [
