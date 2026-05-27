@@ -168,6 +168,77 @@
       "relation": "oneToOne",
       "target": "api::tutor-dispute.tutor-dispute",
       "inversedBy": "live_lecture"
+    },
+    "transcript_status": {
+      "type": "enumeration",
+      "enum": [
+        "pending",
+        "available",
+        "failed",
+        "no_transcript"
+      ],
+      "default": "pending"
+    },
+    "transcript_text": {
+      "type": "text"
+    },
+    "transcript_language": {
+      "type": "string"
+    },
+    "transcript_retrieved_at": {
+      "type": "datetime"
+    },
+    "transcript_attempts": {
+      "type": "integer",
+      "default": 0
+    },
+    "transcript_last_error": {
+      "type": "text"
+    },
+    "transcript_processing_started_at": {
+      "type": "datetime"
+    },
+    "transcript_processed_at": {
+      "type": "datetime"
+    },
+    "transcript_provider_meeting_id": {
+      "type": "string"
+    },
+    "transcript_provider_transcript_id": {
+      "type": "string"
+    },
+    "summary_status": {
+      "type": "enumeration",
+      "enum": [
+        "pending",
+        "completed",
+        "failed"
+      ],
+      "default": "pending"
+    },
+    "summary_text": {
+      "type": "text"
+    },
+    "summary_tutor_tasks": {
+      "type": "json"
+    },
+    "summary_student_tasks": {
+      "type": "json"
+    },
+    "summary_homework": {
+      "type": "json"
+    },
+    "summary_open_questions": {
+      "type": "json"
+    },
+    "summary_model": {
+      "type": "string"
+    },
+    "summary_generated_at": {
+      "type": "datetime"
+    },
+    "summary_last_error": {
+      "type": "text"
     }
   }
 }
