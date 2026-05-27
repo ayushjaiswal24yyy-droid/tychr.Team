@@ -1601,6 +1601,11 @@ export interface ApiAttendanceAttendance extends Schema.CollectionType {
       'manyToOne',
       'api::live-lecture.live-lecture'
     >;
+    student_meeting: Attribute.Relation<
+      'api::attendance.attendance',
+      'manyToOne',
+      'api::student-meeting.student-meeting'
+    >;
     status: Attribute.Enumeration<['pending', 'present', 'absent', 'late']> &
       Attribute.DefaultTo<'pending'>;
     joined_at: Attribute.DateTime;
@@ -3312,8 +3317,8 @@ export interface ApiLiveLectureLiveLecture extends Schema.CollectionType {
   attributes: {
     title: Attribute.String & Attribute.Required;
     description: Attribute.Text;
-    teams_join_url: Attribute.String & Attribute.Required;
-    teams_meeting_id: Attribute.String & Attribute.Required;
+    teams_join_url: Attribute.String;
+    teams_meeting_id: Attribute.String;
     recording_url: Attribute.String;
     recording_file_id: Attribute.String;
     recorded_at: Attribute.DateTime;
@@ -4257,7 +4262,8 @@ export interface ApiQuestionBankQuestionBank extends Schema.CollectionType {
         'Compare',
         'Contrast',
         'Justify',
-        'To what extent'
+        'To what extent',
+        'Calculate'
       ]
     >;
     parts: Attribute.Component<'question-bank.parts', true>;
@@ -4293,6 +4299,66 @@ export interface ApiQuestionBankQuestionBank extends Schema.CollectionType {
       Attribute.Private;
     updatedBy: Attribute.Relation<
       'api::question-bank.question-bank',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+  };
+}
+
+export interface ApiQuestionPaperTemplateQuestionPaperTemplate
+  extends Schema.CollectionType {
+  collectionName: 'question_paper_templates';
+  info: {
+    singularName: 'question-paper-template';
+    pluralName: 'question-paper-templates';
+    displayName: 'Question Paper Template';
+    description: 'Reusable exam paper templates with relational question references and immutable JSON snapshots.';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    title: Attribute.String & Attribute.Required;
+    description: Attribute.Text;
+    instructions: Attribute.RichText;
+    duration: Attribute.Decimal;
+    total_marks: Attribute.Integer;
+    paper_type: Attribute.Enumeration<
+      ['midterm', 'final', 'quiz', 'mock', 'assignment', 'practice']
+    > &
+      Attribute.DefaultTo<'practice'>;
+    sections: Attribute.Component<'question-paper.section', true>;
+    questions: Attribute.Relation<
+      'api::question-paper-template.question-paper-template',
+      'manyToMany',
+      'api::question-bank.question-bank'
+    >;
+    created_by_admin: Attribute.Relation<
+      'api::question-paper-template.question-paper-template',
+      'manyToOne',
+      'plugin::users-permissions.user'
+    >;
+    tags: Attribute.JSON;
+    thumbnail: Attribute.Media<'images'>;
+    source_paper_id: Attribute.String;
+    is_template: Attribute.Boolean & Attribute.DefaultTo<true>;
+    template_questions_snapshot: Attribute.JSON;
+    template_metadata: Attribute.JSON;
+    visibility: Attribute.Enumeration<['private', 'institution', 'public']> &
+      Attribute.DefaultTo<'private'>;
+    version: Attribute.Integer & Attribute.DefaultTo<1>;
+    createdAt: Attribute.DateTime;
+    updatedAt: Attribute.DateTime;
+    publishedAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<
+      'api::question-paper-template.question-paper-template',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+    updatedBy: Attribute.Relation<
+      'api::question-paper-template.question-paper-template',
       'oneToOne',
       'admin::user'
     > &
@@ -4523,7 +4589,9 @@ export interface ApiStudentMeetingStudentMeeting extends Schema.CollectionType {
   attributes: {
     title: Attribute.String & Attribute.Required;
     description: Attribute.Text;
-    link: Attribute.String & Attribute.Required;
+    link: Attribute.String;
+    teams_join_url: Attribute.String;
+    teams_meeting_id: Attribute.String;
     date: Attribute.Date & Attribute.Required;
     start_time: Attribute.Time & Attribute.Required;
     duration_in_minutes: Attribute.Integer &
@@ -6317,6 +6385,7 @@ declare module '@strapi/types' {
       'api::program-type.program-type': ApiProgramTypeProgramType;
       'api::progress.progress': ApiProgressProgress;
       'api::question-bank.question-bank': ApiQuestionBankQuestionBank;
+      'api::question-paper-template.question-paper-template': ApiQuestionPaperTemplateQuestionPaperTemplate;
       'api::recorded-lecture.recorded-lecture': ApiRecordedLectureRecordedLecture;
       'api::resource.resource': ApiResourceResource;
       'api::sat-city.sat-city': ApiSatCitySatCity;
