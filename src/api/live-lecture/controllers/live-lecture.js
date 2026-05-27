@@ -7,6 +7,11 @@
 const { createCoreController } = require("@strapi/strapi").factories;
 const axios = require("axios");
 const { createTeamsMeeting, getTeamsAccessToken, getAppAccessToken } = require("../../../utils/teams")
+
+const DEFAULT_POPULATE = {
+  topic: true,
+  classroom: { populate: { students: true, tutor: true } },
+};
 module.exports = createCoreController(
   "api::live-lecture.live-lecture",
   ({ strapi }) => {
@@ -60,6 +65,14 @@ ${tutor?.fullName || "Your Tutor"}
 
 
     return {
+      async find(ctx) {
+        ctx.query.populate = ctx.query.populate || DEFAULT_POPULATE;
+        return super.find(ctx);
+      },
+      async findOne(ctx) {
+        ctx.query.populate = ctx.query.populate || DEFAULT_POPULATE;
+        return super.findOne(ctx);
+      },
       async create(ctx) {
         let response = null;
 
@@ -299,6 +312,36 @@ ${tutor?.fullName || "Your Tutor"}
           return ctx.unauthorized("Invalid cron key");
         }
 
+        const now = new Date();
+        const completionCutoff = new Date(now.getTime() - 15 * 60 * 1000);
+
+        const pendingCompletion = await strapi.entityService.findMany(
+          "api::live-lecture.live-lecture",
+          {
+            filters: {
+              lecture_status: { $in: ["scheduled", "rescheduled"] },
+              schedule: { $lt: completionCutoff },
+              is_cancelled: false,
+            },
+            fields: ["id"],
+          }
+        );
+
+        await Promise.all(
+          pendingCompletion.map((lecture) =>
+            strapi.entityService.update(
+              "api::live-lecture.live-lecture",
+              lecture.id,
+              {
+                data: {
+                  lecture_status: "completed",
+                  recording_status: "pending",
+                },
+              }
+            )
+          )
+        );
+
         const lectures = await strapi.entityService.findMany(
           "api::live-lecture.live-lecture",
           {
@@ -318,6 +361,8 @@ ${tutor?.fullName || "Your Tutor"}
         let processed = 0;
         let updated = 0;
         let failed = 0;
+        let transcriptsProcessed = 0;
+        let summariesProcessed = 0;
 
         let appAccessToken;
         try {
@@ -342,32 +387,42 @@ ${tutor?.fullName || "Your Tutor"}
             const callRecords = recordsRes.data.value || [];
             const matched = callRecords[0];
 
-            if (!matched) {
-              strapi.log.info(`No call record found yet for lecture ${lecture.id}`);
-              continue;
-            }
+            if (matched) {
+              // Step 2: Fetch full detail with sessions + segments
+              const detailRes = await axios.get(
+                `https://graph.microsoft.com/v1.0/communications/callRecords/${matched.id}?$expand=sessions($expand=segments)`,
+                { headers: { Authorization: `Bearer ${appAccessToken}` } }
+              );
 
-            // Step 2: Fetch full detail with sessions + segments
-            const detailRes = await axios.get(
-              `https://graph.microsoft.com/v1.0/communications/callRecords/${matched.id}?$expand=sessions($expand=segments)`,
-              { headers: { Authorization: `Bearer ${appAccessToken}` } }
-            );
+              const record = detailRes.data;
 
-            const record = detailRes.data;
-
-            // 🎥 Extract recording URL
-            let recordingUrl = null;
-            for (const session of record.sessions || []) {
-              for (const segment of session.segments || []) {
-                const recordingMedia = segment.media?.find((m) => m.label === "recording");
-                if (recordingMedia?.contentUrl) {
-                  recordingUrl = recordingMedia.contentUrl;
-                  break;
+              // 🎥 Extract recording URL
+              let recordingUrl = null;
+              for (const session of record.sessions || []) {
+                for (const segment of session.segments || []) {
+                  const recordingMedia = segment.media?.find((m) => m.label === "recording");
+                  if (recordingMedia?.contentUrl) {
+                    recordingUrl = recordingMedia.contentUrl;
+                    break;
+                  }
                 }
+                if (recordingUrl) break;
               }
-              if (recordingUrl) break;
-            }
 
+              // 👨‍🏫 Extract tutor duration
+              let tutorDurationSeconds = 0;
+              const tutorEmail = tutor?.email?.toLowerCase();
+
+              for (const session of record.sessions || []) {
+                for (const segment of session.segments || []) {
+                  for (const participant of segment.participants || []) {
+                    if (
+                      participant.identity?.user?.userPrincipalName?.toLowerCase() === tutorEmail
+                    ) {
+                      const start = new Date(segment.startDateTime);
+                      const end = new Date(segment.endDateTime);
+                      tutorDurationSeconds += (end.getTime() - start.getTime()) / 1000;
+                    }
             // Build per-participant duration map (email → seconds in meeting)
             const participantSeconds = {};
             for (const session of record.sessions || []) {
@@ -384,8 +439,55 @@ ${tutor?.fullName || "Your Tutor"}
                   }
                 }
               }
+
+              const MEETING_DURATION_SECONDS = 60 * 60;
+              const tutorDurationMinutes = Math.round(tutorDurationSeconds / 60);
+              const isCounted = tutorDurationSeconds >= MEETING_DURATION_SECONDS * 0.8;
+
+              await strapi.entityService.update(
+                "api::live-lecture.live-lecture",
+                lecture.id,
+                {
+                  data: {
+                    recording_url: recordingUrl,
+                    has_recording: !!recordingUrl,
+                    recording_status: recordingUrl ? "available" : "pending",
+                    recorded_at: recordingUrl ? new Date(record.startDateTime) : null,
+                    recording_duration_seconds: record.durationSeconds || null,
+                    tutor_duration_minutes: tutorDurationMinutes,
+                    is_counted: isCounted,
+                    tutor_attendance_status: isCounted ? "passed" : "failed",
+                    tutor_attendance_flagged_at: !isCounted ? new Date() : null,
+                  },
+                }
+              );
+
+              updated++;
+            } else {
+              strapi.log.info(`No call record found yet for lecture ${lecture.id}`);
             }
 
+            const liveLectureService = strapi.service("api::live-lecture.live-lecture");
+
+            const transcript = await liveLectureService.ensureTranscriptForLecture({
+              lecture,
+              appAccessToken,
+            });
+
+            if (transcript) {
+              transcriptsProcessed++;
+            }
+
+            if (transcript?.transcript_status === "available") {
+              const summary = await liveLectureService.ensureSummaryForLecture({
+                lecture,
+                transcriptText: transcript.transcript_text,
+              });
+
+              if (summary) {
+                summariesProcessed++;
+              }
+            }
             // 👨‍🏫 Tutor attendance
             const tutorEmail = tutor?.email?.toLowerCase();
             const tutorDurationSeconds = participantSeconds[tutorEmail] || 0;
@@ -487,7 +589,7 @@ ${tutor?.fullName || "Your Tutor"}
           }
         }
 
-        return ctx.send({ ok: true, processed, updated, failed });
+        return ctx.send({ ok: true, processed, updated, failed, transcriptsProcessed, summariesProcessed });
       },
     };
   }

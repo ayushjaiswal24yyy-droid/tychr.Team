@@ -1204,6 +1204,20 @@ export interface ExcellenceStatsStats extends Schema.Component {
   };
 }
 
+export interface EvaluationEvaluation extends Schema.Component {
+  collectionName: 'components_evaluation_evaluations';
+  info: {
+    displayName: 'evaluation';
+    description: '';
+  };
+  attributes: {
+    part_index: Attribute.Integer;
+    awarded_marks: Attribute.Decimal;
+    feedback: Attribute.Text;
+    audio_feedback: Attribute.Media<'images' | 'files' | 'videos' | 'audios'>;
+  };
+}
+
 export interface ExamsExams extends Schema.Component {
   collectionName: 'components_exams_exams';
   info: {
@@ -1225,20 +1239,6 @@ export interface ExamsExams extends Schema.Component {
         'subject_specific_test'
       ]
     >;
-  };
-}
-
-export interface EvaluationEvaluation extends Schema.Component {
-  collectionName: 'components_evaluation_evaluations';
-  info: {
-    displayName: 'evaluation';
-    description: '';
-  };
-  attributes: {
-    part_index: Attribute.Integer;
-    awarded_marks: Attribute.Decimal;
-    feedback: Attribute.Text;
-    audio_feedback: Attribute.Media<'images' | 'files' | 'videos' | 'audios'>;
   };
 }
 
@@ -1745,8 +1745,8 @@ declare module '@strapi/types' {
       'external-users.founder': ExternalUsersFounder;
       'external-assessments.external-assessments': ExternalAssessmentsExternalAssessments;
       'excellence-stats.stats': ExcellenceStatsStats;
-      'exams.exams': ExamsExams;
       'evaluation.evaluation': EvaluationEvaluation;
+      'exams.exams': ExamsExams;
       'essays.title-option': EssaysTitleOption;
       'essays.tags': EssaysTags;
       'essays.essay': EssaysEssay;

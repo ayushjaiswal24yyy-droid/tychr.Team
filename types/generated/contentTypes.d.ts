@@ -3380,6 +3380,29 @@ export interface ApiLiveLectureLiveLecture extends Schema.CollectionType {
       'oneToOne',
       'api::tutor-dispute.tutor-dispute'
     >;
+    transcript_status: Attribute.Enumeration<
+      ['pending', 'available', 'failed', 'no_transcript']
+    > &
+      Attribute.DefaultTo<'pending'>;
+    transcript_text: Attribute.Text;
+    transcript_language: Attribute.String;
+    transcript_retrieved_at: Attribute.DateTime;
+    transcript_attempts: Attribute.Integer & Attribute.DefaultTo<0>;
+    transcript_last_error: Attribute.Text;
+    transcript_processing_started_at: Attribute.DateTime;
+    transcript_processed_at: Attribute.DateTime;
+    transcript_provider_meeting_id: Attribute.String;
+    transcript_provider_transcript_id: Attribute.String;
+    summary_status: Attribute.Enumeration<['pending', 'completed', 'failed']> &
+      Attribute.DefaultTo<'pending'>;
+    summary_text: Attribute.Text;
+    summary_tutor_tasks: Attribute.JSON;
+    summary_student_tasks: Attribute.JSON;
+    summary_homework: Attribute.JSON;
+    summary_open_questions: Attribute.JSON;
+    summary_model: Attribute.String;
+    summary_generated_at: Attribute.DateTime;
+    summary_last_error: Attribute.Text;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
