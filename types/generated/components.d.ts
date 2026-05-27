@@ -698,6 +698,25 @@ export interface RecordedLecturesProgress extends Schema.Component {
   };
 }
 
+export interface QuestionPaperSection extends Schema.Component {
+  collectionName: 'components_question_paper_sections';
+  info: {
+    displayName: 'Section';
+    description: 'Reusable section component for question papers with questions and instructions';
+  };
+  attributes: {
+    title: Attribute.String & Attribute.Required;
+    instructions: Attribute.RichText;
+    section_marks: Attribute.Integer;
+    order: Attribute.Integer;
+    questions: Attribute.Relation<
+      'question-paper.section',
+      'manyToMany',
+      'api::question-bank.question-bank'
+    >;
+  };
+}
+
 export interface QuestionBankRightItemsSection extends Schema.Component {
   collectionName: 'components_question_bank_right_items_section_s';
   info: {
@@ -1204,20 +1223,6 @@ export interface ExcellenceStatsStats extends Schema.Component {
   };
 }
 
-export interface EvaluationEvaluation extends Schema.Component {
-  collectionName: 'components_evaluation_evaluations';
-  info: {
-    displayName: 'evaluation';
-    description: '';
-  };
-  attributes: {
-    part_index: Attribute.Integer;
-    awarded_marks: Attribute.Decimal;
-    feedback: Attribute.Text;
-    audio_feedback: Attribute.Media<'images' | 'files' | 'videos' | 'audios'>;
-  };
-}
-
 export interface ExamsExams extends Schema.Component {
   collectionName: 'components_exams_exams';
   info: {
@@ -1239,6 +1244,20 @@ export interface ExamsExams extends Schema.Component {
         'subject_specific_test'
       ]
     >;
+  };
+}
+
+export interface EvaluationEvaluation extends Schema.Component {
+  collectionName: 'components_evaluation_evaluations';
+  info: {
+    displayName: 'evaluation';
+    description: '';
+  };
+  attributes: {
+    part_index: Attribute.Integer;
+    awarded_marks: Attribute.Decimal;
+    feedback: Attribute.Text;
+    audio_feedback: Attribute.Media<'images' | 'files' | 'videos' | 'audios'>;
   };
 }
 
@@ -1711,6 +1730,7 @@ declare module '@strapi/types' {
       'resources.resources': ResourcesResources;
       'requested-by.requested-by': RequestedByRequestedBy;
       'recorded-lectures.progress': RecordedLecturesProgress;
+      'question-paper.section': QuestionPaperSection;
       'question-bank.right-items-section': QuestionBankRightItemsSection;
       'question-bank.question-n-answer': QuestionBankQuestionNAnswer;
       'question-bank.parts': QuestionBankParts;
@@ -1745,8 +1765,8 @@ declare module '@strapi/types' {
       'external-users.founder': ExternalUsersFounder;
       'external-assessments.external-assessments': ExternalAssessmentsExternalAssessments;
       'excellence-stats.stats': ExcellenceStatsStats;
-      'evaluation.evaluation': EvaluationEvaluation;
       'exams.exams': ExamsExams;
+      'evaluation.evaluation': EvaluationEvaluation;
       'essays.title-option': EssaysTitleOption;
       'essays.tags': EssaysTags;
       'essays.essay': EssaysEssay;
