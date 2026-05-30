@@ -1119,7 +1119,7 @@ module.exports = createCoreController(
           return ctx.badRequest("Invalid request");
         }
 
-        const MAX_ATTEMPTS = 10;
+        const MAX_ATTEMPTS = 3;
 
         // Fetch the series first to get reading_time and test_duration
         const series = await strapi.entityService.findOne(
