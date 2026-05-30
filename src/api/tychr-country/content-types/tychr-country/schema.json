@@ -1,0 +1,45 @@
+{
+  "kind": "collectionType",
+  "collectionName": "tychr_countries",
+  "info": {
+    "singularName": "tychr-country",
+    "pluralName": "tychr-countries",
+    "displayName": "tychr-country",
+    "description": "Demo country/page content for dynamic TYCHR routes"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "title": {
+      "type": "string"
+    },
+    "countrySlug": {
+      "type": "string",
+      "required": true
+    },
+    "slug": {
+      "type": "string",
+      "required": true
+    },
+    "pageCategory": {
+      "type": "string"
+    },
+    "heroTitle": {
+      "type": "string"
+    },
+    "heroSubtitle": {
+      "type": "text"
+    },
+    "seoTitle": {
+      "type": "string"
+    },
+    "seoDescription": {
+      "type": "text"
+    },
+    "content": {
+      "type": "richtext"
+    }
+  }
+}
