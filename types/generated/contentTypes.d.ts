@@ -5887,7 +5887,7 @@ export interface ApiTychrCountryTychrCountry extends Schema.CollectionType {
     singularName: 'tychr-country';
     pluralName: 'tychr-countries';
     displayName: 'tychr-country';
-    description: 'Demo country/page content for dynamic TYCHR routes';
+    description: 'Country/page content for dynamic TYCHR routes';
   };
   options: {
     draftAndPublish: true;

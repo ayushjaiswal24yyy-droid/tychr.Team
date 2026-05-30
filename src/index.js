@@ -7,7 +7,7 @@ module.exports = {
 
   async bootstrap({ strapi }) {
     await ensurePermissions(strapi);
-    await seedTychrCountryDemoPages(strapi);
+    await seedTychrCountryPages(strapi);
     initSocketIO(strapi);
   },
 };
@@ -209,7 +209,7 @@ async function ensurePermissions(strapi) {
   await enableRoleActions(strapi, authenticatedRole, AUTHENTICATED_ACTIONS);
   await enableRoleActions(strapi, publicRole, PUBLIC_ACTIONS);
 
-  strapi.log.info('Ensured role permissions for messaging, ai-tutor, and tychr-country demo content');
+  strapi.log.info('Ensured role permissions for messaging, ai-tutor, and tychr-country content');
 }
 
 async function enableRoleActions(strapi, role, actions) {
@@ -231,116 +231,101 @@ async function enableRoleActions(strapi, role, actions) {
   }
 }
 
-const TYCHR_COUNTRY_DEMO_PAGES = [
-  {
-    countrySlug: 'uk',
-    slug: 'home',
-    pageCategory: 'home',
-    title: 'TYCHR UK',
-    heroTitle: 'TYCHR UK',
-    heroSubtitle: 'Demo homepage content for TYCHR UK.',
-  },
-  {
-    countrySlug: 'uk',
-    slug: 'ibdp',
-    pageCategory: 'programme',
-    title: 'IBDP Tutors in the UK',
-    heroTitle: 'IBDP support for UK students',
-    heroSubtitle: 'CMS-driven demo page for the UK IBDP route.',
-  },
-  {
-    countrySlug: 'uk',
-    slug: 'myp',
-    pageCategory: 'programme',
-    title: 'MYP Tutors in the UK',
-    heroTitle: 'MYP support for UK students',
-    heroSubtitle: 'CMS-driven demo page for the UK MYP route.',
-  },
-  {
-    countrySlug: 'dubai',
-    slug: 'home',
-    pageCategory: 'home',
-    title: 'TYCHR Dubai',
-    heroTitle: 'TYCHR Dubai',
-    heroSubtitle: 'Demo homepage content for TYCHR Dubai.',
-  },
-  {
-    countrySlug: 'dubai',
-    slug: 'ibdp',
-    pageCategory: 'programme',
-    title: 'IBDP Tutors in Dubai',
-    heroTitle: 'IBDP support for Dubai students',
-    heroSubtitle: 'CMS-driven demo page for the Dubai IBDP route.',
-  },
-  {
-    countrySlug: 'dubai',
-    slug: 'myp',
-    pageCategory: 'programme',
-    title: 'MYP Tutors in Dubai',
-    heroTitle: 'MYP support for Dubai students',
-    heroSubtitle: 'CMS-driven demo page for the Dubai MYP route.',
-  },
-  {
-    countrySlug: 'dubai',
-    slug: 'ib-maths',
-    pageCategory: 'subject',
-    title: 'IB Maths Tutors in Dubai',
-    heroTitle: 'IB Maths support for Dubai students',
-    heroSubtitle: 'CMS-driven demo page for the Dubai IB Maths route.',
-  },
-  {
-    countrySlug: 'singapore',
-    slug: 'home',
-    pageCategory: 'home',
-    title: 'TYCHR Singapore',
-    heroTitle: 'TYCHR Singapore',
-    heroSubtitle: 'Demo homepage content for TYCHR Singapore.',
-  },
-  {
-    countrySlug: 'singapore',
-    slug: 'ibdp',
-    pageCategory: 'programme',
-    title: 'IBDP Tutors in Singapore',
-    heroTitle: 'IBDP support for Singapore students',
-    heroSubtitle: 'CMS-driven demo page for the Singapore IBDP route.',
-  },
-  {
-    countrySlug: 'singapore',
-    slug: 'myp',
-    pageCategory: 'programme',
-    title: 'MYP Tutors in Singapore',
-    heroTitle: 'MYP support for Singapore students',
-    heroSubtitle: 'CMS-driven demo page for the Singapore MYP route.',
-  },
+const INITIAL_TYCHR_COUNTRIES = [
+  { slug: 'uk', name: 'UK' },
+  { slug: 'dubai', name: 'Dubai' },
+  { slug: 'singapore', name: 'Singapore' },
+  { slug: 'hongkong', name: 'Hong Kong' },
+  { slug: 'canada', name: 'Canada' },
 ];
 
-async function seedTychrCountryDemoPages(strapi) {
+const TYCHR_COUNTRY_PAGE_TYPES = [
+  { slug: 'home', label: 'TYCHR', category: 'home' },
+  { slug: 'ibdp', label: 'IBDP', category: 'programme' },
+  { slug: 'myp', label: 'MYP', category: 'programme' },
+  { slug: 'ib-maths', label: 'IB Maths', category: 'subject' },
+  { slug: 'ib-physics', label: 'IB Physics', category: 'subject' },
+  { slug: 'ib-chemistry', label: 'IB Chemistry', category: 'subject' },
+  { slug: 'ib-biology', label: 'IB Biology', category: 'subject' },
+  { slug: 'ib-english', label: 'IB English', category: 'subject' },
+  { slug: 'ib-economics', label: 'IB Economics', category: 'subject' },
+  { slug: 'ia', label: 'IB Internal Assessment', category: 'coursework' },
+  { slug: 'ee', label: 'Extended Essay', category: 'coursework' },
+  { slug: 'tok', label: 'Theory of Knowledge', category: 'coursework' },
+  { slug: 'igcse', label: 'IGCSE', category: 'programme' },
+  { slug: 'sat', label: 'SAT', category: 'test-prep' },
+  { slug: 'act', label: 'ACT', category: 'test-prep' },
+];
+
+async function seedTychrCountryPages(strapi) {
   const uid = 'api::tychr-country.tychr-country';
 
-  for (const page of TYCHR_COUNTRY_DEMO_PAGES) {
-    const data = {
-      ...page,
-      seoTitle: page.title,
-      seoDescription: page.heroSubtitle,
-      content: `# ${page.heroTitle}\n\n${page.heroSubtitle}\n\nThis proof-of-concept entry is served from one Strapi collection using countrySlug + slug.`,
-      publishedAt: new Date(),
-    };
+  for (const country of INITIAL_TYCHR_COUNTRIES) {
+    for (const pageType of TYCHR_COUNTRY_PAGE_TYPES) {
+      const data = buildTychrCountryPage(country, pageType);
+      const existing = await strapi.db.query(uid).findOne({
+        where: {
+          countrySlug: data.countrySlug,
+          slug: data.slug,
+        },
+      });
 
-    const existing = await strapi.db.query(uid).findOne({
-      where: {
-        countrySlug: page.countrySlug,
-        slug: page.slug,
-      },
-    });
-
-    if (existing) {
-      await strapi.entityService.update(uid, existing.id, { data });
-    } else {
-      await strapi.entityService.create(uid, { data });
+      if (!existing) {
+        await strapi.entityService.create(uid, { data });
+      } else if (isPreviousDemoTychrCountryPage(existing)) {
+        await strapi.entityService.update(uid, existing.id, { data });
+      }
     }
   }
 
-  strapi.log.info('Seeded TYCHR country demo pages');
+  strapi.log.info('Seeded TYCHR country pages');
+}
+
+function buildTychrCountryPage(country, pageType) {
+  if (pageType.slug === 'home') {
+    const title = `TYCHR ${country.name}`;
+    const heroSubtitle = `Personalised academic support for students in ${country.name}.`;
+
+    return {
+      title,
+      countrySlug: country.slug,
+      slug: pageType.slug,
+      pageCategory: pageType.category,
+      heroTitle: title,
+      heroSubtitle,
+      seoTitle: title,
+      seoDescription: heroSubtitle,
+      content: `# ${title}\n\n${heroSubtitle}\n\nThis page is powered by the tychr-country collection using countrySlug + slug.`,
+      publishedAt: new Date(),
+    };
+  }
+
+  const title = `${pageType.label} Tutors in ${country.name}`;
+  const heroTitle = `${pageType.label} support for students in ${country.name}`;
+  const heroSubtitle = `Expert ${pageType.label} tutoring and guidance for students in ${country.name}.`;
+
+  return {
+    title,
+    countrySlug: country.slug,
+    slug: pageType.slug,
+    pageCategory: pageType.category,
+    heroTitle,
+    heroSubtitle,
+    seoTitle: title,
+    seoDescription: heroSubtitle,
+    content: `# ${heroTitle}\n\n${heroSubtitle}\n\nThis page is powered by the tychr-country collection using countrySlug + slug.`,
+    publishedAt: new Date(),
+  };
+}
+
+function isPreviousDemoTychrCountryPage(entry) {
+  const fields = [
+    entry.heroSubtitle,
+    entry.seoDescription,
+    entry.content,
+  ].filter(Boolean);
+
+  return fields.some((value) => /demo|proof-of-concept/i.test(value));
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
