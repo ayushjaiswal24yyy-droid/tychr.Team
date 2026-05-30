@@ -632,12 +632,16 @@ module.exports = {
         return ctx.badRequest("Result PDFs can be exported only after the test has ended");
       }
 
+      // Include the series ID itself in the search — answers may be saved against
+      // either the paper ID (from submitOnlineAnswers) or the series ID (older saves)
+      const allRelevantIds = [...new Set([Number(id), ...paperIds])];
+
       const answerFilters = {
         completed: true,
         is_attempt_marker: { $ne: true },
         evaluation_status: "evaluated",
         attempt_id: { $notNull: true },
-        test_series: { id: { $in: paperIds } },
+        test_series: { id: { $in: allRelevantIds } },
       };
 
       if (classroomId) {
