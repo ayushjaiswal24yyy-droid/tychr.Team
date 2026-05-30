@@ -187,7 +187,7 @@ module.exports = createCoreController(
           return ctx.badRequest("No pending resume request");
         }
 
-        // 3️⃣ Update marker (reopen attempt)
+        // 3️⃣ Close out the auto-submitted attempt so student can start a fresh one
         await strapi.entityService.update(
           "api::answer.answer",
           attemptId,
@@ -195,10 +195,8 @@ module.exports = createCoreController(
             data: {
               resume_status: "approved",
               resume_approved_at: new Date(),
-              completed: false,
-              auto_submitted: false,
-              phase: "answering",
-              phase_started_at: new Date(), // resume from now
+              completed: true,
+              phase: "completed",
             },
           }
         );
