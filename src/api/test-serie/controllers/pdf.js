@@ -623,8 +623,6 @@ module.exports = {
 
       if (!series) return ctx.notFound("Test series not found");
 
-      strapi.log.info(`[exportResultsBatch] id=${id} entity_type=${series.entity_type} papers=${JSON.stringify((series.papers||[]).map(p=>p.id))}`);
-
       const paperIds = getPaperIdsForSeries(series, id);
       if (!paperIds.length) return ctx.badRequest("No papers found for this series");
 

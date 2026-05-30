@@ -188,6 +188,7 @@ const AUTHENTICATED_ACTIONS = [
   'api::live-lecture.live-lecture.find',
   'api::live-lecture.live-lecture.findOne',
   'api::live-lecture.live-lecture.update',
+  'api::test-serie.pdf.exportResultsBatch',
 ];
 
 const PUBLIC_ACTIONS = [
