@@ -104,12 +104,15 @@ const isAdminUser = (user) => {
 
 const getPaperIdsForSeries = (series, id) => {
   if (series.entity_type === "paper") return [Number(id)];
-  return (series.papers || []).map((paper) => paper.id);
+  const paperIds = (series.papers || []).map((paper) => paper.id);
+  // fallback: treat the series itself as a paper if no child papers found
+  return paperIds.length ? paperIds : [Number(id)];
 };
 
 const getPaperRowsForSeries = (series) => {
   if (series.entity_type === "paper") return [series];
-  return series.papers || [];
+  const papers = series.papers || [];
+  return papers.length ? papers : [series];
 };
 
 const isPaperEnded = (paper, now = new Date()) => {
