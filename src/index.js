@@ -7,6 +7,7 @@ module.exports = {
 
   async bootstrap({ strapi }) {
     await ensurePermissions(strapi);
+    await seedTychrCountryDemoPages(strapi);
     initSocketIO(strapi);
   },
 };
@@ -189,22 +190,37 @@ const AUTHENTICATED_ACTIONS = [
   'api::live-lecture.live-lecture.update',
 ];
 
+const PUBLIC_ACTIONS = [
+  'api::tychr-country.tychr-country.find',
+  'api::tychr-country.tychr-country.findOne',
+];
+
 async function ensurePermissions(strapi) {
   const authenticatedRole = await strapi
     .query('plugin::users-permissions.role')
     .findOne({ where: { type: 'authenticated' } });
+  const publicRole = await strapi
+    .query('plugin::users-permissions.role')
+    .findOne({ where: { type: 'public' } });
 
   if (!authenticatedRole) throw new Error('Authenticated role not found');
+  if (!publicRole) throw new Error('Public role not found');
 
-  for (const action of AUTHENTICATED_ACTIONS) {
-    // Find permission scoped to this action AND this role
+  await enableRoleActions(strapi, authenticatedRole, AUTHENTICATED_ACTIONS);
+  await enableRoleActions(strapi, publicRole, PUBLIC_ACTIONS);
+
+  strapi.log.info('Ensured role permissions for messaging, ai-tutor, and tychr-country demo content');
+}
+
+async function enableRoleActions(strapi, role, actions) {
+  for (const action of actions) {
     const existing = await strapi
       .query('plugin::users-permissions.permission')
-      .findOne({ where: { action, role: { id: authenticatedRole.id } } });
+      .findOne({ where: { action, role: { id: role.id } } });
 
     if (!existing) {
       await strapi.query('plugin::users-permissions.permission').create({
-        data: { action, role: authenticatedRole.id, enabled: true },
+        data: { action, role: role.id, enabled: true },
       });
     } else if (!existing.enabled) {
       await strapi.query('plugin::users-permissions.permission').update({
@@ -213,8 +229,118 @@ async function ensurePermissions(strapi) {
       });
     }
   }
+}
 
-  strapi.log.info('Ensured authenticated role permissions for messaging + ai-tutor');
+const TYCHR_COUNTRY_DEMO_PAGES = [
+  {
+    countrySlug: 'uk',
+    slug: 'home',
+    pageCategory: 'home',
+    title: 'TYCHR UK',
+    heroTitle: 'TYCHR UK',
+    heroSubtitle: 'Demo homepage content for TYCHR UK.',
+  },
+  {
+    countrySlug: 'uk',
+    slug: 'ibdp',
+    pageCategory: 'programme',
+    title: 'IBDP Tutors in the UK',
+    heroTitle: 'IBDP support for UK students',
+    heroSubtitle: 'CMS-driven demo page for the UK IBDP route.',
+  },
+  {
+    countrySlug: 'uk',
+    slug: 'myp',
+    pageCategory: 'programme',
+    title: 'MYP Tutors in the UK',
+    heroTitle: 'MYP support for UK students',
+    heroSubtitle: 'CMS-driven demo page for the UK MYP route.',
+  },
+  {
+    countrySlug: 'dubai',
+    slug: 'home',
+    pageCategory: 'home',
+    title: 'TYCHR Dubai',
+    heroTitle: 'TYCHR Dubai',
+    heroSubtitle: 'Demo homepage content for TYCHR Dubai.',
+  },
+  {
+    countrySlug: 'dubai',
+    slug: 'ibdp',
+    pageCategory: 'programme',
+    title: 'IBDP Tutors in Dubai',
+    heroTitle: 'IBDP support for Dubai students',
+    heroSubtitle: 'CMS-driven demo page for the Dubai IBDP route.',
+  },
+  {
+    countrySlug: 'dubai',
+    slug: 'myp',
+    pageCategory: 'programme',
+    title: 'MYP Tutors in Dubai',
+    heroTitle: 'MYP support for Dubai students',
+    heroSubtitle: 'CMS-driven demo page for the Dubai MYP route.',
+  },
+  {
+    countrySlug: 'dubai',
+    slug: 'ib-maths',
+    pageCategory: 'subject',
+    title: 'IB Maths Tutors in Dubai',
+    heroTitle: 'IB Maths support for Dubai students',
+    heroSubtitle: 'CMS-driven demo page for the Dubai IB Maths route.',
+  },
+  {
+    countrySlug: 'singapore',
+    slug: 'home',
+    pageCategory: 'home',
+    title: 'TYCHR Singapore',
+    heroTitle: 'TYCHR Singapore',
+    heroSubtitle: 'Demo homepage content for TYCHR Singapore.',
+  },
+  {
+    countrySlug: 'singapore',
+    slug: 'ibdp',
+    pageCategory: 'programme',
+    title: 'IBDP Tutors in Singapore',
+    heroTitle: 'IBDP support for Singapore students',
+    heroSubtitle: 'CMS-driven demo page for the Singapore IBDP route.',
+  },
+  {
+    countrySlug: 'singapore',
+    slug: 'myp',
+    pageCategory: 'programme',
+    title: 'MYP Tutors in Singapore',
+    heroTitle: 'MYP support for Singapore students',
+    heroSubtitle: 'CMS-driven demo page for the Singapore MYP route.',
+  },
+];
+
+async function seedTychrCountryDemoPages(strapi) {
+  const uid = 'api::tychr-country.tychr-country';
+
+  for (const page of TYCHR_COUNTRY_DEMO_PAGES) {
+    const data = {
+      ...page,
+      seoTitle: page.title,
+      seoDescription: page.heroSubtitle,
+      content: `# ${page.heroTitle}\n\n${page.heroSubtitle}\n\nThis proof-of-concept entry is served from one Strapi collection using countrySlug + slug.`,
+      publishedAt: new Date(),
+    };
+
+    const existing = await strapi.db.query(uid).findOne({
+      where: {
+        countrySlug: page.countrySlug,
+        slug: page.slug,
+      },
+    });
+
+    if (existing) {
+      await strapi.entityService.update(uid, existing.id, { data });
+    } else {
+      await strapi.entityService.create(uid, { data });
+    }
+  }
+
+  strapi.log.info('Seeded TYCHR country demo pages');
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────

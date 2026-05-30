@@ -5881,6 +5881,45 @@ export interface ApiTutorsWebsiteTutorsWebsite extends Schema.CollectionType {
   };
 }
 
+export interface ApiTychrCountryTychrCountry extends Schema.CollectionType {
+  collectionName: 'tychr_countries';
+  info: {
+    singularName: 'tychr-country';
+    pluralName: 'tychr-countries';
+    displayName: 'tychr-country';
+    description: 'Demo country/page content for dynamic TYCHR routes';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    title: Attribute.String;
+    countrySlug: Attribute.String & Attribute.Required;
+    slug: Attribute.String & Attribute.Required;
+    pageCategory: Attribute.String;
+    heroTitle: Attribute.String;
+    heroSubtitle: Attribute.Text;
+    seoTitle: Attribute.String;
+    seoDescription: Attribute.Text;
+    content: Attribute.RichText;
+    createdAt: Attribute.DateTime;
+    updatedAt: Attribute.DateTime;
+    publishedAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<
+      'api::tychr-country.tychr-country',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+    updatedBy: Attribute.Relation<
+      'api::tychr-country.tychr-country',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+  };
+}
+
 export interface ApiUniversityUniversity extends Schema.CollectionType {
   collectionName: 'universities';
   info: {
@@ -6412,6 +6451,7 @@ declare module '@strapi/types' {
       'api::tutor-plan.tutor-plan': ApiTutorPlanTutorPlan;
       'api::tutors.tutors': ApiTutorsTutors;
       'api::tutors-website.tutors-website': ApiTutorsWebsiteTutorsWebsite;
+      'api::tychr-country.tychr-country': ApiTychrCountryTychrCountry;
       'api::university.university': ApiUniversityUniversity;
       'api::user-content-plan.user-content-plan': ApiUserContentPlanUserContentPlan;
       'api::user-grade-plan.user-grade-plan': ApiUserGradePlanUserGradePlan;
