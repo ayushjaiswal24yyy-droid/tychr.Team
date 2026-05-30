@@ -966,13 +966,7 @@ module.exports = createCoreController(
           maxViolations = 3;
           autoSubmitted = marker.auto_submitted || false;
           resumeStatus = marker.resume_status || "none";
-          if (resumeStatus === "approved") {
-            autoSubmitted = false;
-            attemptCompleted = false;
-            if (phase === "completed") {
-              phase = "answering";
-            }
-          }
+          // resume_status "approved" means teacher approved a new attempt — old attempt stays completed
         }
 
         const now = new Date();
@@ -1125,13 +1119,15 @@ module.exports = createCoreController(
           return ctx.badRequest("Invalid request");
         }
 
-        // Fetch the series first to get reading_time
+        const MAX_ATTEMPTS = 3;
+
+        // Fetch the series first to get reading_time and test_duration
         const series = await strapi.entityService.findOne(
           "api::test-serie.test-serie",
           seriesId,
           {
-            fields: ["reading_time"],
-            filters: { publishedAt: { $notNull: true } }, // Only published series
+            fields: ["reading_time", "test_duration"],
+            filters: { publishedAt: { $notNull: true } },
           }
         );
 
@@ -1139,8 +1135,8 @@ module.exports = createCoreController(
           return ctx.notFound("Test series not found");
         }
 
-        // Check for existing attempts
-        const lastAttempt = await strapi.entityService.findMany(
+        // Check all existing attempt markers
+        const allAttempts = await strapi.entityService.findMany(
           "api::answer.answer",
           {
             filters: {
@@ -1149,18 +1145,36 @@ module.exports = createCoreController(
               is_attempt_marker: true,
             },
             sort: { attempt_id: "desc" },
-            limit: 1,
-            fields: ["attempt_id", "completed", "resume_status"],
+            fields: ["id", "attempt_id", "completed", "resume_status", "started_at"],
           }
         );
 
-        // Prevent starting a new attempt if there's an active one
-        if (
-          lastAttempt.length > 0 &&
-          (!lastAttempt[0].completed ||
-            lastAttempt[0].resume_status === "requested")
-        ) {
-          return ctx.badRequest("An active or pending attempt already exists.");
+        // Block if max attempts reached
+        if (allAttempts.length >= MAX_ATTEMPTS) {
+          return ctx.badRequest(`Maximum attempts (${MAX_ATTEMPTS}) reached for this test.`);
+        }
+
+        const lastAttempt = allAttempts;
+
+        // If last attempt is incomplete, check if time expired — if yes auto-complete it
+        if (lastAttempt.length > 0 && !lastAttempt[0].completed) {
+          const readingTimeSeconds = (Number(series.reading_time) || 0) * 60;
+          const testDurationSeconds = (Number(series.test_duration) || 0) * 60;
+          const totalAllowedSeconds = readingTimeSeconds + testDurationSeconds;
+          const elapsedSeconds = lastAttempt[0].started_at
+            ? (Date.now() - new Date(lastAttempt[0].started_at).getTime()) / 1000
+            : totalAllowedSeconds + 1;
+
+          if (elapsedSeconds >= totalAllowedSeconds) {
+            // Time expired — force complete the stuck attempt
+            await strapi.entityService.update("api::answer.answer", lastAttempt[0].id, {
+              data: { completed: true, phase: "completed", end_reason: "time_expired" },
+            });
+          } else if (lastAttempt[0].resume_status === "requested") {
+            return ctx.badRequest("A resume request is pending approval.");
+          } else {
+            return ctx.badRequest("An active attempt already exists. Please finish it first.");
+          }
         }
 
         const nextAttemptId =
