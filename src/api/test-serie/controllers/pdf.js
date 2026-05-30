@@ -636,6 +636,22 @@ module.exports = {
       // either the paper ID (from submitOnlineAnswers) or the series ID (older saves)
       const allRelevantIds = [...new Set([Number(id), ...paperIds])];
 
+      strapi.log.info(`[EXPORT-DEBUG] seriesId=${id} entity_type=${series.entity_type} paperIds=${JSON.stringify(paperIds)} allRelevantIds=${JSON.stringify(allRelevantIds)}`);
+
+      // DEBUG: check what answers exist without status filter
+      const allAnswers = await strapi.entityService.findMany("api::answer.answer", {
+        filters: {
+          completed: true,
+          is_attempt_marker: { $ne: true },
+          test_series: { id: { $in: allRelevantIds } },
+        },
+        fields: ["id", "evaluation_status", "attempt_id", "submission_type"],
+        populate: { test_series: { fields: ["id"] } },
+        pagination: { limit: 50 },
+      });
+      strapi.log.info(`[EXPORT-DEBUG] All completed answers (no status filter): ${allAnswers.length}`);
+      allAnswers.forEach(a => strapi.log.info(`[EXPORT-DEBUG]   answer id=${a.id} status=${a.evaluation_status} attempt=${a.attempt_id} test_series=${a.test_series?.id} type=${a.submission_type}`));
+
       const answerFilters = {
         completed: true,
         is_attempt_marker: { $ne: true },
