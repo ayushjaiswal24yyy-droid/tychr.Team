@@ -193,14 +193,21 @@ const buildResultPdfPayload = ({ series, answers, attemptId, fallbackUser }) => 
     })),
   };
 
+  const resolvedName =
+    answerStudent?.fullName ||
+    answerStudent?.username ||
+    fallbackUser?.fullName ||
+    fallbackUser?.username ||
+    "";
+
+  const resolvedEmail = answerStudent?.email || fallbackUser?.email || "";
+
   const student = {
     id: answerStudent.id,
-    fullName:
-      answerStudent?.fullName ||
-      answerStudent?.username ||
-      fallbackUser?.fullName ||
-      fallbackUser?.username,
-    email: answerStudent?.email || fallbackUser?.email,
+    name: resolvedName,
+    fullName: resolvedName,
+    email: resolvedEmail,
+    studentEmail: resolvedEmail,
     schoolname: answerStudent?.schoolname || fallbackUser?.schoolname,
   };
 
