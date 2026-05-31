@@ -36,18 +36,20 @@ const parseStudentAnswer = (answer, part) => {
 
     const entries = Object.entries(parsed);
 
-    // Match columns: numeric keys where value is also a numeric index into rightColumn
-    // e.g. {"1":"3","2":"1"} with leftColumn/rightColumn on the part
-    const leftColumn = part?.leftColumn || part?.left_column;
-    const rightColumn = part?.rightColumn || part?.right_column;
     const numericEntries = entries.filter(([k]) => /^\d+$/.test(k));
 
-    if (numericEntries.length > 0 && leftColumn && rightColumn) {
+    // Match columns: left_items/right_items are component arrays with itemId/item_id and content
+    const leftItems = part?.left_items;
+    const rightItems = part?.right_items;
+
+    if (numericEntries.length > 0 && leftItems && rightItems) {
       return numericEntries
         .sort(([a], [b]) => Number(a) - Number(b))
         .map(([k, v]) => {
-          const leftText = leftColumn[Number(k) - 1] || "Item " + k;
-          const rightText = rightColumn[Number(v) - 1] || v || "—";
+          const leftItem = leftItems.find((i) => String(i.itemId) === String(k));
+          const rightItem = rightItems.find((i) => String(i.item_id) === String(v));
+          const leftText = leftItem ? parseRichtext(leftItem.content) || "Item " + k : "Item " + k;
+          const rightText = rightItem ? parseRichtext(rightItem.content) || v || "—" : v || "—";
           return "<strong>" + leftText + "</strong> → " + rightText;
         })
         .join("<br/>");
@@ -189,6 +191,8 @@ const buildResultPdfPayload = ({ series, answers, attemptId, fallbackUser }) => 
             question_text: parseRichtext(p.question_text),
             marks: p.marks,
             answer_type: p.answer_type,
+            left_items: p.left_items,
+            right_items: p.right_items,
           })),
           question_type: qna.question?.question_type,
           marks: qna.question?.marks,
@@ -450,7 +454,7 @@ module.exports = {
           test_series: { fields: ["id", "title", "test_mode"] },
           question_n_answer: {
             populate: {
-              question: { populate: ["parts"] },
+              question: { populate: { parts: { populate: ["left_items", "right_items"] } } },
               part_evaluations: true,
             },
           },
@@ -536,6 +540,8 @@ module.exports = {
                 question_text: parseRichtext(p.question_text),
                 marks: p.marks,
                 answer_type: p.answer_type,
+                left_items: p.left_items,
+                right_items: p.right_items,
               })),
               question_type: qna.question?.question_type,
               marks: qna.question?.marks,
@@ -701,7 +707,7 @@ module.exports = {
           test_series: { fields: ["id", "title", "test_mode"] },
           question_n_answer: {
             populate: {
-              question: { populate: ["parts"] },
+              question: { populate: { parts: { populate: ["left_items", "right_items"] } } },
               part_evaluations: true,
             },
           },
