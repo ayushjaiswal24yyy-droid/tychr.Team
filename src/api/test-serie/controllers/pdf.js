@@ -43,7 +43,17 @@ const parseStudentAnswer = (answer, part) => {
     // Student answer: {"1":"2","2":"1"} = left index → right index
     if (numericEntries.length > 0 && part?.options) {
       try {
-        const optionsParsed = typeof part.options === "string" ? JSON.parse(part.options) : part.options;
+        // options is a richtext field — may be wrapped: {"format":"richtext","content":"{...}","_v":"1.0"}
+        let optionsStr = part.options;
+        if (typeof optionsStr === "string") {
+          try {
+            const wrapper = JSON.parse(optionsStr);
+            if (wrapper?.format !== undefined && wrapper?.content !== undefined) {
+              optionsStr = wrapper.content;
+            }
+          } catch { /* not wrapped */ }
+        }
+        const optionsParsed = typeof optionsStr === "string" ? JSON.parse(optionsStr) : optionsStr;
         const leftRaw = optionsParsed?.left?.content || optionsParsed?.left || "";
         const rightRaw = optionsParsed?.right?.content || optionsParsed?.right || "";
 
