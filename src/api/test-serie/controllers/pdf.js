@@ -38,21 +38,39 @@ const parseStudentAnswer = (answer, part) => {
 
     const numericEntries = entries.filter(([k]) => /^\d+$/.test(k));
 
-    // Match columns: left_items/right_items are component arrays with itemId/item_id and content
-    const leftItems = part?.left_items;
-    const rightItems = part?.right_items;
+    // Match columns: options field stores left/right columns as:
+    // {"left":{"format":"richtext","content":"[1] Option 1\n---OPTION---\n[2] Option 2"},"right":{...}}
+    // Student answer: {"1":"2","2":"1"} = left index → right index
+    if (numericEntries.length > 0 && part?.options) {
+      try {
+        const optionsParsed = typeof part.options === "string" ? JSON.parse(part.options) : part.options;
+        const leftRaw = optionsParsed?.left?.content || optionsParsed?.left || "";
+        const rightRaw = optionsParsed?.right?.content || optionsParsed?.right || "";
 
-    if (numericEntries.length > 0 && leftItems && rightItems) {
-      return numericEntries
-        .sort(([a], [b]) => Number(a) - Number(b))
-        .map(([k, v]) => {
-          const leftItem = leftItems.find((i) => String(i.itemId) === String(k));
-          const rightItem = rightItems.find((i) => String(i.item_id) === String(v));
-          const leftText = leftItem ? parseRichtext(leftItem.content) || "Item " + k : "Item " + k;
-          const rightText = rightItem ? parseRichtext(rightItem.content) || v || "—" : v || "—";
-          return "<strong>" + leftText + "</strong> → " + rightText;
-        })
-        .join("<br/>");
+        // Parse "[1] Text\n---OPTION---\n[2] Text" into array indexed by number
+        const parseColumn = (raw) => {
+          const map = {};
+          String(raw).split("---OPTION---").forEach((item) => {
+            const match = item.trim().match(/^\[(\d+)\]\s*([\s\S]*)/);
+            if (match) map[match[1]] = match[2].trim();
+          });
+          return map;
+        };
+
+        const leftMap = parseColumn(leftRaw);
+        const rightMap = parseColumn(rightRaw);
+
+        if (Object.keys(leftMap).length > 0) {
+          return numericEntries
+            .sort(([a], [b]) => Number(a) - Number(b))
+            .map(([k, v]) => {
+              const leftText = leftMap[k] || "Item " + k;
+              const rightText = rightMap[v] || v || "—";
+              return "<strong>" + leftText + "</strong> → " + rightText;
+            })
+            .join("<br/>");
+        }
+      } catch { /* fall through */ }
     }
 
     // Numeric keys = fill in the blanks slots e.g. {"1":"are","2":"doing"}
@@ -183,6 +201,7 @@ const buildResultPdfPayload = ({ series, answers, attemptId, fallbackUser }) => 
       question_answers: (ans.question_n_answer || []).map((qna) => {
         const parts = qna.question?.parts || [];
         const isSinglePart = parts.length <= 1;
+        const rawFirstPart = parts[0]; // raw Strapi data with left_items/right_items
 
         return {
           question_id: qna.question?.id,
@@ -196,7 +215,7 @@ const buildResultPdfPayload = ({ series, answers, attemptId, fallbackUser }) => 
           })),
           question_type: qna.question?.question_type,
           marks: qna.question?.marks,
-          student_answer: isSinglePart ? parseStudentAnswer(qna.answer, parts[0]) : null,
+          student_answer: isSinglePart ? parseStudentAnswer(qna.answer, rawFirstPart) : null,
           part_student_answers: isSinglePart
             ? null
             : parts.map((_, pi) => parsePartAnswer(qna.answer, pi)),
@@ -454,7 +473,7 @@ module.exports = {
           test_series: { fields: ["id", "title", "test_mode"] },
           question_n_answer: {
             populate: {
-              question: { populate: { parts: { populate: ["left_items", "right_items"] } } },
+              question: { populate: { parts: true } },
               part_evaluations: true,
             },
           },
@@ -532,6 +551,7 @@ module.exports = {
           question_answers: (ans.question_n_answer || []).map((qna) => {
             const parts = qna.question?.parts || [];
             const isSinglePart = parts.length <= 1;
+            const rawFirstPart = parts[0]; // raw Strapi data with left_items/right_items
 
             return {
               question_id: qna.question?.id,
@@ -545,10 +565,8 @@ module.exports = {
               })),
               question_type: qna.question?.question_type,
               marks: qna.question?.marks,
-              // Single-part: parse the full answer now
-              // Multi-part: parse per-part answers into an array
               student_answer: isSinglePart
-                ? parseStudentAnswer(qna.answer, parts[0])
+                ? parseStudentAnswer(qna.answer, rawFirstPart)
                 : null,
               part_student_answers: isSinglePart
                 ? null
@@ -707,7 +725,7 @@ module.exports = {
           test_series: { fields: ["id", "title", "test_mode"] },
           question_n_answer: {
             populate: {
-              question: { populate: { parts: { populate: ["left_items", "right_items"] } } },
+              question: { populate: { parts: true } },
               part_evaluations: true,
             },
           },
