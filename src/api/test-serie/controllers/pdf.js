@@ -17,7 +17,7 @@ const parseRichtext = (val) => {
   }
 };
 
-const parseStudentAnswer = (answer) => {
+const parseStudentAnswer = (answer, part) => {
   if (answer === null || answer === undefined) return null;
   try {
     const parsed = typeof answer === "string" ? JSON.parse(answer) : answer;
@@ -36,10 +36,26 @@ const parseStudentAnswer = (answer) => {
 
     const entries = Object.entries(parsed);
 
+    // Match columns: numeric keys where value is also a numeric index into rightColumn
+    // e.g. {"1":"3","2":"1"} with leftColumn/rightColumn on the part
+    const leftColumn = part?.leftColumn || part?.left_column;
+    const rightColumn = part?.rightColumn || part?.right_column;
+    const numericEntries = entries.filter(([k]) => /^\d+$/.test(k));
+
+    if (numericEntries.length > 0 && leftColumn && rightColumn) {
+      return numericEntries
+        .sort(([a], [b]) => Number(a) - Number(b))
+        .map(([k, v]) => {
+          const leftText = leftColumn[Number(k) - 1] || "Item " + k;
+          const rightText = rightColumn[Number(v) - 1] || v || "—";
+          return "<strong>" + leftText + "</strong> → " + rightText;
+        })
+        .join("<br/>");
+    }
+
     // Numeric keys = fill in the blanks slots e.g. {"1":"are","2":"doing"}
-    const blankEntries = entries.filter(([k]) => /^\d+$/.test(k));
-    if (blankEntries.length > 0) {
-      return blankEntries
+    if (numericEntries.length > 0) {
+      return numericEntries
         .sort(([a], [b]) => Number(a) - Number(b))
         .map(([k, v]) => "Blank " + k + ": <strong>" + (v || "—") + "</strong>")
         .join("<br/>");
@@ -51,7 +67,6 @@ const parseStudentAnswer = (answer) => {
       const values = partEntries
         .map(([, v]) => {
           if (!v) return null;
-          // Try to unwrap richtext wrapper inside the part value
           try {
             const inner = typeof v === "string" ? JSON.parse(v) : v;
             if (inner && typeof inner === "object" && inner.content !== undefined) {
@@ -177,7 +192,7 @@ const buildResultPdfPayload = ({ series, answers, attemptId, fallbackUser }) => 
           })),
           question_type: qna.question?.question_type,
           marks: qna.question?.marks,
-          student_answer: isSinglePart ? parseStudentAnswer(qna.answer) : null,
+          student_answer: isSinglePart ? parseStudentAnswer(qna.answer, parts[0]) : null,
           part_student_answers: isSinglePart
             ? null
             : parts.map((_, pi) => parsePartAnswer(qna.answer, pi)),
@@ -527,7 +542,7 @@ module.exports = {
               // Single-part: parse the full answer now
               // Multi-part: parse per-part answers into an array
               student_answer: isSinglePart
-                ? parseStudentAnswer(qna.answer)
+                ? parseStudentAnswer(qna.answer, parts[0])
                 : null,
               part_student_answers: isSinglePart
                 ? null
