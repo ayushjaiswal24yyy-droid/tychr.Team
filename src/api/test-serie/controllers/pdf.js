@@ -612,17 +612,25 @@ module.exports = {
         return ctx.internalServerError("PDF service is not configured");
       }
 
+      const lambdaPayload = {
+        type: "result",
+        student,
+        series: { title: series.title, program_type: series.program_type },
+        attempt,
+        strapiUrl,
+        strapiToken,
+      };
+
+      // DEBUG: log question_answers to verify student_answer values before sending to Lambda
+      const debugQAs = lambdaPayload.attempt?.papers?.[0]?.question_answers || [];
+      debugQAs.forEach((qa, i) => {
+        strapi.log.info(`[PDF-DEBUG] Q${i + 1} type=${qa.question_type} student_answer=${JSON.stringify(qa.student_answer)} part_student_answers=${JSON.stringify(qa.part_student_answers)}`);
+      });
+
       const response = await fetch(lambdaUrl, {
         method: "POST",
         headers: { "Content-Type": "application/json", "x-pdf-secret": secret },
-        body: JSON.stringify({
-          type: "result",
-          student,
-          series: { title: series.title, program_type: series.program_type },
-          attempt,
-          strapiUrl,
-          strapiToken,
-        }),
+        body: JSON.stringify(lambdaPayload),
         signal: AbortSignal.timeout(55000),
       });
 
