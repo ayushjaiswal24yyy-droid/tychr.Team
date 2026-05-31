@@ -34,7 +34,15 @@ const parseStudentAnswer = (answer, part) => {
       return parsed.content || null;
     }
 
-    const entries = Object.entries(parsed);
+    // Unwrap part_0 wrapper if the actual answer is nested inside it
+    // e.g. {"part_0": {"1":"1","2":"2","part_0":""}} → {"1":"1","2":"2","part_0":""}
+    let data = parsed;
+    const topKeys = Object.keys(parsed);
+    if (topKeys.length === 1 && topKeys[0] === "part_0" && typeof parsed["part_0"] === "object" && parsed["part_0"] !== null) {
+      data = parsed["part_0"];
+    }
+
+    const entries = Object.entries(data);
 
     const numericEntries = entries.filter(([k]) => /^\d+$/.test(k));
 
