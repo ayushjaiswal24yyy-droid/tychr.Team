@@ -874,25 +874,17 @@ module.exports = createCoreController(
             populate: {
               papers: {
                 sort: { createdAt: "asc" },
-                fields: ["id", "title", "randomize_questions"],
                 populate: {
                   instruction_booklet: true,
                   ...(hasAttempt && {
                     question_banks: {
+                      fields: ["id", "question_type", "question"],
                       populate: {
                         parts: {
-                          fields: [
-                            "id",
-                            "question_text",
-                            "options",
-                            "content_format",
-                            "marks",
-                            "answer_type",
-                          ],
+                          fields: ["id", "question_text", "options", "content_format", "marks", "answer_type"],
                         },
                         diagram: true,
                       },
-                      fields: ["id", "question_type", "question"],
                     },
                   }),
                 },
