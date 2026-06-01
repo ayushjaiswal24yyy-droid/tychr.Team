@@ -1036,17 +1036,24 @@ module.exports = createCoreController(
         /* ----------------------------------------
        6. Compute paper statuses (attempt-aware)
     ---------------------------------------- */
-        // question_order is stored on the current attempt marker keyed by paper id
+        // question_order is stored on the current attempt marker keyed by paper id (string keys in JSON)
         const savedQuestionOrder = marker?.question_order || null;
 
         const applyQuestionOrder = (paperQuestions, paperId) => {
-          if (!savedQuestionOrder || !savedQuestionOrder[paperId]) {
+          // JSON keys are always strings, so coerce paperId to string
+          const key = String(paperId);
+          if (!savedQuestionOrder || !savedQuestionOrder[key]) {
             return paperQuestions;
           }
-          const orderMap = savedQuestionOrder[paperId];
-          return [...paperQuestions].sort(
-            (a, b) => orderMap.indexOf(a.id) - orderMap.indexOf(b.id)
-          );
+          // orderMap is array of question IDs in shuffled order
+          const orderMap = savedQuestionOrder[key].map(Number);
+          const indexMap = {};
+          orderMap.forEach((id, idx) => { indexMap[id] = idx; });
+          return [...paperQuestions].sort((a, b) => {
+            const ia = indexMap[a.id] !== undefined ? indexMap[a.id] : 9999;
+            const ib = indexMap[b.id] !== undefined ? indexMap[b.id] : 9999;
+            return ia - ib;
+          });
         };
 
         const papers = series.papers.map((paper) => {
