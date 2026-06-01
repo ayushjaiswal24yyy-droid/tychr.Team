@@ -1154,6 +1154,7 @@ module.exports = createCoreController(
                   question_banks: {
                     fields: ["id"],
                   },
+                  fields: ["id", "randomize_questions"],
                 },
               },
             },
@@ -1231,18 +1232,17 @@ module.exports = createCoreController(
           return shuffled;
         };
 
-        // Build question_order — shuffle all papers if series has randomize_questions: true
+        // Build question_order — per paper, shuffle only if paper has randomize_questions: true
+        const papersToRandomize = (series.papers || []).filter((p) => p.randomize_questions === true);
         let questionOrder = null;
 
-        if (true) {
-          // Reattempt — reuse the same order from attempt 1 so student sees same order
+        if (papersToRandomize.length > 0) {
           const firstAttempt = allAttempts.find((a) => a.attempt_id === 1);
           if (firstAttempt && firstAttempt.question_order) {
             questionOrder = firstAttempt.question_order;
           } else {
-            // First attempt — shuffle all papers
             questionOrder = {};
-            for (const paper of (series.papers || [])) {
+            for (const paper of papersToRandomize) {
               const questionIds = (paper.question_banks || []).map((q) => q.id);
               questionOrder[paper.id] = shuffleGuaranteed(questionIds);
             }
