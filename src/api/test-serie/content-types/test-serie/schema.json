@@ -177,6 +177,10 @@
       ],
       "type": "media",
       "multiple": false
+    },
+    "randomize_questions": {
+      "type": "boolean",
+      "default": false
     }
   }
 }

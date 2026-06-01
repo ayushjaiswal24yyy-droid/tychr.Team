@@ -846,6 +846,7 @@ module.exports = createCoreController(
               "violation_count",
               "auto_submitted",
               "resume_status",
+              "question_order",
             ],
           }
         );
@@ -1034,6 +1035,19 @@ module.exports = createCoreController(
         /* ----------------------------------------
        6. Compute paper statuses (attempt-aware)
     ---------------------------------------- */
+        // question_order is stored on the current attempt marker keyed by paper id
+        const savedQuestionOrder = marker?.question_order || null;
+
+        const applyQuestionOrder = (paperQuestions, paperId) => {
+          if (!savedQuestionOrder || !savedQuestionOrder[paperId]) {
+            return paperQuestions;
+          }
+          const orderMap = savedQuestionOrder[paperId];
+          return [...paperQuestions].sort(
+            (a, b) => orderMap.indexOf(a.id) - orderMap.indexOf(b.id)
+          );
+        };
+
         const papers = series.papers.map((paper) => {
           if (hasAttempt && phase === "reading") {
             return {
@@ -1041,7 +1055,7 @@ module.exports = createCoreController(
               title: paper.title,
               status: "locked",
               instructions: paper.instruction_booklet,
-              question_banks: paper.question_banks || [],
+              question_banks: applyQuestionOrder(paper.question_banks || [], paper.id),
             };
           }
 
@@ -1071,6 +1085,7 @@ module.exports = createCoreController(
             title: paper.title,
             instructions: paper.instruction_booklet,
             status: "active",
+            question_banks: applyQuestionOrder(paper.question_banks || [], paper.id),
           };
         });
 
@@ -1121,12 +1136,21 @@ module.exports = createCoreController(
 
         const MAX_ATTEMPTS = 3;
 
-        // Fetch the series first to get reading_time and test_duration
+        // Fetch the series first to get reading_time, test_duration, and randomize_questions
         const series = await strapi.entityService.findOne(
           "api::test-serie.test-serie",
           seriesId,
           {
-            fields: ["reading_time", "test_duration"],
+            fields: ["reading_time", "test_duration", "randomize_questions"],
+            populate: {
+              papers: {
+                populate: {
+                  question_banks: {
+                    fields: ["id"],
+                  },
+                },
+              },
+            },
             filters: { publishedAt: { $notNull: true } },
           }
         );
@@ -1144,8 +1168,8 @@ module.exports = createCoreController(
               test_series: seriesId,
               is_attempt_marker: true,
             },
-            sort: { attempt_id: "desc" },
-            fields: ["id", "attempt_id", "completed", "resume_status", "started_at"],
+            sort: { attempt_id: "asc" },
+            fields: ["id", "attempt_id", "completed", "resume_status", "started_at", "question_order"],
           }
         );
 
@@ -1178,11 +1202,33 @@ module.exports = createCoreController(
         }
 
         const nextAttemptId =
-          lastAttempt.length > 0 ? lastAttempt[0].attempt_id + 1 : 1;
+          lastAttempt.length > 0 ? lastAttempt[lastAttempt.length - 1].attempt_id + 1 : 1;
 
         // Determine initial phase
         const readingTimeMinutes = Number(series.reading_time) || 0;
         const initialPhase = readingTimeMinutes > 0 ? "reading" : "answering";
+
+        // Build question_order for this attempt
+        let questionOrder = null;
+        if (series.randomize_questions) {
+          // If reattempt, reuse the same order from attempt 1 so student sees same order
+          const firstAttempt = allAttempts.find((a) => a.attempt_id === 1);
+          if (firstAttempt && firstAttempt.question_order) {
+            questionOrder = firstAttempt.question_order;
+          } else {
+            // First attempt — generate a fresh shuffled order per paper
+            questionOrder = {};
+            for (const paper of series.papers || []) {
+              const questionIds = (paper.question_banks || []).map((q) => q.id);
+              // Fisher-Yates shuffle
+              for (let i = questionIds.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [questionIds[i], questionIds[j]] = [questionIds[j], questionIds[i]];
+              }
+              questionOrder[paper.id] = questionIds;
+            }
+          }
+        }
 
         // Create attempt marker
         const attemptMarker = await strapi.entityService.create(
@@ -1197,6 +1243,7 @@ module.exports = createCoreController(
               phase: initialPhase,
               phase_started_at: new Date(),
               started_at: new Date(),
+              ...(questionOrder !== null && { question_order: questionOrder }),
             },
           }
         );

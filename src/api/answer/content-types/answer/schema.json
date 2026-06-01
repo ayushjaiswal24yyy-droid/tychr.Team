@@ -146,6 +146,9 @@
       ],
       "type": "media",
       "multiple": false
+    },
+    "question_order": {
+      "type": "json"
     }
   }
 }
