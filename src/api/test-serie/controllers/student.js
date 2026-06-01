@@ -1136,14 +1136,15 @@ module.exports = createCoreController(
 
         const MAX_ATTEMPTS = 3;
 
-        // Fetch the series first to get reading_time, test_duration, and randomize_questions
+        // Fetch the series first to get reading_time, test_duration, and per-paper randomize_questions
         const series = await strapi.entityService.findOne(
           "api::test-serie.test-serie",
           seriesId,
           {
-            fields: ["reading_time", "test_duration", "randomize_questions"],
+            fields: ["reading_time", "test_duration"],
             populate: {
               papers: {
+                fields: ["id", "randomize_questions"],
                 populate: {
                   question_banks: {
                     fields: ["id"],
@@ -1208,17 +1209,19 @@ module.exports = createCoreController(
         const readingTimeMinutes = Number(series.reading_time) || 0;
         const initialPhase = readingTimeMinutes > 0 ? "reading" : "answering";
 
-        // Build question_order for this attempt
+        // Build question_order for this attempt — per paper, only if that paper has randomize_questions: true
+        const papersWithRandomize = (series.papers || []).filter((p) => p.randomize_questions);
         let questionOrder = null;
-        if (series.randomize_questions) {
-          // If reattempt, reuse the same order from attempt 1 so student sees same order
+
+        if (papersWithRandomize.length > 0) {
+          // If reattempt, reuse the same order from attempt 1
           const firstAttempt = allAttempts.find((a) => a.attempt_id === 1);
           if (firstAttempt && firstAttempt.question_order) {
             questionOrder = firstAttempt.question_order;
           } else {
-            // First attempt — generate a fresh shuffled order per paper
+            // First attempt — shuffle only papers that have randomize_questions: true
             questionOrder = {};
-            for (const paper of series.papers || []) {
+            for (const paper of papersWithRandomize) {
               const questionIds = (paper.question_banks || []).map((q) => q.id);
               // Fisher-Yates shuffle
               for (let i = questionIds.length - 1; i > 0; i--) {
