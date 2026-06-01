@@ -1187,31 +1187,30 @@ module.exports = createCoreController(
           return ctx.badRequest(`Maximum attempts (${MAX_ATTEMPTS}) reached for this test.`);
         }
 
-        const lastAttempt = allAttempts;
+        // allAttempts is sorted asc — last element is the most recent attempt
+        const mostRecentAttempt = allAttempts.length > 0 ? allAttempts[allAttempts.length - 1] : null;
 
         // If last attempt is incomplete, check if time expired — if yes auto-complete it
-        if (lastAttempt.length > 0 && !lastAttempt[0].completed) {
+        if (mostRecentAttempt && !mostRecentAttempt.completed) {
           const readingTimeSeconds = (Number(series.reading_time) || 0) * 60;
           const testDurationSeconds = (Number(series.test_duration) || 0) * 60;
           const totalAllowedSeconds = readingTimeSeconds + testDurationSeconds;
-          const elapsedSeconds = lastAttempt[0].started_at
-            ? (Date.now() - new Date(lastAttempt[0].started_at).getTime()) / 1000
+          const elapsedSeconds = mostRecentAttempt.started_at
+            ? (Date.now() - new Date(mostRecentAttempt.started_at).getTime()) / 1000
             : totalAllowedSeconds + 1;
 
           if (elapsedSeconds >= totalAllowedSeconds) {
-            // Time expired — force complete the stuck attempt
-            await strapi.entityService.update("api::answer.answer", lastAttempt[0].id, {
+            await strapi.entityService.update("api::answer.answer", mostRecentAttempt.id, {
               data: { completed: true, phase: "completed", end_reason: "time_expired" },
             });
-          } else if (lastAttempt[0].resume_status === "requested") {
+          } else if (mostRecentAttempt.resume_status === "requested") {
             return ctx.badRequest("A resume request is pending approval.");
           } else {
             return ctx.badRequest("An active attempt already exists. Please finish it first.");
           }
         }
 
-        const nextAttemptId =
-          lastAttempt.length > 0 ? lastAttempt[lastAttempt.length - 1].attempt_id + 1 : 1;
+        const nextAttemptId = mostRecentAttempt ? mostRecentAttempt.attempt_id + 1 : 1;
 
         // Determine initial phase
         const readingTimeMinutes = Number(series.reading_time) || 0;
@@ -1237,7 +1236,9 @@ module.exports = createCoreController(
         };
 
         // Build question_order — per paper, only if that paper has randomize_questions: true
+        console.log("[RANDOMIZE] series.papers:", JSON.stringify((series.papers || []).map(p => ({ id: p.id, randomize: p.randomize_questions, qCount: (p.question_banks || []).length }))));
         const papersWithRandomize = (series.papers || []).filter((p) => p.randomize_questions);
+        console.log("[RANDOMIZE] papersWithRandomize count:", papersWithRandomize.length);
         let questionOrder = null;
 
         if (papersWithRandomize.length > 0) {
