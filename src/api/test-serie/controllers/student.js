@@ -876,17 +876,15 @@ module.exports = createCoreController(
                 sort: { createdAt: "asc" },
                 populate: {
                   instruction_booklet: true,
-                  ...(hasAttempt && {
-                    question_banks: {
-                      fields: ["id", "question_type", "question"],
-                      populate: {
-                        parts: {
-                          fields: ["id", "question_text", "options", "content_format", "marks", "answer_type"],
-                        },
-                        diagram: true,
+                  question_banks: {
+                    fields: ["id", "question_type", "question"],
+                    populate: {
+                      parts: {
+                        fields: ["id", "question_text", "options", "content_format", "marks", "answer_type"],
                       },
+                      diagram: true,
                     },
-                  }),
+                  },
                 },
               },
             },
