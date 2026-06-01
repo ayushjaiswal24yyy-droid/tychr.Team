@@ -874,6 +874,7 @@ module.exports = createCoreController(
             populate: {
               papers: {
                 sort: { createdAt: "asc" },
+                fields: ["id", "title", "randomize_questions"],
                 populate: {
                   instruction_booklet: true,
                   ...(hasAttempt && {
