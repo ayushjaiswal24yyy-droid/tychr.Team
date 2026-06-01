@@ -1210,12 +1210,31 @@ module.exports = createCoreController(
         const readingTimeMinutes = Number(series.reading_time) || 0;
         const initialPhase = readingTimeMinutes > 0 ? "reading" : "answering";
 
-        // Build question_order for this attempt — per paper, only if that paper has randomize_questions: true
+        // Fisher-Yates shuffle — guaranteed to never return original order if length > 1
+        const shuffleGuaranteed = (ids) => {
+          if (ids.length <= 1) return [...ids];
+          let shuffled;
+          let attempts = 0;
+          do {
+            shuffled = [...ids];
+            for (let i = shuffled.length - 1; i > 0; i--) {
+              const j = Math.floor(Math.random() * (i + 1));
+              [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+            }
+            attempts++;
+          } while (
+            attempts < 10 &&
+            shuffled.every((id, idx) => id === ids[idx]) // retry if same as original
+          );
+          return shuffled;
+        };
+
+        // Build question_order — per paper, only if that paper has randomize_questions: true
         const papersWithRandomize = (series.papers || []).filter((p) => p.randomize_questions);
         let questionOrder = null;
 
         if (papersWithRandomize.length > 0) {
-          // If reattempt, reuse the same order from attempt 1
+          // Reattempt — reuse the same order from attempt 1 so student sees same order
           const firstAttempt = allAttempts.find((a) => a.attempt_id === 1);
           if (firstAttempt && firstAttempt.question_order) {
             questionOrder = firstAttempt.question_order;
@@ -1224,12 +1243,7 @@ module.exports = createCoreController(
             questionOrder = {};
             for (const paper of papersWithRandomize) {
               const questionIds = (paper.question_banks || []).map((q) => q.id);
-              // Fisher-Yates shuffle
-              for (let i = questionIds.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [questionIds[i], questionIds[j]] = [questionIds[j], questionIds[i]];
-              }
-              questionOrder[paper.id] = questionIds;
+              questionOrder[paper.id] = shuffleGuaranteed(questionIds);
             }
           }
         }
