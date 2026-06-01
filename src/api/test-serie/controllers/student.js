@@ -1144,15 +1144,13 @@ module.exports = createCoreController(
 
         const MAX_ATTEMPTS = 3;
 
-        // Fetch the series first to get reading_time, test_duration, and per-paper randomize_questions
+        // Fetch the series with papers and their question_banks for randomization
         const series = await strapi.entityService.findOne(
           "api::test-serie.test-serie",
           seriesId,
           {
-            fields: ["reading_time", "test_duration"],
             populate: {
               papers: {
-                fields: ["id", "randomize_questions"],
                 populate: {
                   question_banks: {
                     fields: ["id"],
@@ -1160,7 +1158,6 @@ module.exports = createCoreController(
                 },
               },
             },
-            filters: { publishedAt: { $notNull: true } },
           }
         );
 
