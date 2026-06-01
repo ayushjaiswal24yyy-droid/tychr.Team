@@ -1046,6 +1046,12 @@ module.exports = createCoreController(
           });
         };
 
+        console.log("[SESSION DEBUG] papers count:", (series.papers || []).length);
+        if (series.papers && series.papers[0]) {
+          console.log("[SESSION DEBUG] first paper keys:", Object.keys(series.papers[0]));
+          console.log("[SESSION DEBUG] first paper question_banks:", JSON.stringify(series.papers[0].question_banks));
+        }
+
         const papers = series.papers.map((paper) => {
           if (hasAttempt && phase === "reading") {
             return {
