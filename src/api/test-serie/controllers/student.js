@@ -61,7 +61,7 @@ module.exports = createCoreController(
               publishedAt: { $notNull: true },
               entity_type: { $in: "series" },
             },
-            pagination: { limit: -1 },
+            limit: -1,
             populate: {
               question_banks: {
                 fields: ["id", "question_type", "question", "marks"],
@@ -215,7 +215,7 @@ module.exports = createCoreController(
               entity_type: { $eq: "series" },
               publishedAt: { $notNull: true },
             },
-            pagination: { limit: -1 },
+            limit: -1,
             populate: {
               question_banks: {
                 fields: ["id", "question_type", "question", "marks"],
@@ -355,7 +355,7 @@ module.exports = createCoreController(
               grade_subject: { id: gradeSubjectId },
               test_type: { $eq: "Practice Test" },
             },
-            pagination: { limit: -1 },
+            limit: -1,
             populate: {
               question_banks: {
                 fields: ["id", "question_type", "question", "marks"],
@@ -541,7 +541,7 @@ module.exports = createCoreController(
                   students: { id: { $eq: requestedStudentId } },
                 },
                 fields: ["id"],
-                pagination: { limit: -1 },
+                limit: -1,
               }
             );
 
