@@ -103,6 +103,9 @@
     },
     "isDiagramEditable": {
       "type": "boolean"
+    },
+    "rubric_json": {
+      "type": "json"
     }
   }
 }

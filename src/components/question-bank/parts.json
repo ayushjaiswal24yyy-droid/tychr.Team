@@ -22,8 +22,8 @@
       ]
     },
     "rubric": {
-  "type": "json"
-},
+      "type": "json"
+    },
     "marks": {
       "type": "integer",
       "required": true
