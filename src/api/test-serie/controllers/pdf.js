@@ -758,7 +758,6 @@ module.exports = {
       });
 
       const answerFilters = {
-        completed: true,
         is_attempt_marker: { $ne: true },
         evaluation_status: { $in: ["evaluated", "in_progress", "needs_review"] },
         attempt_id: { $notNull: true },
