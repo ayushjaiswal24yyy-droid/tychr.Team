@@ -224,8 +224,9 @@ const buildQnaList = (ans) => {
 const buildAttemptObject = (attemptNo, attemptId, answers) => {
   const totalMarks = answers.reduce((sum, a) => sum + (a.marks || 0), 0);
   const submissionDate = answers
-    .map((a) => new Date(a.submission_date))
-    .sort((a, b) => b - a)[0];
+    .map((a) => a.submission_date ? new Date(a.submission_date) : null)
+    .filter(Boolean)
+    .sort((a, b) => b - a)[0] || null;
 
   return {
     attempt_no: attemptNo,
@@ -297,18 +298,29 @@ const buildResultPdfPayloadMultiAttempt = ({ series, attemptGroups, fallbackUser
 };
 
 const postResultPdfToLambda = async ({ payload, config }) => {
+  const bodyToSend = {
+    ...payload,
+    strapiUrl: config.strapiUrl,
+    strapiToken: config.strapiToken,
+  };
+
+  strapi.log.info(
+    `[LAMBDA-REQUEST] url=${config.lambdaUrl} studentId=${payload?.student?.id} ` +
+    `studentName=${payload?.student?.fullName} totalAttempts=${payload?.attempts?.length ?? 1} ` +
+    `papers=${payload?.attempt?.papers?.length ?? payload?.attempts?.flatMap(a => a.papers).length ?? 0}`
+  );
+  strapi.log.info("[LAMBDA-REQUEST-BODY] " + JSON.stringify(bodyToSend));
+
   const response = await fetch(config.lambdaUrl, {
     method: "POST",
     headers: { "Content-Type": "application/json", "x-pdf-secret": config.secret },
-    body: JSON.stringify({
-      ...payload,
-      strapiUrl: config.strapiUrl,
-      strapiToken: config.strapiToken,
-    }),
+    body: JSON.stringify(bodyToSend),
     signal: AbortSignal.timeout(55000),
   });
 
   const text = await response.text();
+  strapi.log.info(`[LAMBDA-RESPONSE] status=${response.status} body=${text.substring(0, 500)}`);
+
   let result;
   try { result = JSON.parse(text); } catch {
     throw new Error("Lambda error: " + text.substring(0, 200));
@@ -844,7 +856,12 @@ module.exports = {
             continue;
           }
 
+          strapi.log.info("[PDF-PAYLOAD] " + JSON.stringify(payload));
+
           const result = await postResultPdfToLambda({ payload, config });
+          strapi.log.info(
+            `[LAMBDA-RESULT] studentId=${entry.studentId} file=${JSON.stringify(result.file || result)}`
+          );
           exports.push({
             studentId: entry.studentId,
             studentName: payload.student.fullName,
