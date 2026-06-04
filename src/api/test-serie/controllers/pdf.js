@@ -304,12 +304,17 @@ const postResultPdfToLambda = async ({ payload, config }) => {
     strapiToken: config.strapiToken,
   };
 
+  // Log exactly what is going to Lambda
   strapi.log.info(
-    `[LAMBDA-REQUEST] url=${config.lambdaUrl} studentId=${payload?.student?.id} ` +
-    `studentName=${payload?.student?.fullName} totalAttempts=${payload?.attempts?.length ?? 1} ` +
-    `papers=${payload?.attempt?.papers?.length ?? payload?.attempts?.flatMap(a => a.papers).length ?? 0}`
+    `[LAMBDA-REQUEST] studentId=${payload?.student?.id} studentName=${payload?.student?.fullName} ` +
+    `totalAttempts=${payload?.attempts?.length ?? 0} attemptIds=${JSON.stringify(payload?.attempts?.map(a => a.attempt_id))}`
   );
-  strapi.log.info("[LAMBDA-REQUEST-BODY] " + JSON.stringify(bodyToSend));
+  payload?.attempts?.forEach((att, i) => {
+    strapi.log.info(
+      `[LAMBDA-ATTEMPT-${i + 1}] attempt_id=${att.attempt_id} total_marks=${att.total_marks} ` +
+      `papers=${att.papers?.length} submission_date=${att.submission_date}`
+    );
+  });
 
   const response = await fetch(config.lambdaUrl, {
     method: "POST",
@@ -319,7 +324,7 @@ const postResultPdfToLambda = async ({ payload, config }) => {
   });
 
   const text = await response.text();
-  strapi.log.info(`[LAMBDA-RESPONSE] status=${response.status} body=${text.substring(0, 500)}`);
+  strapi.log.info(`[LAMBDA-RESPONSE] status=${response.status} body=${text.substring(0, 300)}`);
 
   let result;
   try { result = JSON.parse(text); } catch {
