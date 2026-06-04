@@ -187,67 +187,76 @@ const getResultPdfConfig = () => {
   return { lambdaUrl, secret, strapiUrl, strapiToken };
 };
 
-const buildResultPdfPayload = ({ series, answers, attemptId, fallbackUser }) => {
-  const onlineAnswers = answers.filter(
-    (ans) => ans.test_series?.test_mode !== "offline"
-  );
+const buildQnaList = (ans) => {
+  return (ans.question_n_answer || []).map((qna) => {
+    const parts = qna.question?.parts || [];
+    const isSinglePart = parts.length <= 1;
+    const rawFirstPart = parts[0];
 
-  if (!onlineAnswers.length) return null;
+    return {
+      question_id: qna.question?.id,
+      question: parseRichtext(qna.question?.question),
+      parts: parts.map((p) => ({
+        question_text: parseRichtext(p.question_text),
+        marks: p.marks,
+        answer_type: p.answer_type,
+        left_items: p.left_items,
+        right_items: p.right_items,
+      })),
+      question_type: qna.question?.question_type,
+      marks: qna.question?.marks,
+      student_answer: isSinglePart ? parseStudentAnswer(qna.answer, rawFirstPart) : null,
+      part_student_answers: isSinglePart
+        ? null
+        : parts.map((_, pi) => parsePartAnswer(qna.answer, pi)),
+      part_evaluations: (qna.part_evaluations || []).map((pe) => ({
+        part_index: pe.part_index,
+        awarded_marks: pe.awarded_marks,
+        feedback: pe.feedback,
+      })),
+      awarded_marks: qna.question_awarded_marks ?? 0,
+      feedback: qna.question_feedback,
+    };
+  });
+};
 
-  const answerStudent = onlineAnswers[0]?.student || null;
-  if (!answerStudent?.id) return null;
-
-  const totalMarks = onlineAnswers.reduce((sum, a) => sum + (a.marks || 0), 0);
-  const submissionDate = onlineAnswers
+// Builds a payload for a single attempt group (array of answers sharing one attempt_id)
+const buildAttemptObject = (attemptNo, attemptId, answers) => {
+  const totalMarks = answers.reduce((sum, a) => sum + (a.marks || 0), 0);
+  const submissionDate = answers
     .map((a) => new Date(a.submission_date))
     .sort((a, b) => b - a)[0];
 
-  const attempt = {
-    attempt_no: 1,
+  return {
+    attempt_no: attemptNo,
     attempt_id: Number(attemptId),
     submission_date: submissionDate,
     total_marks: totalMarks,
-    evaluation_status: onlineAnswers.every((a) => a.evaluation_status === "evaluated")
+    evaluation_status: answers.every((a) => a.evaluation_status === "evaluated")
       ? "evaluated"
       : "pending",
-    papers: onlineAnswers.map((ans) => ({
+    papers: answers.map((ans) => ({
       id: ans.id,
       paper_id: ans.test_series?.id,
       paper_title: ans.test_series?.title,
       marks: ans.marks,
       time_taken: ans.time_taken,
-      question_answers: (ans.question_n_answer || []).map((qna) => {
-        const parts = qna.question?.parts || [];
-        const isSinglePart = parts.length <= 1;
-        const rawFirstPart = parts[0]; // raw Strapi data with left_items/right_items
-
-        return {
-          question_id: qna.question?.id,
-          question: parseRichtext(qna.question?.question),
-          parts: parts.map((p) => ({
-            question_text: parseRichtext(p.question_text),
-            marks: p.marks,
-            answer_type: p.answer_type,
-            left_items: p.left_items,
-            right_items: p.right_items,
-          })),
-          question_type: qna.question?.question_type,
-          marks: qna.question?.marks,
-          student_answer: isSinglePart ? parseStudentAnswer(qna.answer, rawFirstPart) : null,
-          part_student_answers: isSinglePart
-            ? null
-            : parts.map((_, pi) => parsePartAnswer(qna.answer, pi)),
-          part_evaluations: (qna.part_evaluations || []).map((pe) => ({
-            part_index: pe.part_index,
-            awarded_marks: pe.awarded_marks,
-            feedback: pe.feedback,
-          })),
-          awarded_marks: qna.question_awarded_marks ?? 0,
-          feedback: qna.question_feedback,
-        };
-      }),
+      question_answers: buildQnaList(ans),
     })),
   };
+};
+
+// Accepts an array of attempt-groups (each: { attemptId, answers[] }) sorted oldest→newest.
+// Returns a payload with all attempts embedded so the PDF shows every attempt.
+const buildResultPdfPayloadMultiAttempt = ({ series, attemptGroups, fallbackUser }) => {
+  const firstOnlineAnswers = attemptGroups
+    .flatMap((g) => g.answers)
+    .filter((ans) => ans.test_series?.test_mode !== "offline");
+
+  if (!firstOnlineAnswers.length) return null;
+
+  const answerStudent = firstOnlineAnswers[0]?.student || null;
+  if (!answerStudent?.id) return null;
 
   const resolvedName =
     answerStudent?.fullName ||
@@ -267,11 +276,21 @@ const buildResultPdfPayload = ({ series, answers, attemptId, fallbackUser }) => 
     schoolname: answerStudent?.schoolname || fallbackUser?.schoolname,
   };
 
+  const attempts = attemptGroups.map((group, idx) => {
+    const onlineAnswers = group.answers.filter(
+      (ans) => ans.test_series?.test_mode !== "offline"
+    );
+    return buildAttemptObject(idx + 1, group.attemptId, onlineAnswers);
+  });
+
+  // Keep the top-level `attempt` field pointing to the first attempt for
+  // backwards-compatibility with PDF templates that read only `attempt`.
   return {
     type: "result",
     student,
     series: { title: series.title, program_type: series.program_type },
-    attempt,
+    attempt: attempts[0],
+    attempts,
   };
 };
 
@@ -782,46 +801,45 @@ module.exports = {
         grouped.get(key).answers.push(answer);
       }
 
-      const exports = [];
-      const failures = [];
-      const bestGroupByStudent = new Map();
-
+      // Collect ALL attempts per student (sorted oldest → newest by submission date)
+      const allAttemptsByStudent = new Map();
       for (const group of grouped.values()) {
-        const totalMarks = group.answers.reduce(
-          (sum, answer) => sum + Number(answer.marks || 0),
-          0
-        );
-        const latestSubmission = group.answers
-          .map((answer) => new Date(answer.submission_date || 0))
-          .sort((a, b) => b - a)[0];
-        const current = bestGroupByStudent.get(group.studentId);
-
-        if (
-          !current ||
-          totalMarks > current.totalMarks ||
-          (totalMarks === current.totalMarks && latestSubmission > current.latestSubmission)
-        ) {
-          bestGroupByStudent.set(group.studentId, {
-            ...group,
-            totalMarks,
-            latestSubmission,
+        if (!allAttemptsByStudent.has(group.studentId)) {
+          allAttemptsByStudent.set(group.studentId, {
+            studentId: group.studentId,
+            student: group.student,
+            attemptGroups: [],
           });
         }
+        allAttemptsByStudent.get(group.studentId).attemptGroups.push({
+          attemptId: group.attemptId,
+          answers: group.answers,
+        });
       }
 
-      for (const group of bestGroupByStudent.values()) {
+      // Sort each student's attempts oldest → newest so attempt_no is chronological
+      for (const entry of allAttemptsByStudent.values()) {
+        entry.attemptGroups.sort((a, b) => {
+          const dateA = Math.max(...a.answers.map((ans) => new Date(ans.submission_date || 0).getTime()));
+          const dateB = Math.max(...b.answers.map((ans) => new Date(ans.submission_date || 0).getTime()));
+          return dateA - dateB;
+        });
+      }
+
+      const exports = [];
+      const failures = [];
+
+      for (const entry of allAttemptsByStudent.values()) {
         try {
-          const payload = buildResultPdfPayload({
+          const payload = buildResultPdfPayloadMultiAttempt({
             series,
-            answers: group.answers,
-            attemptId: group.attemptId,
+            attemptGroups: entry.attemptGroups,
             fallbackUser: user,
           });
 
           if (!payload) {
             failures.push({
-              studentId: group.studentId,
-              attemptId: group.attemptId,
+              studentId: entry.studentId,
               error: "No online evaluated answers found",
             });
             continue;
@@ -829,16 +847,15 @@ module.exports = {
 
           const result = await postResultPdfToLambda({ payload, config });
           exports.push({
-            studentId: group.studentId,
+            studentId: entry.studentId,
             studentName: payload.student.fullName,
             studentEmail: payload.student.email,
-            attemptId: group.attemptId,
+            totalAttempts: entry.attemptGroups.length,
             file: result.file || result,
           });
         } catch (error) {
           failures.push({
-            studentId: group.studentId,
-            attemptId: group.attemptId,
+            studentId: entry.studentId,
             error: error.message,
           });
         }
@@ -853,7 +870,7 @@ module.exports = {
         },
         summary: {
           totalAttempts: grouped.size,
-          totalStudents: bestGroupByStudent.size,
+          totalStudents: allAttemptsByStudent.size,
           exported: exports.length,
           failed: failures.length,
         },

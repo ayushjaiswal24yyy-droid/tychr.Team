@@ -89,5 +89,13 @@ module.exports = {
         policies: [],
       },
     },
+    {
+      method: "POST",
+      path: "/test-series/:seriesId/resume-attempt",
+      handler: "student.resumeAttempt",
+      config: {
+        policies: [],
+      },
+    },
   ],
 };

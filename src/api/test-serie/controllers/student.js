@@ -961,7 +961,6 @@ module.exports = createCoreController(
           maxViolations = 3;
           autoSubmitted = marker.auto_submitted || false;
           resumeStatus = marker.resume_status || "none";
-          // resume_status "approved" means teacher approved a new attempt — old attempt stays completed
         }
 
         const now = new Date();
@@ -1202,6 +1201,11 @@ module.exports = createCoreController(
             });
           } else if (mostRecentAttempt.resume_status === "requested") {
             return ctx.badRequest("A resume request is pending approval.");
+          } else if (mostRecentAttempt.resume_status === "approved") {
+            // Teacher approved resume — student chose "Start Fresh" so close out the old attempt first
+            await strapi.entityService.update("api::answer.answer", mostRecentAttempt.id, {
+              data: { completed: true, phase: "completed", end_reason: "fresh_attempt_chosen" },
+            });
           } else {
             return ctx.badRequest("An active attempt already exists. Please finish it first.");
           }
@@ -1486,6 +1490,95 @@ module.exports = createCoreController(
         ctx.throw(500, error.message);
       }
     },
+    async resumeAttempt(ctx) {
+      try {
+        const { seriesId } = ctx.params;
+        const user = ctx.state.user;
+
+        if (!user || !seriesId) {
+          return ctx.badRequest("Invalid request");
+        }
+
+        // Find latest attempt marker
+        const markers = await strapi.entityService.findMany(
+          "api::answer.answer",
+          {
+            filters: {
+              student: user.id,
+              test_series: seriesId,
+              is_attempt_marker: true,
+            },
+            sort: { attempt_id: "desc" },
+            limit: 1,
+            fields: [
+              "id",
+              "completed",
+              "auto_submitted",
+              "resume_status",
+              "phase",
+              "started_at",
+              "attempt_id",
+            ],
+            populate: {
+              test_series: { fields: ["id", "test_duration", "reading_time"] },
+            },
+          }
+        );
+
+        if (!markers.length) {
+          return ctx.badRequest("No attempt found");
+        }
+
+        const marker = markers[0];
+
+        if (marker.resume_status !== "approved") {
+          return ctx.badRequest("Resume has not been approved by the teacher");
+        }
+
+        if (!marker.auto_submitted) {
+          return ctx.badRequest("Only auto-submitted attempts can be resumed");
+        }
+
+        // Fetch series to compute remaining time
+        const series = await strapi.entityService.findOne(
+          "api::test-serie.test-serie",
+          seriesId,
+          { fields: ["test_duration", "reading_time"] }
+        );
+
+        const readingTimeSeconds = (Number(series.reading_time) || 0) * 60;
+        const testDurationSeconds = (Number(series.test_duration) || 0) * 60;
+        const totalAllowedSeconds = readingTimeSeconds + testDurationSeconds;
+        const elapsedSeconds = marker.started_at
+          ? (Date.now() - new Date(marker.started_at).getTime()) / 1000
+          : totalAllowedSeconds;
+        const remainingSeconds = Math.max(totalAllowedSeconds - elapsedSeconds, 0);
+
+        // Reopen the attempt: clear auto_submitted, reset completed, reset resume_status
+        await strapi.entityService.update("api::answer.answer", marker.id, {
+          data: {
+            completed: false,
+            auto_submitted: false,
+            resume_status: "none",
+            phase: "answering",
+            phase_started_at: new Date(),
+          },
+        });
+
+        return {
+          data: {
+            attempt_id: marker.attempt_id,
+            phase: "answering",
+            remaining_seconds: remainingSeconds,
+            message: "Attempt resumed successfully",
+          },
+        };
+      } catch (error) {
+        console.error("Error in resumeAttempt:", error);
+        ctx.throw(500, error.message);
+      }
+    },
+
     async requestResume(ctx) {
       try {
         const { seriesId } = ctx.params;
