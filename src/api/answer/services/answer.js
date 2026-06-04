@@ -688,6 +688,19 @@ Confidence: 1.0=clearly strong/weak, 0.7=solid judgement, 0.5=borderline band, 0
       return { isCorrect: false, feedback: "No answer key provided for this question." };
     }
 
+    // Numeric range check for Integer answer type
+    const studentNum = parseFloat(studentChoice);
+    const rangeMin = partDef.range_min ?? null;
+    const rangeMax = partDef.range_max ?? null;
+
+    if (!isNaN(studentNum) && rangeMin !== null && rangeMax !== null) {
+      const isCorrect = studentNum >= rangeMin && studentNum <= rangeMax;
+      const feedback = isCorrect
+        ? `Correct. Your answer ${studentNum} is within the accepted range (${rangeMin} – ${rangeMax}).`
+        : `Incorrect. Your answer ${studentNum} is outside the accepted range (${rangeMin} – ${rangeMax}).`;
+      return { isCorrect, feedback };
+    }
+
     const isCorrect = studentChoice === correctChoice;
     const feedback = isCorrect
       ? `Correct. The answer is "${correctChoice}".`

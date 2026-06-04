@@ -89,6 +89,12 @@
     },
     "word_limit": {
       "type": "integer"
+    },
+    "range_min": {
+      "type": "decimal"
+    },
+    "range_max": {
+      "type": "decimal"
     }
   }
 }
