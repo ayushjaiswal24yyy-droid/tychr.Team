@@ -742,6 +742,21 @@ module.exports = {
       strapi.log.info(`[EXPORT-DEBUG] Total answers in series (no filter): ${debugAll.length}`);
       debugAll.forEach(a => strapi.log.info(`[EXPORT-DEBUG] id=${a.id} student=${a.student?.id}(${a.student?.username}) completed=${a.completed} status=${a.evaluation_status} attempt=${a.attempt_id} marker=${a.is_attempt_marker} published=${a.publishedAt}`));
 
+      // TEMP: return debug data in response so we can see it
+      return ctx.send({
+        debug: true,
+        totalAnswers: debugAll.length,
+        answers: debugAll.map(a => ({
+          id: a.id,
+          student: a.student?.username,
+          completed: a.completed,
+          status: a.evaluation_status,
+          attempt_id: a.attempt_id,
+          is_marker: a.is_attempt_marker,
+          published: a.publishedAt,
+        })),
+      });
+
       const answerFilters = {
         completed: true,
         is_attempt_marker: { $ne: true },
