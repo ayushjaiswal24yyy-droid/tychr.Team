@@ -642,7 +642,19 @@ Confidence: 1.0=clearly strong/weak, 0.7=solid judgement, 0.5=borderline band, 0
             expectedVal = correctObj[key].options[0];
           } else {
             expectedVal = cleanString(String(correctObj[key]));
-            isMatch = studentVal.toLowerCase() === expectedVal.toLowerCase();
+
+            // Numeric tolerance check
+            const correctNum = parseFloat(expectedVal);
+            const studentNum = parseFloat(studentVal);
+            const tolerancePct = correctObj[key]?.tolerance ?? partDef.tolerance ?? 0;
+
+            if (!isNaN(correctNum) && !isNaN(studentNum) && tolerancePct > 0) {
+              const delta = Math.abs(correctNum * tolerancePct / 100);
+              isMatch = studentNum >= correctNum - delta && studentNum <= correctNum + delta;
+              if (isMatch) expectedVal = `${correctNum} (±${tolerancePct}%)`;
+            } else {
+              isMatch = studentVal.toLowerCase() === expectedVal.toLowerCase();
+            }
           }
 
           if (isMatch) {
@@ -676,6 +688,20 @@ Confidence: 1.0=clearly strong/weak, 0.7=solid judgement, 0.5=borderline band, 0
 
     if (correctChoice === "") {
       return { isCorrect: false, feedback: "No answer key provided for this question." };
+    }
+
+    // Numeric tolerance check for single answer
+    const correctNum = parseFloat(correctChoice);
+    const studentNum = parseFloat(studentChoice);
+    const tolerancePct = partDef.tolerance ?? 0;
+
+    if (!isNaN(correctNum) && !isNaN(studentNum) && tolerancePct > 0) {
+      const delta = Math.abs(correctNum * tolerancePct / 100);
+      const isCorrect = studentNum >= correctNum - delta && studentNum <= correctNum + delta;
+      const feedback = isCorrect
+        ? `Correct. Your answer ${studentNum} is within the accepted range (${(correctNum - delta).toFixed(4)} – ${(correctNum + delta).toFixed(4)}).`
+        : `Incorrect. Your answer ${studentNum} is outside the accepted range (${(correctNum - delta).toFixed(4)} – ${(correctNum + delta).toFixed(4)}). Correct answer: ${correctNum}.`;
+      return { isCorrect, feedback };
     }
 
     const isCorrect = studentChoice === correctChoice;
