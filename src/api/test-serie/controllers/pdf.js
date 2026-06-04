@@ -232,7 +232,9 @@ const buildAttemptObject = (attemptNo, attemptId, answers) => {
     attempt_id: Number(attemptId),
     submission_date: submissionDate,
     total_marks: totalMarks,
-    evaluation_status: answers.every((a) => a.evaluation_status === "evaluated")
+    evaluation_status: answers.every((a) =>
+      ["evaluated", "in_progress", "needs_review"].includes(a.evaluation_status)
+    )
       ? "evaluated"
       : "pending",
     papers: answers.map((ans) => ({
@@ -729,24 +731,21 @@ module.exports = {
 
       strapi.log.info(`[EXPORT-DEBUG] seriesId=${id} entity_type=${series.entity_type} paperIds=${JSON.stringify(paperIds)} allRelevantIds=${JSON.stringify(allRelevantIds)}`);
 
-      // DEBUG: check what answers exist without status filter
-      const allAnswers = await strapi.entityService.findMany("api::answer.answer", {
-        filters: {
-          completed: true,
-          is_attempt_marker: { $ne: true },
-          test_series: { id: { $in: allRelevantIds } },
-        },
-        fields: ["id", "evaluation_status", "attempt_id", "submission_type"],
-        populate: { test_series: { fields: ["id"] } },
-        pagination: { limit: 50 },
+      // DEBUG: dump ALL answers for this series regardless of any filter
+      const debugAll = await strapi.entityService.findMany("api::answer.answer", {
+        publicationState: "preview",
+        filters: { test_series: { id: { $in: allRelevantIds } } },
+        fields: ["id", "completed", "evaluation_status", "attempt_id", "is_attempt_marker", "publishedAt"],
+        populate: { student: { fields: ["id", "username"] } },
+        pagination: { limit: 200 },
       });
-      strapi.log.info(`[EXPORT-DEBUG] All completed answers (no status filter): ${allAnswers.length}`);
-      allAnswers.forEach(a => strapi.log.info(`[EXPORT-DEBUG]   answer id=${a.id} status=${a.evaluation_status} attempt=${a.attempt_id} test_series=${a.test_series?.id} type=${a.submission_type}`));
+      strapi.log.info(`[EXPORT-DEBUG] Total answers in series (no filter): ${debugAll.length}`);
+      debugAll.forEach(a => strapi.log.info(`[EXPORT-DEBUG] id=${a.id} student=${a.student?.id}(${a.student?.username}) completed=${a.completed} status=${a.evaluation_status} attempt=${a.attempt_id} marker=${a.is_attempt_marker} published=${a.publishedAt}`));
 
       const answerFilters = {
         completed: true,
         is_attempt_marker: { $ne: true },
-        evaluation_status: "evaluated",
+        evaluation_status: { $in: ["evaluated", "in_progress", "needs_review"] },
         attempt_id: { $notNull: true },
         test_series: { id: { $in: allRelevantIds } },
       };
@@ -757,6 +756,7 @@ module.exports = {
 
       const answers = await strapi.entityService.findMany("api::answer.answer", {
         filters: answerFilters,
+        publicationState: "preview",
         fields: [
           "id",
           "marks",

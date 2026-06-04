@@ -1,6 +1,14 @@
 "use strict";
 
 module.exports = {
+  async beforeCreate(event) {
+    // Answers must be published immediately so admin queries (which default
+    // to publicationState:"live") can find them without needing "preview" mode.
+    if (!event.params.data.publishedAt) {
+      event.params.data.publishedAt = new Date();
+    }
+  },
+
   async afterCreate(event) {
     const { result } = event;
 
