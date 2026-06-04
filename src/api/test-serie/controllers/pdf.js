@@ -756,7 +756,6 @@ module.exports = {
 
       const answerFilters = {
         is_attempt_marker: { $ne: true },
-        evaluation_status: { $in: ["evaluated", "in_progress", "needs_review"] },
         attempt_id: { $notNull: true },
         test_series: { id: { $in: allRelevantIds } },
       };
@@ -868,6 +867,7 @@ module.exports = {
             studentEmail: payload.student.email,
             totalAttempts: entry.attemptGroups.length,
             file: result.file || result,
+            _debug_payload: payload,
           });
         } catch (error) {
           failures.push({
